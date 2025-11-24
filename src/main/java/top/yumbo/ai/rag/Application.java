@@ -41,6 +41,7 @@ public class Application {
 
         try {
             SpringApplication.run(Application.class, args);
+            log.info("✅ 应用启动成功，默认端口：http://localhost:8080");
         } catch (Exception e) {
             log.error("❌ 应用启动失败", e);
             System.exit(1);
