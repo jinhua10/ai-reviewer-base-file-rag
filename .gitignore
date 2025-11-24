@@ -6,6 +6,10 @@
 /release/logs
 /release/*.jar
 
+/src/main/resources/simpleExcel/*
+/src/main/resources/models/*/*.onnx
+/release/models/*/*.onnx
+
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
