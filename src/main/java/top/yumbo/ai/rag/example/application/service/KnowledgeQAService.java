@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.example.application.service;
 import ai.onnxruntime.OrtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.LocalFileRAG;
+import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.example.application.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.example.application.model.AIAnswer;
 import top.yumbo.ai.rag.example.application.model.BuildResult;

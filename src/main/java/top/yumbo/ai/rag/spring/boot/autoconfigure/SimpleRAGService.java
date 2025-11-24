@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.spring.boot.autoconfigure;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.LocalFileRAG;
+import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;

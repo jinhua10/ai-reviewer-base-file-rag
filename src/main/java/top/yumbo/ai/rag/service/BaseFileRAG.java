@@ -1,4 +1,4 @@
-package top.yumbo.ai.rag;
+package top.yumbo.ai.rag.service;
 
 /**
  * Base File RAG - 本地文件存储RAG替代框架

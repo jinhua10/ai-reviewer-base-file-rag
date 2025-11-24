@@ -1,7 +1,7 @@
 package top.yumbo.ai.rag.api.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.LocalFileRAG;
+import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.api.model.ApiResponse;
 import top.yumbo.ai.rag.query.impl.AdvancedQueryProcessor;
 

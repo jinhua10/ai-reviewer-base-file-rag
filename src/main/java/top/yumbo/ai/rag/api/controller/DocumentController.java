@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.api.controller;
 
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.LocalFileRAG;
+import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.api.model.ApiResponse;
 import top.yumbo.ai.rag.api.model.DocumentRequest;
 import top.yumbo.ai.rag.model.Document;

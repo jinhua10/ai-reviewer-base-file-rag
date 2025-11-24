@@ -1,4 +1,4 @@
-package top.yumbo.ai.rag.example.application;
+package top.yumbo.ai.rag;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import top.yumbo.ai.rag.example.application.config.KnowledgeQAProperties;
 
 /**
- * 知识库问答系统 Spring Boot 应用
+ * AI Reviewer RAG 系统 - Spring Boot 主入口
  *
  * 功能特性：
  * - 支持多种文件格式：Excel, Word, PowerPoint, PDF, TXT等
@@ -29,18 +29,18 @@ import top.yumbo.ai.rag.example.application.config.KnowledgeQAProperties;
  * - GET  /api/qa/health - 健康检查
  *
  * @author AI Reviewer Team
- * @since 2025-11-22
+ * @since 2025-11-24
  */
 @Slf4j
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "top.yumbo.ai.rag")
 @EnableConfigurationProperties(KnowledgeQAProperties.class)
-public class KnowledgeQASystemApplication {
+public class Application {
 
     public static void main(String[] args) {
         printBanner();
 
         try {
-            SpringApplication.run(KnowledgeQASystemApplication.class, args);
+            SpringApplication.run(Application.class, args);
         } catch (Exception e) {
             log.error("❌ 应用启动失败", e);
             System.exit(1);
@@ -53,13 +53,13 @@ public class KnowledgeQASystemApplication {
     private static void printBanner() {
         System.out.println();
         System.out.println("=".repeat(80));
-        System.out.println("  ____  _   _  ___        _      ____    _    ____  _   _ ____  ");
-        System.out.println(" |  _ \\| \\ | |/ _ \\      / \\    / ___|  / \\  / ___|| | | / ___| ");
-        System.out.println(" | |_) |  \\| | | | |    / _ \\  | |     / _ \\ \\___ \\| |_| \\___ \\ ");
-        System.out.println(" |  __/| |\\  | |_| |   / ___ \\ | |___ / ___ \\ ___) |  _  |___) |");
-        System.out.println(" |_|   |_| \\_|\\___/   /_/   \\_\\ \\____/_/   \\_\\____/|_| |_|____/ ");
+        System.out.println("   _    ___   ____                _                           ____      _    ____  ");
+        System.out.println("  / \\  |_ _| |  _ \\ _____   _____ (_) _____      _____ _ __  |  _ \\    / \\  / ___| ");
+        System.out.println(" / _ \\  | |  | |_) / _ \\ \\ / / _ \\| |/ _ \\ \\ /\\ / / _ \\ '__| | |_) |  / _ \\| |  _  ");
+        System.out.println("/ ___ \\ | |  |  _ <  __/\\ V /  __/| |  __/\\ V  V /  __/ |    |  _ <  / ___ \\ |_| | ");
+        System.out.println("\\_/ \\_\\|___| |_| \\_\\___| \\_/ \\___|_|\\___| \\_/\\_/ \\___|_|    |_| \\_\\/_/   \\_\\____| ");
         System.out.println();
-        System.out.println("  知识库智能问答系统 (Knowledge QA System)");
+        System.out.println("  AI Reviewer - 知识库智能问答系统 (Knowledge QA System)");
         System.out.println("  版本: 1.0.0");
         System.out.println("  支持: Excel, Word, PowerPoint, PDF, TXT 等多种格式");
         System.out.println("=".repeat(80));

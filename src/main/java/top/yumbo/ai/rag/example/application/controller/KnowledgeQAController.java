@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.example.application.controller;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.LocalFileRAG;
+import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.example.application.model.AIAnswer;
 import top.yumbo.ai.rag.example.application.model.BuildResult;
 import top.yumbo.ai.rag.example.application.service.KnowledgeQAService;
