@@ -12,7 +12,7 @@
     <appender name="FILE1" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- 输出文件路径+文件名 -->
-            <fileNamePattern>logs/app.%d{yyyyMMdd}.log</fileNamePattern>
+            <fileNamePattern>logs/app-debug.%d{yyyyMMdd}.log</fileNamePattern>
             <!-- 保存30天的日志 -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>
@@ -24,9 +24,9 @@
 
     <!-- 第二个文件输出,每天产生一个文件 -->
     <appender name="FILE2" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/bb.log</file>
+        <file>logs/app-info.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/app.%d{yyyyMMdd}.log</fileNamePattern>
+            <fileNamePattern>logs/app-info.%d{yyyyMMdd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
