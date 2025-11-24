@@ -2,3 +2,4 @@
 /logs/
 models/*.onnx
 /temp
+/*.jar

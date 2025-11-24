@@ -25,6 +25,11 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <lucene.version>9.9.1</lucene.version>
+        <!-- 默认控制台编码（可被操作系统 profile 覆盖）：
+             - Linux / macOS / 现代环境：UTF-8
+             - Windows（Profile 激活时设为 GBK），以保证在默认 cmd 下显示正确
+        -->
+        <console.encoding>UTF-8</console.encoding>
     </properties>
 
     <dependencies>
@@ -307,7 +312,7 @@
                 </executions>
             </plugin>
 
-            <!-- Maven 测试插件 - UTF-8 编码 -->
+            <!-- Maven 测试插件 - 使用可配置的控制台编码 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -324,10 +329,10 @@
                         -XX:+DisableExplicitGC
                         -XX:+HeapDumpOnOutOfMemoryError
                         -XX:HeapDumpPath=target/heap-dump.hprof
-                        -Dfile.encoding=UTF-8
-                        -Dconsole.encoding=UTF-8
-                        -Dsun.stdout.encoding=UTF-8
-                        -Dsun.stderr.encoding=UTF-8
+                        -Dfile.encoding=${console.encoding}
+                        -Dconsole.encoding=${console.encoding}
+                        -Dsun.stdout.encoding=${console.encoding}
+                        -Dsun.stderr.encoding=${console.encoding}
                     </argLine>
                     <!-- 防止内存泄漏 - 每个测试类使用新的 JVM -->
                     <reuseForks>false</reuseForks>
@@ -340,29 +345,29 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>
             </plugin>
-            <!-- Exec Maven 插件 - UTF-8 编码 -->
+            <!-- Exec Maven 插件 - 使用可配置的控制台编码 -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.6.2</version>
                 <configuration>
-                    <!-- 确保运行时使用 UTF-8 编码 -->
+                    <!-- 确保运行时使用项目控制台编码（可在 Windows 下为 GBK） -->
                     <systemProperties>
                         <systemProperty>
                             <key>file.encoding</key>
-                            <value>UTF-8</value>
+                            <value>${console.encoding}</value>
                         </systemProperty>
                         <systemProperty>
                             <key>sun.stdout.encoding</key>
-                            <value>UTF-8</value>
+                            <value>${console.encoding}</value>
                         </systemProperty>
                         <systemProperty>
                             <key>sun.stderr.encoding</key>
-                            <value>UTF-8</value>
+                            <value>${console.encoding}</value>
                         </systemProperty>
                         <systemProperty>
                             <key>console.encoding</key>
-                            <value>UTF-8</value>
+                            <value>${console.encoding}</value>
                         </systemProperty>
                     </systemProperties>
                 </configuration>
@@ -375,10 +380,10 @@
                 <configuration>
                     <mainClass>top.yumbo.ai.rag.example.application.KnowledgeQASystemApplication</mainClass>
                     <jvmArguments>
-                        -Dfile.encoding=UTF-8
-                        -Dsun.stdout.encoding=UTF-8
-                        -Dsun.stderr.encoding=UTF-8
-                        -Dconsole.encoding=UTF-8
+                        -Dfile.encoding=${console.encoding}
+                        -Dsun.stdout.encoding=${console.encoding}
+                        -Dsun.stderr.encoding=${console.encoding}
+                        -Dconsole.encoding=${console.encoding}
                     </jvmArguments>
                 </configuration>
                 <executions>
@@ -501,5 +506,20 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- 在 Windows 平台上将控制台编码切换为 GBK，避免默认 cmd 下中文乱码 -->
+    <profiles>
+        <profile>
+            <id>windows-console-gbk</id>
+            <activation>
+                <os>
+                    <family>Windows</family>
+                </os>
+            </activation>
+            <properties>
+                <console.encoding>GBK</console.encoding>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>
