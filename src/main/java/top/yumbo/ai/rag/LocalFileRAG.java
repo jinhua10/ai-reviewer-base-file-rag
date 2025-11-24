@@ -1,5 +1,6 @@
 package top.yumbo.ai.rag;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.config.RAGConfiguration;
 import top.yumbo.ai.rag.core.CacheEngine;
@@ -25,7 +26,17 @@ public class LocalFileRAG implements Closeable {
 
     private final RAGConfiguration configuration;
     private final StorageEngine storageEngine;
+    /**
+     * -- GETTER --
+     *  获取索引引擎（用于高级查询处理）
+     */
+    @Getter
     private final IndexEngine indexEngine;
+    /**
+     * -- GETTER --
+     *  获取缓存引擎（用于高级查询处理）
+     */
+    @Getter
     private final CacheEngine cacheEngine;
 
     /**
@@ -216,10 +227,8 @@ public class LocalFileRAG implements Closeable {
 
     /**
      * 删除所有文档
-     *
-     * @return 删除的文档数量
      */
-    public int deleteAllDocuments() {
+    public void deleteAllDocuments() {
         log.info("Deleting all documents...");
 
         // 1. 获取所有文档ID
@@ -228,7 +237,7 @@ public class LocalFileRAG implements Closeable {
 
         if (count == 0) {
             log.info("No documents to delete");
-            return 0;
+            return;
         }
 
         log.info("Found {} documents to delete", count);
@@ -256,7 +265,6 @@ public class LocalFileRAG implements Closeable {
         commit();
 
         log.info("Deleted {} documents", count);
-        return count;
     }
 
     /**
@@ -287,20 +295,6 @@ public class LocalFileRAG implements Closeable {
                 .cacheStats(configuration.getCache().isEnabled() ?
                         cacheEngine.getStats() : null)
                 .build();
-    }
-
-    /**
-     * 获取索引引擎（用于高级查询处理）
-     */
-    public IndexEngine getIndexEngine() {
-        return indexEngine;
-    }
-
-    /**
-     * 获取缓存引擎（用于高级查询处理）
-     */
-    public CacheEngine getCacheEngine() {
-        return cacheEngine;
     }
 
     /**
