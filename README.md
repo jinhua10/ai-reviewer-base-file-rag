@@ -4,7 +4,7 @@
 
 **🚀 零外部依赖的本地文件 RAG 检索系统 | 基于 Lucene 的企业级文档检索框架**
 
-[![Version](https://img.shields.io/badge/version-1.0-blue.svg)](https://github.com/yourusername/ai-reviewer-base-file-rag)
+[![Version](https://img.shields.io/badge/version-1.0-blue.svg)](https://github.com/jinhua10/ai-reviewer-base-file-rag)
 [![Java](https://img.shields.io/badge/Java-11+-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.18-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE.txt)
@@ -201,7 +201,7 @@ curl "http://localhost:8080/api/answer?question=什么是Spring+Boot?"
 
 ### 预期结果
 
-```json
+```bash
 // 索引响应
 "doc-12345-67890"
 
@@ -227,7 +227,7 @@ curl "http://localhost:8080/api/answer?question=什么是Spring+Boot?"
 
 ```bash
 # 克隆项目
-git clone https://github.com/yourusername/ai-reviewer-base-file-rag.git
+git clone https://github.com/jinhua10/ai-reviewer-base-file-rag.git
 cd ai-reviewer-base-file-rag
 
 # 构建项目
@@ -359,8 +359,8 @@ local-file-rag:
 
 ### 问题反馈
 
-- **Bug 报告**：[提交 Issue](https://github.com/yourusername/ai-reviewer-base-file-rag/issues)
-- **功能请求**：[功能讨论区](https://github.com/yourusername/ai-reviewer-base-file-rag/discussions)
+- **Bug 报告**：[提交 Issue](https://github.com/jinhua10/ai-reviewer-base-file-rag/issues)
+- **功能请求**：[功能讨论区](https://github.com/jinhua10/ai-reviewer-base-file-rag/discussions)
 - **安全漏洞**：请私下联系 [security@example.com](mailto:security@example.com)
 
 ---
@@ -449,10 +449,10 @@ limitations under the License.
 
 ## 📞 联系我们
 
-- **项目主页**：[GitHub](https://github.com/yourusername/ai-reviewer-base-file-rag)
-- **问题反馈**：[Issues](https://github.com/yourusername/ai-reviewer-base-file-rag/issues)
-- **讨论区**：[Discussions](https://github.com/yourusername/ai-reviewer-base-file-rag/discussions)
-- **邮箱**：[contact@example.com](mailto:contact@example.com)
+- **项目主页**：[GitHub](https://github.com/jinhua10/ai-reviewer-base-file-rag)
+- **问题反馈**：[Issues](https://github.com/jinhua10/ai-reviewer-base-file-rag/issues)
+- **讨论区**：[Discussions](https://github.com/jinhua10/ai-reviewer-base-file-rag/discussions)
+- **邮箱**：[1015770492@qq.com](mailto:1015770492@qq.com)
 
 ---
 
@@ -460,7 +460,7 @@ limitations under the License.
 
 **如果这个项目对你有帮助，请给我们一个 ⭐ Star！**
 
-Made with ❤️ by [AI Reviewer Team](https://github.com/yourusername)
+Made with ❤️ by [AI Reviewer Team](https://github.com/jinhua10)
 
 </div>
 
