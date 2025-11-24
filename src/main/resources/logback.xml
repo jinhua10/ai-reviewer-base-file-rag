@@ -45,11 +45,6 @@
     <logger name="file1" level="INFO">
         <appender-ref ref="FILE2"/>
     </logger>
-    <!-- 自定义logger -->
-    <logger name="custom" level="INFO">
-        <appender-ref ref="CUSTOM"/>
-    </logger>
-
 
     <logger name="top.yumbo.ai.rag" level="INFO"/>
     <logger name="org.apache.lucene" level="WARN"/>
