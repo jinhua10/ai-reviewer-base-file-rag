@@ -1,0 +1,8 @@
+/data/
+/logs/
+.mvn
+*.log
+/release/models/*.onnx
+/release/data
+/release/logs
+/release/*.jar
