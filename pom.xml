@@ -378,7 +378,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>top.yumbo.ai.rag.example.application.KnowledgeQASystemApplication</mainClass>
+                    <mainClass>top.yumbo.ai.rag.Application</mainClass>
                     <jvmArguments>
                         -Dfile.encoding=${console.encoding}
                         -Dsun.stdout.encoding=${console.encoding}

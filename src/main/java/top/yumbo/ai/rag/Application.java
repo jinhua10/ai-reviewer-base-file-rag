@@ -1,4 +1,4 @@
-package top.yumbo.ai.rag.spring.boot;
+package top.yumbo.ai.rag;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -32,7 +32,7 @@ import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
  * @since 2025-11-24
  */
 @Slf4j
-@SpringBootApplication(scanBasePackages = "top.yumbo.ai.rag")
+@SpringBootApplication
 @EnableConfigurationProperties(KnowledgeQAProperties.class)
 public class Application {
 

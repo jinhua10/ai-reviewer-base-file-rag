@@ -59,11 +59,10 @@ public class LocalFileRAGAutoConfiguration {
     }
 
     /**
-     * 自动配置 RAG 服务（可选）
+     * 自动配置 RAG 服务
      */
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "local-file-rag", name = "auto-qa-service", havingValue = "true")
     public SimpleRAGService simpleRAGService(LocalFileRAG rag) {
         log.info("🤖 初始化简易 RAG 问答服务...");
 

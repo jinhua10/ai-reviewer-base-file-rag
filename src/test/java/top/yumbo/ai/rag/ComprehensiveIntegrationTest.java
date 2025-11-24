@@ -4,6 +4,7 @@ import top.yumbo.ai.rag.config.RAGConfiguration;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
+import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.util.DocumentUtils;
 import java.io.File;
 import java.nio.file.Files;
