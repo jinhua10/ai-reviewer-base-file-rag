@@ -3,7 +3,8 @@
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <!-- 加入文件名和行号 %F:%L -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} (%F:%L) - %msg%n</pattern>
             <!-- 使用运行时 console.encoding 属性，以便在 Windows 下可以为 GBK -->
             <charset>${console.encoding:-UTF-8}</charset>
         </encoder>
@@ -17,7 +18,8 @@
             <maxHistory>30</maxHistory>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <!-- 加入文件名和行号 %F:%L -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} (%F:%L) - %msg%n</pattern>
             <charset>${console.encoding:-UTF-8}</charset>
         </encoder>
     </appender>
