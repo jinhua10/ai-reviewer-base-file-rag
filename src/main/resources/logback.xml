@@ -1,38 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration scan="true">
     <!-- 控制台输出 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <!-- 加入文件名和行号 %F:%L -->
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} (%F:%L) - %msg%n</pattern>
-            <!-- 使用运行时 console.encoding 属性，以便在 Windows 下可以为 GBK -->
-            <charset>${console.encoding:-UTF-8}</charset>
+        <encoder charset="UTF-8">
+            <!-- 输出日志记录格式 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 文件输出 -->
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/ai-reviewer-rag.log</file>
+    <!-- 第一个文件输出,每天产生一个文件 -->
+    <appender name="FILE1" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/ai-reviewer-rag.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- 输出文件路径+文件名 -->
+            <fileNamePattern>logs/app.%d{yyyyMMdd}.log</fileNamePattern>
+            <!-- 保存30天的日志 -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>
-        <encoder>
-            <!-- 加入文件名和行号 %F:%L -->
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} (%F:%L) - %msg%n</pattern>
-            <charset>${console.encoding:-UTF-8}</charset>
+        <encoder charset="UTF-8">
+            <!-- 输出日志记录格式 -->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 根日志级别 -->
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
+    <!-- 第二个文件输出,每天产生一个文件 -->
+    <appender name="FILE2" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/bb.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app.%d{yyyyMMdd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder charset="UTF-8">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- 设置日志输出级别 -->
+    <root level="ERROR">
+        <appender-ref ref="CONSOLE"/>
     </root>
+    <logger name="file1" level="DEBUG">
+        <appender-ref ref="FILE1"/>
+    </logger>
+    <logger name="file1" level="INFO">
+        <appender-ref ref="FILE2"/>
+    </logger>
+    <!-- 自定义logger -->
+    <logger name="custom" level="INFO">
+        <appender-ref ref="CUSTOM"/>
+    </logger>
 
-    <!-- 特定包的日志级别 -->
-    <logger name="top.yumbo.ai.rag" level="INFO" />
-    <logger name="org.apache.lucene" level="WARN" />
-    <logger name="org.apache.tika" level="WARN" />
 
+    <logger name="top.yumbo.ai.rag" level="INFO"/>
+    <logger name="org.apache.lucene" level="WARN"/>
+    <logger name="org.apache.tika" level="WARN"/>
 </configuration>
