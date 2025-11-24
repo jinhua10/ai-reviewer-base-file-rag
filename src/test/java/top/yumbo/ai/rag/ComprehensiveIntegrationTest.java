@@ -211,14 +211,14 @@ class ComprehensiveIntegrationTest {
                     } else {
                         boolean delete = file.delete();
                         if (!delete) {
-                            log.error("Failed to delete file: " + file.getAbsolutePath());
+                            log.error("Failed to delete file: {}", file.getAbsolutePath());
                         }
                     }
                 }
             }
             boolean delete = dir.delete();
             if (!delete) {
-                log.error("Failed to delete dir: " + dir.getAbsolutePath());
+                log.error("Failed to delete dir: {}", dir.getAbsolutePath());
             }
         }
     }
