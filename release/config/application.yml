@@ -1,0 +1,213 @@
+# 知识库问答系统配置文件 - 生产环境
+# Knowledge QA System Configuration - Production
+
+server:
+  port: 8080
+
+  # Tomcat 配置
+  tomcat:
+    # 临时文件目录
+    basedir: ./temp
+    # 连接超时
+    connection-timeout: 20000
+    # 线程配置
+    threads:
+      max: 200
+      min-spare: 10
+
+spring:
+  application:
+    name: knowledge-qa-system
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      # 单个文件最大大小（默认 1MB，调整为 100MB）
+      max-file-size: 100MB
+      # 单次请求最大大小（默认 10MB，调整为 100MB）
+      max-request-size: 100MB
+      # 是否启用文件上传
+      enabled: true
+      # 临时文件位置（使用自定义目录，避免系统临时目录权限问题）
+      location: ./temp/uploads
+      # 文件写入磁盘的阈值（0 表示始终写入磁盘）
+      file-size-threshold: 0
+
+# 知识库问答系统配置
+knowledge:
+  qa:
+    # 知识库配置
+    knowledge-base:
+      # 知识库存储路径（索引、元数据等）
+      storage-path: ./data/knowledge-base
+
+      # 文档源路径（支持文件夹或单个文件）
+      # 将此路径指向外部文档目录
+      # 示例：
+      #   - ./data/documents           # 相对路径（推荐）
+      #   - E:/文档/知识库             # 绝对路径
+      #   - ./data/documents/file.xlsx # 单个文件
+      source-path: ./data/documents
+
+      # 启动时索引模式
+      # true: 完全重建（删除旧索引，重新索引所有文件）
+      # false: 增量索引（只索引新增和修改的文件，默认推荐）
+      # 注意：UI界面可以随时触发完全重建或增量索引
+      rebuild-on-startup: false
+
+      # 是否启用缓存
+      enable-cache: true
+
+    # 向量检索配置
+    vector-search:
+      # 是否启用向量检索
+      # true: 使用语义向量检索（需要模型文件，需要先下载模型）
+      # false: 使用纯关键词检索（推荐，开箱即用）
+      enabled: true
+
+      # 模型配置
+      # ⚠️ 启用向量检索前，请确保已下载模型文件
+      # 📥 模型下载：
+      #    1. 访问 https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      #    2. 下载 model.onnx 文件
+      #    3. 放置到 models/paraphrase-multilingual/ 目录
+      #
+      # 📁 模型目录结构：
+      #    ./models/
+      #      ├── paraphrase-multilingual/
+      #      │   └── model.onnx
+      #      ├── bge-m3/
+      #      │   └── model.onnx
+      #      └── text2vec-base-chinese/
+      #          └── model.onnx
+      model:
+        # 模型名称（用于日志显示）
+        name: paraphrase-multilingual
+
+        # 模型文件路径（外部路径，相对于应用目录）
+        # 优先级：
+        #   1. 绝对路径: D:/models/xxx/model.onnx
+        #   2. 相对路径: ./models/paraphrase-multilingual/model.onnx
+        #   3. classpath: models/paraphrase-multilingual/model.onnx
+        path: ./models/paraphrase-multilingual/model.onnx
+
+        # 模型搜索路径（按优先级排序）
+        search-paths:
+          - bge-m3                      # BGE-M3 (推荐, 2024最新)
+          - multilingual-e5-large       # Multilingual E5 Large
+          - bge-large-zh                # BGE Large ZH (中文)
+          - paraphrase-multilingual     # Paraphrase Multilingual
+          - text2vec-base-chinese       # Text2Vec (旧版)
+
+        # 模型文件名（按优先级排序）
+        file-names:
+          - model.onnx                  # 标准模型
+          - model_O2.onnx               # 优化模型
+          - model_quantized.onnx        # 量化模型
+          - model_quint8_avx2.onnx      # AVX2 量化
+
+      # 向量索引存储路径
+      index-path: ./data/vector-index
+
+      # 检索相似度阈值 (0.0-1.0)
+      similarity-threshold: 0.4
+
+      # 检索返回的文档数量
+      top-k: 20
+
+    # LLM 配置
+    llm:
+      # LLM 提供商
+      # 可选值:
+      #   - openai: OpenAI 兼容 API（默认，支持 OpenAI、DeepSeek 等）
+      #   - mock: Mock 模式（测试用）
+      #
+      # 说明：通过配置不同的 api-url 和 model 切换不同的服务
+      #   DeepSeek: api-url=https://api.deepseek.com, model=deepseek-chat
+      #   OpenAI: api-url=https://api.openai.com, model=gpt-4o
+      provider: openai
+
+      # API Key（从环境变量读取）
+      # DeepSeek: set AI_API_KEY=your-deepseek-key
+      # OpenAI: set OPENAI_API_KEY=your-openai-key
+      # 未设置时将使用 Mock 模式返回固定回答
+      api-key: ${AI_API_KEY:}
+
+      # API 端点（根据使用的服务配置）
+      # DeepSeek（默认）: https://api.deepseek.com/v1/chat/completions
+      # OpenAI: https://api.openai.com/v1/chat/completions
+      api-url: https://api.deepseek.com/v1/chat/completions
+
+      # 模型名称（根据使用的服务配置）
+      # DeepSeek（默认）: deepseek-chat
+      # OpenAI: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-4, gpt-3.5-turbo
+      model: deepseek-chat
+
+      # 最大上下文长度（字符数）
+      max-context-length: 20000
+
+      # 单文档最大长度（字符数）
+      max-doc-length: 5000
+
+    # 文档处理配置
+    document:
+      # 支持的文件格式
+      supported-formats:
+        - xlsx
+        - xls
+        - docx
+        - doc
+        - pptx
+        - ppt
+        - pdf
+        - txt
+        - md
+        - html
+        - xml
+
+      # 最大文件大小（MB）
+      max-file-size-mb: 200
+
+      # 最大内容大小（MB）
+      max-content-size-mb: 50
+
+      # 自动分块阈值（MB）
+      auto-chunk-threshold-mb: 2
+
+      # 文档分块大小（字符数）
+      chunk-size: 2000
+
+      # 文档分块重叠（字符数）
+      chunk-overlap: 400
+
+    # 图片处理配置
+    image-processing:
+      # 图片处理策略: placeholder, ocr, vision-llm, hybrid
+      strategy: placeholder
+
+      # 是否启用 OCR
+      enable-ocr: true
+
+      # OCR 配置
+      ocr:
+        tessdata-path: ${TESSDATA_PREFIX:./tessdata}
+        language: chi_sim+eng
+
+      # Vision LLM 配置
+      vision-llm:
+        enabled: false
+        api-key: ${VISION_LLM_API_KEY:}
+        model: gpt-4-vision-preview
+        endpoint: ${VISION_LLM_ENDPOINT:}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    top.yumbo.ai.rag: INFO
+    org.springframework: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: ./logs/knowledge-qa-system.log
+

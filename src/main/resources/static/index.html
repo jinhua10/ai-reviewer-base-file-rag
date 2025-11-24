@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库问答系统</title>
+
+    <!-- React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel Standalone -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Axios for API calls -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <!-- Ant Design CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/antd@5/dist/reset.css" />
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        #root {
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .qa-section {
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .answer-card {
+            background: #f8f9ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .answer-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .answer-text {
+            line-height: 1.8;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .sources {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .sources h4 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .source-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .source-text {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .source-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-icon {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            background: #667eea;
+            color: white;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .btn-batch-download {
+            margin-top: 10px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-batch-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .search-results {
+            display: grid;
+            gap: 15px;
+        }
+
+        .document-card {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+        }
+
+        .document-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .document-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .document-excerpt {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .statistics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fff3f3;
+            border-left: 4px solid #ff4d4f;
+            padding: 15px;
+            border-radius: 8px;
+            color: #ff4d4f;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .response-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                white-space: nowrap;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // API 配置
+        const API_BASE_URL = 'http://localhost:8080/api/qa';
+
+        // API 调用函数
+        const API_DOCS_URL = 'http://localhost:8080/api/documents';
+
+        const api = {
+            ask: async (question) => {
+                const response = await axios.post(`${API_BASE_URL}/ask`, { question });
+                return response.data;
+            },
+            search: async (query, limit = 10) => {
+                const response = await axios.get(`${API_BASE_URL}/search`, {
+                    params: { query, limit }
+                });
+                return response.data;
+            },
+            getStatistics: async () => {
+                const response = await axios.get(`${API_BASE_URL}/statistics`);
+                return response.data;
+            },
+            health: async () => {
+                const response = await axios.get(`${API_BASE_URL}/health`);
+                return response.data;
+            },
+            rebuild: async () => {
+                const response = await axios.post(`${API_BASE_URL}/rebuild`);
+                return response.data;
+            },
+            incrementalIndex: async () => {
+                const response = await axios.post(`${API_BASE_URL}/incremental-index`);
+                return response.data;
+            },
+            // 文档管理 API
+            uploadDocument: async (file) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                const response = await axios.post(`${API_DOCS_URL}/upload`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                return response.data;
+            },
+            listDocuments: async () => {
+                const response = await axios.get(`${API_DOCS_URL}/list`);
+                return response.data;
+            },
+            deleteDocument: async (fileName) => {
+                const response = await axios.delete(`${API_DOCS_URL}/${encodeURIComponent(fileName)}`);
+                return response.data;
+            },
+            downloadDocument: async (fileName) => {
+                const response = await axios.get(`${API_DOCS_URL}/download/${encodeURIComponent(fileName)}`, {
+                    responseType: 'blob'
+                });
+                return response.data;
+            },
+            downloadBatch: async (fileNames) => {
+                const response = await axios.post(`${API_DOCS_URL}/download-batch`, fileNames, {
+                    responseType: 'blob'
+                });
+                return response.data;
+            }
+        };
+
+        // 问答组件
+        function QATab() {
+            const [question, setQuestion] = useState('');
+            const [answer, setAnswer] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const handleAsk = async () => {
+                if (!question.trim()) {
+                    alert('请输入问题');
+                    return;
+                }
+
+                setLoading(true);
+                setError(null);
+                setAnswer(null);
+
+                try {
+                    const result = await api.ask(question);
+                    setAnswer(result);
+                } catch (err) {
+                    setError(err.message || '请求失败，请检查服务是否正常运行');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAsk();
+                }
+            };
+
+            // 下载单个文件
+            const handleDownload = async (fileName) => {
+                try {
+                    const blob = await api.downloadDocument(fileName);
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                } catch (err) {
+                    alert('下载失败: ' + err.message);
+                }
+            };
+
+            // 批量下载所有参考文件
+            const handleBatchDownload = async () => {
+                if (!answer || !answer.sources || answer.sources.length === 0) {
+                    return;
+                }
+
+                try {
+                    const blob = await api.downloadBatch(answer.sources);
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `参考文档_${new Date().getTime()}.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                } catch (err) {
+                    alert('批量下载失败: ' + err.message);
+                }
+            };
+
+            return (
+                <div className="qa-section">
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            className="input-field"
+                            placeholder="请输入您的问题..."
+                            value={question}
+                            onChange={(e) => setQuestion(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            disabled={loading}
+                        />
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleAsk}
+                            disabled={loading}
+                        >
+                            {loading ? '思考中...' : '🤔 提问'}
+                        </button>
+                    </div>
+
+                    {loading && (
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <p>AI 正在思考...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="error">
+                            ❌ {error}
+                        </div>
+                    )}
+
+                    {answer && !loading && (
+                        <div className="answer-card">
+                            <h3>💡 回答</h3>
+                            <div className="answer-text">{answer.answer}</div>
+
+                            {answer.sources && answer.sources.length > 0 && (
+                                <div className="sources">
+                                    <h4>📚 参考来源</h4>
+                                    {answer.sources.map((source, index) => (
+                                        <div key={index} className="source-item">
+                                            <span className="source-text">
+                                                {index + 1}. {source}
+                                            </span>
+                                            <div className="source-actions">
+                                                <button
+                                                    className="btn-icon"
+                                                    onClick={() => handleDownload(source)}
+                                                    title="下载此文件"
+                                                >
+                                                    💾 下载
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {answer.sources.length > 1 && (
+                                        <button
+                                            className="btn-batch-download"
+                                            onClick={handleBatchDownload}
+                                        >
+                                            📦 批量下载全部 ({answer.sources.length} 个文件)
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="response-time">
+                                ⏱️ 响应时间: {answer.responseTimeMs}ms
+                            </div>
+                        </div>
+                    )}
+
+                    {!answer && !loading && !error && (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">💭</div>
+                            <p>在上方输入框提出您的问题</p>
+                            <p style={{fontSize: '14px', marginTop: '10px', color: '#ccc'}}>
+                                示例: "文档的主要内容是什么？"
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // 搜索组件
+        function SearchTab() {
+            const [query, setQuery] = useState('');
+            const [results, setResults] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+            const [limit, setLimit] = useState(10);
+
+            const handleSearch = async () => {
+                if (!query.trim()) {
+                    alert('请输入搜索关键词');
+                    return;
+                }
+
+                setLoading(true);
+                setError(null);
+                setResults(null);
+
+                try {
+                    const result = await api.search(query, limit);
+                    setResults(result);
+                } catch (err) {
+                    setError(err.message || '搜索失败');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleSearch();
+                }
+            };
+
+            return (
+                <div className="search-section">
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            className="input-field"
+                            placeholder="搜索关键词..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                            disabled={loading}
+                        />
+                        <select
+                            className="input-field"
+                            style={{flex: '0 0 120px'}}
+                            value={limit}
+                            onChange={(e) => setLimit(Number(e.target.value))}
+                        >
+                            <option value={5}>5 条</option>
+                            <option value={10}>10 条</option>
+                            <option value={20}>20 条</option>
+                            <option value={50}>50 条</option>
+                        </select>
+                        <button
+                            className="btn btn-primary"
+                            onClick={handleSearch}
+                            disabled={loading}
+                        >
+                            {loading ? '搜索中...' : '🔍 搜索'}
+                        </button>
+                    </div>
+
+                    {loading && (
+                        <div className="loading">
+                            <div className="spinner"></div>
+                            <p>搜索中...</p>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="error">
+                            ❌ {error}
+                        </div>
+                    )}
+
+                    {results && !loading && (
+                        <div>
+                            <div style={{marginBottom: '15px', color: '#666'}}>
+                                找到 <strong>{results.total}</strong> 个相关文档
+                            </div>
+
+                            <div className="search-results">
+                                {results.documents.map((doc, index) => (
+                                    <div key={doc.id} className="document-card">
+                                        <div className="document-title">
+                                            📄 {doc.title || `文档 ${index + 1}`}
+                                        </div>
+                                        <div className="document-excerpt">
+                                            {doc.excerpt}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {!results && !loading && !error && (
+                        <div className="empty-state">
+                            <div className="empty-state-icon">🔍</div>
+                            <p>输入关键词搜索相关文档</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // 文档管理组件
+        function DocumentsTab() {
+            const [documents, setDocuments] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [uploading, setUploading] = useState(false);
+            const [uploadProgress, setUploadProgress] = useState(null);
+            const [filterText, setFilterText] = useState('');
+
+            useEffect(() => {
+                loadDocuments();
+            }, []);
+
+            const loadDocuments = async () => {
+                setLoading(true);
+                setError(null);
+
+                try {
+                    console.log('开始加载文档列表...');
+                    const result = await api.listDocuments();
+                    console.log('文档列表响应:', result);
+
+                    if (result.success) {
+                        setDocuments(result.documents || []);
+                        console.log('加载到', result.documents?.length || 0, '个文档');
+                    } else {
+                        const errorMsg = result.message || '获取文档列表失败';
+                        console.error('加载失败:', errorMsg);
+                        setError(errorMsg);
+                    }
+                } catch (err) {
+                    console.error('加载文档列表异常:', err);
+                    const errorMsg = err.response?.data?.message || err.message || '加载文档列表失败，请检查服务是否正常运行';
+                    setError(errorMsg);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleFileSelect = async (event) => {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+
+                setUploading(true);
+                setUploadProgress({ total: files.length, current: 0, success: 0, failed: 0 });
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    try {
+                        await api.uploadDocument(file);
+                        setUploadProgress(prev => ({ ...prev, current: i + 1, success: prev.success + 1 }));
+                    } catch (err) {
+                        setUploadProgress(prev => ({ ...prev, current: i + 1, failed: prev.failed + 1 }));
+                    }
+                }
+
+                setUploading(false);
+                setTimeout(() => setUploadProgress(null), 3000);
+                loadDocuments();
+
+                // 清空文件输入
+                event.target.value = '';
+            };
+
+            const handleDelete = async (fileName) => {
+                if (!confirm(`确定要删除文档 "${fileName}" 吗？\n\n删除后需要重建索引才能生效。`)) {
+                    return;
+                }
+
+                try {
+                    const result = await api.deleteDocument(fileName);
+                    if (result.success) {
+                        alert('文档删除成功！\n建议重建索引以更新搜索结果。');
+                        loadDocuments();
+                    } else {
+                        alert('删除失败: ' + result.message);
+                    }
+                } catch (err) {
+                    alert('删除失败: ' + err.message);
+                }
+            };
+
+            const formatFileSize = (bytes) => {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+                return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+            };
+
+            // 过滤文档列表
+            const filteredDocuments = documents.filter(doc =>
+                doc.fileName.toLowerCase().includes(filterText.toLowerCase())
+            );
+
+            return (
+                <div>
+                    {/* 上传区域 */}
+                    <div style={{marginBottom: '30px', padding: '20px', background: '#f8f9ff', borderRadius: '8px'}}>
+                        <h3 style={{marginBottom: '15px'}}>📤 上传文档</h3>
+                        <input
+                            type="file"
+                            id="fileInput"
+                            multiple
+                            accept=".xlsx,.xls,.docx,.doc,.pptx,.ppt,.pdf,.txt,.md,.html,.xml"
+                            onChange={handleFileSelect}
+                            disabled={uploading}
+                            style={{display: 'none'}}
+                        />
+                        <label htmlFor="fileInput" className="btn btn-primary" style={{display: 'inline-block', cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.5 : 1}}>
+                            {uploading ? '⏳ 上传中...' : '📁 选择文件'}
+                        </label>
+                        <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
+                            支持格式: Excel, Word, PowerPoint, PDF, TXT, MD, HTML, XML
+                        </p>
+
+                        {uploadProgress && (
+                            <div style={{marginTop: '15px', padding: '10px', background: 'white', borderRadius: '4px'}}>
+                                <div>📊 上传进度: {uploadProgress.current}/{uploadProgress.total}</div>
+                                <div style={{fontSize: '14px', color: '#666', marginTop: '5px'}}>
+                                    ✅ 成功: {uploadProgress.success} | ❌ 失败: {uploadProgress.failed}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 文档列表区域 */}
+                    <div>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
+                            <h3>📚 文档列表 {!loading && `(${filteredDocuments.length}/${documents.length})`}</h3>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={loadDocuments}
+                                disabled={loading}
+                            >
+                                {loading ? '⏳ 加载中...' : '🔄 刷新'}
+                            </button>
+                        </div>
+
+                        {/* 文件名过滤输入框 */}
+                        {!loading && documents.length > 0 && (
+                            <div style={{marginBottom: '15px'}}>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="🔍 输入文件名进行过滤..."
+                                    value={filterText}
+                                    onChange={(e) => setFilterText(e.target.value)}
+                                    style={{width: '100%'}}
+                                />
+                                {filterText && (
+                                    <div style={{fontSize: '13px', color: '#666', marginTop: '5px'}}>
+                                        过滤结果: {filteredDocuments.length} / {documents.length} 个文档
+                                        <button
+                                            onClick={() => setFilterText('')}
+                                            style={{
+                                                marginLeft: '10px',
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#667eea',
+                                                cursor: 'pointer',
+                                                textDecoration: 'underline',
+                                                fontSize: '13px'
+                                            }}
+                                        >
+                                            清除过滤
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* 加载状态 */}
+                        {loading && (
+                            <div className="loading">
+                                <div className="spinner"></div>
+                                <p>加载文档列表...</p>
+                            </div>
+                        )}
+
+                        {/* 错误状态 */}
+                        {error && !loading && (
+                            <div className="error">
+                                ❌ {error}
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={loadDocuments}
+                                    style={{marginTop: '10px', display: 'block'}}
+                                >
+                                    重试
+                                </button>
+                            </div>
+                        )}
+
+                        {/* 空状态 */}
+                        {!error && !loading && documents.length === 0 && (
+                            <div className="empty-state">
+                                <div className="empty-state-icon">📁</div>
+                                <p>暂无文档</p>
+                                <p style={{fontSize: '14px', marginTop: '10px', color: '#ccc'}}>
+                                    点击上方按钮上传文档
+                                </p>
+                            </div>
+                        )}
+
+                        {/* 文档列表 */}
+                        {!error && !loading && documents.length > 0 && (
+                            <>
+                            {filteredDocuments.length > 0 ? (
+                            <div style={{display: 'grid', gap: '10px'}}>
+                                {filteredDocuments.map((doc, index) => (
+                                    <div key={index} className="document-card" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                        <div style={{flex: 1}}>
+                                            <div className="document-title">
+                                                📄 {doc.fileName}
+                                            </div>
+                                            <div style={{fontSize: '13px', color: '#999', marginTop: '5px'}}>
+                                                📦 {formatFileSize(doc.fileSize)} |
+                                                📅 {doc.uploadTime} |
+                                                🏷️ {doc.fileType.toUpperCase()}
+                                                {doc.indexed && <span style={{marginLeft: '5px'}}>| ✅ 已索引</span>}
+                                            </div>
+                                        </div>
+                                        <button
+                                            className="btn btn-secondary"
+                                            onClick={() => handleDelete(doc.fileName)}
+                                            style={{
+                                                padding: '8px 16px',
+                                                background: '#ff4d4f',
+                                                color: 'white',
+                                                marginLeft: '10px'
+                                            }}
+                                        >
+                                            🗑️ 删除
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            ) : (
+                                <div className="empty-state">
+                                    <div className="empty-state-icon">🔍</div>
+                                    <p>没有找到匹配 "{filterText}" 的文档</p>
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => setFilterText('')}
+                                        style={{marginTop: '15px'}}
+                                    >
+                                        清除过滤
+                                    </button>
+                                </div>
+                            )}
+                            </>
+                        )}
+
+                        {/* 提示信息 */}
+                        {!error && !loading && documents.length > 0 && (
+                            <div style={{marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', fontSize: '14px'}}>
+                                💡 <strong>提示：</strong>上传或删除文档后，建议前往"统计信息"页面<strong>重建索引</strong>，以便搜索到最新内容。
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // 统计信息组件
+        function StatisticsTab() {
+            const [stats, setStats] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [rebuilding, setRebuilding] = useState(false);
+            const [incrementalIndexing, setIncrementalIndexing] = useState(false);
+            const [rebuildResult, setRebuildResult] = useState(null);
+
+            useEffect(() => {
+                loadStatistics();
+            }, []);
+
+            const loadStatistics = async () => {
+                setLoading(true);
+                setError(null);
+
+                try {
+                    const result = await api.getStatistics();
+                    setStats(result);
+                } catch (err) {
+                    setError(err.message || '加载统计信息失败');
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handleRebuild = async () => {
+                if (!confirm('确定要重建知识库索引吗？\n\n这将重新处理所有文档，可能需要较长时间。')) {
+                    return;
+                }
+
+                setRebuilding(true);
+                setError(null);
+                setRebuildResult(null);
+
+                try {
+                    const result = await api.rebuild();
+                    setRebuildResult(result);
+
+                    if (result.success) {
+                        // 重建成功后刷新统计信息
+                        setTimeout(() => {
+                            loadStatistics();
+                        }, 1000);
+                    }
+                } catch (err) {
+                    setError(err.message || '重建失败');
+                } finally {
+                    setRebuilding(false);
+                }
+            };
+
+            const handleIncrementalIndex = async () => {
+                if (!confirm('确定要执行增量索引吗？\n\n只会处理新增和修改的文档，速度更快。')) {
+                    return;
+                }
+
+                setIncrementalIndexing(true);
+                setError(null);
+                setRebuildResult(null);
+
+                try {
+                    const result = await api.incrementalIndex();
+                    setRebuildResult(result);
+
+                    if (result.success) {
+                        // 增量索引成功后刷新统计信息
+                        setTimeout(() => {
+                            loadStatistics();
+                        }, 1000);
+                    }
+                } catch (err) {
+                    setError(err.message || '增量索引失败');
+                } finally {
+                    setIncrementalIndexing(false);
+                }
+            };
+
+            if (loading) {
+                return (
+                    <div className="loading">
+                        <div className="spinner"></div>
+                        <p>加载统计信息...</p>
+                    </div>
+                );
+            }
+
+            if (error) {
+                return (
+                    <div className="error">
+                        ❌ {error}
+                        <button
+                            className="btn btn-secondary"
+                            onClick={loadStatistics}
+                            style={{marginTop: '10px'}}
+                        >
+                            重试
+                        </button>
+                    </div>
+                );
+            }
+
+            return (
+                <div>
+                    <div className="statistics-grid">
+                        <div className="stat-card">
+                            <div className="stat-value">{stats.documentCount}</div>
+                            <div className="stat-label">📚 文档总数</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">{stats.indexedDocumentCount}</div>
+                            <div className="stat-label">🔍 已索引文档</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="stat-value">
+                                {stats.documentCount > 0
+                                    ? Math.round((stats.indexedDocumentCount / stats.documentCount) * 100)
+                                    : 0}%
+                            </div>
+                            <div className="stat-label">✅ 索引完成度</div>
+                        </div>
+                    </div>
+
+                    {(rebuilding || incrementalIndexing) && (
+                        <div className="loading" style={{marginTop: '30px'}}>
+                            <div className="spinner"></div>
+                            <p>{rebuilding ? '正在重建知识库索引...' : '正在执行增量索引...'}</p>
+                            <p style={{fontSize: '14px', color: '#999', marginTop: '10px'}}>
+                                {rebuilding ? '这可能需要几分钟时间，请耐心等待' : '只处理新增和修改的文档，速度较快'}
+                            </p>
+                        </div>
+                    )}
+
+                    {rebuildResult && !rebuilding && !incrementalIndexing && (
+                        <div className={rebuildResult.success ? 'answer-card' : 'error'} style={{marginTop: '30px'}}>
+                            <h3>{rebuildResult.success ? '✅ 操作成功' : '❌ 操作失败'}</h3>
+                            <div style={{marginTop: '10px'}}>
+                                <p>{rebuildResult.message}</p>
+                                {rebuildResult.success && rebuildResult.processedFiles > 0 && (
+                                    <div style={{marginTop: '15px', fontSize: '14px'}}>
+                                        <p>📄 处理文件: {rebuildResult.processedFiles} 个</p>
+                                        <p>📚 总文档数: {rebuildResult.totalDocuments} 个</p>
+                                        <p>⏱️ 耗时: {(rebuildResult.durationMs / 1000).toFixed(2)} 秒</p>
+                                    </div>
+                                )}
+                                {rebuildResult.suggestion && (
+                                    <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
+                                        💡 {rebuildResult.suggestion}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    <div style={{marginTop: '30px'}}>
+                        <div style={{padding: '20px', background: '#f8f9ff', borderRadius: '8px', marginBottom: '20px'}}>
+                            <h4 style={{marginBottom: '10px', color: '#667eea'}}>📖 索引说明</h4>
+                            <div style={{fontSize: '14px', lineHeight: '1.8', color: '#666'}}>
+                                <p style={{marginBottom: '8px'}}>
+                                    <strong>🔄 增量索引：</strong>只处理新增和修改的文档，性能更优，推荐日常使用
+                                </p>
+                                <p>
+                                    <strong>🔨 重建索引：</strong>完全重建所有文档索引，耗时较长，适用于首次构建或大规模变更
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style={{textAlign: 'center', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap'}}>
+                            <button
+                                className="btn btn-secondary"
+                                onClick={loadStatistics}
+                                disabled={rebuilding || incrementalIndexing}
+                            >
+                                🔄 刷新统计
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleIncrementalIndex}
+                                disabled={rebuilding || incrementalIndexing}
+                                style={{
+                                    background: incrementalIndexing ? '#ccc' : 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                                }}
+                            >
+                                {incrementalIndexing ? '⏳ 索引中...' : '⚡ 增量索引'}
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleRebuild}
+                                disabled={rebuilding || incrementalIndexing}
+                            >
+                                {rebuilding ? '⏳ 重建中...' : '🔨 重建索引'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // 主应用组件
+        function App() {
+            const [activeTab, setActiveTab] = useState('qa');
+            const [health, setHealth] = useState(null);
+
+            useEffect(() => {
+                checkHealth();
+            }, []);
+
+            const checkHealth = async () => {
+                try {
+                    const result = await api.health();
+                    setHealth(result);
+                } catch (err) {
+                    setHealth({ status: 'DOWN', message: '服务连接失败' });
+                }
+            };
+
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <h1>🤖 知识库问答系统</h1>
+                        <p>基于 LocalFileRAG 的智能问答平台</p>
+                        {health && (
+                            <div style={{marginTop: '10px', fontSize: '14px'}}>
+                                状态: {health.status === 'UP' ? '✅ 运行中' : '❌ 离线'}
+                            </div>
+                        )}
+                    </header>
+
+                    <main className="main-content">
+                        <div className="tabs">
+                            <button
+                                className={`tab ${activeTab === 'qa' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('qa')}
+                            >
+                                💬 智能问答
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'search' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('search')}
+                            >
+                                🔍 文档搜索
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'documents' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('documents')}
+                            >
+                                📁 文档管理
+                            </button>
+                            <button
+                                className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('stats')}
+                            >
+                                📊 统计信息
+                            </button>
+                        </div>
+
+                        <div className="tab-content">
+                            {activeTab === 'qa' && <QATab />}
+                            {activeTab === 'search' && <SearchTab />}
+                            {activeTab === 'documents' && <DocumentsTab />}
+                            {activeTab === 'stats' && <StatisticsTab />}
+                        </div>
+                    </main>
+
+                    <footer className="footer">
+                        <p>© 2025 LocalFileRAG Knowledge QA System | Powered by GPT-4o & React</p>
+                    </footer>
+                </div>
+            );
+        }
+
+        // 渲染应用
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
+

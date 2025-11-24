@@ -1,0 +1,256 @@
+# 知识库问答系统配置文件
+# Knowledge QA System Configuration
+
+server:
+  port: 8080
+
+  # Tomcat 配置
+  tomcat:
+    # 临时文件目录
+    basedir: ./temp
+    # 连接超时
+    connection-timeout: 20000
+    # 线程配置
+    threads:
+      max: 200
+      min-spare: 10
+
+spring:
+  application:
+    name: knowledge-qa-system
+
+  # 文件上传配置
+  servlet:
+    multipart:
+      # 单个文件最大大小（默认 1MB，调整为 100MB）
+      max-file-size: 100MB
+      # 单次请求最大大小（默认 10MB，调整为 100MB）
+      max-request-size: 100MB
+      # 是否启用文件上传
+      enabled: true
+      # 临时文件位置（使用自定义目录，避免系统临时目录权限问题）
+      location: ./temp/uploads
+      # 文件写入磁盘的阈值（0 表示始终写入磁盘）
+      file-size-threshold: 0
+
+# 知识库问答系统配置
+knowledge:
+  qa:
+    # 知识库配置
+    knowledge-base:
+      # 知识库存储路径（索引、元数据等）
+      storage-path: ./data/knowledge-base
+
+      # 文档源路径（支持文件夹或单个文件）
+      # 示例：
+      #   - ./data/documents           # 文件夹
+      #   - E:/文档/知识库             # 中文路径
+      #   - ./data/documents/file.xlsx # 单个文件
+      #   - classpath:simpleExcel      # resources下的目录
+      source-path: classpath:simpleExcel
+
+      # 启动时索引模式
+      # true: 完全重建（删除旧索引，重新索引所有文件）
+      # false: 增量索引（只索引新增和修改的文件，默认推荐）
+      # 注意：UI界面可以随时触发完全重建或增量索引
+      rebuild-on-startup: false
+
+      # 是否启用缓存
+      enable-cache: true
+
+    # 向量检索配置
+    vector-search:
+      # 是否启用向量检索
+      # true: 使用语义向量检索（需要模型文件）
+      # false: 使用纯关键词检索
+      enabled: true
+
+      # 模型配置
+      model:
+        # 模型名称（用于日志显示）
+        name: paraphrase-multilingual
+
+        # 模型文件路径（相对于 resources）
+        # 系统会自动查找以下目录中的模型文件：
+        path: /models/paraphrase-multilingual/model.onnx
+
+        # 模型搜索路径（按优先级排序）
+        # 系统会按顺序在这些目录中查找模型文件
+        search-paths:
+          - bge-m3                      # BGE-M3 (推荐, 2024最新)
+          - multilingual-e5-large       # Multilingual E5 Large
+          - bge-large-zh                # BGE Large ZH (中文)
+          - paraphrase-multilingual     # Paraphrase Multilingual
+          - text2vec-base-chinese       # Text2Vec (旧版)
+
+        # 模型文件名（按优先级排序）
+        file-names:
+          - model.onnx                  # 标准模型
+          - model_O2.onnx               # 优化模型
+          - model_quantized.onnx        # 量化模型
+          - model_quint8_avx2.onnx      # AVX2 量化
+
+      # 向量索引存储路径
+      index-path: ./data/vector-index
+
+      # 检索相似度阈值 (0.0-1.0)
+      # 越高越严格，建议 0.3-0.5
+      similarity-threshold: 0.4
+
+      # 检索返回的文档数量
+      top-k: 20
+
+    # LLM 配置
+    llm:
+      # LLM 提供商
+      # 可选值:
+      #   - openai: OpenAI 兼容 API（默认，支持 OpenAI、DeepSeek 等所有兼容服务）
+      #   - mock: Mock 模式（测试用，返回固定回答）
+      #
+      # 说明: OpenAI 客户端支持所有 OpenAI API 兼容的服务
+      #       通过配置不同的 api-url 和 model 即可切换不同的服务
+      provider: openai
+
+      # API Key（从环境变量读取）
+      # DeepSeek: export AI_API_KEY=your-deepseek-key
+      # OpenAI: export OPENAI_API_KEY=your-openai-key
+      api-key: ${AI_API_KEY:}
+
+      # API 端点
+      # DeepSeek: https://api.deepseek.com/v1/chat/completions（默认配置）
+      # OpenAI: https://api.openai.com/v1/chat/completions
+      # 其他兼容服务: 配置相应的 API 端点
+      api-url: https://api.deepseek.com/v1/chat/completions
+
+      # 模型名称
+      # DeepSeek: deepseek-chat（默认配置）
+      # OpenAI: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-4, gpt-3.5-turbo
+      model: deepseek-chat
+
+      # 最大上下文长度（字符数）
+      max-context-length: 20000
+
+      # 单文档最大长度（字符数）
+      max-doc-length: 5000
+
+    # 文档处理配置
+    document:
+      # 支持的文件格式
+      supported-formats:
+        - xlsx
+        - xls
+        - docx
+        - doc
+        - pptx
+        - ppt
+        - pdf
+        - txt
+        - md
+        - html
+        - xml
+
+      # 最大文件大小（MB）
+      max-file-size-mb: 200
+
+      # 最大内容大小（MB）
+      # 超过此大小会强制分块
+      max-content-size-mb: 50
+
+      # 自动分块阈值（MB）
+      # 内容超过此大小会自动启用分块
+      auto-chunk-threshold-mb: 2
+
+      # 文档分块大小（字符数）
+      chunk-size: 2000
+
+      # 文档分块重叠（字符数）
+      chunk-overlap: 400
+
+    # 图片处理配置
+    image-processing:
+      # 图片处理策略:
+      #   - placeholder: 占位符（默认，零依赖）
+      #   - ocr: OCR 文字识别（需要 Tesseract）
+      #   - vision-llm: Vision LLM 语义理解（需要 API Key）
+      #   - hybrid: 混合模式（OCR + Vision LLM）
+      strategy: placeholder
+
+      # 是否启用 OCR
+      enable-ocr: false
+
+      # OCR 配置
+      ocr:
+        # Tesseract 数据路径（从环境变量读取）
+        # Linux/Mac: export TESSDATA_PREFIX=/path/to/tessdata
+        # Windows: set TESSDATA_PREFIX=C:\path\to\tessdata
+        tessdata-path: ${TESSDATA_PREFIX:classpath:tessdata}
+
+        # 识别语言
+        # chi_sim: 简体中文
+        # eng: 英文
+        # chi_sim+eng: 中英文混合
+        language: chi_sim+eng
+
+      # Vision LLM 配置
+      vision-llm:
+        # 是否启用
+        enabled: false
+
+        # API Key（从环境变量读取）
+        # export VISION_LLM_API_KEY=sk-your-api-key
+        api-key: ${VISION_LLM_API_KEY:}
+
+        # 模型名称
+        # - gpt-4-vision-preview (OpenAI)
+        # - claude-3-opus (Anthropic)
+        # - gemini-pro-vision (Google)
+        model: gpt-4-vision-preview
+
+        # API 端点（可选）
+        endpoint: ${VISION_LLM_ENDPOINT:}
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    top.yumbo.ai.rag: INFO
+    org.springframework: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+knowledge:
+  qa:
+    knowledge-base:
+      rebuild-on-startup: true  # 开发时每次重建
+    vector-search:
+      enabled: true
+
+logging:
+  level:
+    top.yumbo.ai.rag: DEBUG
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+knowledge:
+  qa:
+    knowledge-base:
+      rebuild-on-startup: false  # 生产环境使用已有知识库
+    vector-search:
+      enabled: true
+
+logging:
+  level:
+    top.yumbo.ai.rag: INFO
+
