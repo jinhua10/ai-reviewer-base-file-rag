@@ -1,0 +1,52 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+</svg>
+        text-anchor="middle" fill="#2D5BFF">RAG</text>
+  <text x="100" y="175" font-family="Arial, sans-serif" font-size="24" font-weight="bold"
+  <!-- Text RAG -->
+
+  </g>
+    <path d="M 0,-8 L -4,0 L 2,0 L -2,8 L 6,0 L 0,0 Z" fill="#FFC107" stroke="#FFC107" stroke-width="1"/>
+  <g transform="translate(65, 125)">
+  <!-- Lightning bolt (for speed) -->
+
+  </g>
+    <line x1="6" y1="5" x2="0" y2="0" stroke="#10B981" stroke-width="1" opacity="0.6"/>
+    <line x1="-6" y1="5" x2="0" y2="0" stroke="#10B981" stroke-width="1" opacity="0.6"/>
+    <line x1="6" y1="-5" x2="0" y2="0" stroke="#10B981" stroke-width="1" opacity="0.6"/>
+    <line x1="-6" y1="-5" x2="0" y2="0" stroke="#10B981" stroke-width="1" opacity="0.6"/>
+
+    <circle cx="0" cy="0" r="2" fill="#10B981"/>
+    <circle cx="6" cy="5" r="2" fill="#10B981"/>
+    <circle cx="-6" cy="5" r="2" fill="#10B981"/>
+    <circle cx="6" cy="-5" r="2" fill="#10B981"/>
+    <circle cx="-6" cy="-5" r="2" fill="#10B981"/>
+    <!-- Neural connections -->
+
+          fill="#10B981" opacity="0.2" stroke="#10B981" stroke-width="2"/>
+    <path d="M 0,-15 Q -8,-15 -12,-10 Q -15,-5 -15,0 Q -15,8 -10,12 Q -5,15 0,15 Q 5,15 10,12 Q 15,8 15,0 Q 15,-5 12,-10 Q 8,-15 0,-15"
+    <!-- Brain outline -->
+  <g transform="translate(120, 120)">
+  <!-- AI Brain Icon -->
+
+  </g>
+    </g>
+      <line x1="6" y1="6" x2="13" y2="13" stroke="#FF6B35" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="0" cy="0" r="8" fill="none" stroke="#FF6B35" stroke-width="2.5"/>
+    <g transform="translate(20, 45)">
+    <!-- Search Icon -->
+
+    <line x1="8" y1="35" x2="35" y2="35" stroke="#2D5BFF" stroke-width="2" stroke-linecap="round"/>
+    <line x1="8" y1="25" x2="42" y2="25" stroke="#2D5BFF" stroke-width="2" stroke-linecap="round"/>
+    <line x1="8" y1="15" x2="42" y2="15" stroke="#2D5BFF" stroke-width="2" stroke-linecap="round"/>
+    <!-- Document Lines -->
+
+    <rect x="0" y="0" width="50" height="70" rx="3" fill="none" stroke="#2D5BFF" stroke-width="2.5"/>
+    <rect x="0" y="0" width="50" height="70" rx="3" fill="#2D5BFF" opacity="0.2"/>
+    <!-- Document -->
+  <g transform="translate(60, 50)">
+  <!-- Document Icon -->
+
+  <circle cx="100" cy="100" r="85" fill="none" stroke="#2D5BFF" stroke-width="2"/>
+  <circle cx="100" cy="100" r="95" fill="#2D5BFF" opacity="0.1"/>
+  <!-- Background Circle -->
+
