@@ -1,5 +1,6 @@
-# AI Reviewer Base File RAG
-
+<div align="center">
+  <img src="docs/images/logo-banner.svg" alt="AI Reviewer Base File RAG" width="400"/>
+</div>
 <div align="center">
 
 **🚀 零外部依赖的本地文件 RAG 检索系统 | 基于 Lucene 的企业级文档检索框架**
@@ -19,7 +20,6 @@
 </div>
 
 ---
-
 ## 📖 项目简介
 
 **AI Reviewer Base File RAG** 是一个完全本地化的 RAG（Retrieval-Augmented Generation）检索系统，基于 Apache Lucene 实现高性能文档索引与检索，无需向量数据库和 Embedding API，完美支持企业级隐私保护和成本控制需求。

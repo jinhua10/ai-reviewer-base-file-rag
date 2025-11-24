@@ -1,5 +1,6 @@
-# AI Reviewer Base File RAG
-
+<div align="center">
+  <img src="docs/images/logo-banner.svg" alt="AI Reviewer Base File RAG" width="400"/>
+</div>
 <div align="center">
 
 **🚀 Zero External Dependencies Local File RAG Retrieval System | Enterprise-Grade Document Retrieval Framework Based on Lucene**
