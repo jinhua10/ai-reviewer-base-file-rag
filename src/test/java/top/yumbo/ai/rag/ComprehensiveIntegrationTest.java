@@ -1,38 +1,46 @@
 package top.yumbo.ai.rag;
+
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
-import top.yumbo.ai.rag.config.RAGConfiguration;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.util.DocumentUtils;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
 import static org.junit.jupiter.api.Assertions.*;
+
+@Slf4j
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ComprehensiveIntegrationTest {
     private static LocalFileRAG rag;
     private static Path tempDir;
+
     @BeforeAll
     static void setUpAll() throws Exception {
         tempDir = Files.createTempDirectory("rag-test");
         rag = LocalFileRAG.builder()
-            .storagePath(tempDir.toString())
-            .enableCache(true)
-            .enableCompression(true)
-            .build();
+                .storagePath(tempDir.toString())
+                .enableCache(true)
+                .enableCompression(true)
+                .build();
     }
+
     @AfterAll
-    static void tearDownAll() throws Exception {
+    static void tearDownAll() {
         if (rag != null) {
             rag.close();
         }
         deleteDirectory(tempDir.toFile());
     }
+
     @Test
     @Order(1)
-    void testIndexDocuments() throws Exception {
+    void testIndexDocuments() {
         Document doc1 = DocumentUtils.fromText("Java Programming", "Learn Java basics");
         Document doc2 = DocumentUtils.fromText("Python Guide", "Python for beginners");
         Document doc3 = DocumentUtils.fromText("JavaScript Tutorial", "JS fundamentals");
@@ -44,24 +52,26 @@ class ComprehensiveIntegrationTest {
         assertNotNull(id2);
         assertNotNull(id3);
     }
+
     @Test
     @Order(2)
-    void testSearchDocuments() throws Exception {
+    void testSearchDocuments() {
         Query query = Query.builder()
-            .queryText("Java")
-            .limit(10)
-            .build();
+                .queryText("Java")
+                .limit(10)
+                .build();
         SearchResult result = rag.search(query);
         assertTrue(result.getTotalHits() > 0);
         assertTrue(result.getDocuments().get(0).getTitle().contains("Java"));
     }
+
     @Test
     @Order(3)
-    void testGetDocument() throws Exception {
+    void testGetDocument() {
         Query query = Query.builder()
-            .queryText("Python")
-            .limit(1)
-            .build();
+                .queryText("Python")
+                .limit(1)
+                .build();
         SearchResult result = rag.search(query);
         if (result.getTotalHits() > 0) {
             String docId = result.getDocuments().get(0).getId();
@@ -70,13 +80,14 @@ class ComprehensiveIntegrationTest {
             assertEquals("Python Guide", doc.getTitle());
         }
     }
+
     @Test
     @Order(4)
-    void testUpdateDocument() throws Exception {
+    void testUpdateDocument() {
         Query query = Query.builder()
-            .queryText("JavaScript")
-            .limit(1)
-            .build();
+                .queryText("JavaScript")
+                .limit(1)
+                .build();
         SearchResult result = rag.search(query);
         if (result.getTotalHits() > 0) {
             String docId = result.getDocuments().get(0).getId();
@@ -89,13 +100,14 @@ class ComprehensiveIntegrationTest {
             assertEquals("JS Advanced", retrieved.getTitle());
         }
     }
+
     @Test
     @Order(5)
-    void testDeleteDocument() throws Exception {
+    void testDeleteDocument() {
         Query query = Query.builder()
-            .queryText("Python")
-            .limit(1)
-            .build();
+                .queryText("Python")
+                .limit(1)
+                .build();
         SearchResult result = rag.search(query);
         if (result.getTotalHits() > 0) {
             String docId = result.getDocuments().get(0).getId();
@@ -106,6 +118,7 @@ class ComprehensiveIntegrationTest {
             assertNull(retrieved);
         }
     }
+
     @Test
     @Order(6)
     void testGetStatistics() {
@@ -114,29 +127,31 @@ class ComprehensiveIntegrationTest {
         assertTrue(stats.getDocumentCount() >= 0);
         assertTrue(stats.getIndexedDocumentCount() >= 0);
     }
+
     @Test
     @Order(7)
-    void testSearchWithPagination() throws Exception {
+    void testSearchWithPagination() {
         for (int i = 0; i < 20; i++) {
             Document doc = DocumentUtils.fromText("Doc " + i, "Content " + i);
             rag.index(doc);
         }
         rag.commit();
         Query query = Query.builder()
-            .queryText("Content")
-            .limit(10)
-            .build();
+                .queryText("Content")
+                .limit(10)
+                .build();
         SearchResult result = rag.search(query);
         assertTrue(result.getTotalHits() >= 20);
         assertTrue(result.getDocuments().size() <= 10);
     }
+
     @Test
     @Order(8)
     void testCachePerformance() throws Exception {
         Query query = Query.builder()
-            .queryText("test query for cache")
-            .limit(5)
-            .build();
+                .queryText("test query for cache")
+                .limit(5)
+                .build();
 
         // Warm-up query to initialize any lazy components
         rag.search(query);
@@ -157,21 +172,23 @@ class ComprehensiveIntegrationTest {
         // Log the durations for debugging
         System.out.println("First search duration: " + duration1 / 1_000_000.0 + "ms");
         System.out.println("Second search duration: " + duration2 / 1_000_000.0 + "ms");
-        System.out.println("Speed improvement: " + ((double)duration1 / duration2) + "x");
+        System.out.println("Speed improvement: " + ((double) duration1 / duration2) + "x");
 
         // More lenient assertion - second search should be at least 20% faster
         assertTrue(duration2 < duration1 * 0.8,
-            String.format("Second search should be faster due to cache. First: %.2fms, Second: %.2fms",
-                duration1 / 1_000_000.0, duration2 / 1_000_000.0));
+                String.format("Second search should be faster due to cache. First: %.2fms, Second: %.2fms",
+                        duration1 / 1_000_000.0, duration2 / 1_000_000.0));
     }
+
     @Test
     @Order(9)
     void testOptimizeIndex() {
         assertDoesNotThrow(() -> rag.optimizeIndex());
     }
+
     @Test
     @Order(10)
-    void testBatchIndexing() throws Exception {
+    void testBatchIndexing() {
         for (int i = 0; i < 100; i++) {
             Document doc = DocumentUtils.fromText("Batch Doc " + i, "Batch content " + i);
             rag.index(doc);
@@ -183,6 +200,7 @@ class ComprehensiveIntegrationTest {
         var stats = rag.getStatistics();
         assertTrue(stats.getIndexedDocumentCount() >= 100);
     }
+
     private static void deleteDirectory(File dir) {
         if (dir.exists()) {
             File[] files = dir.listFiles();
@@ -191,11 +209,17 @@ class ComprehensiveIntegrationTest {
                     if (file.isDirectory()) {
                         deleteDirectory(file);
                     } else {
-                        file.delete();
+                        boolean delete = file.delete();
+                        if (!delete) {
+                            log.error("Failed to delete file: " + file.getAbsolutePath());
+                        }
                     }
                 }
             }
-            dir.delete();
+            boolean delete = dir.delete();
+            if (!delete) {
+                log.error("Failed to delete dir: " + dir.getAbsolutePath());
+            }
         }
     }
 }
