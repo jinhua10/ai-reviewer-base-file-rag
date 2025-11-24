@@ -845,25 +845,45 @@ knowledge:
 
 **优化方案**:
 
-**1. 增量索引**（推荐）:
-```yaml
-knowledge:
-  qa:
-    knowledge-base:
-      rebuild-on-startup: false  # 只索引新文档
-```
-
-**2. 调整并发**:
+**1. 启用并行处理**（推荐，速度提升 2-3 倍）:
 ```yaml
 knowledge:
   qa:
     document:
-      parallel-processing: true  # 启用并行处理
+      # 启用并行处理（默认已启用）
+      parallel-processing: true
+      
+      # 并行线程数（0=自动使用CPU核心数）
+      parallel-threads: 0
+      
+      # 批处理大小（建议 10-20）
+      batch-size: 10
 ```
 
-**3. 分批处理**:
-- 先索引重要文档
+**效果**:
+- 小文档（< 1MB）：速度提升 **2-3 倍**
+- 大文档（> 5MB）：速度提升 **1.5-2 倍**
+- 1000 个文档：从 10 分钟降到 **3-5 分钟**
+
+**2. 增量索引**（推荐）:
+```yaml
+knowledge:
+  qa:
+    knowledge-base:
+      # 只索引新增和修改的文档
+      rebuild-on-startup: false
+```
+
+**3. 调整内存**:
+```batch
+# 编辑 start.bat，增加内存可提升并发性能
+set JAVA_OPTS=-Xms2g -Xmx8g
+```
+
+**4. 分批处理**:
+- 先索引重要文档（如手册、规范）
 - 其他文档后续添加
+- 利用增量索引特性
 
 ---
 

@@ -200,6 +200,21 @@ public class KnowledgeQAProperties {
          * 文档分块重叠（字符数）
          */
         private int chunkOverlap = 400;
+
+        /**
+         * 是否启用并行处理
+         */
+        private boolean parallelProcessing = true;
+
+        /**
+         * 并行处理线程数（0=自动，使用 CPU 核心数）
+         */
+        private int parallelThreads = 0;
+
+        /**
+         * 批处理大小（文档数）
+         */
+        private int batchSize = 10;
     }
 
     /**

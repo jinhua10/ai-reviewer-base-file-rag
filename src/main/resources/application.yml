@@ -166,6 +166,20 @@ knowledge:
       # 文档分块重叠（字符数）
       chunk-overlap: 400
 
+      # 并行处理配置
+      # 是否启用并行处理（文档数量 > 5 时自动启用，可显著提升索引速度）
+      parallel-processing: true
+
+      # 并行处理线程数
+      # 0 = 自动（使用 CPU 核心数）
+      # 建议值: CPU 核心数或略少（如 4核设置为 3-4）
+      parallel-threads: 0
+
+      # 批处理大小（文档数）
+      # 每批处理多少个文档后提交一次
+      # 建议值: 10-20
+      batch-size: 10
+
     # 图片处理配置
     image-processing:
       # 图片处理策略:

@@ -135,61 +135,88 @@ public class KnowledgeBaseService {
 
             // 6. 处理需要更新的文档
             log.info("\n📝 开始处理文档...");
-            int successCount = 0;
-            int failedCount = 0;
-            List<Document> batchDocuments = new ArrayList<>();
+
+            // 检查是否启用并行处理
+            boolean useParallel = properties.getDocument().isParallelProcessing()
+                && filesToUpdate.size() > 5;
+
+            if (useParallel) {
+                int threads = properties.getDocument().getParallelThreads();
+                if (threads == 0) {
+                    threads = Runtime.getRuntime().availableProcessors();
+                }
+                log.info("🚀 使用并行处理模式（{} 个线程）", threads);
+            } else {
+                log.info("📝 使用串行处理模式");
+            }
+
+            int successCount;
+            int failedCount;
 
             optimizer.logMemoryUsage("增量索引开始前");
 
-            for (int i = 0; i < filesToUpdate.size(); i++) {
-                File file = filesToUpdate.get(i);
+            if (useParallel) {
+                // 并行处理
+                var result_counts = processDocumentsInParallel(
+                    filesToUpdate, rag, embeddingEngine, vectorIndexEngine);
+                successCount = result_counts[0];
+                failedCount = result_counts[1];
+            } else {
+                // 串行处理（原有逻辑）
+                successCount = 0;
+                failedCount = 0;
+                List<Document> batchDocuments = new ArrayList<>();
 
-                try {
-                    // 处理文档
-                    List<Document> docs = processDocumentOptimized(
-                        file, rag, embeddingEngine, vectorIndexEngine);
+                for (int i = 0; i < filesToUpdate.size(); i++) {
+                    File file = filesToUpdate.get(i);
 
-                    if (docs != null && !docs.isEmpty()) {
-                        batchDocuments.addAll(docs);
-                        successCount++;
+                    try {
+                        // 处理文档
+                        List<Document> docs = processDocumentOptimized(
+                            file, rag, embeddingEngine, vectorIndexEngine);
 
-                        // 标记文件已索引
-                        fileTrackingService.markAsIndexed(file);
+                        if (docs != null && !docs.isEmpty()) {
+                            batchDocuments.addAll(docs);
+                            successCount++;
 
-                        // 估算内存使用
-                        long estimatedMemory = docs.stream()
-                            .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
-                            .sum();
-                        optimizer.addBatchMemory(estimatedMemory);
+                            // 标记文件已索引
+                            fileTrackingService.markAsIndexed(file);
 
-                        // 检查是否需要批处理或GC
-                        if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                            log.info("📦 批处理: {} 个文档 ({} / {})",
-                                batchDocuments.size(), i + 1, filesToUpdate.size());
+                            // 估算内存使用
+                            long estimatedMemory = docs.stream()
+                                .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
+                                .sum();
+                            optimizer.addBatchMemory(estimatedMemory);
 
-                            rag.commit();
-                            batchDocuments.clear();
-                            optimizer.resetBatchMemory();
-                            optimizer.checkAndTriggerGC();
+                            // 检查是否需要批处理或GC
+                            if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
+                                log.info("📦 批处理: {} 个文档 ({} / {})",
+                                    batchDocuments.size(), i + 1, filesToUpdate.size());
+
+                                rag.commit();
+                                batchDocuments.clear();
+                                optimizer.resetBatchMemory();
+                                optimizer.checkAndTriggerGC();
+                            }
                         }
+
+                    } catch (Exception e) {
+                        log.error("❌ 处理文件失败: {}", file.getName(), e);
+                        failedCount++;
                     }
 
-                } catch (Exception e) {
-                    log.error("❌ 处理文件失败: {}", file.getName(), e);
-                    failedCount++;
+                    // 定期打印进度和内存状态
+                    if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
+                        optimizer.logMemoryUsage(
+                            String.format("进度 %d/%d", i + 1, filesToUpdate.size()));
+                    }
                 }
 
-                // 定期打印进度和内存状态
-                if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
-                    optimizer.logMemoryUsage(
-                        String.format("进度 %d/%d", i + 1, filesToUpdate.size()));
+                // 处理剩余的批次
+                if (!batchDocuments.isEmpty()) {
+                    log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
+                    rag.commit();
                 }
-            }
-
-            // 处理剩余的批次
-            if (!batchDocuments.isEmpty()) {
-                log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
-                rag.commit();
             }
 
             // 7. 填充构建结果
@@ -290,10 +317,6 @@ public class KnowledgeBaseService {
             log.info("\n📝 开始处理文档...");
             long processStartTime = System.currentTimeMillis();
 
-            int successCount = 0;
-            int failedCount = 0;
-            List<Document> batchDocuments = new ArrayList<>();
-
             // 初始化向量检索引擎（如果启用）
             LocalEmbeddingEngine embeddingEngine = null;
             SimpleVectorIndexEngine vectorIndexEngine = null;
@@ -311,60 +334,97 @@ public class KnowledgeBaseService {
                 }
             }
 
+            // 检查是否启用并行处理
+            boolean useParallel = properties.getDocument().isParallelProcessing()
+                && files.size() > 5;
+
+            if (useParallel) {
+                int threads = properties.getDocument().getParallelThreads();
+                if (threads == 0) {
+                    threads = Runtime.getRuntime().availableProcessors();
+                }
+                log.info("🚀 使用并行处理模式（{} 个线程）", threads);
+            } else {
+                log.info("📝 使用串行处理模式");
+            }
+
+            int successCount;
+            int failedCount;
+
             // 记录初始内存
             optimizer.logMemoryUsage("开始处理前");
 
-            for (int i = 0; i < files.size(); i++) {
-                File file = files.get(i);
+            if (useParallel) {
+                // 并行处理
+                var result_counts = processDocumentsInParallel(
+                    files, rag, embeddingEngine, vectorIndexEngine);
+                successCount = result_counts[0];
+                failedCount = result_counts[1];
 
-                try {
-                    // 处理文档并收集到批次
-                    List<Document> docs = processDocumentOptimized(
-                        file, rag, embeddingEngine, vectorIndexEngine);
+                // 标记文件已索引
+                if (rebuild) {
+                    for (File file : files) {
+                        fileTrackingService.markAsIndexed(file);
+                    }
+                }
+            } else {
+                // 串行处理（原有逻辑）
+                successCount = 0;
+                failedCount = 0;
+                List<Document> batchDocuments = new ArrayList<>();
 
-                    if (docs != null && !docs.isEmpty()) {
-                        batchDocuments.addAll(docs);
-                        successCount++;
+                for (int i = 0; i < files.size(); i++) {
+                    File file = files.get(i);
 
-                        // 标记文件已索引（用于增量索引）
-                        if (rebuild) {
-                            fileTrackingService.markAsIndexed(file);
+                    try {
+                        // 处理文档并收集到批次
+                        List<Document> docs = processDocumentOptimized(
+                            file, rag, embeddingEngine, vectorIndexEngine);
+
+                        if (docs != null && !docs.isEmpty()) {
+                            batchDocuments.addAll(docs);
+                            successCount++;
+
+                            // 标记文件已索引（用于增量索引）
+                            if (rebuild) {
+                                fileTrackingService.markAsIndexed(file);
+                            }
+
+                            // 估算内存使用
+                            long estimatedMemory = docs.stream()
+                                .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
+                                .sum();
+                            optimizer.addBatchMemory(estimatedMemory);
+
+                            // 检查是否需要批处理或GC
+                            if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
+                                log.info("📦 批处理: {} 个文档 ({} / {})",
+                                    batchDocuments.size(), i + 1, files.size());
+
+                                rag.commit();
+                                batchDocuments.clear();
+                                optimizer.resetBatchMemory();
+                                optimizer.checkAndTriggerGC();
+                            }
                         }
 
-                        // 估算内存使用
-                        long estimatedMemory = docs.stream()
-                            .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
-                            .sum();
-                        optimizer.addBatchMemory(estimatedMemory);
-
-                        // 检查是否需要批处理或GC
-                        if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                            log.info("📦 批处理: {} 个文档 ({} / {})",
-                                batchDocuments.size(), i + 1, files.size());
-
-                            rag.commit();
-                            batchDocuments.clear();
-                            optimizer.resetBatchMemory();
-                            optimizer.checkAndTriggerGC();
-                        }
+                    } catch (Exception e) {
+                        log.error("❌ 处理文件失败: {}", file.getName(), e);
+                        failedCount++;
                     }
 
-                } catch (Exception e) {
-                    log.error("❌ 处理文件失败: {}", file.getName(), e);
-                    failedCount++;
+                    // 定期打印进度和内存状态
+                    if ((i + 1) % 5 == 0 || i == files.size() - 1) {
+                        optimizer.logMemoryUsage(
+                            String.format("进度 %d/%d", i + 1, files.size()));
+                    }
                 }
 
-                // 定期打印进度和内存状态
-                if ((i + 1) % 5 == 0 || i == files.size() - 1) {
-                    optimizer.logMemoryUsage(
-                        String.format("进度 %d/%d", i + 1, files.size()));
+                // 处理剩余的批次
+                if (!batchDocuments.isEmpty()) {
+                    log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
+                    rag.commit();
                 }
-            }
-
-            // 处理剩余的批次
-            if (!batchDocuments.isEmpty()) {
-                log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
-                rag.commit();
             }
 
             long processEndTime = System.currentTimeMillis();
@@ -721,6 +781,123 @@ public class KnowledgeBaseService {
 
         return supportedFormats.stream()
             .anyMatch(format -> fileName.endsWith("." + format));
+    }
+
+    /**
+     * 并行处理文档列表
+     *
+     * @return int[] {successCount, failedCount}
+     */
+    private int[] processDocumentsInParallel(
+            List<File> filesToProcess,
+            LocalFileRAG rag,
+            LocalEmbeddingEngine embeddingEngine,
+            SimpleVectorIndexEngine vectorIndexEngine) {
+
+        int threads = properties.getDocument().getParallelThreads();
+        if (threads == 0) {
+            threads = Runtime.getRuntime().availableProcessors();
+        }
+
+        int batchSize = properties.getDocument().getBatchSize();
+
+        java.util.concurrent.atomic.AtomicInteger successCount =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+        java.util.concurrent.atomic.AtomicInteger failedCount =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+        java.util.concurrent.atomic.AtomicInteger processedCount =
+            new java.util.concurrent.atomic.AtomicInteger(0);
+
+        List<java.util.concurrent.Future<?>> futures = new ArrayList<>();
+        int totalFiles = filesToProcess.size();
+
+        // 使用 try-with-resources 管理线程池
+        try (java.util.concurrent.ExecutorService executor =
+                java.util.concurrent.Executors.newFixedThreadPool(threads)) {
+
+            // 分批处理文件
+            for (int i = 0; i < totalFiles; i += batchSize) {
+                final int batchEnd = Math.min(i + batchSize, totalFiles);
+                List<File> batch = filesToProcess.subList(i, batchEnd);
+
+                java.util.concurrent.Future<?> future = executor.submit(() -> {
+                    // 每个线程独立的文档列表
+                    List<Document> threadDocuments = new ArrayList<>();
+
+                    for (File file : batch) {
+                        try {
+                            // 处理文档
+                            List<Document> docs = processDocumentOptimized(
+                                file, rag, embeddingEngine, vectorIndexEngine);
+
+                            if (docs != null && !docs.isEmpty()) {
+                                threadDocuments.addAll(docs);
+                                successCount.incrementAndGet();
+
+                                // 标记文件已索引
+                                fileTrackingService.markAsIndexed(file);
+                            }
+
+                        } catch (Exception e) {
+                            log.error("❌ 处理文件失败: {}", file.getName(), e);
+                            failedCount.incrementAndGet();
+                        }
+
+                        // 更新进度
+                        int current = processedCount.incrementAndGet();
+                        if (current % 10 == 0 || current == totalFiles) {
+                            log.info("📊 处理进度: {}/{} ({} 成功, {} 失败)",
+                                current, totalFiles,
+                                successCount.get(), failedCount.get());
+
+                            optimizer.logMemoryUsage(
+                                String.format("并行处理 %d/%d", current, totalFiles));
+                        }
+                    }
+
+                    // 批次提交（使用 RAG 的同步机制）
+                    synchronized (rag) {
+                        if (!threadDocuments.isEmpty()) {
+                            log.info("📦 提交批次: {} 个文档", threadDocuments.size());
+                            rag.commit();
+                        }
+                    }
+
+                    // 定期触发GC
+                    if (processedCount.get() % (batchSize * 3) == 0) {
+                        optimizer.checkAndTriggerGC();
+                    }
+                });
+
+                futures.add(future);
+            }
+
+            // 等待所有任务完成
+            for (java.util.concurrent.Future<?> future : futures) {
+                try {
+                    future.get();
+                } catch (Exception e) {
+                    log.error("❌ 批处理任务失败", e);
+                }
+            }
+
+            // 关闭线程池
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
+
+        } // try-with-resources 自动关闭 executor
+
+        // 最后提交一次
+        rag.commit();
+
+        return new int[]{successCount.get(), failedCount.get()};
     }
 
     /**
