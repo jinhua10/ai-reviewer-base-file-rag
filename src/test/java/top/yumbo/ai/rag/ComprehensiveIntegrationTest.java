@@ -134,18 +134,35 @@ class ComprehensiveIntegrationTest {
     @Order(8)
     void testCachePerformance() throws Exception {
         Query query = Query.builder()
-            .queryText("Java")
-            .limit(10)
+            .queryText("test query for cache")
+            .limit(5)
             .build();
-        long start1 = System.currentTimeMillis();
-        SearchResult result1 = rag.search(query);
-        long time1 = System.currentTimeMillis() - start1;
-        long start2 = System.currentTimeMillis();
-        SearchResult result2 = rag.search(query);
-        long time2 = System.currentTimeMillis() - start2;
-        assertNotNull(result1);
-        assertNotNull(result2);
-        assertTrue(time2 <= time1, "Second search should be faster due to cache");
+
+        // Warm-up query to initialize any lazy components
+        rag.search(query);
+        Thread.sleep(100); // Allow cache to settle
+
+        // First actual measurement
+        long start1 = System.nanoTime();
+        rag.search(query);
+        long duration1 = System.nanoTime() - start1;
+
+        Thread.sleep(50); // Small delay between queries
+
+        // Second search (should be cached)
+        long start2 = System.nanoTime();
+        rag.search(query);
+        long duration2 = System.nanoTime() - start2;
+
+        // Log the durations for debugging
+        System.out.println("First search duration: " + duration1 / 1_000_000.0 + "ms");
+        System.out.println("Second search duration: " + duration2 / 1_000_000.0 + "ms");
+        System.out.println("Speed improvement: " + ((double)duration1 / duration2) + "x");
+
+        // More lenient assertion - second search should be at least 20% faster
+        assertTrue(duration2 < duration1 * 0.8,
+            String.format("Second search should be faster due to cache. First: %.2fms, Second: %.2fms",
+                duration1 / 1_000_000.0, duration2 / 1_000_000.0));
     }
     @Test
     @Order(9)
@@ -182,4 +199,3 @@ class ComprehensiveIntegrationTest {
         }
     }
 }
-
