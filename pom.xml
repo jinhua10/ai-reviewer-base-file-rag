@@ -43,20 +43,29 @@
         <url>https://github.com/jinhua10/ai-reviewer-base-file-rag</url>
     </scm>
     <distributionManagement>
+        <!--
+            Central Portal 发布配置
+            使用新的 Maven Central Publishing API
+            参考: https://central.sonatype.com/publish/publish-guide
+        -->
         <repository>
             <id>${serverId}</id>
-            <url>https://central.sonatype.com/service/local/staging/deploy/maven2</url>
+            <name>Central Repository</name>
+            <url>https://central.sonatype.com/api/v1/publisher/upload</url>
         </repository>
+        <!-- Central Portal 目前不支持 SNAPSHOT -->
+        <!--
         <snapshotRepository>
             <id>${serverId}</id>
             <url>https://central.sonatype.com/content/repositories/snapshots</url>
         </snapshotRepository>
+        -->
     </distributionManagement>
 
     <!-- 编码配置 - 解决中文乱码 -->
     <properties>
         <projectUrl>https://github.com/jinhua10/ai-reviewer-base-file-rag.git</projectUrl>
-        <serverId>sonatype</serverId><!-- 服务id -->
+        <serverId>central</serverId><!-- Central Portal 服务 ID -->
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -401,25 +410,15 @@
                 </executions>
             </plugin>
 
-            <!-- Nexus Staging 部署插件 -->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.13</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>${serverId}</serverId>
-                    <!--
-                        注意：如果你的 OSSRH 账号是 2021年2月24日之后注册的，
-                        需要使用新的 Nexus URL: https://s01.oss.sonatype.org/
-                        否则使用旧的 URL: https://oss.sonatype.org/
-                    -->
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <!-- 如果是新账号，取消下面一行的注释 -->
-                    <!-- <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl> -->
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
+            <!--
+                Central Portal 不需要 nexus-staging-maven-plugin
+                直接使用 maven-deploy-plugin 即可
+
+                发布流程：
+                1. mvn clean deploy -DskipFatJar=true
+                2. 登录 https://central.sonatype.com
+                3. 在 Deployments 页面查看和发布
+            -->
 
             <!-- Maven 编译插件 - UTF-8 编码 -->
             <plugin>
