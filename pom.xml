@@ -362,6 +362,7 @@
                         <exclude>models/**/*.safetensors</exclude>
                         <exclude>models/**/*.pt</exclude>
                         <exclude>models/**/*.pth</exclude>
+                        <exclude>simpleExcel</exclude>
                     </excludes>
                 </configuration>
                 <executions>
