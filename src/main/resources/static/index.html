@@ -15,6 +15,13 @@
     <!-- Axios for API calls -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
+    <!-- Marked.js for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <!-- Ant Design CSS -->
     <link rel="stylesheet" href="https://unpkg.com/antd@5/dist/reset.css" />
 
@@ -180,7 +187,117 @@
         .answer-text {
             line-height: 1.8;
             color: #333;
-            white-space: pre-wrap;
+        }
+
+        /* Markdown 样式 */
+        .answer-text h1,
+        .answer-text h2,
+        .answer-text h3,
+        .answer-text h4,
+        .answer-text h5,
+        .answer-text h6 {
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+
+        .answer-text h1 {
+            font-size: 2em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.3em;
+        }
+
+        .answer-text h2 {
+            font-size: 1.5em;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 0.3em;
+        }
+
+        .answer-text h3 {
+            font-size: 1.25em;
+        }
+
+        .answer-text p {
+            margin-bottom: 16px;
+        }
+
+        .answer-text code {
+            background-color: rgba(175, 184, 193, 0.2);
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 85%;
+            padding: 0.2em 0.4em;
+            margin: 0;
+        }
+
+        .answer-text pre {
+            background-color: #f6f8fa;
+            border-radius: 6px;
+            padding: 16px;
+            overflow: auto;
+            margin-bottom: 16px;
+        }
+
+        .answer-text pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 100%;
+            line-height: 1.45;
+        }
+
+        .answer-text blockquote {
+            border-left: 4px solid #dfe2e5;
+            color: #6a737d;
+            padding-left: 16px;
+            margin: 0 0 16px 0;
+        }
+
+        .answer-text ul,
+        .answer-text ol {
+            margin-bottom: 16px;
+            padding-left: 2em;
+        }
+
+        .answer-text li {
+            margin-bottom: 8px;
+        }
+
+        .answer-text table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 16px;
+        }
+
+        .answer-text table th,
+        .answer-text table td {
+            border: 1px solid #dfe2e5;
+            padding: 8px 12px;
+        }
+
+        .answer-text table th {
+            background-color: #f6f8fa;
+            font-weight: 600;
+        }
+
+        .answer-text a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .answer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .answer-text img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .answer-text hr {
+            border: none;
+            border-top: 2px solid #e0e0e0;
+            margin: 24px 0;
         }
 
         .sources {
@@ -461,6 +578,27 @@
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState(null);
 
+            // 配置 marked
+            useEffect(() => {
+                if (typeof marked !== 'undefined') {
+                    marked.setOptions({
+                        breaks: true,
+                        gfm: true,
+                        headerIds: true,
+                        mangle: false
+                    });
+                }
+            }, []);
+
+            // 当答案更新时，高亮代码块
+            useEffect(() => {
+                if (answer && typeof hljs !== 'undefined') {
+                    document.querySelectorAll('.answer-text pre code').forEach((block) => {
+                        hljs.highlightElement(block);
+                    });
+                }
+            }, [answer]);
+
             const handleAsk = async () => {
                 if (!question.trim()) {
                     alert('请输入问题');
@@ -563,7 +701,14 @@
                     {answer && !loading && (
                         <div className="answer-card">
                             <h3>💡 回答</h3>
-                            <div className="answer-text">{answer.answer}</div>
+                            <div
+                                className="answer-text"
+                                dangerouslySetInnerHTML={{
+                                    __html: typeof marked !== 'undefined'
+                                        ? marked.parse(answer.answer)
+                                        : answer.answer
+                                }}
+                            ></div>
 
                             {answer.sources && answer.sources.length > 0 && (
                                 <div className="sources">

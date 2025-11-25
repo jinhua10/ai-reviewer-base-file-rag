@@ -17,6 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 知识库构建服务
@@ -801,26 +806,23 @@ public class KnowledgeBaseService {
 
         int batchSize = properties.getDocument().getBatchSize();
 
-        java.util.concurrent.atomic.AtomicInteger successCount =
-            new java.util.concurrent.atomic.AtomicInteger(0);
-        java.util.concurrent.atomic.AtomicInteger failedCount =
-            new java.util.concurrent.atomic.AtomicInteger(0);
-        java.util.concurrent.atomic.AtomicInteger processedCount =
-            new java.util.concurrent.atomic.AtomicInteger(0);
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failedCount = new AtomicInteger(0);
+        AtomicInteger processedCount = new AtomicInteger(0);
 
-        List<java.util.concurrent.Future<?>> futures = new ArrayList<>();
+        List<Future<?>> futures = new ArrayList<>();
         int totalFiles = filesToProcess.size();
 
-        // 使用 try-with-resources 管理线程池
-        try (java.util.concurrent.ExecutorService executor =
-                java.util.concurrent.Executors.newFixedThreadPool(threads)) {
+        // 创建线程池
+        ExecutorService executor = Executors.newFixedThreadPool(threads);
 
+        try {
             // 分批处理文件
             for (int i = 0; i < totalFiles; i += batchSize) {
                 final int batchEnd = Math.min(i + batchSize, totalFiles);
                 List<File> batch = filesToProcess.subList(i, batchEnd);
 
-                java.util.concurrent.Future<?> future = executor.submit(() -> {
+                Future<?> future = executor.submit(() -> {
                     // 每个线程独立的文档列表
                     List<Document> threadDocuments = new ArrayList<>();
 
@@ -873,7 +875,7 @@ public class KnowledgeBaseService {
             }
 
             // 等待所有任务完成
-            for (java.util.concurrent.Future<?> future : futures) {
+            for (Future<?> future : futures) {
                 try {
                     future.get();
                 } catch (Exception e) {
@@ -881,18 +883,18 @@ public class KnowledgeBaseService {
                 }
             }
 
+        } finally {
             // 关闭线程池
             executor.shutdown();
             try {
-                if (!executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS)) {
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
                     executor.shutdownNow();
                 }
             } catch (InterruptedException e) {
                 executor.shutdownNow();
                 Thread.currentThread().interrupt();
             }
-
-        } // try-with-resources 自动关闭 executor
+        }
 
         // 最后提交一次
         rag.commit();
