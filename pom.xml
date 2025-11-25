@@ -43,17 +43,23 @@
         <url>https://github.com/jinhua10/ai-reviewer-base-file-rag</url>
     </scm>
     <distributionManagement>
+        <!--
+            注意：如果你的 OSSRH 账号是 2021年2月24日之后注册的，
+            需要将 URL 中的 oss.sonatype.org 改为 s01.oss.sonatype.org
+        -->
         <snapshotRepository>
             <!--这个id和settings.xml中servers.server.id要相同，因为上传jar需要登录才有权限-->
             <id>${serverId}</id>
             <name>OSS Snapshots Repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <!-- 新账号使用: https://s01.oss.sonatype.org/content/repositories/snapshots/ -->
         </snapshotRepository>
         <repository>
             <!--这个id和settings.xml中servers.server.id要相同，因为上传jar需要登录才有权限-->
             <id>${serverId}</id>
             <name>OSS Staging Repository</name>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <!-- 新账号使用: https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/ -->
         </repository>
     </distributionManagement>
 
@@ -373,33 +379,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!--公钥私钥插件，也就是上传需要进行验证用户名和密码过程中需要用到的插件-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.4</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--部署插件-->
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.13</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>${serverId}</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
+            <!-- GPG 和 Nexus 插件已移至 release profile，日常开发不会触发 -->
             <!-- Maven 编译插件 - UTF-8 编码 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -661,6 +641,50 @@
             <properties>
                 <console.encoding>GBK</console.encoding>
             </properties>
+        </profile>
+
+        <!-- Release profile: 用于发布到 Maven Central -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <!-- GPG 签名插件 -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.2.4</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Nexus Staging 部署插件 -->
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.13</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>${serverId}</serverId>
+                            <!--
+                                注意：如果你的 OSSRH 账号是 2021年2月24日之后注册的，
+                                需要使用新的 Nexus URL: https://s01.oss.sonatype.org/
+                                否则使用旧的 URL: https://oss.sonatype.org/
+                            -->
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <!-- 如果是新账号，取消下面一行的注释 -->
+                            <!-- <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl> -->
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 
