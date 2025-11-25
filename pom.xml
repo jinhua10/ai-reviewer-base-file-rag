@@ -353,6 +353,17 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.3.1</version>
+                <configuration>
+                    <!-- 排除模型文件，避免 sources JAR 过大 -->
+                    <excludeResources>true</excludeResources>
+                    <excludes>
+                        <exclude>models/**/*.onnx</exclude>
+                        <exclude>models/**/*.bin</exclude>
+                        <exclude>models/**/*.safetensors</exclude>
+                        <exclude>models/**/*.pt</exclude>
+                        <exclude>models/**/*.pth</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
