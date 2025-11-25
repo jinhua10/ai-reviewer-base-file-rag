@@ -233,9 +233,15 @@ public class LuceneIndexEngine implements IndexEngine {
     @Override
     public void commit() {
         try {
-            writer.commit();
-            refreshReader();
-            log.debug("Index committed");
+            if (writer != null && writer.isOpen()) {
+                writer.commit();
+                refreshReader();
+                log.debug("Index committed");
+            } else {
+                log.debug("IndexWriter is not open, skipping commit");
+            }
+        } catch (org.apache.lucene.store.AlreadyClosedException e) {
+            log.debug("IndexWriter already closed, skipping commit");
         } catch (IOException e) {
             log.error("Failed to commit index", e);
             throw new RuntimeException("Failed to commit index", e);
@@ -256,7 +262,7 @@ public class LuceneIndexEngine implements IndexEngine {
     @Override
     public void close() {
         try {
-            if (writer != null) {
+            if (writer != null && writer.isOpen()) {
                 writer.commit();
                 writer.close();
             }
@@ -267,6 +273,8 @@ public class LuceneIndexEngine implements IndexEngine {
                 directory.close();
             }
             log.info("LuceneIndexEngine closed");
+        } catch (org.apache.lucene.store.AlreadyClosedException e) {
+            log.debug("IndexWriter already closed, skipping");
         } catch (IOException e) {
             log.error("Failed to close LuceneIndexEngine", e);
         }

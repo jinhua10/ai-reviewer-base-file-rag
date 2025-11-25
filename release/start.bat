@@ -27,6 +27,7 @@ set OCR_LANGUAGE=chi_sim+eng
 
 :: 设置环境变量
 set JAVA_OPTS=-Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8
+set JAVA_OPTS=%JAVA_OPTS% -Dspring.main.web-application-type=servlet
 set JAVA_OPTS=%JAVA_OPTS% -Xms512m -Xmx2g
 set JAVA_OPTS=%JAVA_OPTS% -XX:+UseG1GC
 set JAVA_OPTS=%JAVA_OPTS% -XX:MaxGCPauseMillis=200
@@ -42,7 +43,7 @@ for %%f in (*.jar) do (
 if "%JAR_FILE%"=="" (
     echo [错误] 未找到JAR文件
     echo.
-    echo 请确保 ai-reviewer-base-file-rag-1.0.jar 文件在当前目录
+    echo 请确保 ai-reviewer-base-file-rag-1.0-jar-with-dependencies.jar 文件在当前目录
     pause
     exit /b 1
 )

@@ -117,6 +117,7 @@ public class KnowledgeBaseService {
                 result.setFailedCount(0);
                 result.setTotalDocuments((int) stats.getDocumentCount());
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
+                // 必须关闭以释放锁
                 rag.close();
                 return result;
             }
@@ -230,7 +231,8 @@ public class KnowledgeBaseService {
             result.setTotalDocuments((int) rag.getStatistics().getDocumentCount());
             result.setBuildTimeMs(System.currentTimeMillis() - startTime);
 
-            // 8. 关闭资源
+            // 8. 关闭资源（包括 RAG 实例）
+            // 必须关闭以释放 Lucene 写锁，否则后续实例无法获取锁
             if (embeddingEngine != null) {
                 embeddingEngine.close();
             }
@@ -542,6 +544,7 @@ public class KnowledgeBaseService {
                 result.setFailedCount(0);
                 result.setTotalDocuments((int) stats.getDocumentCount());
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
+                // 必须关闭以释放锁
                 rag.close();
                 return result;
             }
@@ -666,6 +669,7 @@ public class KnowledgeBaseService {
             // 13. 最终内存状态
             optimizer.logMemoryUsage("增量索引完成");
 
+            // 必须关闭 RAG 实例以释放 Lucene 写锁
             rag.close();
 
             return result;

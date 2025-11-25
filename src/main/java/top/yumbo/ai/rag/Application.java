@@ -40,7 +40,12 @@ public class Application {
         printBanner();
 
         try {
-            SpringApplication.run(Application.class, args);
+            // 创建 SpringApplication 实例并显式设置为 Web 应用
+            SpringApplication app = new SpringApplication(Application.class);
+            // 强制设置为 Servlet Web 应用类型，防止应用启动后立即退出
+            app.setWebApplicationType(org.springframework.boot.WebApplicationType.SERVLET);
+            app.run(args);
+
             log.info("✅ 应用启动成功，默认端口：http://localhost:8080");
         } catch (Exception e) {
             log.error("❌ 应用启动失败", e);
