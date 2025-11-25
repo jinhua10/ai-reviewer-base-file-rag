@@ -401,6 +401,11 @@
                     <!-- 生成的文档标题 -->
                     <doctitle>AI Reviewer Base File RAG API Documentation</doctitle>
                     <windowtitle>AI Reviewer Base File RAG API</windowtitle>
+                    <!-- 排除资源文件，避免 javadoc JAR 包含模型文件 -->
+                    <excludePackageNames>*.resources.*</excludePackageNames>
+                    <sourceFileExcludes>
+                        <sourceFileExclude>**/resources/**</sourceFileExclude>
+                    </sourceFileExcludes>
                 </configuration>
                 <executions>
                     <execution>
