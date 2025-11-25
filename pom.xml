@@ -43,23 +43,17 @@
         <url>https://github.com/jinhua10/ai-reviewer-base-file-rag</url>
     </scm>
     <distributionManagement>
-        <!--
-            Central Portal 发布配置
-            使用新的 Maven Central Publishing API
-            参考: https://central.sonatype.com/publish/publish-guide
-        -->
         <repository>
-            <id>${serverId}</id>
-            <name>Central Repository</name>
-            <url>https://central.sonatype.com/api/v1/publisher/upload</url>
+            <id>sonatype-nexus-staging</id>
+            <name>Sonatype Nexus Staging</name>
+            <!-- 旧版Staging URL，兼容性最好 -->
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <!-- Central Portal 目前不支持 SNAPSHOT -->
-        <!--
         <snapshotRepository>
-            <id>${serverId}</id>
-            <url>https://central.sonatype.com/content/repositories/snapshots</url>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
         </snapshotRepository>
-        -->
     </distributionManagement>
 
     <!-- 编码配置 - 解决中文乱码 -->
