@@ -574,14 +574,13 @@
                         -Dsun.stderr.encoding=${console.encoding}
                         -Dconsole.encoding=${console.encoding}
                     </jvmArguments>
+                    <!--
+                        跳过 repackage，避免覆盖 thin JAR
+                        Spring Boot 的 repackage 会生成 fat JAR，这与我们的目标冲突
+                        我们使用 maven-assembly-plugin 生成 fat JAR
+                    -->
+                    <skip>true</skip>
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Ant 插件 - 用于在打包时删除不需要的资源 -->
@@ -682,7 +681,7 @@
                                 <echo message="[INFO] 📦 复制 JAR 包到 release 目录..."/>
                                 <mkdir dir="${project.basedir}/release"/>
                                 <copy
-                                    file="${project.build.directory}/${project.artifactId}-${project.version}.jar"
+                                    file="${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
                                     todir="${project.basedir}/release"
                                     overwrite="true"
                                     failonerror="true"/>
