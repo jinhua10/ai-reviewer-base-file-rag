@@ -129,9 +129,9 @@ public class KnowledgeQAService {
 
         // 连接到知识库
         rag = LocalFileRAG.builder()
-            .storagePath(storagePath)
-            .enableCache(properties.getKnowledgeBase().isEnableCache())
-            .build();
+                .storagePath(storagePath)
+                .enableCache(properties.getKnowledgeBase().isEnableCache())
+                .build();
 
         var stats = rag.getStatistics();
         log.info("   ✅ 知识库已就绪");
@@ -161,8 +161,8 @@ public class KnowledgeQAService {
             // 加载向量索引
             String indexPath = properties.getVectorSearch().getIndexPath();
             vectorIndexEngine = new SimpleVectorIndexEngine(
-                indexPath,
-                embeddingEngine.getEmbeddingDim()
+                    indexPath,
+                    embeddingEngine.getEmbeddingDim()
             );
 
             log.info("   ✅ 向量索引已加载");
@@ -199,9 +199,9 @@ public class KnowledgeQAService {
 
         // 初始化智能上下文构建器
         contextBuilder = SmartContextBuilder.builder()
-            .maxContextLength(properties.getLlm().getMaxContextLength())
-            .maxDocLength(properties.getLlm().getMaxDocLength())
-            .build();
+                .maxContextLength(properties.getLlm().getMaxContextLength())
+                .maxDocLength(properties.getLlm().getMaxDocLength())
+                .build();
 
         log.info("   ✅ 智能上下文构建器已初始化");
         log.info("      - 最大上下文: {} 字符", properties.getLlm().getMaxContextLength());
@@ -257,9 +257,9 @@ public class KnowledgeQAService {
 
             // 步骤5: 提取文档来源
             List<String> sources = documents.stream()
-                .map(Document::getTitle)
-                .distinct()
-                .toList();
+                    .map(Document::getTitle)
+                    .distinct()
+                    .toList();
 
             long totalTime = System.currentTimeMillis() - startTime;
 
@@ -277,9 +277,9 @@ public class KnowledgeQAService {
             log.error("❌ 问答处理失败", e);
             long totalTime = System.currentTimeMillis() - startTime;
             return new AIAnswer(
-                "抱歉，处理您的问题时出现错误：" + e.getMessage(),
-                List.of(),
-                totalTime
+                    "抱歉，处理您的问题时出现错误：" + e.getMessage(),
+                    List.of(),
+                    totalTime
             );
         }
     }
@@ -288,24 +288,13 @@ public class KnowledgeQAService {
      * 构建 LLM Prompt
      */
     private String buildPrompt(String question, String context) {
-        return String.format("""
-            你是一个专业的知识助手。请基于以下文档内容回答用户问题。
-            
-            # 相关文档
-            %s
-            
-            # 用户问题
-            %s
-            
-            # 回答要求
-            1. 必须基于文档内容回答，不要编造信息
-            2. 如果文档中没有相关信息，明确告知用户
-            3. 回答要清晰、准确、有条理
-            4. 可以引用文档名称作为信息来源
-            5. 保持专业友好的语气
-            
-            # 请提供你的回答：
-            """, context, question);
+        // 从配置中获取提示词模板
+        String template = properties.getLlm().getPromptTemplate();
+
+        // 替换占位符
+        return template
+                .replace("{question}", question)
+                .replace("{context}", context);
     }
 
     /**
@@ -447,9 +436,9 @@ public class KnowledgeQAService {
         }
 
         var result = rag.search(top.yumbo.ai.rag.model.Query.builder()
-            .queryText(query)
-            .limit(limit)
-            .build());
+                .queryText(query)
+                .limit(limit)
+                .build());
 
         return result.getDocuments();
     }
