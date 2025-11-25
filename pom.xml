@@ -43,17 +43,14 @@
         <url>https://github.com/jinhua10/ai-reviewer-base-file-rag</url>
     </scm>
     <distributionManagement>
+        <!-- Central Publisher (Maven Central) via Sonatype Central Publisher -->
         <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Sonatype Nexus Staging</name>
-            <!-- 旧版Staging URL，兼容性最好 -->
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>${serverId}</id>
+            <name>Central Repository</name>
+            <url>https://central.sonatype.com/api/v1/publisher/upload</url>
         </repository>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
+        <!-- Central Publisher currently does not accept SNAPSHOT artifacts. If you publish snapshots,
+             configure a separate snapshot repository and matching server credentials in settings.xml. -->
     </distributionManagement>
 
     <!-- 编码配置 - 解决中文乱码 -->
@@ -427,45 +424,18 @@
                 </executions>
             </plugin>
 
-            <!--
-                Maven Deploy 插件 - 只部署 thin JAR，忽略 FAT JAR
-
-                工作原理：
-                1. mvn clean package
-                   → 生成 2 个 JAR：
-                     - ai-reviewer-base-file-rag-1.0.jar (thin JAR，约几百KB)
-                     - ai-reviewer-base-file-rag-1.0-jar-with-dependencies.jar (FAT JAR，约200-300MB)
-
-                2. mvn clean deploy
-                   → 只部署 thin JAR 及其附件（sources、javadoc、签名文件）
-                   → 自动忽略 assembly 生成的 *-jar-with-dependencies.jar
-
-                第三方依赖时：
-                <dependency>
-                    <groupId>top.yumbo.ai</groupId>
-                    <artifactId>ai-reviewer-base-file-rag</artifactId>
-                    <version>1.0</version>
-                </dependency>
-                Maven 会自动下载 thin JAR 及其所有传递依赖（Lucene、Tika、Spring Boot等）
-            -->
+            <!-- 使用 Sonatype Central Publisher 插件替代 maven-deploy-plugin，针对 central.sonatype.com 的新 API -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <version>3.1.1</version>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.9.0</version>
+                <extensions>true</extensions>
                 <configuration>
-                    <!-- 部署时在最后执行，提高效率 -->
-                    <deployAtEnd>true</deployAtEnd>
-                    <!--
-                        注意：*-jar-with-dependencies.jar 不会被部署
-                        原因：maven-assembly-plugin 已配置 <attach>false</attach>
-                        因此该文件不会被附加到项目构件列表中
-                        只有以下文件会被部署：
-                        - ai-reviewer-base-file-rag-1.0.jar (thin JAR)
-                        - ai-reviewer-base-file-rag-1.0-sources.jar
-                        - ai-reviewer-base-file-rag-1.0-javadoc.jar
-                    -->
+                    <!-- 与 settings.xml 中的 <server><id>...</id></server> 对应 -->
+                    <publishingServerId>${serverId}</publishingServerId>
                 </configuration>
             </plugin>
+
 
             <!-- Maven 编译插件 - UTF-8 编码 -->
             <plugin>
