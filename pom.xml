@@ -300,6 +300,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -325,7 +326,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -339,14 +340,29 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.6.3</version>
                 <configuration>
                     <!-- 忽略生成文档中的错误 -->
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                    <aggregate>true</aggregate>
+                    <doclint>none</doclint>
+                    <!-- Java 版本配置 - 支持 Java 17 语法特性 -->
+                    <source>17</source>
+                    <!-- 字符编码配置 -->
                     <charset>UTF-8</charset><!-- utf-8读取文件 -->
                     <encoding>UTF-8</encoding><!-- utf-8进行编码代码 -->
                     <docencoding>UTF-8</docencoding><!-- utf-8进行编码文档 -->
+                    <!-- 添加 JVM 参数确保运行时编码 -->
+                    <additionalJOptions>
+                        <additionalJOption>-J-Dfile.encoding=UTF-8</additionalJOption>
+                        <additionalJOption>-J-Duser.language=zh</additionalJOption>
+                        <additionalJOption>-J-Duser.country=CN</additionalJOption>
+                    </additionalJOptions>
+                    <!-- 静默模式，减少输出 -->
+                    <quiet>true</quiet>
+                    <!-- 显示详细的警告信息 -->
+                    <show>protected</show>
+                    <!-- 生成的文档标题 -->
+                    <doctitle>AI Reviewer Base File RAG API Documentation</doctitle>
+                    <windowtitle>AI Reviewer Base File RAG API</windowtitle>
                 </configuration>
                 <executions>
                     <execution>
@@ -361,7 +377,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
+                <version>3.2.4</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -376,7 +392,7 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
+                <version>1.6.13</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>${serverId}</serverId>
@@ -388,7 +404,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>17</source>
                     <target>17</target>
@@ -403,7 +419,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
-                            <version>1.18.30</version>
+                            <version>1.18.34</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
@@ -442,7 +458,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.2.5</version>
                 <configuration>
                     <!-- 增加堆内存大小，解决测试时的 OutOfMemoryError -->
                     <argLine>
@@ -475,7 +491,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.6.2</version>
+                <version>3.4.1</version>
                 <configuration>
                     <!-- 确保运行时使用项目控制台编码（可在 Windows 下为 GBK） -->
                     <systemProperties>
