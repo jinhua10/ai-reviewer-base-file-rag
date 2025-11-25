@@ -461,6 +461,15 @@
                 <configuration>
                     <!-- 部署时在最后执行，提高效率 -->
                     <deployAtEnd>true</deployAtEnd>
+                    <!--
+                        注意：*-jar-with-dependencies.jar 不会被部署
+                        原因：maven-assembly-plugin 已配置 <attach>false</attach>
+                        因此该文件不会被附加到项目构件列表中
+                        只有以下文件会被部署：
+                        - ai-reviewer-base-file-rag-1.0.jar (thin JAR)
+                        - ai-reviewer-base-file-rag-1.0-sources.jar
+                        - ai-reviewer-base-file-rag-1.0-javadoc.jar
+                    -->
                 </configuration>
             </plugin>
 
