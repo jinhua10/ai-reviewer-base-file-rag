@@ -43,36 +43,33 @@
         <url>https://github.com/jinhua10/ai-reviewer-base-file-rag</url>
     </scm>
     <distributionManagement>
-        <!--
-            注意：如果你的 OSSRH 账号是 2021年2月24日之后注册的，
-            需要将 URL 中的 oss.sonatype.org 改为 s01.oss.sonatype.org
-        -->
-        <snapshotRepository>
-            <!--这个id和settings.xml中servers.server.id要相同，因为上传jar需要登录才有权限-->
-            <id>${serverId}</id>
-            <name>OSS Snapshots Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-            <!-- 新账号使用: https://s01.oss.sonatype.org/content/repositories/snapshots/ -->
-        </snapshotRepository>
         <repository>
-            <!--这个id和settings.xml中servers.server.id要相同，因为上传jar需要登录才有权限-->
             <id>${serverId}</id>
-            <name>OSS Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-            <!-- 新账号使用: https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/ -->
+            <url>https://central.sonatype.com/service/local/staging/deploy/maven2</url>
         </repository>
+        <snapshotRepository>
+            <id>${serverId}</id>
+            <url>https://central.sonatype.com/content/repositories/snapshots</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <!-- 编码配置 - 解决中文乱码 -->
     <properties>
         <projectUrl>https://github.com/jinhua10/ai-reviewer-base-file-rag.git</projectUrl>
-        <serverId>ossrh</serverId><!-- 服务id -->
+        <serverId>sonatype</serverId><!-- 服务id -->
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <lucene.version>9.9.1</lucene.version>
         <console.encoding>UTF-8</console.encoding>
+
+        <!--
+            控制 fat JAR 打包：
+            - 默认不跳过（package/install 时会打包 fat JAR）
+            - deploy 时建议手动指定 -DskipFatJar=true 或使用 IntelliJ IDEA 配置
+        -->
+        <skipFatJar>false</skipFatJar>
     </properties>
 
 
@@ -303,12 +300,17 @@
 
     <build>
         <plugins>
+            <!--
+                Assembly 插件 - 打包 fat JAR（包含所有依赖）
+                只在 package 阶段执行，install/deploy 时会跳过
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.7.1</version>
                 <executions>
                     <execution>
+                        <id>make-assembly</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -317,17 +319,20 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        top.yumbo.util.NeteaseCloudMusicDemo
+                                        top.yumbo.ai.rag.Application
                                     </mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+                            <!-- 只在非 deploy 阶段执行 -->
+                            <skipAssembly>${skipFatJar}</skipAssembly>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
             <!--打包源码的插件-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -379,7 +384,43 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- GPG 和 Nexus 插件已移至 release profile，日常开发不会触发 -->
+
+            <!-- GPG 签名插件 - deploy 时自动签名 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Nexus Staging 部署插件 -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.13</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>${serverId}</serverId>
+                    <!--
+                        注意：如果你的 OSSRH 账号是 2021年2月24日之后注册的，
+                        需要使用新的 Nexus URL: https://s01.oss.sonatype.org/
+                        否则使用旧的 URL: https://oss.sonatype.org/
+                    -->
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <!-- 如果是新账号，取消下面一行的注释 -->
+                    <!-- <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl> -->
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+
             <!-- Maven 编译插件 - UTF-8 编码 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -643,48 +684,16 @@
             </properties>
         </profile>
 
-        <!-- Release profile: 用于发布到 Maven Central -->
+        <!--
+            快速开发 profile: 用于跳过签名和部署，加快构建速度
+            使用方式: mvn install -P quick 或 mvn package -P quick
+        -->
         <profile>
-            <id>release</id>
-            <build>
-                <plugins>
-                    <!-- GPG 签名插件 -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.4</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- Nexus Staging 部署插件 -->
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.13</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>${serverId}</serverId>
-                            <!--
-                                注意：如果你的 OSSRH 账号是 2021年2月24日之后注册的，
-                                需要使用新的 Nexus URL: https://s01.oss.sonatype.org/
-                                否则使用旧的 URL: https://oss.sonatype.org/
-                            -->
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <!-- 如果是新账号，取消下面一行的注释 -->
-                            <!-- <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl> -->
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <id>quick</id>
+            <properties>
+                <!-- 跳过 GPG 签名 -->
+                <gpg.skip>true</gpg.skip>
+            </properties>
         </profile>
     </profiles>
 
