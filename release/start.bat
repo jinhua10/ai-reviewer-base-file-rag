@@ -1,10 +1,10 @@
 @echo off
+chcp 65001 >nul 2>&1
 :: ========================================================================
 :: 知识库问答系统 - 启动脚本
 :: Knowledge QA System - Startup Script
 :: ========================================================================
 
-chcp 65001 >nul 2>&1
 setlocal EnableDelayedExpansion
 
 echo ================================================================================
@@ -52,7 +52,7 @@ echo [信息] 找到JAR文件: %JAR_FILE%
 echo.
 
 :: 检查Java环境
-java -version >nul 2>&1
+jdk21/bin/java -version >nul 2>&1
 if errorlevel 1 (
     echo [错误] 未找到Java环境
     echo.
@@ -108,7 +108,7 @@ echo ===========================================================================
 echo.
 
 :: 启动应用
-java %JAVA_OPTS% ^
+jdk21/bin/java %JAVA_OPTS% ^
   -jar %JAR_FILE% ^
   --spring.config.location=file:./config/application.yml ^
   --logging.file.name=./logs/knowledge-qa-system.log
