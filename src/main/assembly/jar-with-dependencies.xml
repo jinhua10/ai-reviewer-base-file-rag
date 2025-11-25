@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.2.0
+          https://maven.apache.org/xsd/assembly-2.2.0.xsd">
+    <id>jar-with-dependencies</id>
+    <formats>
+        <format>jar</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>true</useProjectArtifact>
+            <unpack>true</unpack>
+            <scope>runtime</scope>
+            <unpackOptions>
+                <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <!-- 不排除 META-INF/versions，保留 Multi-Release JAR 支持 -->
+                </excludes>
+            </unpackOptions>
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.outputDirectory}</directory>
+            <outputDirectory>/</outputDirectory>
+            <excludes>
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+            </excludes>
+        </fileSet>
+    </fileSets>
+    <!-- 合并 META-INF/services 文件 -->
+    <containerDescriptorHandlers>
+        <containerDescriptorHandler>
+            <handlerName>metaInf-services</handlerName>
+        </containerDescriptorHandler>
+    </containerDescriptorHandlers>
+</assembly>
+

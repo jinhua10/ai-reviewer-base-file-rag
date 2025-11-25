@@ -293,20 +293,7 @@
 
     <build>
         <plugins>
-            <!--
-                Assembly 插件 - 打包 FAT JAR（包含所有依赖）
-
-                配置说明：
-                1. 在 package 阶段生成 *-jar-with-dependencies.jar
-                2. attach=false: 不将 FAT JAR attach 到项目
-                   → mvn install: 只安装 thin JAR 到本地仓库
-                   → mvn deploy: 只部署 thin JAR 到远程仓库
-                3. FAT JAR 仅用于本地运行：java -jar xxx-jar-with-dependencies.jar
-
-                生成的文件：
-                - target/ai-reviewer-base-file-rag-1.0.jar (thin JAR，会被 install/deploy)
-                - target/ai-reviewer-base-file-rag-1.0-jar-with-dependencies.jar (FAT JAR，不会被 install/deploy)
-            -->
+            <!-- Maven Assembly Plugin - 生成包含所有依赖的 fat JAR，支持 META-INF/services 合并 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -321,18 +308,17 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>
-                                        top.yumbo.ai.rag.Application
-                                    </mainClass>
+                                    <mainClass>top.yumbo.ai.rag.Application</mainClass>
                                 </manifest>
+                                <manifestEntries>
+                                    <!-- 启用 Multi-Release JAR 支持，用于 Lucene 的 Java 20/21 特性 -->
+                                    <Multi-Release>true</Multi-Release>
+                                </manifestEntries>
                             </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <!--
-                                关键配置：不将 assembly 生成的 JAR attach 到项目
-                                这样 install/deploy 时就不会处理 FAT JAR
-                            -->
+                            <!-- 使用自定义描述符，支持 META-INF/services 文件合并 -->
+                            <descriptors>
+                                <descriptor>src/main/assembly/jar-with-dependencies.xml</descriptor>
+                            </descriptors>
                             <attach>false</attach>
                         </configuration>
                     </execution>
@@ -362,39 +348,6 @@
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- Add Maven Shade Plugin to produce a shaded jar that properly merges service files -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <!-- Produce a jar with the same classifier used by the project for compatibility -->
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-
-                            <transformers>
-                                <!-- Merge service files so Lucene's ServiceLoader-based providers are preserved -->
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <!-- Keep META-INF/spring.handlers and spring.schemas if present -->
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.handlers</resource>
-                                </transformer>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/spring.schemas</resource>
-                                </transformer>
-                                <!-- Merge META-INF/services entries just in case -->
-                            </transformers>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -696,7 +649,7 @@
                     <!-- 步骤3: 打包后立即复制 JAR 到 release 目录 -->
                     <execution>
                         <id>copy-jar-to-release</id>
-                        <phase>package</phase>
+                        <phase>install</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
@@ -710,7 +663,7 @@
                                     overwrite="true"
                                     failonerror="true"/>
                                 <echo message="[INFO] ✅ JAR 包已复制到 release 目录"/>
-                                <echo message="[INFO] 📁 文件: release/${project.artifactId}-${project.version}.jar"/>
+                                <echo message="[INFO] 📁 文件: release/${project.artifactId}-${project.version}-jar-with-dependencies.jar"/>
                             </target>
                         </configuration>
                     </execution>
