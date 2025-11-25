@@ -72,13 +72,6 @@
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <lucene.version>9.9.1</lucene.version>
         <console.encoding>UTF-8</console.encoding>
-
-        <!--
-            控制 fat JAR 打包：
-            - 默认 false（package 时打包 fat JAR）
-            - deploy 时通过 deploy-skip-fat profile 自动设置为 true
-        -->
-        <skipFatJar>false</skipFatJar>
     </properties>
 
 
@@ -310,8 +303,18 @@
     <build>
         <plugins>
             <!--
-                Assembly 插件 - 打包 fat JAR（包含所有依赖）
-                只在 package 阶段执行，install/deploy 时会跳过
+                Assembly 插件 - 打包 FAT JAR（包含所有依赖）
+
+                配置说明：
+                1. 在 package 阶段生成 *-jar-with-dependencies.jar
+                2. attach=false: 不将 FAT JAR attach 到项目
+                   → mvn install: 只安装 thin JAR 到本地仓库
+                   → mvn deploy: 只部署 thin JAR 到远程仓库
+                3. FAT JAR 仅用于本地运行：java -jar xxx-jar-with-dependencies.jar
+
+                生成的文件：
+                - target/ai-reviewer-base-file-rag-1.0.jar (thin JAR，会被 install/deploy)
+                - target/ai-reviewer-base-file-rag-1.0-jar-with-dependencies.jar (FAT JAR，不会被 install/deploy)
             -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -335,8 +338,11 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
-                            <!-- 只在非 deploy 阶段执行 -->
-                            <skipAssembly>${skipFatJar}</skipAssembly>
+                            <!--
+                                关键配置：不将 assembly 生成的 JAR attach 到项目
+                                这样 install/deploy 时就不会处理 FAT JAR
+                            -->
+                            <attach>false</attach>
                         </configuration>
                     </execution>
                 </executions>
@@ -411,14 +417,35 @@
             </plugin>
 
             <!--
-                Central Portal 不需要 nexus-staging-maven-plugin
-                直接使用 maven-deploy-plugin 即可
+                Maven Deploy 插件 - 只部署 thin JAR，忽略 FAT JAR
 
-                发布流程：
-                1. mvn clean deploy -DskipFatJar=true
-                2. 登录 https://central.sonatype.com
-                3. 在 Deployments 页面查看和发布
+                工作原理：
+                1. mvn clean package
+                   → 生成 2 个 JAR：
+                     - ai-reviewer-base-file-rag-1.0.jar (thin JAR，约几百KB)
+                     - ai-reviewer-base-file-rag-1.0-jar-with-dependencies.jar (FAT JAR，约200-300MB)
+
+                2. mvn clean deploy
+                   → 只部署 thin JAR 及其附件（sources、javadoc、签名文件）
+                   → 自动忽略 assembly 生成的 *-jar-with-dependencies.jar
+
+                第三方依赖时：
+                <dependency>
+                    <groupId>top.yumbo.ai</groupId>
+                    <artifactId>ai-reviewer-base-file-rag</artifactId>
+                    <version>1.0</version>
+                </dependency>
+                Maven 会自动下载 thin JAR 及其所有传递依赖（Lucene、Tika、Spring Boot等）
             -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <!-- 部署时在最后执行，提高效率 -->
+                    <deployAtEnd>true</deployAtEnd>
+                </configuration>
+            </plugin>
 
             <!-- Maven 编译插件 - UTF-8 编码 -->
             <plugin>
