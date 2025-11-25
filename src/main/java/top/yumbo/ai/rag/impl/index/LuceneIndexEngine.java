@@ -23,7 +23,6 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,6 +68,7 @@ public class LuceneIndexEngine implements IndexEngine {
                 }
             }
 
+            // Use FSDirectory.open to let Lucene choose the best implementation for the platform
             this.directory = FSDirectory.open(indexDir);
 
             // 初始化分析器
@@ -407,4 +407,3 @@ public class LuceneIndexEngine implements IndexEngine {
                 .build();
     }
 }
-
