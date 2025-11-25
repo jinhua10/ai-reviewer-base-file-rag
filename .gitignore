@@ -16,6 +16,9 @@ target/
 !**/src/test/**/target/
 .kotlin
 
+# 临时提取的 META-INF 文件夹（从 JAR 测试时产生）
+/META-INF/
+
 *.log
 ### IntelliJ IDEA ###
 .idea/
