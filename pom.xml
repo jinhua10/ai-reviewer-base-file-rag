@@ -293,32 +293,30 @@
 
     <build>
         <plugins>
-            <!-- Maven Assembly Plugin - 生成包含所有依赖的 fat JAR，支持 META-INF/services 合并 -->
+            <!-- Spring Boot Maven Plugin - 使用 Spring Boot 原生打包，自动处理所有依赖和启动逻辑 -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>top.yumbo.ai.rag.Application</mainClass>
+                    <!-- 生成可执行的 JAR -->
+                    <executable>true</executable>
+                    <!-- 设置 JAR 文件名为 jar-with-dependencies 以保持兼容性 -->
+                    <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
                         <goals>
-                            <goal>single</goal>
+                            <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>top.yumbo.ai.rag.Application</mainClass>
-                                </manifest>
-                                <manifestEntries>
-                                    <!-- 启用 Multi-Release JAR 支持，用于 Lucene 的 Java 20/21 特性 -->
-                                    <Multi-Release>true</Multi-Release>
-                                </manifestEntries>
-                            </archive>
-                            <!-- 使用自定义描述符，支持 META-INF/services 文件合并 -->
-                            <descriptors>
-                                <descriptor>src/main/assembly/jar-with-dependencies.xml</descriptor>
-                            </descriptors>
+                            <!-- 保持原始 JAR，生成新的可执行 JAR -->
                             <attach>false</attach>
                         </configuration>
                     </execution>
@@ -539,26 +537,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Spring Boot Maven 插件 -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>top.yumbo.ai.rag.Application</mainClass>
-                    <jvmArguments>
-                        -Dfile.encoding=${console.encoding}
-                        -Dsun.stdout.encoding=${console.encoding}
-                        -Dsun.stderr.encoding=${console.encoding}
-                        -Dconsole.encoding=${console.encoding}
-                    </jvmArguments>
-                    <!--
-                        跳过 repackage，避免覆盖 thin JAR
-                        Spring Boot 的 repackage 会生成 fat JAR，这与我们的目标冲突
-                        我们使用 maven-assembly-plugin 生成 fat JAR
-                    -->
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
 
             <!-- Ant 插件 - 用于在打包时删除不需要的资源 -->
             <plugin>
