@@ -75,8 +75,8 @@
 
         <!--
             控制 fat JAR 打包：
-            - 默认不跳过（package/install 时会打包 fat JAR）
-            - deploy 时建议手动指定 -DskipFatJar=true 或使用 IntelliJ IDEA 配置
+            - 默认 false（package 时打包 fat JAR）
+            - deploy 时通过 deploy-skip-fat profile 自动设置为 true
         -->
         <skipFatJar>false</skipFatJar>
     </properties>
@@ -694,6 +694,8 @@
                 <gpg.skip>true</gpg.skip>
             </properties>
         </profile>
+
+
     </profiles>
 
 </project>
