@@ -13,18 +13,35 @@ public class AIAnswer {
     private final List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks;
     private final List<top.yumbo.ai.rag.image.ImageInfo> images;
 
+    // 新增：文档使用情况
+    private final List<String> usedDocuments;  // 本次实际使用的文档
+    private final int totalRetrieved;          // 检索到的总文档数
+    private final boolean hasMoreDocuments;     // 是否还有更多文档未处理
+
     public AIAnswer(String answer, List<String> sources, long responseTimeMs) {
-        this(answer, sources, responseTimeMs, Collections.emptyList(), Collections.emptyList());
+        this(answer, sources, responseTimeMs, Collections.emptyList(), Collections.emptyList(),
+             Collections.emptyList(), 0, false);
     }
 
     public AIAnswer(String answer, List<String> sources, long responseTimeMs,
                     List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks,
                     List<top.yumbo.ai.rag.image.ImageInfo> images) {
+        this(answer, sources, responseTimeMs, chunks, images,
+             Collections.emptyList(), 0, false);
+    }
+
+    public AIAnswer(String answer, List<String> sources, long responseTimeMs,
+                    List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks,
+                    List<top.yumbo.ai.rag.image.ImageInfo> images,
+                    List<String> usedDocuments, int totalRetrieved, boolean hasMoreDocuments) {
         this.answer = answer;
         this.sources = sources;
         this.responseTimeMs = responseTimeMs;
         this.chunks = chunks != null ? chunks : Collections.emptyList();
         this.images = images != null ? images : Collections.emptyList();
+        this.usedDocuments = usedDocuments != null ? usedDocuments : Collections.emptyList();
+        this.totalRetrieved = totalRetrieved;
+        this.hasMoreDocuments = hasMoreDocuments;
     }
 
     public String getAnswer() { return answer; }
@@ -32,4 +49,7 @@ public class AIAnswer {
     public long getResponseTimeMs() { return responseTimeMs; }
     public List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> getChunks() { return chunks; }
     public List<top.yumbo.ai.rag.image.ImageInfo> getImages() { return images; }
+    public List<String> getUsedDocuments() { return usedDocuments; }
+    public int getTotalRetrieved() { return totalRetrieved; }
+    public boolean isHasMoreDocuments() { return hasMoreDocuments; }
 }

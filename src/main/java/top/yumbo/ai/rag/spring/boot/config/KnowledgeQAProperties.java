@@ -83,12 +83,18 @@ public class KnowledgeQAProperties {
         /**
          * 检索相似度阈值 (0.0-1.0)
          */
-        private float similarityThreshold = 0.4f;
+        private float similarityThreshold = 0.5f;
 
         /**
-         * 检索返回的文档数量
+         * 检索返回的文档数量上限
          */
         private int topK = 20;
+
+        /**
+         * 文档相关性评分阈值（Lucene 检索）
+         * 低于此分数的文档会被过滤
+         */
+        private float minScoreThreshold = 0.15f;
     }
 
     @Data
@@ -160,6 +166,17 @@ public class KnowledgeQAProperties {
          * 单文档最大长度
          */
         private int maxDocLength = 5000;
+
+        /**
+         * 单次问答最大处理文档数
+         * 用于防止内存溢出和控制响应时间
+         */
+        private int maxDocumentsPerQuery = 10;
+
+        /**
+         * 是否启用分批处理模式
+         */
+        private boolean enableBatchProcessing = true;
 
         /**
          * 文档切分策略

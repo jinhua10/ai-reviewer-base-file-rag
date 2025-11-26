@@ -272,11 +272,23 @@ public class KnowledgeQAService {
                 log.info("✅ 使用关键词检索");
             }
 
-            // 限制文档数量，防止内存溢出
-            int maxDocsToProcess = 8; // 限制为最多 8 个文档
-            if (documents.size() > maxDocsToProcess) {
-                log.warn("⚠️ 检索到 {} 个文档，限制为前 {} 个以防止内存溢出", documents.size(), maxDocsToProcess);
-                documents = documents.subList(0, maxDocsToProcess);
+            // 根据配置限制文档数量，防止内存溢出
+            int maxDocsPerQuery = properties.getLlm().getMaxDocumentsPerQuery();
+            int totalDocs = documents.size();
+            boolean hasMoreDocs = false;
+            List<top.yumbo.ai.rag.model.Document> remainingDocs = new ArrayList<>();
+
+            if (totalDocs > maxDocsPerQuery) {
+                log.warn("⚠️ 检索到 {} 个文档，本次处理前 {} 个（根据配置 max-documents-per-query）",
+                        totalDocs, maxDocsPerQuery);
+
+                remainingDocs = documents.subList(maxDocsPerQuery, totalDocs);
+                documents = documents.subList(0, maxDocsPerQuery);
+                hasMoreDocs = true;
+
+                log.info("📋 剩余 {} 个文档未处理，用户可继续提问", remainingDocs.size());
+            } else {
+                log.info("✅ 检索到 {} 个高相关性文档，全部纳入回答", totalDocs);
             }
 
             // 步骤2: 构建智能上下文
@@ -321,11 +333,29 @@ public class KnowledgeQAService {
                 }
             }
 
-            // 步骤4: 构建增强的 Prompt（包含图片信息）
-            String prompt = buildEnhancedPrompt(question, context, imageContext.toString(), !allImages.isEmpty());
+            // 步骤4: 构建增强的 Prompt（包含图片信息和文档说明）
+            List<String> usedDocTitles = documents.stream()
+                    .map(top.yumbo.ai.rag.model.Document::getTitle)
+                    .distinct()
+                    .toList();
+
+            String prompt = buildEnhancedPrompt(
+                question,
+                context,
+                imageContext.toString(),
+                !allImages.isEmpty(),
+                usedDocTitles,
+                hasMoreDocs,
+                remainingDocs.size()
+            );
 
             if (!allImages.isEmpty()) {
                 log.info("🖼️ 上下文中包含 {} 张图片信息", allImages.size());
+            }
+
+            log.info("📚 本次使用 {} 个文档生成回答", usedDocTitles.size());
+            if (hasMoreDocs) {
+                log.info("ℹ️ 还有 {} 个相关文档未包含在本次回答中", remainingDocs.size());
             }
 
             // 步骤5: 调用 LLM 生成答案
@@ -363,7 +393,16 @@ public class KnowledgeQAService {
             log.info("\n⏱️  响应时间: {}ms", totalTime);
             log.info("=".repeat(80));
 
-            return new AIAnswer(answer, sources, totalTime, chunks, images);
+            return new AIAnswer(
+                answer,
+                sources,
+                totalTime,
+                chunks,
+                images,
+                usedDocTitles,      // 本次使用的文档
+                totalDocs,          // 检索到的总文档数
+                hasMoreDocs         // 是否还有更多文档
+            );
 
         } catch (Exception e) {
             log.error("❌ 问答处理失败", e);
@@ -390,35 +429,58 @@ public class KnowledgeQAService {
     }
 
     /**
-     * 构建增强的 LLM Prompt（包含图片信息）
+     * 构建增强的 LLM Prompt（包含图片信息和文档使用说明）
      *
      * @param question 用户问题
      * @param context 文本上下文
      * @param imageContext 图片上下文（图片URL和描述）
      * @param hasImages 是否有可用图片
+     * @param usedDocuments 本次使用的文档列表
+     * @param hasMoreDocs 是否还有更多文档未处理
+     * @param remainingCount 剩余文档数量
      * @return 增强的 Prompt
      */
-    private String buildEnhancedPrompt(String question, String context, String imageContext, boolean hasImages) {
+    private String buildEnhancedPrompt(String question, String context, String imageContext,
+                                      boolean hasImages, List<String> usedDocuments,
+                                      boolean hasMoreDocs, int remainingCount) {
         // 从配置中获取提示词模板
         String template = properties.getLlm().getPromptTemplate();
 
-        // 如果有图片，添加图片使用指南
-        String enhancedTemplate = template;
+        // 构建增强内容
+        StringBuilder enhancement = new StringBuilder();
+
+        // 添加图片使用指南
         if (hasImages && !imageContext.isEmpty()) {
-            enhancedTemplate = template +
-                "\n\n" +
-                "**重要提示**：\n" +
-                "1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。\n" +
-                "2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。\n" +
-                "3. 引用格式已在下方提供，直接复制使用即可。\n" +
-                "4. 请确保引用的图片 URL 完整且正确。\n" +
-                imageContext;
+            enhancement.append("\n\n**重要提示**：\n");
+            enhancement.append("1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。\n");
+            enhancement.append("2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。\n");
+            enhancement.append("3. 引用格式已在下方提供，直接复制使用即可。\n");
+            enhancement.append("4. 请确保引用的图片 URL 完整且正确。\n");
+            enhancement.append(imageContext);
+        }
+
+        // 添加文档使用说明
+        if (!usedDocuments.isEmpty()) {
+            enhancement.append("\n\n**本次参考的文档**：\n");
+            for (int i = 0; i < usedDocuments.size(); i++) {
+                enhancement.append(String.format("%d. %s\n", i + 1, usedDocuments.get(i)));
+            }
+        }
+
+        // 如果有更多未处理的文档，提示用户
+        if (hasMoreDocs && remainingCount > 0) {
+            enhancement.append(String.format(
+                "\n\n**提示**：检索到的相关文档较多，本次回答基于前 %d 个最相关的文档。" +
+                "还有 %d 个相关文档未包含在本次回答中。" +
+                "如果需要查看更多信息，请告知用户可以继续提问相关问题。\n",
+                usedDocuments.size(), remainingCount
+            ));
         }
 
         // 替换占位符
-        return enhancedTemplate
-                .replace("{question}", question)
-                .replace("{context}", context);
+        return template.replace("{question}", question)
+                       .replace("{context}", context) +
+               enhancement.toString();
     }
 
     /**

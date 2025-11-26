@@ -107,12 +107,20 @@ public class HybridSearchService {
                 hybridScores.put(docId, currentScore + 0.7 * result.getSimilarity());
             }
 
-            // 4. 按混合分数排序，取 Top-K
+            // 4. 按混合分数排序，并过滤低分文档
             int topK = properties.getVectorSearch().getTopK();
+            float minScore = properties.getVectorSearch().getMinScoreThreshold();
+
             List<Map.Entry<String, Double>> sortedScores = hybridScores.entrySet().stream()
+                .filter(entry -> entry.getValue() >= minScore) // 过滤低分文档
                 .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
                 .limit(topK)
                 .toList();
+
+            if (sortedScores.size() < hybridScores.size()) {
+                log.info("⚠️ 过滤了 {} 个低分文档（评分 < {}）",
+                        hybridScores.size() - sortedScores.size(), minScore);
+            }
 
             log.info("🎲 混合评分 Top-{}:", Math.min(topK, sortedScores.size()));
             for (int i = 0; i < Math.min(sortedScores.size(), 10); i++) {

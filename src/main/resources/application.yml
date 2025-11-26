@@ -95,10 +95,17 @@ knowledge:
 
       # 检索相似度阈值 (0.0-1.0)
       # 越高越严格，建议 0.3-0.5
-      similarity-threshold: 0.4
+      # 只有相似度高于此阈值的文档才会被返回
+      similarity-threshold: 0.5
 
-      # 检索返回的文档数量
+      # 检索返回的文档数量上限
+      # 注意：实际返回数量会受相似度阈值和质量过滤影响
       top-k: 20
+
+      # 文档相关性评分阈值（Lucene 检索）
+      # 低于此分数的文档会被过滤
+      # 建议值：0.1-0.3
+      min-score-threshold: 0.15
 
     # LLM 配置
     llm:
@@ -137,6 +144,17 @@ knowledge:
       # 单文档最大长度（字符数）
       # 建议值：max-context-length 的 1/4 到 1/2
       max-doc-length: 5000
+
+      # 单次问答最大处理文档数
+      # 用于防止内存溢出和控制响应时间
+      # 如果检索到的文档超过此数量，会分批处理
+      # 建议值：5-15
+      max-documents-per-query: 10
+
+      # 是否启用分批处理模式
+      # 启用后，如果文档数超过 max-documents-per-query，
+      # 会在答案中提示用户还有未处理的文档，支持继续提问
+      enable-batch-processing: true
 
       # 文档切分策略
       # 可选值：
