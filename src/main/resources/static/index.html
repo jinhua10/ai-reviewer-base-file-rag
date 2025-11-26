@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" id="html-root">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>知识库问答系统</title>
+    <title>知识库问答系统 - Knowledge Base QA System</title>
 
     <!-- React 和 ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -477,6 +477,41 @@
             opacity: 0.8;
         }
 
+        /* 语言切换按钮 */
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .language-toggle button {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 24px;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .language-toggle button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        .language-toggle button:active {
+            transform: translateY(0);
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .header h1 {
@@ -505,7 +540,245 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, createContext, useContext } = React;
+
+        // 语言翻译字典
+        const translations = {
+            zh: {
+                // Header
+                title: '🤖 知识库问答系统',
+                subtitle: '基于 LocalFileRAG 的智能问答平台',
+                statusOnline: '✅ 运行中',
+                statusOffline: '❌ 离线',
+                status: '状态',
+
+                // Tabs
+                tabQA: '💬 智能问答',
+                tabSearch: '🔍 文档搜索',
+                tabDocuments: '📁 文档管理',
+                tabStats: '📊 统计信息',
+
+                // QA Tab
+                qaPlaceholder: '请输入您的问题...',
+                qaButton: '🤔 提问',
+                qaThinking: '思考中...',
+                qaAIThinking: 'AI 正在思考...',
+                qaAnswer: '💡 回答',
+                qaSources: '📚 参考来源',
+                qaDownload: '💾 下载',
+                qaBatchDownload: '📦 批量下载全部',
+                qaResponseTime: '⏱️ 响应时间',
+                qaEmptyIcon: '💭',
+                qaEmptyText: '在上方输入框提出您的问题',
+                qaEmptyExample: '示例: "文档的主要内容是什么？"',
+                qaErrorPrefix: '❌',
+                qaInputError: '请输入问题',
+                qaDownloadError: '下载失败',
+                qaBatchDownloadError: '批量下载失败',
+                qaRequestError: '请求失败，请检查服务是否正常运行',
+
+                // Search Tab
+                searchPlaceholder: '请输入搜索关键词',
+                searchButton: '🔍 搜索',
+                searchSearching: '搜索中...',
+                searchResults: '搜索结果',
+                searchNoResults: '未找到相关文档',
+                searchEmptyIcon: '🔍',
+                searchEmptyText: '输入关键词搜索文档',
+                searchEmptyExample: '示例: "技术文档"',
+                searchResultsCount: '个结果',
+                searchScore: '相关度',
+                searchResultsLimit: '最多显示',
+                searchInputError: '请输入搜索关键词',
+                searchError: '搜索失败',
+
+                // Documents Tab
+                docsTitle: '📁 文档管理',
+                docsUploadArea: '📤 上传文档',
+                docsUploadHint: '点击或拖拽文件到此区域上传',
+                docsUploadSupport: '支持 PDF、Word、TXT、Markdown、Excel、PowerPoint、图片等格式',
+                docsUploadButton: '选择文件',
+                docsUploading: '上传中...',
+                docsUploadSuccess: '✅ 上传成功',
+                docsUploadError: '上传失败',
+                docsListTitle: '📚 已上传文档',
+                docsListEmpty: '暂无文档',
+                docsListRefresh: '🔄 刷新列表',
+                docsListDelete: '🗑️ 删除',
+                docsListDownload: '💾 下载',
+                docsDeleteConfirm: '确定要删除这个文件吗？',
+                docsDeleteSuccess: '删除成功',
+                docsDeleteError: '删除失败',
+                docsSelectFile: '请先选择文件',
+                docsFiles: '个文件',
+
+                // Stats Tab
+                statsTitle: '📊 系统统计',
+                statsDocCount: '📄 文档总数',
+                statsIndexedCount: '✅ 已索引文档',
+                statsCacheHitRate: '🎯 缓存命中率',
+                statsIndexProgress: '✅ 索引完成度',
+                statsRefresh: '🔄 刷新统计',
+                statsIncrementalIndex: '⚡ 增量索引',
+                statsRebuildIndex: '🔨 重建索引',
+                statsRebuilding: '正在重建知识库索引...',
+                statsIncrementalIndexing: '正在执行增量索引...',
+                statsRebuildWait: '这可能需要几分钟时间，请耐心等待',
+                statsIncrementalWait: '只处理新增和修改的文档，速度较快',
+                statsIndexing: '⏳ 索引中...',
+                statsIndexingProgress: '⏳ 重建中...',
+                statsSuccess: '✅ 操作成功',
+                statsFailed: '❌ 操作失败',
+                statsProcessedFiles: '📄 处理文件',
+                statsTotalDocs: '📚 总文档数',
+                statsDuration: '⏱️ 耗时',
+                statsSuggestion: '💡',
+                statsIndexGuideTitle: '📖 索引说明',
+                statsIncrementalDesc: '🔄 增量索引：只处理新增和修改的文档，性能更优，推荐日常使用',
+                statsRebuildDesc: '🔨 重建索引：完全重建所有文档索引，耗时较长，适用于首次构建或大规模变更',
+                statsSeconds: '秒',
+                statsCount: '个',
+
+                // Footer
+                footerText: '© 2025 LocalFileRAG Knowledge QA System | Powered by Java & React',
+
+                // Language Toggle
+                langToggle: '🌐 English',
+            },
+            en: {
+                // Header
+                title: '🤖 Knowledge Base QA System',
+                subtitle: 'Intelligent Q&A Platform Based on LocalFileRAG',
+                statusOnline: '✅ Online',
+                statusOffline: '❌ Offline',
+                status: 'Status',
+
+                // Tabs
+                tabQA: '💬 Q&A',
+                tabSearch: '🔍 Search',
+                tabDocuments: '📁 Documents',
+                tabStats: '📊 Statistics',
+
+                // QA Tab
+                qaPlaceholder: 'Enter your question...',
+                qaButton: '🤔 Ask',
+                qaThinking: 'Thinking...',
+                qaAIThinking: 'AI is thinking...',
+                qaAnswer: '💡 Answer',
+                qaSources: '📚 References',
+                qaDownload: '💾 Download',
+                qaBatchDownload: '📦 Download All',
+                qaResponseTime: '⏱️ Response Time',
+                qaEmptyIcon: '💭',
+                qaEmptyText: 'Enter your question in the input box above',
+                qaEmptyExample: 'Example: "What is the main content of the document?"',
+                qaErrorPrefix: '❌',
+                qaInputError: 'Please enter a question',
+                qaDownloadError: 'Download failed',
+                qaBatchDownloadError: 'Batch download failed',
+                qaRequestError: 'Request failed, please check if the service is running',
+
+                // Search Tab
+                searchPlaceholder: 'Enter search keywords',
+                searchButton: '🔍 Search',
+                searchSearching: 'Searching...',
+                searchResults: 'Search Results',
+                searchNoResults: 'No documents found',
+                searchEmptyIcon: '🔍',
+                searchEmptyText: 'Enter keywords to search documents',
+                searchEmptyExample: 'Example: "technical documentation"',
+                searchResultsCount: 'results',
+                searchScore: 'Score',
+                searchResultsLimit: 'Limit',
+                searchInputError: 'Please enter search keywords',
+                searchError: 'Search failed',
+
+                // Documents Tab
+                docsTitle: '📁 Document Management',
+                docsUploadArea: '📤 Upload Documents',
+                docsUploadHint: 'Click or drag files to this area to upload',
+                docsUploadSupport: 'Supports PDF, Word, TXT, Markdown, Excel, PowerPoint, Images, etc.',
+                docsUploadButton: 'Select File',
+                docsUploading: 'Uploading...',
+                docsUploadSuccess: '✅ Upload Successful',
+                docsUploadError: 'Upload failed',
+                docsListTitle: '📚 Uploaded Documents',
+                docsListEmpty: 'No documents',
+                docsListRefresh: '🔄 Refresh',
+                docsListDelete: '🗑️ Delete',
+                docsListDownload: '💾 Download',
+                docsDeleteConfirm: 'Are you sure you want to delete this file?',
+                docsDeleteSuccess: 'Deleted successfully',
+                docsDeleteError: 'Delete failed',
+                docsSelectFile: 'Please select a file first',
+                docsFiles: 'files',
+
+                // Stats Tab
+                statsTitle: '📊 System Statistics',
+                statsDocCount: '📄 Total Documents',
+                statsIndexedCount: '✅ Indexed Documents',
+                statsCacheHitRate: '🎯 Cache Hit Rate',
+                statsIndexProgress: '✅ Index Progress',
+                statsRefresh: '🔄 Refresh',
+                statsIncrementalIndex: '⚡ Incremental Index',
+                statsRebuildIndex: '🔨 Rebuild Index',
+                statsRebuilding: 'Rebuilding knowledge base index...',
+                statsIncrementalIndexing: 'Performing incremental indexing...',
+                statsRebuildWait: 'This may take a few minutes, please be patient',
+                statsIncrementalWait: 'Only processes new and modified documents, faster',
+                statsIndexing: '⏳ Indexing...',
+                statsIndexingProgress: '⏳ Rebuilding...',
+                statsSuccess: '✅ Operation Successful',
+                statsFailed: '❌ Operation Failed',
+                statsProcessedFiles: '📄 Processed Files',
+                statsTotalDocs: '📚 Total Documents',
+                statsDuration: '⏱️ Duration',
+                statsSuggestion: '💡',
+                statsIndexGuideTitle: '📖 Index Guide',
+                statsIncrementalDesc: '🔄 Incremental Index: Only processes new and modified documents, better performance, recommended for daily use',
+                statsRebuildDesc: '🔨 Rebuild Index: Completely rebuilds all document indexes, takes longer, suitable for initial setup or major changes',
+                statsSeconds: 's',
+                statsCount: '',
+
+                // Footer
+                footerText: '© 2025 LocalFileRAG Knowledge QA System | Powered by Java & React',
+
+                // Language Toggle
+                langToggle: '🌐 中文',
+            }
+        };
+
+        // 创建语言上下文
+        const LanguageContext = createContext();
+
+        // 语言提供者组件
+        function LanguageProvider({ children }) {
+            const [language, setLanguage] = useState(() => {
+                return localStorage.getItem('language') || 'zh';
+            });
+
+            const toggleLanguage = () => {
+                const newLang = language === 'zh' ? 'en' : 'zh';
+                setLanguage(newLang);
+                localStorage.setItem('language', newLang);
+                document.getElementById('html-root').setAttribute('lang', newLang === 'zh' ? 'zh-CN' : 'en');
+            };
+
+            const t = (key) => {
+                return translations[language][key] || key;
+            };
+
+            return (
+                <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
+                    {children}
+                </LanguageContext.Provider>
+            );
+        }
+
+        // 自定义 Hook 使用语言
+        function useTranslation() {
+            return useContext(LanguageContext);
+        }
 
         // API 配置
         const API_BASE_URL = 'http://localhost:8080/api/qa';
@@ -573,6 +846,7 @@
 
         // 问答组件
         function QATab() {
+            const { t } = useTranslation();
             const [question, setQuestion] = useState('');
             const [answer, setAnswer] = useState(null);
             const [loading, setLoading] = useState(false);
@@ -601,7 +875,7 @@
 
             const handleAsk = async () => {
                 if (!question.trim()) {
-                    alert('请输入问题');
+                    alert(t('qaInputError'));
                     return;
                 }
 
@@ -613,7 +887,7 @@
                     const result = await api.ask(question);
                     setAnswer(result);
                 } catch (err) {
-                    setError(err.message || '请求失败，请检查服务是否正常运行');
+                    setError(err.message || t('qaRequestError'));
                 } finally {
                     setLoading(false);
                 }
@@ -639,7 +913,7 @@
                     document.body.removeChild(link);
                     window.URL.revokeObjectURL(url);
                 } catch (err) {
-                    alert('下载失败: ' + err.message);
+                    alert(t('qaDownloadError') + ': ' + err.message);
                 }
             };
 
@@ -654,13 +928,13 @@
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = `参考文档_${new Date().getTime()}.zip`;
+                    link.download = `references_${new Date().getTime()}.zip`;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     window.URL.revokeObjectURL(url);
                 } catch (err) {
-                    alert('批量下载失败: ' + err.message);
+                    alert(t('qaBatchDownloadError') + ': ' + err.message);
                 }
             };
 
@@ -670,7 +944,7 @@
                         <input
                             type="text"
                             className="input-field"
-                            placeholder="请输入您的问题..."
+                            placeholder={t('qaPlaceholder')}
                             value={question}
                             onChange={(e) => setQuestion(e.target.value)}
                             onKeyPress={handleKeyPress}
@@ -681,26 +955,26 @@
                             onClick={handleAsk}
                             disabled={loading}
                         >
-                            {loading ? '思考中...' : '🤔 提问'}
+                            {loading ? t('qaThinking') : t('qaButton')}
                         </button>
                     </div>
 
                     {loading && (
                         <div className="loading">
                             <div className="spinner"></div>
-                            <p>AI 正在思考...</p>
+                            <p>{t('qaAIThinking')}</p>
                         </div>
                     )}
 
                     {error && (
                         <div className="error">
-                            ❌ {error}
+                            {t('qaErrorPrefix')} {error}
                         </div>
                     )}
 
                     {answer && !loading && (
                         <div className="answer-card">
-                            <h3>💡 回答</h3>
+                            <h3>{t('qaAnswer')}</h3>
                             <div
                                 className="answer-text"
                                 dangerouslySetInnerHTML={{
@@ -712,19 +986,19 @@
 
                             {answer.sources && answer.sources.length > 0 && (
                                 <div className="sources">
-                                    <h4>📚 参考来源</h4>
+                                    <h4>{t('qaSources')}</h4>
                                     {answer.sources.map((source, index) => (
                                         <div key={index} className="source-item">
                                             <span className="source-text">
                                                 {index + 1}. {source}
                                             </span>
-                                            <div className="source-actions">
+                            <div className="source-actions">
                                                 <button
                                                     className="btn-icon"
                                                     onClick={() => handleDownload(source)}
-                                                    title="下载此文件"
+                                                    title={t('qaDownload')}
                                                 >
-                                                    💾 下载
+                                                    {t('qaDownload')}
                                                 </button>
                                             </div>
                                         </div>
@@ -734,24 +1008,24 @@
                                             className="btn-batch-download"
                                             onClick={handleBatchDownload}
                                         >
-                                            📦 批量下载全部 ({answer.sources.length} 个文件)
+                                            {t('qaBatchDownload')} ({answer.sources.length} {t('docsFiles')})
                                         </button>
                                     )}
                                 </div>
                             )}
 
                             <div className="response-time">
-                                ⏱️ 响应时间: {answer.responseTimeMs}ms
+                                {t('qaResponseTime')}: {answer.responseTimeMs}ms
                             </div>
                         </div>
                     )}
 
                     {!answer && !loading && !error && (
                         <div className="empty-state">
-                            <div className="empty-state-icon">💭</div>
-                            <p>在上方输入框提出您的问题</p>
+                            <div className="empty-state-icon">{t('qaEmptyIcon')}</div>
+                            <p>{t('qaEmptyText')}</p>
                             <p style={{fontSize: '14px', marginTop: '10px', color: '#ccc'}}>
-                                示例: "文档的主要内容是什么？"
+                                {t('qaEmptyExample')}
                             </p>
                         </div>
                     )}
@@ -761,6 +1035,7 @@
 
         // 搜索组件
         function SearchTab() {
+            const { t } = useTranslation();
             const [query, setQuery] = useState('');
             const [results, setResults] = useState(null);
             const [loading, setLoading] = useState(false);
@@ -769,7 +1044,7 @@
 
             const handleSearch = async () => {
                 if (!query.trim()) {
-                    alert('请输入搜索关键词');
+                    alert(t('searchInputError'));
                     return;
                 }
 
@@ -781,7 +1056,7 @@
                     const result = await api.search(query, limit);
                     setResults(result);
                 } catch (err) {
-                    setError(err.message || '搜索失败');
+                    setError(err.message || t('searchError'));
                 } finally {
                     setLoading(false);
                 }
@@ -800,7 +1075,7 @@
                         <input
                             type="text"
                             className="input-field"
-                            placeholder="搜索关键词..."
+                            placeholder={t('searchPlaceholder')}
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyPress={handleKeyPress}
@@ -812,44 +1087,44 @@
                             value={limit}
                             onChange={(e) => setLimit(Number(e.target.value))}
                         >
-                            <option value={5}>5 条</option>
-                            <option value={10}>10 条</option>
-                            <option value={20}>20 条</option>
-                            <option value={50}>50 条</option>
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
                         </select>
                         <button
                             className="btn btn-primary"
                             onClick={handleSearch}
                             disabled={loading}
                         >
-                            {loading ? '搜索中...' : '🔍 搜索'}
+                            {loading ? t('searchSearching') : t('searchButton')}
                         </button>
                     </div>
 
                     {loading && (
                         <div className="loading">
                             <div className="spinner"></div>
-                            <p>搜索中...</p>
+                            <p>{t('searchSearching')}</p>
                         </div>
                     )}
 
                     {error && (
                         <div className="error">
-                            ❌ {error}
+                            {t('qaErrorPrefix')} {error}
                         </div>
                     )}
 
                     {results && !loading && (
                         <div>
                             <div style={{marginBottom: '15px', color: '#666'}}>
-                                找到 <strong>{results.total}</strong> 个相关文档
+                                <strong>{results.total}</strong> {t('searchResultsCount')}
                             </div>
 
                             <div className="search-results">
                                 {results.documents.map((doc, index) => (
                                     <div key={doc.id} className="document-card">
                                         <div className="document-title">
-                                            📄 {doc.title || `文档 ${index + 1}`}
+                                            📄 {doc.title || `Document ${index + 1}`}
                                         </div>
                                         <div className="document-excerpt">
                                             {doc.excerpt}
@@ -862,8 +1137,8 @@
 
                     {!results && !loading && !error && (
                         <div className="empty-state">
-                            <div className="empty-state-icon">🔍</div>
-                            <p>输入关键词搜索相关文档</p>
+                            <div className="empty-state-icon">{t('searchEmptyIcon')}</div>
+                            <p>{t('searchEmptyText')}</p>
                         </div>
                     )}
                 </div>
@@ -872,6 +1147,7 @@
 
         // 文档管理组件
         function DocumentsTab() {
+            const { t } = useTranslation();
             const [documents, setDocuments] = useState([]);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
@@ -935,20 +1211,20 @@
             };
 
             const handleDelete = async (fileName) => {
-                if (!confirm(`确定要删除文档 "${fileName}" 吗？\n\n删除后需要重建索引才能生效。`)) {
+                if (!confirm(t('docsDeleteConfirm'))) {
                     return;
                 }
 
                 try {
                     const result = await api.deleteDocument(fileName);
                     if (result.success) {
-                        alert('文档删除成功！\n建议重建索引以更新搜索结果。');
+                        alert(t('docsDeleteSuccess'));
                         loadDocuments();
                     } else {
-                        alert('删除失败: ' + result.message);
+                        alert(t('docsDeleteError') + ': ' + result.message);
                     }
                 } catch (err) {
-                    alert('删除失败: ' + err.message);
+                    alert(t('docsDeleteError') + ': ' + err.message);
                 }
             };
 
@@ -1135,6 +1411,7 @@
 
         // 统计信息组件
         function StatisticsTab() {
+            const { t } = useTranslation();
             const [stats, setStats] = useState(null);
             const [loading, setLoading] = useState(true);
             const [error, setError] = useState(null);
@@ -1241,11 +1518,11 @@
                     <div className="statistics-grid">
                         <div className="stat-card">
                             <div className="stat-value">{stats.documentCount}</div>
-                            <div className="stat-label">📚 文档总数</div>
+                            <div className="stat-label">{t('statsDocCount')}</div>
                         </div>
                         <div className="stat-card">
                             <div className="stat-value">{stats.indexedDocumentCount}</div>
-                            <div className="stat-label">🔍 已索引文档</div>
+                            <div className="stat-label">{t('statsIndexedCount')}</div>
                         </div>
                         <div className="stat-card">
                             <div className="stat-value">
@@ -1253,35 +1530,35 @@
                                     ? Math.round((stats.indexedDocumentCount / stats.documentCount) * 100)
                                     : 0}%
                             </div>
-                            <div className="stat-label">✅ 索引完成度</div>
+                            <div className="stat-label">{t('statsIndexProgress')}</div>
                         </div>
                     </div>
 
                     {(rebuilding || incrementalIndexing) && (
                         <div className="loading" style={{marginTop: '30px'}}>
                             <div className="spinner"></div>
-                            <p>{rebuilding ? '正在重建知识库索引...' : '正在执行增量索引...'}</p>
+                            <p>{rebuilding ? t('statsRebuilding') : t('statsIncrementalIndexing')}</p>
                             <p style={{fontSize: '14px', color: '#999', marginTop: '10px'}}>
-                                {rebuilding ? '这可能需要几分钟时间，请耐心等待' : '只处理新增和修改的文档，速度较快'}
+                                {rebuilding ? t('statsRebuildWait') : t('statsIncrementalWait')}
                             </p>
                         </div>
                     )}
 
                     {rebuildResult && !rebuilding && !incrementalIndexing && (
                         <div className={rebuildResult.success ? 'answer-card' : 'error'} style={{marginTop: '30px'}}>
-                            <h3>{rebuildResult.success ? '✅ 操作成功' : '❌ 操作失败'}</h3>
+                            <h3>{rebuildResult.success ? t('statsSuccess') : t('statsFailed')}</h3>
                             <div style={{marginTop: '10px'}}>
                                 <p>{rebuildResult.message}</p>
                                 {rebuildResult.success && rebuildResult.processedFiles > 0 && (
                                     <div style={{marginTop: '15px', fontSize: '14px'}}>
-                                        <p>📄 处理文件: {rebuildResult.processedFiles} 个</p>
-                                        <p>📚 总文档数: {rebuildResult.totalDocuments} 个</p>
-                                        <p>⏱️ 耗时: {(rebuildResult.durationMs / 1000).toFixed(2)} 秒</p>
+                                        <p>{t('statsProcessedFiles')}: {rebuildResult.processedFiles} {t('statsCount')}</p>
+                                        <p>{t('statsTotalDocs')}: {rebuildResult.totalDocuments} {t('statsCount')}</p>
+                                        <p>{t('statsDuration')}: {(rebuildResult.durationMs / 1000).toFixed(2)} {t('statsSeconds')}</p>
                                     </div>
                                 )}
                                 {rebuildResult.suggestion && (
                                     <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
-                                        💡 {rebuildResult.suggestion}
+                                        {t('statsSuggestion')} {rebuildResult.suggestion}
                                     </p>
                                 )}
                             </div>
@@ -1290,13 +1567,13 @@
 
                     <div style={{marginTop: '30px'}}>
                         <div style={{padding: '20px', background: '#f8f9ff', borderRadius: '8px', marginBottom: '20px'}}>
-                            <h4 style={{marginBottom: '10px', color: '#667eea'}}>📖 索引说明</h4>
+                            <h4 style={{marginBottom: '10px', color: '#667eea'}}>{t('statsIndexGuideTitle')}</h4>
                             <div style={{fontSize: '14px', lineHeight: '1.8', color: '#666'}}>
                                 <p style={{marginBottom: '8px'}}>
-                                    <strong>🔄 增量索引：</strong>只处理新增和修改的文档，性能更优，推荐日常使用
+                                    {t('statsIncrementalDesc')}
                                 </p>
                                 <p>
-                                    <strong>🔨 重建索引：</strong>完全重建所有文档索引，耗时较长，适用于首次构建或大规模变更
+                                    {t('statsRebuildDesc')}
                                 </p>
                             </div>
                         </div>
@@ -1307,7 +1584,7 @@
                                 onClick={loadStatistics}
                                 disabled={rebuilding || incrementalIndexing}
                             >
-                                🔄 刷新统计
+                                {t('statsRefresh')}
                             </button>
                             <button
                                 className="btn btn-primary"
@@ -1317,14 +1594,14 @@
                                     background: incrementalIndexing ? '#ccc' : 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
                                 }}
                             >
-                                {incrementalIndexing ? '⏳ 索引中...' : '⚡ 增量索引'}
+                                {incrementalIndexing ? t('statsIndexing') : t('statsIncrementalIndex')}
                             </button>
                             <button
                                 className="btn btn-primary"
                                 onClick={handleRebuild}
                                 disabled={rebuilding || incrementalIndexing}
                             >
-                                {rebuilding ? '⏳ 重建中...' : '🔨 重建索引'}
+                                {rebuilding ? t('statsIndexingProgress') : t('statsRebuildIndex')}
                             </button>
                         </div>
                     </div>
@@ -1334,6 +1611,7 @@
 
         // 主应用组件
         function App() {
+            const { t, toggleLanguage, language } = useTranslation();
             const [activeTab, setActiveTab] = useState('qa');
             const [health, setHealth] = useState(null);
 
@@ -1346,18 +1624,25 @@
                     const result = await api.health();
                     setHealth(result);
                 } catch (err) {
-                    setHealth({ status: 'DOWN', message: '服务连接失败' });
+                    setHealth({ status: 'DOWN', message: 'Service connection failed' });
                 }
             };
 
             return (
                 <div className="app-container">
+                    {/* 语言切换按钮 */}
+                    <div className="language-toggle">
+                        <button onClick={toggleLanguage}>
+                            {t('langToggle')}
+                        </button>
+                    </div>
+
                     <header className="header">
-                        <h1>🤖 知识库问答系统</h1>
-                        <p>基于 LocalFileRAG 的智能问答平台</p>
+                        <h1>{t('title')}</h1>
+                        <p>{t('subtitle')}</p>
                         {health && (
                             <div style={{marginTop: '10px', fontSize: '14px'}}>
-                                状态: {health.status === 'UP' ? '✅ 运行中' : '❌ 离线'}
+                                {t('status')}: {health.status === 'UP' ? t('statusOnline') : t('statusOffline')}
                             </div>
                         )}
                     </header>
@@ -1368,25 +1653,25 @@
                                 className={`tab ${activeTab === 'qa' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('qa')}
                             >
-                                💬 智能问答
+                                {t('tabQA')}
                             </button>
                             <button
                                 className={`tab ${activeTab === 'search' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('search')}
                             >
-                                🔍 文档搜索
+                                {t('tabSearch')}
                             </button>
                             <button
                                 className={`tab ${activeTab === 'documents' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('documents')}
                             >
-                                📁 文档管理
+                                {t('tabDocuments')}
                             </button>
                             <button
                                 className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
                                 onClick={() => setActiveTab('stats')}
                             >
-                                📊 统计信息
+                                {t('tabStats')}
                             </button>
                         </div>
 
@@ -1399,14 +1684,19 @@
                     </main>
 
                     <footer className="footer">
-                        <p>© 2025 LocalFileRAG Knowledge QA System | Powered by GPT-4o & React</p>
+                        <p>{t('footerText')}</p>
                     </footer>
                 </div>
             );
         }
 
         // 渲染应用
-        ReactDOM.render(<App />, document.getElementById('root'));
+        ReactDOM.render(
+            <LanguageProvider>
+                <App />
+            </LanguageProvider>,
+            document.getElementById('root')
+        );
     </script>
 </body>
 </html>
