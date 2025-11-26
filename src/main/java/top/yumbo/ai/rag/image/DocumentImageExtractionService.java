@@ -36,12 +36,19 @@ public class DocumentImageExtractionService {
 
         // 初始化所有提取器
         this.extractors = new ArrayList<>();
+
+        // 新格式提取器 (Office 2007+)
         this.extractors.add(new PdfImageExtractor());
         this.extractors.add(new WordImageExtractor());
         this.extractors.add(new PowerPointImageExtractor());
         this.extractors.add(new ExcelImageExtractor());
 
-        log.info("DocumentImageExtractionService initialized with {} extractors, AI analysis: {}",
+        // 老格式提取器 (Office 97-2003)
+        this.extractors.add(new WordLegacyImageExtractor());
+        this.extractors.add(new PowerPointLegacyImageExtractor());
+        this.extractors.add(new ExcelLegacyImageExtractor());
+
+        log.info("DocumentImageExtractionService initialized with {} extractors (including legacy formats), AI analysis: {}",
                 extractors.size(), aiAnalysisEnabled);
     }
 
@@ -170,7 +177,12 @@ public class DocumentImageExtractionService {
      * 获取支持的文档格式列表
      */
     public List<String> getSupportedFormats() {
-        return List.of(".pdf", ".docx", ".pptx", ".xlsx");
+        return List.of(
+            ".pdf",
+            ".docx", ".doc",      // Word
+            ".pptx", ".ppt",      // PowerPoint
+            ".xlsx", ".xls"       // Excel
+        );
     }
 }
 
