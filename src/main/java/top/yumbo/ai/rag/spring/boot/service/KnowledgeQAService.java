@@ -16,6 +16,7 @@ import top.yumbo.ai.rag.optimization.SmartContextBuilder;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -271,6 +272,13 @@ public class KnowledgeQAService {
                 log.info("✅ 使用关键词检索");
             }
 
+            // 限制文档数量，防止内存溢出
+            int maxDocsToProcess = 8; // 限制为最多 8 个文档
+            if (documents.size() > maxDocsToProcess) {
+                log.warn("⚠️ 检索到 {} 个文档，限制为前 {} 个以防止内存溢出", documents.size(), maxDocsToProcess);
+                documents = documents.subList(0, maxDocsToProcess);
+            }
+
             // 步骤2: 构建智能上下文
             // 设置当前文档ID（用于保存切分块）
             if (!documents.isEmpty() && contextBuilder != null) {
@@ -281,27 +289,48 @@ public class KnowledgeQAService {
             String context = contextBuilder.buildSmartContext(question, documents);
             log.info("Context stats: {}", contextBuilder.getContextStats(context));
 
-            // 步骤3: 构建 Prompt
-            String prompt = buildPrompt(question, context);
+            // 步骤3: 收集可用的图片信息
+            List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
+            StringBuilder imageContext = new StringBuilder();
 
-            // 步骤4: 调用 LLM 生成答案
-            String answer = llmClient.generate(prompt);
-
-            // 步骤5: 处理图片引用（如果有图片）
-            if (!documents.isEmpty()) {
-                String firstDocTitle = documents.get(0).getTitle();
+            for (top.yumbo.ai.rag.model.Document doc : documents) {
                 try {
-                    List<top.yumbo.ai.rag.image.ImageInfo> images =
-                        imageStorageService.listImages(firstDocTitle);
-                    if (!images.isEmpty()) {
-                        answer = imageStorageService.replaceImageReferences(
-                            answer, firstDocTitle, images);
-                        log.info("✅ Replaced {} image references in answer", images.size());
+                    List<top.yumbo.ai.rag.image.ImageInfo> docImages =
+                        imageStorageService.listImages(doc.getTitle());
+
+                    if (!docImages.isEmpty()) {
+                        allImages.addAll(docImages);
+
+                        imageContext.append("\n\n【可用图片 - ").append(doc.getTitle()).append("】\n");
+                        for (int i = 0; i < Math.min(docImages.size(), 5); i++) { // 最多列出 5 张图片
+                            top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
+                            String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
+                                ? img.getDescription()
+                                : "相关图片";
+                            imageContext.append(String.format(
+                                "- 图片 %d: %s (引用方式: ![%s](%s))\n",
+                                i + 1, imgDesc, imgDesc, img.getUrl()
+                            ));
+                        }
+                        if (docImages.size() > 5) {
+                            imageContext.append(String.format("  ... 还有 %d 张图片\n", docImages.size() - 5));
+                        }
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to process images for document: {}", firstDocTitle, e);
+                    log.debug("未找到文档图片: {}", doc.getTitle());
                 }
             }
+
+            // 步骤4: 构建增强的 Prompt（包含图片信息）
+            String prompt = buildEnhancedPrompt(question, context, imageContext.toString(), !allImages.isEmpty());
+
+            if (!allImages.isEmpty()) {
+                log.info("🖼️ 上下文中包含 {} 张图片信息", allImages.size());
+            }
+
+            // 步骤5: 调用 LLM 生成答案
+            String answer = llmClient.generate(prompt);
+
 
             // 步骤6: 提取文档来源
             List<String> sources = documents.stream()
@@ -356,6 +385,38 @@ public class KnowledgeQAService {
 
         // 替换占位符
         return template
+                .replace("{question}", question)
+                .replace("{context}", context);
+    }
+
+    /**
+     * 构建增强的 LLM Prompt（包含图片信息）
+     *
+     * @param question 用户问题
+     * @param context 文本上下文
+     * @param imageContext 图片上下文（图片URL和描述）
+     * @param hasImages 是否有可用图片
+     * @return 增强的 Prompt
+     */
+    private String buildEnhancedPrompt(String question, String context, String imageContext, boolean hasImages) {
+        // 从配置中获取提示词模板
+        String template = properties.getLlm().getPromptTemplate();
+
+        // 如果有图片，添加图片使用指南
+        String enhancedTemplate = template;
+        if (hasImages && !imageContext.isEmpty()) {
+            enhancedTemplate = template +
+                "\n\n" +
+                "**重要提示**：\n" +
+                "1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。\n" +
+                "2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。\n" +
+                "3. 引用格式已在下方提供，直接复制使用即可。\n" +
+                "4. 请确保引用的图片 URL 完整且正确。\n" +
+                imageContext;
+        }
+
+        // 替换占位符
+        return enhancedTemplate
                 .replace("{question}", question)
                 .replace("{context}", context);
     }
