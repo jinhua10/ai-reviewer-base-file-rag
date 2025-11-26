@@ -197,15 +197,33 @@ public class KnowledgeQAService {
     private void createQASystem() {
         log.info("\n📝 步骤4: 创建问答系统");
 
-        // 初始化智能上下文构建器
-        contextBuilder = SmartContextBuilder.builder()
-                .maxContextLength(properties.getLlm().getMaxContextLength())
-                .maxDocLength(properties.getLlm().getMaxDocLength())
-                .build();
+        // 获取切分策略配置
+        String strategyName = properties.getLlm().getChunkingStrategy();
+        top.yumbo.ai.rag.chunking.ChunkingStrategy strategy =
+            top.yumbo.ai.rag.chunking.ChunkingStrategy.fromString(strategyName);
+
+        // 初始化智能上下文构建器（使用新的构造函数）
+        contextBuilder = new SmartContextBuilder(
+            properties.getLlm().getMaxContextLength(),
+            properties.getLlm().getMaxDocLength(),
+            true, // preserveFullContent（由策略控制，保留兼容性）
+            properties.getLlm().getChunking(),
+            strategy,
+            llmClient
+        );
 
         log.info("   ✅ 智能上下文构建器已初始化");
         log.info("      - 最大上下文: {} 字符", properties.getLlm().getMaxContextLength());
         log.info("      - 最大文档长度: {} 字符", properties.getLlm().getMaxDocLength());
+        log.info("      - 切分策略: {} ({})", strategy, strategy.getDescription());
+        log.info("      - 块大小: {} 字符", properties.getLlm().getChunking().getChunkSize());
+        log.info("      - 块重叠: {} 字符", properties.getLlm().getChunking().getChunkOverlap());
+
+        if (strategy == top.yumbo.ai.rag.chunking.ChunkingStrategy.AI_SEMANTIC
+            && properties.getLlm().getChunking().getAiChunking().isEnabled()) {
+            log.info("      - AI 切分: 启用 (模型: {})",
+                properties.getLlm().getChunking().getAiChunking().getModel());
+        }
 
         if (embeddingEngine != null && vectorIndexEngine != null) {
             log.info("   ✅ 使用向量检索增强模式");

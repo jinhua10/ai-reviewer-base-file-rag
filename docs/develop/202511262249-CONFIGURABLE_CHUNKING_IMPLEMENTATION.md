@@ -213,55 +213,56 @@ knowledge:
 
 ### 步骤 3: 集成到现有系统
 
-**需要做的**（下一步）:
+已完成 ✅ - 已集成到 `SmartContextBuilder` 和 `KnowledgeQAService`
 
-1. 在 `SmartContextBuilder` 中集成切分器：
+#### 3.1 SmartContextBuilder 集成
 
+**新增构造函数**：
 ```java
-// SmartContextBuilder.java
-private final DocumentChunker chunker;
-
 public SmartContextBuilder(int maxContextLength, int maxDocLength, 
-                          ChunkingConfig config, 
-                          ChunkingStrategy strategy,
-                          LLMClient llmClient) {
-    // ...existing code...
-    
-    // 创建切分器
-    this.chunker = DocumentChunkerFactory.createChunker(
-        strategy, config, llmClient
-    );
-}
-
-private String extractRelevantPart(String query, String content, int maxLength) {
-    // 使用切分器
-    List<DocumentChunk> chunks = chunker.chunk(content, query);
-    
-    // 选择最相关的块
-    return selectBestChunks(chunks, maxLength);
-}
+                          boolean preserveFullContent,
+                          ChunkingConfig chunkingConfig,
+                          ChunkingStrategy chunkingStrategy,
+                          LLMClient llmClient)
 ```
 
-2. 在 `KnowledgeQAService` 中传递配置：
+**核心方法更新**：
+- `extractRelevantPart()` - 优先使用新切分器
+- `extractWithChunker()` - 使用配置的切分器提取内容
+- `selectBestChunks()` - 智能选择最相关的文档块
 
+**向后兼容**：
+- 保留原有构造函数
+- 如果未配置切分器，自动降级到原有逻辑
+
+#### 3.2 KnowledgeQAService 集成
+
+**createQASystem() 方法更新**：
 ```java
-// KnowledgeQAService.java
-@PostConstruct
-public void initialize() {
-    // ...existing code...
-    
-    ChunkingStrategy strategy = ChunkingStrategy.fromString(
-        properties.getLlm().getChunkingStrategy()
-    );
-    
-    this.contextBuilder = new SmartContextBuilder(
-        maxContextLength,
-        maxDocLength,
-        properties.getLlm().getChunking(),
-        strategy,
-        llmClient
-    );
-}
+// 获取切分策略配置
+String strategyName = properties.getLlm().getChunkingStrategy();
+ChunkingStrategy strategy = ChunkingStrategy.fromString(strategyName);
+
+// 创建带切分器的上下文构建器
+contextBuilder = new SmartContextBuilder(
+    properties.getLlm().getMaxContextLength(),
+    properties.getLlm().getMaxDocLength(),
+    true,
+    properties.getLlm().getChunking(),
+    strategy,
+    llmClient
+);
+```
+
+**启动日志增强**：
+```
+📝 步骤4: 创建问答系统
+   ✅ 智能上下文构建器已初始化
+      - 最大上下文: 32000 字符
+      - 最大文档长度: 10000 字符
+      - 切分策略: SMART_KEYWORD (智能关键词切分)
+      - 块大小: 8000 字符
+      - 块重叠: 800 字符
 ```
 
 ---
@@ -367,7 +368,10 @@ public void initialize() {
 - [x] Properties 类更新
 - [x] 详细文档编写
 - [x] 配置示例提供
-- [ ] 集成到现有系统（待完成）
+- [x] 集成到现有系统（✅ 已完成）
+  - [x] SmartContextBuilder 集成
+  - [x] KnowledgeQAService 集成
+  - [x] 向后兼容性保证
 - [ ] 单元测试编写（可选）
 - [ ] 性能测试（可选）
 
