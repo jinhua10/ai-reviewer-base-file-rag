@@ -162,6 +162,16 @@ public class KnowledgeQAProperties {
         private int maxDocLength = 5000;
 
         /**
+         * 文档切分策略
+         */
+        private String chunkingStrategy = "SMART_KEYWORD";
+
+        /**
+         * 文档切分配置
+         */
+        private top.yumbo.ai.rag.chunking.ChunkingConfig chunking = new top.yumbo.ai.rag.chunking.ChunkingConfig();
+
+        /**
          * Prompt 模板
          * 支持两个占位符：
          * - {question}: 用户问题
