@@ -59,12 +59,17 @@ public class HybridSearchService {
                 luceneResult.getDocuments().size(),
                 luceneResult.getTotalHits());
 
-            // 显示 Lucene Top-10
+            // 显示 Lucene Top-10（带评分）
             if (!luceneResult.getDocuments().isEmpty()) {
-                log.info("   Lucene Top-10 文档:");
-                luceneResult.getDocuments().stream().limit(10).forEach(doc ->
-                    log.info("      - {} ({} 字符)", doc.getTitle(), doc.getContent().length())
-                );
+                log.info("   Lucene Top-10 文档（按相关性排序）:");
+                List<Document> luceneDocs = luceneResult.getDocuments();
+                for (int i = 0; i < Math.min(10, luceneDocs.size()); i++) {
+                    Document doc = luceneDocs.get(i);
+                    // 计算归一化评分（第1名=1.0，逐步降低）
+                    double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
+                    log.info("      {}. {} - {} 字符 (Lucene 排名分: {:.3f})",
+                            i + 1, doc.getTitle(), doc.getContent().length(), normalizedScore);
+                }
             }
 
             // 2. 向量检索（语义精排）
@@ -107,28 +112,65 @@ public class HybridSearchService {
                 hybridScores.put(docId, currentScore + 0.7 * result.getSimilarity());
             }
 
-            // 4. 按混合分数排序，并过滤低分文档
+            // 4. 按混合分数排序
             int topK = properties.getVectorSearch().getTopK();
             float minScore = properties.getVectorSearch().getMinScoreThreshold();
 
-            List<Map.Entry<String, Double>> sortedScores = hybridScores.entrySet().stream()
-                .filter(entry -> entry.getValue() >= minScore) // 过滤低分文档
+            // 先排序，看看未过滤前的 Top 文档
+            List<Map.Entry<String, Double>> allSortedScores = hybridScores.entrySet().stream()
                 .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
+                .toList();
+
+            // 显示未过滤前的 Top 5
+            if (!allSortedScores.isEmpty()) {
+                log.info("📊 混合评分 Top-5 (过滤前，阈值={}):", minScore);
+                for (int i = 0; i < Math.min(5, allSortedScores.size()); i++) {
+                    var entry = allSortedScores.get(i);
+                    Document doc = rag.getDocument(entry.getKey());
+                    if (doc != null) {
+                        String status = entry.getValue() >= minScore ? "✅" : "❌";
+                        log.info("      {} {}. {} (评分: {:.3f})",
+                            status, i + 1, doc.getTitle(), entry.getValue());
+                    }
+                }
+            }
+
+            // 过滤低分文档
+            List<Map.Entry<String, Double>> sortedScores = allSortedScores.stream()
+                .filter(entry -> entry.getValue() >= minScore)
                 .limit(topK)
                 .toList();
 
             if (sortedScores.size() < hybridScores.size()) {
-                log.info("⚠️ 过滤了 {} 个低分文档（评分 < {}）",
-                        hybridScores.size() - sortedScores.size(), minScore);
+                log.warn("⚠️ 过滤了 {} 个低分文档（评分 < {}），保留 {} 个文档",
+                        hybridScores.size() - sortedScores.size(), minScore, sortedScores.size());
             }
 
-            log.info("🎲 混合评分 Top-{}:", Math.min(topK, sortedScores.size()));
+            log.info("🎲 混合评分 Top-{} (Lucene权重:0.3 + 向量权重:0.7):", Math.min(topK, sortedScores.size()));
             for (int i = 0; i < Math.min(sortedScores.size(), 10); i++) {
                 var entry = sortedScores.get(i);
                 Document doc = rag.getDocument(entry.getKey());
                 if (doc != null) {
-                    log.info("   {}. {} (混合分数: {:.3f})",
-                        i + 1, doc.getTitle(), entry.getValue());
+                    // 计算详细评分信息
+                    int luceneRank = -1;
+                    for (int j = 0; j < luceneDocs.size(); j++) {
+                        if (luceneDocs.get(j).getId().equals(entry.getKey())) {
+                            luceneRank = j + 1;
+                            break;
+                        }
+                    }
+
+                    double vectorScore = 0.0;
+                    for (SimpleVectorIndexEngine.VectorSearchResult result : vectorResults) {
+                        if (result.getDocId().equals(entry.getKey())) {
+                            vectorScore = result.getSimilarity();
+                            break;
+                        }
+                    }
+
+                    log.info("   {}. {} (混合分: {:.3f} = Lucene排名#{} + 向量:{:.3f})",
+                        i + 1, doc.getTitle(), entry.getValue(),
+                        luceneRank > 0 ? luceneRank : "N/A", vectorScore);
                 }
             }
 

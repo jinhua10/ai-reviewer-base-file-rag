@@ -91,10 +91,10 @@ public class KnowledgeQAProperties {
         private int topK = 20;
 
         /**
-         * 文档相关性评分阈值（Lucene 检索）
+         * 文档相关性评分阈值（Lucene + 向量混合评分）
          * 低于此分数的文档会被过滤
          */
-        private float minScoreThreshold = 0.15f;
+        private float minScoreThreshold = 0.10f;
     }
 
     @Data
