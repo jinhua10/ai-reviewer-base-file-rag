@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>反馈UI演示 - Feedback UI Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9ff;
+            border-radius: 12px;
+        }
+
+        .demo-title {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        /* 用户反馈系统样式 */
+        .feedback-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .feedback-section h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-rating-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .feedback-rating-button {
+            padding: 12px 16px;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .feedback-rating-button:hover {
+            border-color: #4caf50;
+            background: #f1f8e9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .feedback-rating-button.selected {
+            border-color: #4caf50;
+            background: #4caf50;
+            color: white;
+            font-weight: 600;
+        }
+
+        .feedback-comment {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .feedback-comment:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .feedback-submit-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .feedback-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .feedback-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback-success {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            color: #2e7d32;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .document-feedback-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .document-feedback-section h4 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .document-feedback-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .document-feedback-item:hover {
+            border-color: #2196f3;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+        }
+
+        .document-feedback-name {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+            margin-right: 15px;
+        }
+
+        .document-feedback-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .document-feedback-btn {
+            padding: 6px 12px;
+            border: 2px solid #90caf9;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .document-feedback-btn:hover {
+            border-color: #2196f3;
+            background: #e3f2fd;
+            transform: translateY(-1px);
+        }
+
+        .document-feedback-btn.liked {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: white;
+        }
+
+        .document-feedback-btn.disliked {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+
+        .lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 24px;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s;
+        }
+
+        .lang-toggle:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .note {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        @media (max-width: 768px) {
+            .feedback-rating-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .document-feedback-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .document-feedback-buttons {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="lang-toggle" onclick="toggleLanguage()">🌐 <span id="langText">English</span></button>
+
+    <div class="container">
+        <h1 id="title">📊 用户反馈UI演示</h1>
+        <p class="subtitle" id="subtitle">完整的反馈系统界面展示 - 支持中英文切换</p>
+
+        <!-- 整体反馈演示 -->
+        <div class="demo-section">
+            <h3 class="demo-title" id="overallTitle">1️⃣ 整体评分反馈</h3>
+
+            <div class="feedback-section">
+                <h4 id="feedbackQuestion">💬 这个回答对您有帮助吗？</h4>
+
+                <div class="feedback-rating-buttons">
+                    <button class="feedback-rating-button" onclick="selectRating(this, 5)">
+                        <span class="zh">⭐⭐⭐⭐⭐ 非常好</span>
+                        <span class="en" style="display:none">⭐⭐⭐⭐⭐ Excellent</span>
+                    </button>
+                    <button class="feedback-rating-button" onclick="selectRating(this, 4)">
+                        <span class="zh">⭐⭐⭐⭐ 很好</span>
+                        <span class="en" style="display:none">⭐⭐⭐⭐ Very Good</span>
+                    </button>
+                    <button class="feedback-rating-button" onclick="selectRating(this, 3)">
+                        <span class="zh">⭐⭐⭐ 还行</span>
+                        <span class="en" style="display:none">⭐⭐⭐ Good</span>
+                    </button>
+                    <button class="feedback-rating-button" onclick="selectRating(this, 2)">
+                        <span class="zh">⭐⭐ 一般</span>
+                        <span class="en" style="display:none">⭐⭐ Fair</span>
+                    </button>
+                    <button class="feedback-rating-button" onclick="selectRating(this, 1)">
+                        <span class="zh">⭐ 不好</span>
+                        <span class="en" style="display:none">⭐ Poor</span>
+                    </button>
+                </div>
+
+                <textarea
+                    class="feedback-comment"
+                    id="commentBox"
+                    placeholder="(可选) 告诉我们更多您的想法...">
+</textarea>
+
+                <button class="feedback-submit-btn" id="submitBtn" onclick="submitFeedback()">
+                    <span class="zh">提交反馈</span>
+                    <span class="en" style="display:none">Submit Feedback</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 文档反馈演示 -->
+        <div class="demo-section">
+            <h3 class="demo-title" id="docTitle">2️⃣ 单文档反馈</h3>
+
+            <div class="document-feedback-section">
+                <h4 id="docQuestion">📚 这些文档对回答问题有帮助吗？</h4>
+
+                <div class="document-feedback-item">
+                    <div class="document-feedback-name">1. 倡导节约用水PPT作品下载.pptx</div>
+                    <div class="document-feedback-buttons">
+                        <button class="document-feedback-btn" onclick="toggleDocFeedback(this, 'like')">
+                            <span class="zh">👍 有帮助</span>
+                            <span class="en" style="display:none">👍 Helpful</span>
+                        </button>
+                        <button class="document-feedback-btn" onclick="toggleDocFeedback(this, 'dislike')">
+                            <span class="zh">👎 无关</span>
+                            <span class="en" style="display:none">👎 Not Relevant</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="document-feedback-item">
+                    <div class="document-feedback-name">2. 海洋环境保护宣传PPT模板.pptx</div>
+                    <div class="document-feedback-buttons">
+                        <button class="document-feedback-btn" onclick="toggleDocFeedback(this, 'like')">
+                            <span class="zh">👍 有帮助</span>
+                            <span class="en" style="display:none">👍 Helpful</span>
+                        </button>
+                        <button class="document-feedback-btn" onclick="toggleDocFeedback(this, 'dislike')">
+                            <span class="zh">👎 无关</span>
+                            <span class="en" style="display:none">👎 Not Relevant</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="document-feedback-item">
+                    <div class="document-feedback-name">3. 技术文档_v2.3.pdf</div>
+                    <div class="document-feedback-buttons">
+                        <button class="document-feedback-btn" onclick="toggleDocFeedback(this, 'like')">
+                            <span class="zh">👍 有帮助</span>
+                            <span class="en" style="display:none">👍 Helpful</span>
+                        </button>
+                        <button class="document-feedback-btn" onclick="toggleDocFeedback(this, 'dislike')">
+                            <span class="zh">👎 无关</span>
+                            <span class="en" style="display:none">👎 Not Relevant</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 成功状态演示 -->
+        <div class="demo-section">
+            <h3 class="demo-title" id="successTitle">3️⃣ 提交成功状态</h3>
+
+            <div class="feedback-section">
+                <div class="feedback-success">
+                    <span class="zh">✅ 感谢您的反馈！</span>
+                    <span class="en" style="display:none">✅ Thank you for your feedback!</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">
+            <strong id="noteTitle">💡 提示</strong>
+            <ul style="margin-top: 10px; margin-left: 20px; line-height: 1.8;">
+                <li class="zh">点击右上角按钮切换语言</li>
+                <li class="zh">点击评分按钮查看选中效果</li>
+                <li class="zh">点击文档反馈按钮查看状态变化</li>
+                <li class="zh">这是一个静态演示页面，实际功能已集成到主应用中</li>
+
+                <li class="en" style="display:none">Click the top-right button to switch language</li>
+                <li class="en" style="display:none">Click rating buttons to see the selection effect</li>
+                <li class="en" style="display:none">Click document feedback buttons to see status changes</li>
+                <li class="en" style="display:none">This is a static demo page, actual features are integrated into the main application</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'zh';
+        let selectedRating = 0;
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'zh' ? 'en' : 'zh';
+
+            // 切换所有文本
+            document.querySelectorAll('.zh').forEach(el => {
+                el.style.display = currentLang === 'zh' ? '' : 'none';
+            });
+            document.querySelectorAll('.en').forEach(el => {
+                el.style.display = currentLang === 'en' ? '' : 'none';
+            });
+
+            // 更新特定元素
+            document.getElementById('langText').textContent = currentLang === 'zh' ? 'English' : '中文';
+            document.getElementById('title').textContent = currentLang === 'zh'
+                ? '📊 用户反馈UI演示'
+                : '📊 User Feedback UI Demo';
+            document.getElementById('subtitle').textContent = currentLang === 'zh'
+                ? '完整的反馈系统界面展示 - 支持中英文切换'
+                : 'Complete Feedback System Interface Demo - Supports Chinese/English';
+            document.getElementById('overallTitle').textContent = currentLang === 'zh'
+                ? '1️⃣ 整体评分反馈'
+                : '1️⃣ Overall Rating Feedback';
+            document.getElementById('feedbackQuestion').textContent = currentLang === 'zh'
+                ? '💬 这个回答对您有帮助吗？'
+                : '💬 Was this answer helpful?';
+            document.getElementById('commentBox').placeholder = currentLang === 'zh'
+                ? '(可选) 告诉我们更多您的想法...'
+                : '(Optional) Tell us more about your thoughts...';
+            document.getElementById('docTitle').textContent = currentLang === 'zh'
+                ? '2️⃣ 单文档反馈'
+                : '2️⃣ Individual Document Feedback';
+            document.getElementById('docQuestion').textContent = currentLang === 'zh'
+                ? '📚 这些文档对回答问题有帮助吗？'
+                : '📚 Were these documents helpful in answering the question?';
+            document.getElementById('successTitle').textContent = currentLang === 'zh'
+                ? '3️⃣ 提交成功状态'
+                : '3️⃣ Submission Success Status';
+            document.getElementById('noteTitle').textContent = currentLang === 'zh'
+                ? '💡 提示'
+                : '💡 Tips';
+        }
+
+        function selectRating(button, rating) {
+            // 移除所有选中状态
+            document.querySelectorAll('.feedback-rating-button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // 添加当前选中状态
+            button.classList.add('selected');
+            selectedRating = rating;
+
+            // 启用提交按钮
+            document.getElementById('submitBtn').disabled = false;
+        }
+
+        function submitFeedback() {
+            if (selectedRating === 0) {
+                alert(currentLang === 'zh' ? '请先评分' : 'Please rate first');
+                return;
+            }
+
+            const successMsg = currentLang === 'zh'
+                ? `✅ 感谢您的 ${selectedRating} 星评价！`
+                : `✅ Thank you for your ${selectedRating}-star rating!`;
+
+            alert(successMsg);
+        }
+
+        function toggleDocFeedback(button, type) {
+            const item = button.closest('.document-feedback-item');
+            const buttons = item.querySelectorAll('.document-feedback-btn');
+
+            // 如果已经选中，则取消选中
+            if (button.classList.contains(type === 'like' ? 'liked' : 'disliked')) {
+                button.classList.remove(type === 'like' ? 'liked' : 'disliked');
+                const textSpan = button.querySelector(`.${currentLang}`);
+                textSpan.textContent = type === 'like'
+                    ? (currentLang === 'zh' ? '👍 有帮助' : '👍 Helpful')
+                    : (currentLang === 'zh' ? '👎 无关' : '👎 Not Relevant');
+                return;
+            }
+
+            // 移除所有状态
+            buttons.forEach(btn => {
+                btn.classList.remove('liked', 'disliked');
+                const span = btn.querySelector(`.${currentLang}`);
+                if (btn === buttons[0]) {
+                    span.textContent = currentLang === 'zh' ? '👍 有帮助' : '👍 Helpful';
+                } else {
+                    span.textContent = currentLang === 'zh' ? '👎 无关' : '👎 Not Relevant';
+                }
+            });
+
+            // 添加当前状态
+            if (type === 'like') {
+                button.classList.add('liked');
+                const span = button.querySelector(`.${currentLang}`);
+                span.textContent = currentLang === 'zh' ? '✅ 已记录' : '✅ Recorded';
+            } else {
+                // 询问原因
+                const reason = prompt(
+                    currentLang === 'zh'
+                        ? '为什么这个文档没有帮助？'
+                        : 'Why was this document not helpful?'
+                );
+
+                if (reason !== null) {
+                    button.classList.add('disliked');
+                    const span = button.querySelector(`.${currentLang}`);
+                    span.textContent = currentLang === 'zh' ? '✅ 已记录' : '✅ Recorded';
+                }
+            }
+        }
+
+        // 初始化禁用提交按钮
+        document.getElementById('submitBtn').disabled = true;
+    </script>
+</body>
+</html>
+

@@ -139,6 +139,28 @@ const translations = {
         qaImageClose: '关闭',
         qaImageAlt: '图片',
 
+        // Feedback System
+        feedbackTitle: '💬 回答反馈',
+        feedbackQuestion: '这个回答对您有帮助吗？',
+        feedbackRating: '请评分',
+        feedbackRating5: '⭐⭐⭐⭐⭐ 非常好',
+        feedbackRating4: '⭐⭐⭐⭐ 很好',
+        feedbackRating3: '⭐⭐⭐ 还行',
+        feedbackRating2: '⭐⭐ 一般',
+        feedbackRating1: '⭐ 不好',
+        feedbackCommentPlaceholder: '(可选) 告诉我们更多您的想法...',
+        feedbackSubmit: '提交反馈',
+        feedbackThankYou: '✅ 感谢您的反馈！',
+        feedbackError: '提交失败，请稍后重试',
+        feedbackDocumentTitle: '📚 文档反馈',
+        feedbackDocumentQuestion: '这些文档对回答问题有帮助吗？',
+        feedbackDocumentHelpful: '👍 有帮助',
+        feedbackDocumentNotHelpful: '👎 无关',
+        feedbackDocumentReasonPlaceholder: '为什么这个文档没有帮助？',
+        feedbackDocumentSubmitted: '✅ 已记录',
+        feedbackAlreadySubmitted: '您已提交过反馈',
+        feedbackPleaseRate: '请先评分',
+
         // Console Logs (for debugging)
         logLoadingDocs: '开始加载文档列表...',
         logDocsResponse: '文档列表响应:',
@@ -282,6 +304,28 @@ const translations = {
         // Image Modal
         qaImageClose: 'Close',
         qaImageAlt: 'Image',
+
+        // Feedback System
+        feedbackTitle: '💬 Answer Feedback',
+        feedbackQuestion: 'Was this answer helpful?',
+        feedbackRating: 'Please rate',
+        feedbackRating5: '⭐⭐⭐⭐⭐ Excellent',
+        feedbackRating4: '⭐⭐⭐⭐ Very Good',
+        feedbackRating3: '⭐⭐⭐ Good',
+        feedbackRating2: '⭐⭐ Fair',
+        feedbackRating1: '⭐ Poor',
+        feedbackCommentPlaceholder: '(Optional) Tell us more about your thoughts...',
+        feedbackSubmit: 'Submit Feedback',
+        feedbackThankYou: '✅ Thank you for your feedback!',
+        feedbackError: 'Submission failed, please try again later',
+        feedbackDocumentTitle: '📚 Document Feedback',
+        feedbackDocumentQuestion: 'Were these documents helpful in answering the question?',
+        feedbackDocumentHelpful: '👍 Helpful',
+        feedbackDocumentNotHelpful: '👎 Not Relevant',
+        feedbackDocumentReasonPlaceholder: 'Why was this document not helpful?',
+        feedbackDocumentSubmitted: '✅ Recorded',
+        feedbackAlreadySubmitted: 'You have already submitted feedback',
+        feedbackPleaseRate: 'Please rate first',
 
         // Console Logs (for debugging)
         logLoadingDocs: 'Loading document list...',

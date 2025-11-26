@@ -18,6 +18,9 @@ public class AIAnswer {
     private final int totalRetrieved;          // 检索到的总文档数
     private final boolean hasMoreDocuments;     // 是否还有更多文档未处理
 
+    // 新增：问答记录ID（用于反馈）
+    private String recordId;
+
     public AIAnswer(String answer, List<String> sources, long responseTimeMs) {
         this(answer, sources, responseTimeMs, Collections.emptyList(), Collections.emptyList(),
              Collections.emptyList(), 0, false);
@@ -52,4 +55,6 @@ public class AIAnswer {
     public List<String> getUsedDocuments() { return usedDocuments; }
     public int getTotalRetrieved() { return totalRetrieved; }
     public boolean isHasMoreDocuments() { return hasMoreDocuments; }
+    public String getRecordId() { return recordId; }
+    public void setRecordId(String recordId) { this.recordId = recordId; }
 }

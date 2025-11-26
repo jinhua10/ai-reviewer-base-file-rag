@@ -706,6 +706,253 @@
             pointer-events: none;
         }
 
+        /* 用户反馈系统样式 */
+        .feedback-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 12px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .feedback-section h4 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feedback-rating-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .feedback-rating-button {
+            padding: 12px 16px;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .feedback-rating-button:hover {
+            border-color: #4caf50;
+            background: #f1f8e9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+        }
+
+        .feedback-rating-button.selected {
+            border-color: #4caf50;
+            background: #4caf50;
+            color: white;
+            font-weight: 600;
+        }
+
+        .feedback-comment {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #a5d6a7;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            resize: vertical;
+            min-height: 60px;
+            font-family: inherit;
+        }
+
+        .feedback-comment:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .feedback-submit-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .feedback-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .feedback-submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback-success {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            color: #2e7d32;
+            text-align: center;
+            font-weight: 600;
+            animation: fadeIn 0.3s;
+        }
+
+        .document-feedback-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .document-feedback-section h4 {
+            color: #1565c0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .document-feedback-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .document-feedback-item:hover {
+            border-color: #2196f3;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+        }
+
+        .document-feedback-name {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+            margin-right: 15px;
+            word-break: break-word;
+        }
+
+        .document-feedback-buttons {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .document-feedback-btn {
+            padding: 6px 12px;
+            border: 2px solid #90caf9;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .document-feedback-btn:hover {
+            border-color: #2196f3;
+            background: #e3f2fd;
+            transform: translateY(-1px);
+        }
+
+        .document-feedback-btn.liked {
+            background: #4caf50;
+            border-color: #4caf50;
+            color: white;
+        }
+
+        .document-feedback-btn.disliked {
+            background: #f44336;
+            border-color: #f44336;
+            color: white;
+        }
+
+        .document-feedback-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback-reason-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s;
+        }
+
+        .feedback-reason-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .feedback-reason-content h4 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .feedback-reason-content textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+            margin-bottom: 15px;
+        }
+
+        .feedback-reason-content textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+        }
+
+        .feedback-reason-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .header h1 {
@@ -738,6 +985,21 @@
                 width: 36px;
                 height: 36px;
                 font-size: 20px;
+            }
+
+            .feedback-rating-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .document-feedback-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .document-feedback-buttons {
+                width: 100%;
+                justify-content: flex-start;
             }
         }
     </style>
@@ -789,6 +1051,7 @@
 
         // API 调用函数
         const API_DOCS_URL = 'http://localhost:8080/api/documents';
+        const API_FEEDBACK_URL = 'http://localhost:8080/api/feedback';
 
         const api = {
             ask: async (question) => {
@@ -845,6 +1108,24 @@
                     responseType: 'blob'
                 });
                 return response.data;
+            },
+            // 反馈相关 API
+            submitOverallFeedback: async (recordId, rating, feedback) => {
+                const response = await axios.post(`${API_FEEDBACK_URL}/overall`, {
+                    recordId,
+                    rating,
+                    feedback
+                });
+                return response.data;
+            },
+            submitDocumentFeedback: async (recordId, documentName, feedbackType, reason) => {
+                const response = await axios.post(`${API_FEEDBACK_URL}/document`, {
+                    recordId,
+                    documentName,
+                    feedbackType,
+                    reason
+                });
+                return response.data;
             }
         };
 
@@ -855,6 +1136,14 @@
             const [answer, setAnswer] = useState(null);
             const [loading, setLoading] = useState(false);
             const [error, setError] = useState(null);
+
+            // 反馈相关状态
+            const [feedbackRating, setFeedbackRating] = useState(0);
+            const [feedbackComment, setFeedbackComment] = useState('');
+            const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+            const [documentFeedbacks, setDocumentFeedbacks] = useState({});
+            const [showReasonModal, setShowReasonModal] = useState(false);
+            const [currentFeedbackDoc, setCurrentFeedbackDoc] = useState(null);
 
             // 配置 marked
             useEffect(() => {
@@ -1018,6 +1307,88 @@
                 document.body.appendChild(modal);
             };
 
+            // 提交整体反馈
+            const handleSubmitFeedback = async () => {
+                if (feedbackRating === 0) {
+                    alert(t('feedbackPleaseRate'));
+                    return;
+                }
+
+                try {
+                    const result = await api.submitOverallFeedback(
+                        answer.recordId || Date.now().toString(),
+                        feedbackRating,
+                        feedbackComment
+                    );
+
+                    if (result.success) {
+                        setFeedbackSubmitted(true);
+                    } else {
+                        alert(t('feedbackError'));
+                    }
+                } catch (err) {
+                    console.error('提交反馈失败:', err);
+                    alert(t('feedbackError'));
+                }
+            };
+
+            // 提交文档反馈（有帮助）
+            const handleDocumentHelpful = async (docName) => {
+                if (documentFeedbacks[docName]) {
+                    return; // 已经提交过反馈
+                }
+
+                try {
+                    const result = await api.submitDocumentFeedback(
+                        answer.recordId || Date.now().toString(),
+                        docName,
+                        'HELPFUL',
+                        null
+                    );
+
+                    if (result.success) {
+                        setDocumentFeedbacks(prev => ({
+                            ...prev,
+                            [docName]: 'HELPFUL'
+                        }));
+                    }
+                } catch (err) {
+                    console.error('提交文档反馈失败:', err);
+                }
+            };
+
+            // 提交文档反馈（无关）
+            const handleDocumentNotHelpful = (docName) => {
+                setCurrentFeedbackDoc(docName);
+                setShowReasonModal(true);
+            };
+
+            // 提交文档无关反馈的原因
+            const submitDocumentNotHelpfulReason = async (reason) => {
+                if (!currentFeedbackDoc) return;
+
+                try {
+                    const result = await api.submitDocumentFeedback(
+                        answer.recordId || Date.now().toString(),
+                        currentFeedbackDoc,
+                        'NOT_HELPFUL',
+                        reason
+                    );
+
+                    if (result.success) {
+                        setDocumentFeedbacks(prev => ({
+                            ...prev,
+                            [currentFeedbackDoc]: 'NOT_HELPFUL'
+                        }));
+                    }
+                } catch (err) {
+                    console.error('提交文档反馈失败:', err);
+                } finally {
+                    setShowReasonModal(false);
+                    setCurrentFeedbackDoc(null);
+                }
+            };
+
             return (
                 <div className="qa-section">
                     <div className="input-group">
@@ -1128,8 +1499,137 @@
                                 </div>
                             )}
 
+                            {/* 用户反馈区域 */}
+                            {!feedbackSubmitted ? (
+                                <div className="feedback-section">
+                                    <h4>💬 {t('feedbackQuestion')}</h4>
+
+                                    <div className="feedback-rating-buttons">
+                                        <button
+                                            className={`feedback-rating-button ${feedbackRating === 5 ? 'selected' : ''}`}
+                                            onClick={() => setFeedbackRating(5)}
+                                        >
+                                            {t('feedbackRating5')}
+                                        </button>
+                                        <button
+                                            className={`feedback-rating-button ${feedbackRating === 4 ? 'selected' : ''}`}
+                                            onClick={() => setFeedbackRating(4)}
+                                        >
+                                            {t('feedbackRating4')}
+                                        </button>
+                                        <button
+                                            className={`feedback-rating-button ${feedbackRating === 3 ? 'selected' : ''}`}
+                                            onClick={() => setFeedbackRating(3)}
+                                        >
+                                            {t('feedbackRating3')}
+                                        </button>
+                                        <button
+                                            className={`feedback-rating-button ${feedbackRating === 2 ? 'selected' : ''}`}
+                                            onClick={() => setFeedbackRating(2)}
+                                        >
+                                            {t('feedbackRating2')}
+                                        </button>
+                                        <button
+                                            className={`feedback-rating-button ${feedbackRating === 1 ? 'selected' : ''}`}
+                                            onClick={() => setFeedbackRating(1)}
+                                        >
+                                            {t('feedbackRating1')}
+                                        </button>
+                                    </div>
+
+                                    <textarea
+                                        className="feedback-comment"
+                                        placeholder={t('feedbackCommentPlaceholder')}
+                                        value={feedbackComment}
+                                        onChange={(e) => setFeedbackComment(e.target.value)}
+                                    />
+
+                                    <button
+                                        className="feedback-submit-btn"
+                                        onClick={handleSubmitFeedback}
+                                        disabled={feedbackRating === 0}
+                                    >
+                                        {t('feedbackSubmit')}
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="feedback-section">
+                                    <div className="feedback-success">
+                                        {t('feedbackThankYou')}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 文档反馈区域 */}
+                            {answer.sources && answer.sources.length > 0 && (
+                                <div className="document-feedback-section">
+                                    <h4>📚 {t('feedbackDocumentQuestion')}</h4>
+                                    {answer.sources.map((source, index) => (
+                                        <div key={index} className="document-feedback-item">
+                                            <div className="document-feedback-name">
+                                                {index + 1}. {source}
+                                            </div>
+                                            <div className="document-feedback-buttons">
+                                                <button
+                                                    className={`document-feedback-btn ${documentFeedbacks[source] === 'HELPFUL' ? 'liked' : ''}`}
+                                                    onClick={() => handleDocumentHelpful(source)}
+                                                    disabled={documentFeedbacks[source] !== undefined}
+                                                >
+                                                    {documentFeedbacks[source] === 'HELPFUL'
+                                                        ? t('feedbackDocumentSubmitted')
+                                                        : t('feedbackDocumentHelpful')}
+                                                </button>
+                                                <button
+                                                    className={`document-feedback-btn ${documentFeedbacks[source] === 'NOT_HELPFUL' ? 'disliked' : ''}`}
+                                                    onClick={() => handleDocumentNotHelpful(source)}
+                                                    disabled={documentFeedbacks[source] !== undefined}
+                                                >
+                                                    {documentFeedbacks[source] === 'NOT_HELPFUL'
+                                                        ? t('feedbackDocumentSubmitted')
+                                                        : t('feedbackDocumentNotHelpful')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
                             <div className="response-time">
                                 {t('qaResponseTime')}: {answer.responseTimeMs}ms
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 文档反馈原因模态框 */}
+                    {showReasonModal && (
+                        <div className="feedback-reason-modal" onClick={() => setShowReasonModal(false)}>
+                            <div className="feedback-reason-content" onClick={(e) => e.stopPropagation()}>
+                                <h4>{t('feedbackDocumentReasonPlaceholder')}</h4>
+                                <textarea
+                                    id="reasonTextarea"
+                                    placeholder={t('feedbackCommentPlaceholder')}
+                                    autoFocus
+                                />
+                                <div className="feedback-reason-actions">
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => {
+                                            setShowReasonModal(false);
+                                            setCurrentFeedbackDoc(null);
+                                        }}
+                                    >
+                                        {t('qaImageClose')}
+                                    </button>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => {
+                                            const textarea = document.getElementById('reasonTextarea');
+                                            submitDocumentNotHelpfulReason(textarea.value);
+                                        }}
+                                    >
+                                        {t('feedbackSubmit')}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

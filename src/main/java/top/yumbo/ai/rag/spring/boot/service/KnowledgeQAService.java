@@ -36,6 +36,7 @@ public class KnowledgeQAService {
     private final LLMClient llmClient;
     private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;
     private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
+    private final top.yumbo.ai.rag.feedback.QARecordService qaRecordService;  // 新增
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -47,13 +48,15 @@ public class KnowledgeQAService {
                               HybridSearchService hybridSearchService,
                               LLMClient llmClient,
                               top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService,
-                              top.yumbo.ai.rag.image.ImageStorageService imageStorageService) {
+                              top.yumbo.ai.rag.image.ImageStorageService imageStorageService,
+                              top.yumbo.ai.rag.feedback.QARecordService qaRecordService) {  // 新增参数
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
         this.llmClient = llmClient;
         this.chunkStorageService = chunkStorageService;
         this.imageStorageService = imageStorageService;
+        this.qaRecordService = qaRecordService;  // 新增
     }
 
     /**
@@ -393,7 +396,10 @@ public class KnowledgeQAService {
             log.info("\n⏱️  响应时间: {}ms", totalTime);
             log.info("=".repeat(80));
 
-            return new AIAnswer(
+            // 保存问答记录（用于反馈和优化）
+            String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
+
+            AIAnswer aiAnswer = new AIAnswer(
                 answer,
                 sources,
                 totalTime,
@@ -403,6 +409,11 @@ public class KnowledgeQAService {
                 totalDocs,          // 检索到的总文档数
                 hasMoreDocs         // 是否还有更多文档
             );
+
+            // 设置记录ID，方便后续反馈
+            aiAnswer.setRecordId(recordId);
+
+            return aiAnswer;
 
         } catch (Exception e) {
             log.error("❌ 问答处理失败", e);
@@ -647,5 +658,29 @@ public class KnowledgeQAService {
         }
 
         log.info("✅ 知识库问答系统已安全关闭");
+    }
+
+    /**
+     * 保存问答记录
+     */
+    private String saveQARecord(String question, String answer,
+                               List<String> retrievedDocs, List<String> usedDocs,
+                               long responseTimeMs) {
+        try {
+            top.yumbo.ai.rag.feedback.QARecord record = top.yumbo.ai.rag.feedback.QARecord.builder()
+                .question(question)
+                .answer(answer)
+                .retrievedDocuments(retrievedDocs)
+                .usedDocuments(usedDocs)
+                .responseTimeMs(responseTimeMs)
+                .build();
+
+            String recordId = qaRecordService.saveRecord(record);
+            log.debug("📝 问答记录已保存: {}", recordId);
+            return recordId;
+        } catch (Exception e) {
+            log.warn("⚠️ 保存问答记录失败", e);
+            return null;
+        }
     }
 }
