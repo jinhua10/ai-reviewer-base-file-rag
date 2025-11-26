@@ -68,44 +68,59 @@
 
 3. **DocumentImageExtractionService.java** - 图片提取管理服务
 
-### 文档格式提取器 (4个)
+### 文档格式提取器 (7个)
 
 4. **PdfImageExtractor.java** - PDF 图片提取器
    - 使用 Apache PDFBox
    - 提取每页的图片和上下文文本
    - 过滤小图片（< 50x50）
 
-5. **WordImageExtractor.java** - Word 图片提取器
+5. **WordImageExtractor.java** - Word (.docx) 图片提取器
    - 使用 Apache POI XWPF
    - 提取段落和表格中的图片
    - 提取周围文本作为上下文
 
-6. **PowerPointImageExtractor.java** - PowerPoint 图片提取器
+6. **WordLegacyImageExtractor.java** - Word 97-2003 (.doc) 图片提取器
+   - 使用 Apache POI HWPF
+   - 提取所有嵌入图片
+   - 提取文档文本作为上下文
+
+7. **PowerPointImageExtractor.java** - PowerPoint (.pptx) 图片提取器
    - 使用 Apache POI XSLF
    - 提取每张幻灯片的图片
    - 提取幻灯片标题和文本
 
-7. **ExcelImageExtractor.java** - Excel 图片提取器
+8. **PowerPointLegacyImageExtractor.java** - PowerPoint 97-2003 (.ppt) 图片提取器
+   - 使用 Apache POI HSLF
+   - 提取幻灯片中的图片
+   - 提取幻灯片文本内容
+
+9. **ExcelImageExtractor.java** - Excel (.xlsx) 图片提取器
    - 使用 Apache POI XSSF
    - 提取工作表中的图片
    - 提取前10行数据作为上下文
 
+10. **ExcelLegacyImageExtractor.java** - Excel 97-2003 (.xls) 图片提取器
+    - 使用 Apache POI HSSF
+    - 提取工作表中的图片
+    - 提取工作表数据作为上下文
+
 ### AI 分析服务 (1个)
 
-8. **AIImageAnalyzer.java** - AI 图片分析服务
-   ```java
-   - analyzeImage() - 单张图片分析
-   - analyzeImages() - 批量分析
-   - simpleAnalyze() - 简单分析（降级）
-   ```
+11. **AIImageAnalyzer.java** - AI 图片分析服务
+    ```java
+    - analyzeImage() - 单张图片分析
+    - analyzeImages() - 批量分析
+    - simpleAnalyze() - 简单分析（降级）
+    ```
 
 ### 配置和集成 (2个)
 
-9. **StorageConfiguration.java** (更新)
-   - 添加 AIImageAnalyzer Bean
-   - 添加 DocumentImageExtractionService Bean
+12. **StorageConfiguration.java** (更新)
+    - 添加 AIImageAnalyzer Bean
+    - 添加 DocumentImageExtractionService Bean
 
-10. **KnowledgeBaseService.java** (更新)
+13. **KnowledgeBaseService.java** (更新)
     - 集成图片提取到文档索引流程
     - 在处理每个文档时自动提取图片
 
@@ -523,7 +538,7 @@ GET /api/images/list/{documentId}
 ## 📝 总结
 
 ### ✅ 已完成
-1. ✅ 4 种文档格式的图片提取
+1. ✅ 7 种文档格式的图片提取（含老版本）
 2. ✅ AI 语义分析和类型识别
 3. ✅ 图片存储和访问 API
 4. ✅ 自动集成到文档索引流程
@@ -537,10 +552,12 @@ GET /api/images/list/{documentId}
 - **智能化**: AI 分析图片类型和内容
 - **集成化**: 无缝集成到现有 RAG 系统
 - **用户友好**: 前端自动显示，点击放大
+- **全面兼容**: 支持新旧 Office 格式（97-2003 和 2007+）
 
 ### 📊 质量指标
-- **代码量**: ~2500 行
-- **文件数**: 10 个
+- **代码量**: ~3500 行
+- **文件数**: 13 个
+- **支持格式**: 7 种（PDF + Word/PPT/Excel 新旧版本）
 - **测试状态**: ✅ 编译通过
 - **文档完整性**: 100%
 
