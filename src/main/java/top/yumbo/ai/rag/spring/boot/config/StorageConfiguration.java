@@ -4,7 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
+import top.yumbo.ai.rag.image.DocumentImageExtractionService;
 import top.yumbo.ai.rag.image.ImageStorageService;
+import top.yumbo.ai.rag.image.analyzer.AIImageAnalyzer;
+import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
 /**
  * 存储配置类
@@ -36,5 +39,35 @@ public class StorageConfiguration {
         log.info("Initializing ImageStorageService with path: {}", storagePath);
         return new ImageStorageService(storagePath);
     }
-}
 
+    /**
+     * AI 图片分析器
+     */
+    @Bean
+    public AIImageAnalyzer aiImageAnalyzer(KnowledgeQAProperties properties, LLMClient llmClient) {
+        boolean enabled = properties.getLlm().getChunking().getAiChunking().isEnabled();
+        String model = properties.getLlm().getChunking().getAiChunking().getModel();
+
+        log.info("Initializing AIImageAnalyzer: enabled={}, model={}", enabled, model);
+        return new AIImageAnalyzer(llmClient, enabled, model);
+    }
+
+    /**
+     * 文档图片提取服务
+     */
+    @Bean
+    public DocumentImageExtractionService documentImageExtractionService(
+            ImageStorageService imageStorageService,
+            AIImageAnalyzer aiImageAnalyzer,
+            KnowledgeQAProperties properties) {
+
+        boolean aiAnalysisEnabled = properties.getLlm().getChunking().getAiChunking().isEnabled();
+
+        log.info("Initializing DocumentImageExtractionService: AI analysis={}", aiAnalysisEnabled);
+        return new DocumentImageExtractionService(
+                imageStorageService,
+                aiImageAnalyzer,
+                aiAnalysisEnabled
+        );
+    }
+}

@@ -39,13 +39,16 @@ public class KnowledgeBaseService {
     private final DocumentChunker documentChunker;
     private final DocumentProcessingOptimizer optimizer;
     private final FileTrackingService fileTrackingService;
+    private final top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService;
 
     public KnowledgeBaseService(KnowledgeQAProperties properties,
                                 DocumentProcessingOptimizer optimizer,
-                                FileTrackingService fileTrackingService) {
+                                FileTrackingService fileTrackingService,
+                                top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService) {
         this.properties = properties;
         this.optimizer = optimizer;
         this.fileTrackingService = fileTrackingService;
+        this.imageExtractionService = imageExtractionService;
         this.documentParser = new TikaDocumentParser();
         this.documentChunker = optimizer.createChunker();
     }
@@ -934,6 +937,21 @@ public class KnowledgeBaseService {
             }
 
             log.info("   ✓ 提取 {} 字符", content.length());
+
+            // 2.5 提取图片（如果支持）
+            if (imageExtractionService != null && imageExtractionService.supportsDocument(file.getName())) {
+                try {
+                    List<top.yumbo.ai.rag.image.ImageInfo> images =
+                        imageExtractionService.extractAndSaveImages(file, file.getName());
+
+                    if (!images.isEmpty()) {
+                        log.info("   🖼️  提取 {} 张图片", images.size());
+                    }
+                } catch (Exception e) {
+                    log.warn("   ⚠️  图片提取失败: {}", e.getMessage());
+                    // 不中断文档处理流程
+                }
+            }
 
             // 3. 检查内容大小并判断分块策略
             boolean forceChunk = optimizer.needsForceChunking(content.length());

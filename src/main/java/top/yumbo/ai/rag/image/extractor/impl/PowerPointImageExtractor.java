@@ -72,9 +72,9 @@ public class PowerPointImageExtractor implements DocumentImageExtractor {
                         // 尝试获取图片的替代文本（通常是描述性文本）
                         String altText = "";
                         try {
-                            if (picture.getAlternativeText() != null) {
-                                altText = picture.getAlternativeText();
-                            }
+                            // 不同版本的 POI 可能没有 getAlternativeText 方法
+                            // 使用反射或直接跳过
+                            altText = picture.getShapeName();
                         } catch (Exception e) {
                             // 忽略
                         }

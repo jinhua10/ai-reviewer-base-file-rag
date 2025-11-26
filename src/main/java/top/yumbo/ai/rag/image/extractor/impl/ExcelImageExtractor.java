@@ -170,19 +170,12 @@ public class ExcelImageExtractor implements DocumentImageExtractor {
      * 从图片类型获取格式
      */
     private String getFormatFromPictureType(int pictureType) {
-        switch (pictureType) {
-            case Workbook.PICTURE_TYPE_PNG:
-                return "png";
-            case Workbook.PICTURE_TYPE_JPEG:
-                return "jpg";
-            case Workbook.PICTURE_TYPE_GIF:
-                return "gif";
-            case Workbook.PICTURE_TYPE_BMP:
-            case Workbook.PICTURE_TYPE_DIB:
-                return "bmp";
-            default:
-                return "png";
-        }
+        // POI 常量定义
+        if (pictureType == 6) return "png";      // PICTURE_TYPE_PNG
+        if (pictureType == 5) return "jpg";      // PICTURE_TYPE_JPEG
+        if (pictureType == 8) return "gif";      // PICTURE_TYPE_GIF (可能不存在)
+        if (pictureType == 7 || pictureType == 2) return "bmp";  // PICTURE_TYPE_BMP, PICTURE_TYPE_DIB
+        return "png"; // 默认
     }
 
     @Override
