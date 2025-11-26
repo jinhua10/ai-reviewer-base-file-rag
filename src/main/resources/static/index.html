@@ -965,21 +965,21 @@
                 setError(null);
 
                 try {
-                    console.log('开始加载文档列表...');
+                    console.log(t('logLoadingDocs'));
                     const result = await api.listDocuments();
-                    console.log('文档列表响应:', result);
+                    console.log(t('logDocsResponse'), result);
 
                     if (result.success) {
                         setDocuments(result.documents || []);
-                        console.log('加载到', result.documents?.length || 0, '个文档');
+                        console.log(t('logDocsLoaded'), result.documents?.length || 0, t('logDocsCount'));
                     } else {
-                        const errorMsg = result.message || '获取文档列表失败';
-                        console.error('加载失败:', errorMsg);
+                        const errorMsg = result.message || t('docsGetListError');
+                        console.error(t('logLoadFailed'), errorMsg);
                         setError(errorMsg);
                     }
                 } catch (err) {
-                    console.error('加载文档列表异常:', err);
-                    const errorMsg = err.response?.data?.message || err.message || '加载文档列表失败，请检查服务是否正常运行';
+                    console.error(t('logLoadException'), err);
+                    const errorMsg = err.response?.data?.message || err.message || t('docsLoadError');
                     setError(errorMsg);
                 } finally {
                     setLoading(false);
@@ -1044,7 +1044,7 @@
                 <div>
                     {/* 上传区域 */}
                     <div style={{marginBottom: '30px', padding: '20px', background: '#f8f9ff', borderRadius: '8px'}}>
-                        <h3 style={{marginBottom: '15px'}}>📤 上传文档</h3>
+                        <h3 style={{marginBottom: '15px'}}>{t('docsUploadArea')}</h3>
                         <input
                             type="file"
                             id="fileInput"
@@ -1055,17 +1055,17 @@
                             style={{display: 'none'}}
                         />
                         <label htmlFor="fileInput" className="btn btn-primary" style={{display: 'inline-block', cursor: uploading ? 'not-allowed' : 'pointer', opacity: uploading ? 0.5 : 1}}>
-                            {uploading ? '⏳ 上传中...' : '📁 选择文件'}
+                            {uploading ? t('docsUploading') : t('docsUploadButton')}
                         </label>
                         <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
-                            支持格式: Excel, Word, PowerPoint, PDF, TXT, MD, HTML, XML
+                            {t('docsUploadFormats')}
                         </p>
 
                         {uploadProgress && (
                             <div style={{marginTop: '15px', padding: '10px', background: 'white', borderRadius: '4px'}}>
-                                <div>📊 上传进度: {uploadProgress.current}/{uploadProgress.total}</div>
+                                <div>{t('docsUploadProgress')} {uploadProgress.current}/{uploadProgress.total}</div>
                                 <div style={{fontSize: '14px', color: '#666', marginTop: '5px'}}>
-                                    ✅ 成功: {uploadProgress.success} | ❌ 失败: {uploadProgress.failed}
+                                    {t('docsUploadSuccessCount')} {uploadProgress.success} | {t('docsUploadFailedCount')} {uploadProgress.failed}
                                 </div>
                             </div>
                         )}
@@ -1074,13 +1074,13 @@
                     {/* 文档列表区域 */}
                     <div>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
-                            <h3>📚 文档列表 {!loading && `(${filteredDocuments.length}/${documents.length})`}</h3>
+                            <h3>{t('docsListTitle')} {!loading && `(${filteredDocuments.length}/${documents.length})`}</h3>
                             <button
                                 className="btn btn-secondary"
                                 onClick={loadDocuments}
                                 disabled={loading}
                             >
-                                {loading ? '⏳ 加载中...' : '🔄 刷新'}
+                                {loading ? t('docsListRefreshing') : t('docsListRefresh')}
                             </button>
                         </div>
 
@@ -1090,14 +1090,14 @@
                                 <input
                                     type="text"
                                     className="input-field"
-                                    placeholder="🔍 输入文件名进行过滤..."
+                                    placeholder={t('docsFilterPlaceholder')}
                                     value={filterText}
                                     onChange={(e) => setFilterText(e.target.value)}
                                     style={{width: '100%'}}
                                 />
                                 {filterText && (
                                     <div style={{fontSize: '13px', color: '#666', marginTop: '5px'}}>
-                                        过滤结果: {filteredDocuments.length} / {documents.length} 个文档
+                                        {t('docsFilterResult')} {filteredDocuments.length} / {documents.length} {t('logDocsCount')}
                                         <button
                                             onClick={() => setFilterText('')}
                                             style={{
@@ -1110,7 +1110,7 @@
                                                 fontSize: '13px'
                                             }}
                                         >
-                                            清除过滤
+                                            {t('docsFilterClear')}
                                         </button>
                                     </div>
                                 )}
@@ -1121,20 +1121,20 @@
                         {loading && (
                             <div className="loading">
                                 <div className="spinner"></div>
-                                <p>加载文档列表...</p>
+                                <p>{t('docsLoadingList')}</p>
                             </div>
                         )}
 
                         {/* 错误状态 */}
                         {error && !loading && (
                             <div className="error">
-                                ❌ {error}
+                                {t('qaErrorPrefix')} {error}
                                 <button
                                     className="btn btn-secondary"
                                     onClick={loadDocuments}
                                     style={{marginTop: '10px', display: 'block'}}
                                 >
-                                    重试
+                                    {t('docsRetry')}
                                 </button>
                             </div>
                         )}
@@ -1143,9 +1143,9 @@
                         {!error && !loading && documents.length === 0 && (
                             <div className="empty-state">
                                 <div className="empty-state-icon">📁</div>
-                                <p>暂无文档</p>
+                                <p>{t('docsListEmpty')}</p>
                                 <p style={{fontSize: '14px', marginTop: '10px', color: '#ccc'}}>
-                                    点击上方按钮上传文档
+                                    {t('docsEmptyHint')}
                                 </p>
                             </div>
                         )}
@@ -1165,7 +1165,7 @@
                                                 📦 {formatFileSize(doc.fileSize)} |
                                                 📅 {doc.uploadTime} |
                                                 🏷️ {doc.fileType.toUpperCase()}
-                                                {doc.indexed && <span style={{marginLeft: '5px'}}>| ✅ 已索引</span>}
+                                                {doc.indexed && <span style={{marginLeft: '5px'}}>| ✅ {t('docsIndexed')}</span>}
                                             </div>
                                         </div>
                                         <button
@@ -1178,7 +1178,7 @@
                                                 marginLeft: '10px'
                                             }}
                                         >
-                                            🗑️ 删除
+                                            {t('docsListDelete')}
                                         </button>
                                     </div>
                                 ))}
@@ -1186,13 +1186,13 @@
                             ) : (
                                 <div className="empty-state">
                                     <div className="empty-state-icon">🔍</div>
-                                    <p>没有找到匹配 "{filterText}" 的文档</p>
+                                    <p>{t('docsNoMatch')} "{filterText}" 的文档</p>
                                     <button
                                         className="btn btn-secondary"
                                         onClick={() => setFilterText('')}
                                         style={{marginTop: '15px'}}
                                     >
-                                        清除过滤
+                                        {t('docsFilterClear')}
                                     </button>
                                 </div>
                             )}
@@ -1202,7 +1202,7 @@
                         {/* 提示信息 */}
                         {!error && !loading && documents.length > 0 && (
                             <div style={{marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', fontSize: '14px'}}>
-                                💡 <strong>提示：</strong>上传或删除文档后，建议前往"统计信息"页面<strong>重建索引</strong>，以便搜索到最新内容。
+                                {t('docsUploadTip')}
                             </div>
                         )}
                     </div>
@@ -1232,14 +1232,14 @@
                     const result = await api.getStatistics();
                     setStats(result);
                 } catch (err) {
-                    setError(err.message || '加载统计信息失败');
+                    setError(err.message || t('statsLoadError'));
                 } finally {
                     setLoading(false);
                 }
             };
 
             const handleRebuild = async () => {
-                if (!confirm('确定要重建知识库索引吗？\n\n这将重新处理所有文档，可能需要较长时间。')) {
+                if (!confirm(t('statsRebuildConfirm'))) {
                     return;
                 }
 
@@ -1258,14 +1258,14 @@
                         }, 1000);
                     }
                 } catch (err) {
-                    setError(err.message || '重建失败');
+                    setError(err.message || t('statsRebuildError'));
                 } finally {
                     setRebuilding(false);
                 }
             };
 
             const handleIncrementalIndex = async () => {
-                if (!confirm('确定要执行增量索引吗？\n\n只会处理新增和修改的文档，速度更快。')) {
+                if (!confirm(t('statsIncrementalConfirm'))) {
                     return;
                 }
 
@@ -1284,7 +1284,7 @@
                         }, 1000);
                     }
                 } catch (err) {
-                    setError(err.message || '增量索引失败');
+                    setError(err.message || t('statsIncrementalError'));
                 } finally {
                     setIncrementalIndexing(false);
                 }
@@ -1294,7 +1294,7 @@
                 return (
                     <div className="loading">
                         <div className="spinner"></div>
-                        <p>加载统计信息...</p>
+                        <p>{t('statsLoadingStats')}</p>
                     </div>
                 );
             }
@@ -1302,13 +1302,13 @@
             if (error) {
                 return (
                     <div className="error">
-                        ❌ {error}
+                        {t('qaErrorPrefix')} {error}
                         <button
                             className="btn btn-secondary"
                             onClick={loadStatistics}
                             style={{marginTop: '10px'}}
                         >
-                            重试
+                            {t('statsRetry')}
                         </button>
                     </div>
                 );
