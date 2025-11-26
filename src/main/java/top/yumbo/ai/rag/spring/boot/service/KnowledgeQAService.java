@@ -16,6 +16,7 @@ import top.yumbo.ai.rag.optimization.SmartContextBuilder;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,6 +33,8 @@ public class KnowledgeQAService {
     private final KnowledgeBaseService knowledgeBaseService;
     private final HybridSearchService hybridSearchService;
     private final LLMClient llmClient;
+    private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;
+    private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -41,11 +44,15 @@ public class KnowledgeQAService {
     public KnowledgeQAService(KnowledgeQAProperties properties,
                               KnowledgeBaseService knowledgeBaseService,
                               HybridSearchService hybridSearchService,
-                              LLMClient llmClient) {
+                              LLMClient llmClient,
+                              top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService,
+                              top.yumbo.ai.rag.image.ImageStorageService imageStorageService) {
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
         this.llmClient = llmClient;
+        this.chunkStorageService = chunkStorageService;
+        this.imageStorageService = imageStorageService;
     }
 
     /**
@@ -202,14 +209,15 @@ public class KnowledgeQAService {
         top.yumbo.ai.rag.chunking.ChunkingStrategy strategy =
             top.yumbo.ai.rag.chunking.ChunkingStrategy.fromString(strategyName);
 
-        // 初始化智能上下文构建器（使用新的构造函数）
+        // 初始化智能上下文构建器（使用新的构造函数，包含存储服务）
         contextBuilder = new SmartContextBuilder(
             properties.getLlm().getMaxContextLength(),
             properties.getLlm().getMaxDocLength(),
             true, // preserveFullContent（由策略控制，保留兼容性）
             properties.getLlm().getChunking(),
             strategy,
-            llmClient
+            llmClient,
+            chunkStorageService  // 传递块存储服务
         );
 
         log.info("   ✅ 智能上下文构建器已初始化");
@@ -264,6 +272,12 @@ public class KnowledgeQAService {
             }
 
             // 步骤2: 构建智能上下文
+            // 设置当前文档ID（用于保存切分块）
+            if (!documents.isEmpty() && contextBuilder != null) {
+                String firstDocTitle = documents.get(0).getTitle();
+                contextBuilder.setCurrentDocumentId(firstDocTitle);
+            }
+
             String context = contextBuilder.buildSmartContext(question, documents);
             log.info("Context stats: {}", contextBuilder.getContextStats(context));
 
@@ -273,11 +287,42 @@ public class KnowledgeQAService {
             // 步骤4: 调用 LLM 生成答案
             String answer = llmClient.generate(prompt);
 
-            // 步骤5: 提取文档来源
+            // 步骤5: 处理图片引用（如果有图片）
+            if (!documents.isEmpty()) {
+                String firstDocTitle = documents.get(0).getTitle();
+                try {
+                    List<top.yumbo.ai.rag.image.ImageInfo> images =
+                        imageStorageService.listImages(firstDocTitle);
+                    if (!images.isEmpty()) {
+                        answer = imageStorageService.replaceImageReferences(
+                            answer, firstDocTitle, images);
+                        log.info("✅ Replaced {} image references in answer", images.size());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to process images for document: {}", firstDocTitle, e);
+                }
+            }
+
+            // 步骤6: 提取文档来源
             List<String> sources = documents.stream()
                     .map(Document::getTitle)
                     .distinct()
                     .toList();
+
+            // 步骤7: 获取切分块信息
+            List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks = Collections.emptyList();
+            List<top.yumbo.ai.rag.image.ImageInfo> images = Collections.emptyList();
+
+            if (!documents.isEmpty()) {
+                String firstDocTitle = documents.get(0).getTitle();
+                try {
+                    chunks = chunkStorageService.listChunks(firstDocTitle);
+                    images = imageStorageService.listImages(firstDocTitle);
+                    log.info("📦 Found {} chunks and {} images for document", chunks.size(), images.size());
+                } catch (Exception e) {
+                    log.warn("Failed to load chunks/images info", e);
+                }
+            }
 
             long totalTime = System.currentTimeMillis() - startTime;
 
@@ -289,7 +334,7 @@ public class KnowledgeQAService {
             log.info("\n⏱️  响应时间: {}ms", totalTime);
             log.info("=".repeat(80));
 
-            return new AIAnswer(answer, sources, totalTime);
+            return new AIAnswer(answer, sources, totalTime, chunks, images);
 
         } catch (Exception e) {
             log.error("❌ 问答处理失败", e);

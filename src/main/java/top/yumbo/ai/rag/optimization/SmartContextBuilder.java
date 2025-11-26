@@ -46,6 +46,8 @@ public class SmartContextBuilder {
     private final int maxDocLength;
     private final boolean preserveFullContent;  // 是否保留完整内容
     private final DocumentChunker chunker;       // 文档切分器（新增）
+    private top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;  // 文档块存储服务
+    private String currentDocumentId;            // 当前处理的文档ID
 
     public SmartContextBuilder() {
         this(DEFAULT_MAX_CONTEXT_LENGTH, DEFAULT_MAX_DOC_LENGTH, true);
@@ -75,22 +77,42 @@ public class SmartContextBuilder {
                               ChunkingConfig chunkingConfig,
                               ChunkingStrategy chunkingStrategy,
                               LLMClient llmClient) {
+        this(maxContextLength, maxDocLength, preserveFullContent, chunkingConfig, chunkingStrategy, llmClient, null);
+    }
+
+    /**
+     * 完整构造函数（含存储服务）
+     */
+    public SmartContextBuilder(int maxContextLength, int maxDocLength,
+                              boolean preserveFullContent,
+                              ChunkingConfig chunkingConfig,
+                              ChunkingStrategy chunkingStrategy,
+                              LLMClient llmClient,
+                              top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService) {
         this.maxContextLength = maxContextLength;
         this.maxDocLength = maxDocLength;
         this.preserveFullContent = preserveFullContent;
+        this.chunkStorageService = chunkStorageService;
 
         // 创建文档切分器
         if (chunkingConfig != null && chunkingStrategy != null) {
             this.chunker = DocumentChunkerFactory.createChunker(
                 chunkingStrategy, chunkingConfig, llmClient
             );
-            log.info("SmartContextBuilder initialized with chunker: strategy={}, maxContext={}chars, maxDoc={}chars",
-                chunkingStrategy, maxContextLength, maxDocLength);
+            log.info("SmartContextBuilder initialized with chunker: strategy={}, maxContext={}chars, maxDoc={}chars, storage={}",
+                chunkingStrategy, maxContextLength, maxDocLength, chunkStorageService != null ? "enabled" : "disabled");
         } else {
             this.chunker = null;
             log.info("SmartContextBuilder initialized: maxContext={}chars, maxDoc={}chars, preserveFullContent={}",
                 maxContextLength, maxDocLength, preserveFullContent);
         }
+    }
+
+    /**
+     * 设置当前文档ID（用于保存切分块）
+     */
+    public void setCurrentDocumentId(String documentId) {
+        this.currentDocumentId = documentId;
     }
 
     /**
@@ -191,6 +213,17 @@ public class SmartContextBuilder {
             if (chunks.isEmpty()) {
                 log.warn("Chunker returned no chunks, using fallback");
                 return extractWithChunking(query, content, maxLength);
+            }
+
+            // 保存切分块到文件系统
+            if (chunkStorageService != null && currentDocumentId != null) {
+                try {
+                    List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> savedChunks =
+                        chunkStorageService.saveChunks(currentDocumentId, chunks);
+                    log.info("✅ Saved {} chunks for document: {}", savedChunks.size(), currentDocumentId);
+                } catch (Exception e) {
+                    log.warn("Failed to save chunks for document: {}", currentDocumentId, e);
+                }
             }
 
             // 选择最相关的块

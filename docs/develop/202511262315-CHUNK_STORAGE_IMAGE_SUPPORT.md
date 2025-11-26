@@ -590,7 +590,9 @@ knowledge:
 - [x] 文件系统存储结构
 - [x] Markdown 格式存储
 - [x] 带语义标题/编号
-- [ ] 集成到 SmartContextBuilder（待完成）
+- [x] 集成到 SmartContextBuilder ✅
+- [x] Spring Bean 配置 ✅
+- [x] AIAnswer 扩展支持 ✅
 - [ ] 前端下载按钮（待完成）
 
 ### 图片支持
@@ -599,24 +601,62 @@ knowledge:
 - [x] ImageController API
 - [x] 图片 URL 生成
 - [x] Markdown 引用替换
-- [ ] 文档图片提取（待集成）
-- [ ] 前端图片渲染（已支持，Markdown 自动渲染）
-- [ ] 图片点击放大（待实现）
+- [x] 集成到 KnowledgeQAService ✅
+- [ ] 文档图片提取（待集成到文档解析器）
+- [x] 前端图片渲染（已支持，Markdown 自动渲染）
+- [ ] 图片点击放大（待实现前端JS）
 
 ---
 
-## 🚀 下一步工作
+## ✅ 已完成的集成工作
 
-1. **添加 Bean 配置** - 在 Spring 配置中注册服务
-2. **集成到切分流程** - 在切分时自动保存
-3. **图片提取集成** - 在文档解析时提取图片
-4. **前端 UI 更新** - 添加下载按钮和图片优化
-5. **测试验证** - 完整功能测试
+### 1. Spring Bean 配置 ✅
+- 创建 `StorageConfiguration` 类
+- 注册 `ChunkStorageService` Bean
+- 注册 `ImageStorageService` Bean
+
+### 2. SmartContextBuilder 集成 ✅
+- 添加 `ChunkStorageService` 字段
+- 新增带存储服务的构造函数
+- 添加 `setCurrentDocumentId()` 方法
+- 在 `extractWithChunker()` 中自动保存切分块
+
+### 3. KnowledgeQAService 集成 ✅
+- 依赖注入 `ChunkStorageService` 和 `ImageStorageService`
+- 在 `createQASystem()` 中传递存储服务到 `SmartContextBuilder`
+- 在 `ask()` 方法中：
+  - 设置当前文档ID
+  - 处理图片引用替换
+  - 获取切分块信息
+  - 返回完整的 `AIAnswer`
+
+### 4. AIAnswer 扩展 ✅
+- 添加 `chunks` 字段
+- 添加 `images` 字段
+- 提供向后兼容的构造函数
+
+### 5. 编译验证 ✅
+- 所有代码编译通过
+- 无错误和警告
+
+---
+
+## 🚀 剩余工作
+
+### 前端 UI 更新（待完成）
+
+1. **添加块下载功能** - 在答案区域显示可下载的切分块按钮
+2. **图片点击放大** - 添加图片点击放大查看功能
+3. **图片样式优化** - CSS 美化
+
+### 文档图片提取（待集成）
+
+需要在文档解析器中添加图片提取逻辑（Word/PDF/PPT等）
 
 ---
 
 **实现时间**: 2025-11-26  
-**版本**: v1.0  
-**状态**: 核心组件已完成，待集成  
-**预计完成**: 添加集成代码后即可使用
+**版本**: v1.1  
+**状态**: ✅ 后端集成完成，编译通过  
+**下一步**: 前端 UI 更新
 
