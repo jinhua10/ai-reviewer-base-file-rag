@@ -951,7 +951,7 @@
                     const response = await fetch(`/api/chunks/download/${encodeURIComponent(documentId)}/${encodeURIComponent(chunkId)}`);
 
                     if (!response.ok) {
-                        throw new Error('下载失败');
+                        throw new Error(t('qaChunkDownloadError'));
                     }
 
                     const blob = await response.blob();
@@ -970,7 +970,7 @@
                     }, 600);
                 } catch (err) {
                     buttonElement.classList.remove('downloading');
-                    alert('下载失败: ' + err.message);
+                    alert(t('qaChunkDownloadError') + ': ' + err.message);
                 }
             };
 
@@ -992,8 +992,8 @@
                 modal.className = 'image-modal active';
                 modal.innerHTML = `
                     <div class="image-modal-content">
-                        <button class="image-modal-close" aria-label="关闭">✕</button>
-                        <img src="${src}" alt="${alt || '图片'}" />
+                        <button class="image-modal-close" aria-label="${t('qaImageClose')}">&times;</button>
+                        <img src="${src}" alt="${alt || t('qaImageAlt')}" />
                         ${alt ? `<div class="image-caption">${alt}</div>` : ''}
                     </div>
                 `;
@@ -1098,9 +1098,9 @@
                             {answer.chunks && answer.chunks.length > 0 && (
                                 <div className="chunks-section">
                                     <h4>
-                                        📦 {t('qaChunksTitle') || '文档切分块'}
+                                        📦 {t('qaChunksTitle')}
                                         <span style={{fontSize: '12px', fontWeight: 'normal', color: '#666'}}>
-                                            ({answer.chunks.length} 个块可下载)
+                                            ({answer.chunks.length} {t('qaChunksAvailable')})
                                         </span>
                                     </h4>
                                     <div className="chunks-grid">
@@ -1109,10 +1109,10 @@
                                                 key={chunk.chunkId}
                                                 className="chunk-button"
                                                 onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
-                                                title={`下载: ${chunk.title || '块 ' + (chunk.chunkIndex + 1)}`}
+                                                title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
                                             >
                                                 <div className="chunk-title">
-                                                    📄 {chunk.title || `块 ${chunk.chunkIndex + 1}`}
+                                                    📄 {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
                                                 </div>
                                                 <div className="chunk-info">
                                                     <span className="chunk-index">

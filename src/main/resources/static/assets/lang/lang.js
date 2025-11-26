@@ -130,9 +130,14 @@ const translations = {
         // Chunks (Document Chunks)
         qaChunksTitle: '文档切分块',
         qaChunksAvailable: '个块可下载',
-        qaChunkDownload: '下载块',
+        qaChunkTitle: '块',
+        qaChunkDownload: '下载',
         qaChunkDownloading: '下载中...',
-        qaChunkDownloadError: '下载块失败',
+        qaChunkDownloadError: '下载失败',
+
+        // Image Modal
+        qaImageClose: '关闭',
+        qaImageAlt: '图片',
 
         // Console Logs (for debugging)
         logLoadingDocs: '开始加载文档列表...',
@@ -269,9 +274,14 @@ const translations = {
         // Chunks (Document Chunks)
         qaChunksTitle: 'Document Chunks',
         qaChunksAvailable: 'chunks available',
-        qaChunkDownload: 'Download Chunk',
+        qaChunkTitle: 'Chunk',
+        qaChunkDownload: 'Download',
         qaChunkDownloading: 'Downloading...',
-        qaChunkDownloadError: 'Failed to download chunk',
+        qaChunkDownloadError: 'Download failed',
+
+        // Image Modal
+        qaImageClose: 'Close',
+        qaImageAlt: 'Image',
 
         // Console Logs (for debugging)
         logLoadingDocs: 'Loading document list...',
