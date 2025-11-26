@@ -127,6 +127,13 @@ const translations = {
         statsRebuildError: '重建失败',
         statsIncrementalError: '增量索引失败',
 
+        // Chunks (Document Chunks)
+        qaChunksTitle: '文档切分块',
+        qaChunksAvailable: '个块可下载',
+        qaChunkDownload: '下载块',
+        qaChunkDownloading: '下载中...',
+        qaChunkDownloadError: '下载块失败',
+
         // Console Logs (for debugging)
         logLoadingDocs: '开始加载文档列表...',
         logDocsResponse: '文档列表响应:',
@@ -258,6 +265,13 @@ const translations = {
         statsRetry: 'Retry',
         statsRebuildError: 'Rebuild failed',
         statsIncrementalError: 'Incremental indexing failed',
+
+        // Chunks (Document Chunks)
+        qaChunksTitle: 'Document Chunks',
+        qaChunksAvailable: 'chunks available',
+        qaChunkDownload: 'Download Chunk',
+        qaChunkDownloading: 'Downloading...',
+        qaChunkDownloadError: 'Failed to download chunk',
 
         // Console Logs (for debugging)
         logLoadingDocs: 'Loading document list...',

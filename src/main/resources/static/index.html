@@ -515,6 +515,197 @@
             transform: translateY(0);
         }
 
+        /* 文档块下载区域样式 */
+        .chunks-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .chunks-section h4 {
+            margin: 0 0 12px 0;
+            color: #333;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chunks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .chunk-button {
+            padding: 10px 14px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .chunk-button:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .chunk-button:active {
+            transform: translateY(0);
+        }
+
+        .chunk-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chunk-info {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chunk-size {
+            opacity: 0.8;
+        }
+
+        .chunk-index {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        /* 图片样式优化 */
+        .answer-text img {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+        }
+
+        .answer-text img:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* 图片模态框 */
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        .image-modal.active {
+            display: flex;
+        }
+
+        .image-modal-content {
+            position: relative;
+            max-width: 95%;
+            max-height: 95%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .image-modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+            animation: zoomIn 0.3s;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .image-modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 10001;
+        }
+
+        .image-modal-close:hover {
+            background: white;
+            transform: rotate(90deg);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .image-caption {
+            color: white;
+            font-size: 14px;
+            text-align: center;
+            max-width: 600px;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 下载提示动画 */
+        @keyframes downloadPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .downloading {
+            animation: downloadPulse 0.6s ease-in-out;
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .header h1 {
@@ -535,6 +726,18 @@
 
             .input-group {
                 flex-direction: column;
+            }
+
+            .chunks-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .image-modal-close {
+                top: 10px;
+                right: 10px;
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
             }
         }
     </style>
@@ -739,6 +942,82 @@
                 }
             };
 
+            // 下载单个文档块
+            const handleChunkDownload = async (documentId, chunkId, buttonElement) => {
+                try {
+                    // 添加下载动画
+                    buttonElement.classList.add('downloading');
+
+                    const response = await fetch(`/api/chunks/download/${encodeURIComponent(documentId)}/${encodeURIComponent(chunkId)}`);
+
+                    if (!response.ok) {
+                        throw new Error('下载失败');
+                    }
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `${chunkId}.md`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    // 移除动画
+                    setTimeout(() => {
+                        buttonElement.classList.remove('downloading');
+                    }, 600);
+                } catch (err) {
+                    buttonElement.classList.remove('downloading');
+                    alert('下载失败: ' + err.message);
+                }
+            };
+
+            // 图片点击放大
+            useEffect(() => {
+                const handleImageClick = (e) => {
+                    if (e.target.tagName === 'IMG' && e.target.closest('.answer-text')) {
+                        showImageModal(e.target.src, e.target.alt);
+                    }
+                };
+
+                document.addEventListener('click', handleImageClick);
+                return () => document.removeEventListener('click', handleImageClick);
+            }, []);
+
+            // 显示图片模态框
+            const showImageModal = (src, alt) => {
+                const modal = document.createElement('div');
+                modal.className = 'image-modal active';
+                modal.innerHTML = `
+                    <div class="image-modal-content">
+                        <button class="image-modal-close" aria-label="关闭">✕</button>
+                        <img src="${src}" alt="${alt || '图片'}" />
+                        ${alt ? `<div class="image-caption">${alt}</div>` : ''}
+                    </div>
+                `;
+
+                modal.onclick = (e) => {
+                    if (e.target === modal || e.target.classList.contains('image-modal-close')) {
+                        modal.classList.remove('active');
+                        setTimeout(() => modal.remove(), 300);
+                    }
+                };
+
+                // ESC 键关闭
+                const handleEsc = (e) => {
+                    if (e.key === 'Escape') {
+                        modal.classList.remove('active');
+                        setTimeout(() => modal.remove(), 300);
+                        document.removeEventListener('keydown', handleEsc);
+                    }
+                };
+                document.addEventListener('keydown', handleEsc);
+
+                document.body.appendChild(modal);
+            };
+
             return (
                 <div className="qa-section">
                     <div className="input-group">
@@ -812,6 +1091,40 @@
                                             {t('qaBatchDownload')} ({answer.sources.length} {t('docsFiles')})
                                         </button>
                                     )}
+                                </div>
+                            )}
+
+                            {/* 文档切分块下载区域 */}
+                            {answer.chunks && answer.chunks.length > 0 && (
+                                <div className="chunks-section">
+                                    <h4>
+                                        📦 {t('qaChunksTitle') || '文档切分块'}
+                                        <span style={{fontSize: '12px', fontWeight: 'normal', color: '#666'}}>
+                                            ({answer.chunks.length} 个块可下载)
+                                        </span>
+                                    </h4>
+                                    <div className="chunks-grid">
+                                        {answer.chunks.map((chunk, index) => (
+                                            <button
+                                                key={chunk.chunkId}
+                                                className="chunk-button"
+                                                onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
+                                                title={`下载: ${chunk.title || '块 ' + (chunk.chunkIndex + 1)}`}
+                                            >
+                                                <div className="chunk-title">
+                                                    📄 {chunk.title || `块 ${chunk.chunkIndex + 1}`}
+                                                </div>
+                                                <div className="chunk-info">
+                                                    <span className="chunk-index">
+                                                        {chunk.chunkIndex + 1}/{chunk.totalChunks || answer.chunks.length}
+                                                    </span>
+                                                    <span className="chunk-size">
+                                                        {(chunk.contentLength / 1024).toFixed(1)} KB
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 
