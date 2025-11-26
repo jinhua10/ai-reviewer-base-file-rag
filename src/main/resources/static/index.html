@@ -547,7 +547,7 @@
 
         // 语言翻译字典从 lang.js 加载
         // Translation dictionary is loaded from lang.js
-        const translations = window.translations;
+        // 直接使用 window.translations，无需重新声明
 
         // 创建语言上下文
         const LanguageContext = createContext();
@@ -566,7 +566,7 @@
             };
 
             const t = (key) => {
-                return translations[language][key] || key;
+                return window.translations[language][key] || key;
             };
 
             return (
