@@ -99,10 +99,12 @@ public class DocumentProcessingOptimizer {
      * 创建文档分块器
      */
     public DocumentChunker createChunker() {
-        return DocumentChunker.builder()
+        return top.yumbo.ai.rag.optimization.DocumentChunker.builder()
             .chunkSize(properties.getDocument().getChunkSize())
             .chunkOverlap(properties.getDocument().getChunkOverlap())
             .smartSplit(true)
+            .maxContentLength(properties.getDocument().getMaxChunkContentLength())
+            .maxChunks(properties.getDocument().getMaxChunksPerDocument())
             .build();
     }
 

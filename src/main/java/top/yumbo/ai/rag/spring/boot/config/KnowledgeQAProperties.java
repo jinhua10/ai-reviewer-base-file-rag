@@ -267,6 +267,43 @@ public class KnowledgeQAProperties {
          * 批处理大小（文档数）
          */
         private int batchSize = 10;
+
+        /**
+         * 索引时单个文档最大内容长度（字符数）
+         * 超过此长度会被截断，防止后续处理内存溢出
+         *
+         * 建议值：
+         * - 内存充足（8GB+）: 100000 (约 200KB)
+         * - 内存一般（4GB）: 50000 (约 100KB)
+         * - 内存有限（2GB）: 30000 (约 60KB)
+         *
+         * 影响：
+         * - 过大：可能导致内存溢出、索引慢
+         * - 过小：可能丢失文档尾部内容
+         */
+        private int maxIndexContentLength = 50000;
+
+        /**
+         * 问答时文档切分最大内容长度（字符数）
+         * 在切分文档时，如果内容超过此长度会被截断
+         *
+         * 建议值：
+         * - 通常设置为 maxIndexContentLength 的 2 倍
+         * - 因为问答时只处理少量文档（5-10个）
+         */
+        private int maxChunkContentLength = 100000;
+
+        /**
+         * 问答时单次切分最大块数
+         * 防止切分产生过多块导致内存溢出
+         *
+         * 建议值：30-100
+         *
+         * 影响：
+         * - 过大：可能内存溢出
+         * - 过小：可能丢失内容
+         */
+        private int maxChunksPerDocument = 50;
     }
 
     /**

@@ -149,7 +149,7 @@ knowledge:
       # 用于防止内存溢出和控制响应时间
       # 如果检索到的文档超过此数量，会分批处理
       # 建议值：5-15
-      max-documents-per-query: 10
+      max-documents-per-query: 5
 
       # 是否启用分批处理模式
       # 启用后，如果文档数超过 max-documents-per-query，
@@ -269,6 +269,28 @@ knowledge:
       # 建议值: 10-20
       batch-size: 10
 
+      # ============================================================
+      # 内容长度限制配置（影响内存占用和性能）
+      # ============================================================
+
+      # 索引时单个文档最大内容长度（字符数）
+      # 超过此长度会被截断，防止后续处理内存溢出
+      # 建议值：
+      #   - 内存充足（8GB+）: 100000 (约 200KB)
+      #   - 内存一般（4GB）: 50000 (约 100KB，默认)
+      #   - 内存有限（2GB）: 30000 (约 60KB)
+      max-index-content-length: 50000
+
+      # 问答时文档切分最大内容长度（字符数）
+      # 通常设置为 max-index-content-length 的 2 倍
+      # 因为问答时只处理少量文档（5-10个）
+      max-chunk-content-length: 100000
+
+      # 问答时单次切分最大块数
+      # 防止切分产生过多块导致内存溢出
+      # 建议值：30-100
+      max-chunks-per-document: 50
+
     # 图片处理配置
     image-processing:
       # 图片处理策略:
@@ -316,7 +338,7 @@ knowledge:
 logging:
   level:
     root: INFO
-    top.yumbo.ai.rag: INFO
+    top.yumbo.ai.rag: DEBUG
     org.springframework: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

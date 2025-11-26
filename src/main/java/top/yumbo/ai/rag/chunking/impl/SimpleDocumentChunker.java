@@ -31,13 +31,24 @@ public class SimpleDocumentChunker implements DocumentChunker {
             return List.of();
         }
 
+        // 防止处理超大文档导致内存溢出（从配置读取）
+        int maxContentLength = config.getMaxContentLength();
+        if (content.length() > maxContentLength) {
+            log.warn("Content too large ({} chars), truncating to {} chars to prevent OOM (config: max-chunk-content-length)",
+                    content.length(), maxContentLength);
+            content = content.substring(0, maxContentLength);
+        }
+
         List<DocumentChunk> chunks = new ArrayList<>();
         int chunkSize = config.getChunkSize();
         int overlap = config.getChunkOverlap();
         int position = 0;
         int index = 0;
 
-        while (position < content.length()) {
+        // 限制最大块数，防止内存溢出（从配置读取）
+        int maxChunks = config.getMaxChunks();
+
+        while (position < content.length() && index < maxChunks) {
             int end = Math.min(position + chunkSize, content.length());
 
             // 如果配置了在句子边界切分，尝试调整结束位置
@@ -64,6 +75,10 @@ public class SimpleDocumentChunker implements DocumentChunker {
             if (position <= 0 || position >= content.length()) {
                 break;
             }
+        }
+
+        if (index >= maxChunks) {
+            log.warn("Reached maximum chunk limit ({}, config: max-chunks-per-document), stopping chunking", maxChunks);
         }
 
         // 更新总块数

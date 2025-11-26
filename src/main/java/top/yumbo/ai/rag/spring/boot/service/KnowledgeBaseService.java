@@ -936,9 +936,24 @@ public class KnowledgeBaseService {
                 return createdDocuments;
             }
 
+            int originalLength = content.length();
+
+            // 2.1 立即截断超大内容，防止后续处理内存溢出
+            // 这是关键：在索引阶段就限制大小，而不是在问答时才处理
+            int maxContentLength = properties.getDocument().getMaxIndexContentLength();
+            if (content.length() > maxContentLength) {
+                log.warn("   ⚠️  内容过大 ({} 字符 = {} KB)，截断为 {} 字符以防止内存溢出（配置: max-index-content-length）",
+                        originalLength, originalLength / 512, maxContentLength);
+                content = content.substring(0, maxContentLength);
+                log.info("   ✂️  已截断 {} 字符 ({} %)，可通过配置 max-index-content-length 调整",
+                        originalLength - maxContentLength,
+                        (originalLength - maxContentLength) * 100 / originalLength);
+            }
+
             log.info("   ✓ 提取 {} 字符", content.length());
 
-            // 2.5 提取图片（如果支持）
+            // 2.5 提取图片并将图片信息文本化添加到内容中（关键优化）
+            // 这样图片信息会被索引和向量化，在问答时直接可用，不需要重新处理
             if (imageExtractionService != null && imageExtractionService.supportsDocument(file.getName())) {
                 try {
                     List<top.yumbo.ai.rag.image.ImageInfo> images =
@@ -946,6 +961,32 @@ public class KnowledgeBaseService {
 
                     if (!images.isEmpty()) {
                         log.info("   🖼️  提取 {} 张图片", images.size());
+
+                        // 将图片信息添加到文档内容中，这样就可以被检索到
+                        StringBuilder imageText = new StringBuilder();
+                        imageText.append("\n\n=== 文档包含的图片 ===\n");
+
+                        for (int i = 0; i < images.size(); i++) {
+                            top.yumbo.ai.rag.image.ImageInfo img = images.get(i);
+                            imageText.append(String.format("\n图片 %d:\n", i + 1));
+                            imageText.append(String.format("- 文件名: %s\n", img.getFilename()));
+                            imageText.append(String.format("- URL: %s\n", img.getUrl()));
+
+                            if (img.getDescription() != null && !img.getDescription().isEmpty()) {
+                                imageText.append(String.format("- 描述: %s\n", img.getDescription()));
+                            }
+
+                            if (img.getOriginalFilename() != null) {
+                                imageText.append(String.format("- 原始文件: %s\n", img.getOriginalFilename()));
+                            }
+                        }
+
+                        imageText.append("\n=== 图片列表结束 ===\n");
+
+                        // 将图片信息添加到内容末尾
+                        content = content + imageText.toString();
+
+                        log.info("   ✓ 图片信息已添加到文档内容中，便于检索");
                     }
                 } catch (Exception e) {
                     log.warn("   ⚠️  图片提取失败: {}", e.getMessage());

@@ -73,12 +73,37 @@ public class SmartKeywordChunker implements DocumentChunker {
             return List.of();
         }
 
-        // 分词并过滤停用词
-        return Arrays.stream(query.toLowerCase()
-                        .split("[\\s\\p{Punct}]+"))
-                .filter(word -> !STOP_WORDS.contains(word) && word.length() > 1)
+        List<String> keywords = new ArrayList<>();
+
+        // 中文分词：按字符提取（简单但有效）
+        // 提取 2-4 个字的词组
+        String trimmed = query.trim();
+        for (int len = 4; len >= 2; len--) {
+            for (int i = 0; i <= trimmed.length() - len; i++) {
+                String word = trimmed.substring(i, i + len);
+                // 过滤停用词和标点
+                if (!STOP_WORDS.contains(word) && !word.matches(".*[\\p{Punct}\\s]+.*")) {
+                    keywords.add(word);
+                }
+            }
+        }
+
+        // 英文分词
+        Arrays.stream(query.toLowerCase().split("[\\s\\p{Punct}]+"))
+                .filter(word -> !STOP_WORDS.contains(word) && word.length() > 2)
+                .forEach(keywords::add);
+
+        // 去重并限制数量
+        List<String> result = keywords.stream()
                 .distinct()
+                .limit(20) // 最多 20 个关键词
                 .collect(Collectors.toList());
+
+        if (!result.isEmpty()) {
+            log.debug("Extracted {} keywords from query: {}", result.size(), query);
+        }
+
+        return result;
     }
 
     /**

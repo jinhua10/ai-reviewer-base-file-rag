@@ -66,6 +66,20 @@ public class ChunkingConfig {
     }
 
     /**
+     * 问答时文档切分最大内容长度（字符数）
+     * 在切分文档时，如果内容超过此长度会被截断
+     * 默认值：100000（约 200KB）
+     */
+    private int maxContentLength = 100000;
+
+    /**
+     * 问答时单次切分最大块数
+     * 防止切分产生过多块导致内存溢出
+     * 默认值：50
+     */
+    private int maxChunks = 50;
+
+    /**
      * 验证配置
      */
     public void validate() {
@@ -82,4 +96,3 @@ public class ChunkingConfig {
         }
     }
 }
-
