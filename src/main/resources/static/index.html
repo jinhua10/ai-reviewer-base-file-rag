@@ -1205,8 +1205,10 @@
                 });
                 return response.data;
             },
-            listDocuments: async () => {
-                const response = await axios.get(`${API_DOCS_URL}/list`);
+            listDocuments: async (page = 1, pageSize = 20, sortBy = 'date', sortOrder = 'desc', search = '') => {
+                const response = await axios.get(`${API_DOCS_URL}/list`, {
+                    params: { page, pageSize, sortBy, sortOrder, search }
+                });
                 return response.data;
             },
             deleteDocument: async (fileName) => {
@@ -1958,27 +1960,41 @@
             // 分页状态
             const [currentPage, setCurrentPage] = useState(1);
             const [pageSize, setPageSize] = useState(20);
+            const [totalPages, setTotalPages] = useState(0);
+            const [totalCount, setTotalCount] = useState(0);
 
             // 排序状态
             const [sortBy, setSortBy] = useState('date'); // name, size, date, type
             const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
 
+            // 首次加载
             useEffect(() => {
                 loadDocuments();
             }, []);
+
+            // 当分页、排序、搜索参数改变时重新加载
+            useEffect(() => {
+                if (!loading) {  // 避免首次加载时重复调用
+                    loadDocuments();
+                }
+            }, [currentPage, pageSize, sortBy, sortOrder, filterText]);
 
             const loadDocuments = async () => {
                 setLoading(true);
                 setError(null);
 
                 try {
-                    console.log(t('logLoadingDocs'));
-                    const result = await api.listDocuments();
+                    console.log(t('logLoadingDocs'), `- 页码: ${currentPage}, 每页: ${pageSize}, 排序: ${sortBy} ${sortOrder}, 搜索: '${filterText}'`);
+
+                    // 调用后端API，传递分页、排序和搜索参数
+                    const result = await api.listDocuments(currentPage, pageSize, sortBy, sortOrder, filterText);
                     console.log(t('logDocsResponse'), result);
 
                     if (result.success) {
                         setDocuments(result.documents || []);
-                        console.log(t('logDocsLoaded'), result.documents?.length || 0, t('logDocsCount'));
+                        setTotalCount(result.total || 0);
+                        setTotalPages(result.totalPages || 0);
+                        console.log(t('logDocsLoaded'), result.documents?.length || 0, t('logDocsCount'), `共 ${result.total} 个`);
                     } else {
                         const errorMsg = result.message || t('docsGetListError');
                         console.error(t('logLoadFailed'), errorMsg);
@@ -2012,6 +2028,9 @@
 
                 setUploading(false);
                 setTimeout(() => setUploadProgress(null), 3000);
+
+                // 上传后回到第一页重新加载
+                setCurrentPage(1);
                 loadDocuments();
 
                 // 清空文件输入
@@ -2027,6 +2046,7 @@
                     const result = await api.deleteDocument(fileName);
                     if (result.success) {
                         alert(t('docsDeleteSuccess'));
+                        // 删除后重新加载当前页
                         loadDocuments();
                     } else {
                         alert(t('docsDeleteError') + ': ' + result.message);
@@ -2042,58 +2062,30 @@
                 return (bytes / 1024 / 1024).toFixed(2) + ' MB';
             };
 
-            // 排序函数
-            const sortDocuments = (docs) => {
-                const sorted = [...docs];
-                sorted.sort((a, b) => {
-                    let compareResult = 0;
-
-                    switch(sortBy) {
-                        case 'name':
-                            compareResult = a.fileName.localeCompare(b.fileName);
-                            break;
-                        case 'size':
-                            compareResult = a.fileSize - b.fileSize;
-                            break;
-                        case 'date':
-                            compareResult = new Date(a.uploadTime) - new Date(b.uploadTime);
-                            break;
-                        case 'type':
-                            compareResult = a.fileType.localeCompare(b.fileType);
-                            break;
-                        default:
-                            compareResult = 0;
-                    }
-
-                    return sortOrder === 'asc' ? compareResult : -compareResult;
-                });
-
-                return sorted;
-            };
-
-            // 过滤文档列表
-            const filteredDocuments = sortDocuments(
-                documents.filter(doc =>
-                    doc.fileName.toLowerCase().includes(filterText.toLowerCase())
-                )
-            );
-
-            // 分页计算
-            const totalPages = Math.ceil(filteredDocuments.length / pageSize);
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const paginatedDocuments = pageSize === -1 ? filteredDocuments : filteredDocuments.slice(startIndex, endIndex);
-
-            // 当过滤或排序改变时，重置到第一页
-            useEffect(() => {
-                setCurrentPage(1);
-            }, [filterText, sortBy, sortOrder, pageSize]);
-
             // 跳转页面
             const goToPage = (page) => {
                 if (page < 1) page = 1;
                 if (page > totalPages) page = totalPages;
                 setCurrentPage(page);
+            };
+
+            // 搜索框改变时重置到第一页
+            const handleSearchChange = (value) => {
+                setFilterText(value);
+                setCurrentPage(1);
+            };
+
+            // 排序改变时重置到第一页
+            const handleSortChange = (field, order) => {
+                if (field) setSortBy(field);
+                if (order) setSortOrder(order);
+                setCurrentPage(1);
+            };
+
+            // 每页数量改变时重置到第一页
+            const handlePageSizeChange = (size) => {
+                setPageSize(size);
+                setCurrentPage(1);
             };
 
             return (
@@ -2130,7 +2122,7 @@
                     {/* 文档列表区域 */}
                     <div>
                         <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
-                            <h3>{t('docsListTitle')} {!loading && `(${filteredDocuments.length}/${documents.length})`}</h3>
+                            <h3>{t('docsListTitle')} {!loading && totalCount > 0 && `(${documents.length}/${totalCount})`}</h3>
                             <button
                                 className="btn btn-secondary"
                                 onClick={loadDocuments}
@@ -2141,14 +2133,14 @@
                         </div>
 
                         {/* 文件名过滤输入框 */}
-                        {!loading && documents.length > 0 && (
+                        {!loading && totalCount > 0 && (
                             <div style={{marginBottom: '15px'}}>
                                 <input
                                     type="text"
                                     className="input-field"
                                     placeholder={t('docsFilterPlaceholder')}
                                     value={filterText}
-                                    onChange={(e) => setFilterText(e.target.value)}
+                                    onChange={(e) => handleSearchChange(e.target.value)}
                                     style={{width: '100%', marginBottom: '10px'}}
                                 />
 
@@ -2161,7 +2153,7 @@
                                             className="input-field"
                                             style={{width: 'auto', padding: '5px 8px', fontSize: '13px'}}
                                             value={sortBy}
-                                            onChange={(e) => setSortBy(e.target.value)}
+                                            onChange={(e) => handleSortChange(e.target.value, null)}
                                         >
                                             <option value="date">{t('docsSortByDate')}</option>
                                             <option value="name">{t('docsSortByName')}</option>
@@ -2172,7 +2164,7 @@
                                             className="input-field"
                                             style={{width: 'auto', padding: '5px 8px', fontSize: '13px'}}
                                             value={sortOrder}
-                                            onChange={(e) => setSortOrder(e.target.value)}
+                                            onChange={(e) => handleSortChange(null, e.target.value)}
                                         >
                                             <option value="desc">{t('docsSortDesc')}</option>
                                             <option value="asc">{t('docsSortAsc')}</option>
@@ -2186,7 +2178,7 @@
                                             className="input-field"
                                             style={{width: 'auto', padding: '5px 8px', fontSize: '13px'}}
                                             value={pageSize}
-                                            onChange={(e) => setPageSize(Number(e.target.value))}
+                                            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
                                         >
                                             <option value={10}>10 {t('docsPageSizeItems')}</option>
                                             <option value={20}>20 {t('docsPageSizeItems')}</option>
@@ -2200,9 +2192,9 @@
                                     <div style={{marginLeft: 'auto', fontSize: '13px', color: '#666'}}>
                                         {filterText ? (
                                             <>
-                                                {t('docsFilterResult')} {filteredDocuments.length} / {documents.length} {t('logDocsCount')}
+                                                {t('docsFilterResult')} {totalCount} {t('logDocsCount')}
                                                 <button
-                                                    onClick={() => setFilterText('')}
+                                                    onClick={() => handleSearchChange('')}
                                                     style={{
                                                         marginLeft: '10px',
                                                         background: 'none',
@@ -2218,7 +2210,7 @@
                                             </>
                                         ) : (
                                             <>
-                                                {t('docsPaginationTotal')} {filteredDocuments.length} {t('logDocsCount')}
+                                                {t('docsPaginationTotal')} {totalCount} {t('logDocsCount')}
                                             </>
                                         )}
                                     </div>
@@ -2262,10 +2254,8 @@
                         {/* 文档列表 */}
                         {!error && !loading && documents.length > 0 && (
                             <>
-                            {filteredDocuments.length > 0 ? (
-                            <>
                             <div style={{display: 'grid', gap: '10px'}}>
-                                {paginatedDocuments.map((doc, index) => (
+                                {documents.map((doc, index) => (
                                     <div key={index} className="document-card" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                         <div style={{flex: 1}}>
                                             <div className="document-title">
@@ -2351,24 +2341,10 @@
                                 </div>
                             )}
                             </>
-                            ) : (
-                                <div className="empty-state">
-                                    <div className="empty-state-icon">🔍</div>
-                                    <p>{t('docsNoMatch')} "{filterText}" 的文档</p>
-                                    <button
-                                        className="btn btn-secondary"
-                                        onClick={() => setFilterText('')}
-                                        style={{marginTop: '15px'}}
-                                    >
-                                        {t('docsFilterClear')}
-                                    </button>
-                                </div>
-                            )}
-                            </>
                         )}
 
                         {/* 提示信息 */}
-                        {!error && !loading && documents.length > 0 && (
+                        {!error && !loading && totalCount > 0 && (
                             <div style={{marginTop: '20px', padding: '15px', background: '#fff3cd', borderRadius: '8px', fontSize: '14px'}}>
                                 {t('docsUploadTip')}
                             </div>

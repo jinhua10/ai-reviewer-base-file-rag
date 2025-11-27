@@ -109,6 +109,31 @@ const translations = {
         docsSortDesc: '降序',
         docsShowAll: '显示全部',
 
+        // Advanced Search
+        docsAdvancedSearch: '🔍 高级搜索',
+        docsSimpleSearch: '📝 简单搜索',
+        docsSearchMode: '搜索模式',
+        docsSearchModeContains: '包含',
+        docsSearchModeExact: '精确匹配',
+        docsSearchModeRegex: '正则表达式',
+        docsFileTypeFilter: '文件类型',
+        docsFileTypeAll: '全部类型',
+        docsFileSizeFilter: '文件大小',
+        docsFileSizeMin: '最小',
+        docsFileSizeMax: '最大',
+        docsFileSizeUnit: 'MB',
+        docsIndexedFilter: '索引状态',
+        docsIndexedAll: '全部',
+        docsIndexedYes: '已索引',
+        docsIndexedNo: '未索引',
+        docsDateFilter: '上传日期',
+        docsDateStart: '开始日期',
+        docsDateEnd: '结束日期',
+        docsApplyFilter: '应用筛选',
+        docsResetFilter: '重置',
+        docsActiveFilters: '当前筛选',
+        docsFilterCount: '个筛选条件',
+
         // Stats Tab
         statsTitle: '📊 系统统计',
         statsDocCount: '📄 文档总数',
@@ -293,6 +318,31 @@ const translations = {
         docsSortDesc: 'Descending',
         docsShowAll: 'Show All',
 
+        // Advanced Search
+        docsAdvancedSearch: '🔍 Advanced Search',
+        docsSimpleSearch: '📝 Simple Search',
+        docsSearchMode: 'Search Mode',
+        docsSearchModeContains: 'Contains',
+        docsSearchModeExact: 'Exact Match',
+        docsSearchModeRegex: 'Regular Expression',
+        docsFileTypeFilter: 'File Type',
+        docsFileTypeAll: 'All Types',
+        docsFileSizeFilter: 'File Size',
+        docsFileSizeMin: 'Min',
+        docsFileSizeMax: 'Max',
+        docsFileSizeUnit: 'MB',
+        docsIndexedFilter: 'Index Status',
+        docsIndexedAll: 'All',
+        docsIndexedYes: 'Indexed',
+        docsIndexedNo: 'Not Indexed',
+        docsDateFilter: 'Upload Date',
+        docsDateStart: 'Start Date',
+        docsDateEnd: 'End Date',
+        docsApplyFilter: 'Apply Filter',
+        docsResetFilter: 'Reset',
+        docsActiveFilters: 'Active Filters',
+        docsFilterCount: 'Filter Conditions',
+
         // Stats Tab
         statsTitle: '📊 System Statistics',
         statsDocCount: '📄 Total Documents',
@@ -388,4 +438,3 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = translations;
 }
-
