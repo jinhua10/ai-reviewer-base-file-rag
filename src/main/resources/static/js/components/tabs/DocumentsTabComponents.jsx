@@ -203,13 +203,56 @@ function AdvancedSearchPanel({
             {/* 文件名搜索 + 搜索模式 */}
             <div className="documents-search-row">
                 <label className="documents-search-label">{t('docsFilterPlaceholder')}</label>
-                <input
-                    type="text"
-                    className="input-field documents-search-input"
-                    placeholder={t('docsFilterPlaceholder')}
-                    value={advancedFilters.search}
-                    onChange={(e) => updateFilter('search', e.target.value)}
-                />
+                <div style={{ position: 'relative', flex: 1 }}>
+                    <input
+                        type="text"
+                        className="input-field documents-search-input"
+                        placeholder={t('docsFilterPlaceholder')}
+                        value={advancedFilters.search}
+                        onChange={(e) => updateFilter('search', e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                applyFilters();
+                            }
+                        }}
+                        style={{ width: '100%', paddingRight: advancedFilters.search ? '35px' : '12px' }}
+                    />
+                    {advancedFilters.search && (
+                        <button
+                            onClick={() => updateFilter('search', '')}
+                            style={{
+                                position: 'absolute',
+                                right: '8px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                background: 'none',
+                                border: 'none',
+                                color: '#999',
+                                cursor: 'pointer',
+                                fontSize: '18px',
+                                padding: '0',
+                                width: '20px',
+                                height: '20px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = '#f0f0f0';
+                                e.target.style.color = '#666';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'none';
+                                e.target.style.color = '#999';
+                            }}
+                            title={t('docsClearSearch')}
+                        >
+                            ✕
+                        </button>
+                    )}
+                </div>
                 <select
                     className="input-field"
                     style={{ width: 'auto' }}
