@@ -1,9 +1,41 @@
 /**
- * 日期选择器样式 - 全新设计
- * Modern DatePicker Styles
+ * 日期选择器样式 - 完全隔离版本
+ * Modern DatePicker Styles - Isolated
+ *
+ * 特点：
+ * - 完全独立的样式作用域
+ * - 不受全局样式影响
+ * - 内部样式重置
+ *
  * @author AI Reviewer Team
  * @since 2025-11-28
  */
+
+/* ============================================================================
+   样式隔离和重置
+   ============================================================================ */
+
+/* 日期组件作用域 - 重置所有子元素 */
+.date-picker-wrapper,
+.date-picker-wrapper * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    text-decoration: none;
+    list-style: none;
+}
+
+/* 确保内部元素使用正确的字体 */
+.date-picker-wrapper {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
 /* ============================================================================
    容器和输入框
@@ -12,21 +44,30 @@
     position: relative;
     display: inline-block;
     width: 100%;
+    vertical-align: top;
 }
 
 .date-picker-input {
+    display: block;
     width: 100%;
     min-width: 180px;
-    padding: 10px 36px 10px 12px;
+    height: 40px;
+    padding: 10px 40px 10px 12px;
+    margin: 0;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 20px;
     color: #333;
     background-color: #fff;
+    background-image: none;
     border: 1px solid #d9d9d9;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
 }
 
 .date-picker-input:hover {
@@ -37,11 +78,11 @@
 .date-picker-input.active {
     border-color: #667eea;
     box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
-    outline: none;
 }
 
 .date-picker-input::placeholder {
     color: #bfbfbf;
+    opacity: 1;
 }
 
 /* 日历图标 */
@@ -53,21 +94,25 @@
     color: #999;
     pointer-events: none;
     font-size: 16px;
+    line-height: 1;
+    z-index: 1;
 }
 
 /* ============================================================================
-   日历弹窗
+   日历弹窗容器
    ============================================================================ */
 .date-picker-popup {
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
+    margin: 0;
+    padding: 16px;
     background: #fff;
+    background-clip: padding-box;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
     z-index: 10000;
-    padding: 16px;
     min-width: 300px;
     opacity: 0;
     transform: translateY(-10px);
@@ -81,6 +126,11 @@
     }
 }
 
+/* 确保弹窗内所有元素都不继承外部样式 */
+.date-picker-popup * {
+    box-sizing: border-box;
+}
+
 /* ============================================================================
    日历头部
    ============================================================================ */
@@ -88,29 +138,38 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin: 0 0 16px 0;
+    padding: 0;
     gap: 8px;
+    height: auto;
 }
 
 .date-picker-nav {
     display: flex;
     align-items: center;
     gap: 4px;
+    margin: 0;
+    padding: 0;
 }
 
 .date-picker-nav-btn {
-    width: 32px;
-    height: 32px;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
     color: #666;
     font-size: 16px;
+    line-height: 1;
     transition: all 0.2s;
+    outline: none;
+    user-select: none;
 }
 
 .date-picker-nav-btn:hover {
@@ -120,34 +179,43 @@
 
 .date-picker-nav-btn:active {
     background: #e8e8e8;
+    transform: scale(0.95);
 }
 
 .date-picker-current {
     flex: 1;
+    margin: 0;
+    padding: 0;
     text-align: center;
     font-size: 15px;
     font-weight: 600;
     color: #333;
+    line-height: 32px;
 }
 
 /* ============================================================================
-   星期标题
+   星期标题行
    ============================================================================ */
 .date-picker-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 4px;
-    margin-bottom: 8px;
+    margin: 0 0 8px 0;
+    padding: 0;
 }
 
 .date-picker-weekday {
-    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 32px;
+    margin: 0;
+    padding: 0;
     font-size: 12px;
     font-weight: 600;
     color: #999;
+    text-align: center;
+    line-height: 1;
 }
 
 /* ============================================================================
@@ -157,32 +225,43 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 4px;
+    margin: 0;
+    padding: 0;
 }
 
 .date-picker-day {
-    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
+    height: 32px;
+    margin: 0;
+    padding: 0;
     font-size: 14px;
+    font-weight: 400;
     color: #333;
+    text-align: center;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
+    line-height: 1;
+    user-select: none;
+    outline: none;
 }
 
 /* 空白单元格 */
 .date-picker-day.empty {
     cursor: default;
     pointer-events: none;
+    visibility: hidden;
 }
 
 /* 普通日期 hover */
 .date-picker-day:not(.empty):not(.disabled):hover {
     background: #f0f0f0;
+    border-color: transparent;
 }
 
 /* 今天 */
@@ -194,7 +273,7 @@
 .date-picker-day.today::after {
     content: '';
     position: absolute;
-    bottom: 2px;
+    bottom: 4px;
     left: 50%;
     transform: translateX(-50%);
     width: 4px;
@@ -208,10 +287,12 @@
     background: #667eea;
     color: #fff;
     font-weight: 600;
+    border-color: #667eea;
 }
 
 .date-picker-day.selected:hover {
     background: #5568d3;
+    border-color: #5568d3;
 }
 
 .date-picker-day.selected.today::after {
@@ -222,53 +303,69 @@
 .date-picker-day.disabled {
     color: #bfbfbf;
     cursor: not-allowed;
+    background: transparent;
 }
 
 .date-picker-day.disabled:hover {
     background: transparent;
+    border-color: transparent;
 }
 
 /* ============================================================================
    底部操作栏
    ============================================================================ */
 .date-picker-footer {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 12px 0 0 0;
+    padding: 12px 0 0 0;
+    border-top: 1px solid #f0f0f0;
+    gap: 8px;
 }
 
-.date-picker-today-btn {
+.date-picker-today-btn,
+.date-picker-clear-btn {
+    display: inline-block;
+    margin: 0;
     padding: 6px 12px;
     font-size: 13px;
-    color: #667eea;
+    line-height: 1.5;
+    text-align: center;
     background: transparent;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    outline: none;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.date-picker-today-btn {
+    color: #667eea;
+    font-weight: 500;
 }
 
 .date-picker-today-btn:hover {
     background: rgba(102, 126, 234, 0.1);
 }
 
+.date-picker-today-btn:active {
+    background: rgba(102, 126, 234, 0.15);
+}
+
 .date-picker-clear-btn {
-    padding: 6px 12px;
-    font-size: 13px;
     color: #999;
-    background: transparent;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
 }
 
 .date-picker-clear-btn:hover {
     background: #f5f5f5;
     color: #666;
+}
+
+.date-picker-clear-btn:active {
+    background: #e8e8e8;
 }
 
 /* ============================================================================
@@ -281,8 +378,15 @@
         min-width: 280px;
     }
 
-    .date-picker-popup[style*="opacity: 1"] {
-        transform: translateX(-50%) translateY(0);
+    .date-picker-popup {
+        animation: datepickerFadeInMobile 0.2s ease-out forwards;
+    }
+
+    @keyframes datepickerFadeInMobile {
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     }
 }
 
@@ -299,6 +403,7 @@
     .date-picker-popup {
         background: #1f1f1f;
         border-color: #404040;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
 
     .date-picker-day {
@@ -313,5 +418,51 @@
     .date-picker-weekday {
         color: #e0e0e0;
     }
+
+    .date-picker-nav-btn {
+        color: #999;
+    }
+
+    .date-picker-nav-btn:hover {
+        background: #2a2a2a;
+        color: #e0e0e0;
+    }
+
+    .date-picker-footer {
+        border-top-color: #333;
+    }
+}
+
+/* ============================================================================
+   确保不受其他样式影响的最终保护
+   ============================================================================ */
+.date-picker-wrapper button,
+.date-picker-wrapper input {
+    font-family: inherit;
+    line-height: inherit;
+}
+
+.date-picker-wrapper button:focus,
+.date-picker-wrapper input:focus {
+    outline: none;
+}
+
+/* 重置可能的全局按钮样式 */
+.date-picker-popup button {
+    background-image: none;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* 确保网格布局不受影响 */
+.date-picker-weekdays,
+.date-picker-days {
+    list-style: none;
+}
+
+.date-picker-weekdays > *,
+.date-picker-days > * {
+    float: none;
+    display: flex;
 }
 
