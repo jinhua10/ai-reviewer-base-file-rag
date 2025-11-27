@@ -138,7 +138,8 @@ function DocumentsTab() {
         }
 
         setUploading(false);
-        setTimeout(() => setUploadProgress(null), 3000);
+        // 延长显示时间到8秒，让用户看到索引建议
+        setTimeout(() => setUploadProgress(null), 8000);
         setCurrentPage(1);
         loadDocuments();
         event.target.value = '';

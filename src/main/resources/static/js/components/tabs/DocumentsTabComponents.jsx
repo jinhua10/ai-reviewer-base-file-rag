@@ -41,6 +41,26 @@ function UploadArea({ uploading, uploadProgress, handleFileSelect, t }) {
                         {t('docsUploadSuccessCount')} {uploadProgress.success} |
                         {t('docsUploadFailedCount')} {uploadProgress.failed}
                     </div>
+                    {/* 上传完成后显示索引建议 */}
+                    {uploadProgress.current === uploadProgress.total && uploadProgress.success > 0 && (
+                        <div style={{
+                            marginTop: '10px',
+                            padding: '12px',
+                            background: '#fff3cd',
+                            borderRadius: '6px',
+                            border: '1px solid #ffc107',
+                            fontSize: '14px',
+                            lineHeight: '1.6'
+                        }}>
+                            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
+                                <span style={{ fontSize: '16px', marginRight: '6px' }}>💡</span>
+                                <strong style={{ color: '#856404' }}>{t('docsUploadIndexTip')}</strong>
+                            </div>
+                            <div style={{ color: '#856404', fontSize: '13px' }}>
+                                {t('docsUploadIndexDesc')}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

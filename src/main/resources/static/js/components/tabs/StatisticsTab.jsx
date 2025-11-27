@@ -113,10 +113,16 @@ function StatisticsTab() {
                 <div className="stat-card">
                     <div className="stat-value">{stats.documentCount}</div>
                     <div className="stat-label">{t('statsDocCount')}</div>
+                    <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+                        {t('statsDocCountDesc')}
+                    </div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">{stats.indexedDocumentCount}</div>
                     <div className="stat-label">{t('statsIndexedCount')}</div>
+                    <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+                        {t('statsIndexedCountDesc')}
+                    </div>
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">
@@ -125,8 +131,45 @@ function StatisticsTab() {
                             : 0}%
                     </div>
                     <div className="stat-label">{t('statsIndexProgress')}</div>
+                    <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
+                        {t('statsIndexProgressDesc')}
+                    </div>
                 </div>
             </div>
+
+            {/* 如果有未索引的文档，显示警告提示 */}
+            {stats.documentCount > stats.indexedDocumentCount && (
+                <div style={{
+                    marginTop: '20px',
+                    padding: '15px',
+                    background: '#fff3cd',
+                    borderRadius: '8px',
+                    border: '1px solid #ffc107'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '18px', marginRight: '8px' }}>⚠️</span>
+                        <strong style={{ color: '#856404' }}>{t('statsOutOfSync')}</strong>
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#856404', lineHeight: '1.6' }}>
+                        {t('statsOutOfSyncDesc', {
+                            total: stats.documentCount,
+                            indexed: stats.indexedDocumentCount,
+                            unindexed: stats.documentCount - stats.indexedDocumentCount
+                        })}
+                    </div>
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleIncrementalIndex}
+                        disabled={rebuilding || incrementalIndexing}
+                        style={{
+                            marginTop: '10px',
+                            background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                        }}
+                    >
+                        {incrementalIndexing ? t('statsIndexing') : t('statsIncrementalIndexNow')}
+                    </button>
+                </div>
+            )}
 
             {/* 索引进度 */}
             {(rebuilding || incrementalIndexing) && (

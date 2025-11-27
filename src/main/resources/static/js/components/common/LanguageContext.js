@@ -23,8 +23,18 @@ class LanguageProvider extends React.Component {
         document.getElementById('html-root')?.setAttribute('lang', newLang === 'zh' ? 'zh-CN' : 'en');
     };
 
-    t = (key) => {
-        return window.translations?.[this.state.language]?.[key] || key;
+    t = (key, params) => {
+        let text = window.translations?.[this.state.language]?.[key] || key;
+
+        // 如果提供了参数，进行替换
+        if (params && typeof params === 'object') {
+            Object.keys(params).forEach(paramKey => {
+                const regex = new RegExp(`\\{${paramKey}\\}`, 'g');
+                text = text.replace(regex, params[paramKey]);
+            });
+        }
+
+        return text;
     };
 
     render() {
