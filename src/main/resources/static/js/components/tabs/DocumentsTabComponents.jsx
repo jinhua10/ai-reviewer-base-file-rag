@@ -7,6 +7,62 @@
  */
 
 // ============================================================================
+// 工具函数 - 根据文件类型返回对应图标
+// ============================================================================
+function getFileIcon(fileType) {
+    const type = fileType.toLowerCase();
+
+    // 文档类图标映射
+    const iconMap = {
+        // Word 文档
+        'doc': '📝',
+        'docx': '📝',
+
+        // Excel 表格
+        'xls': '📊',
+        'xlsx': '📊',
+        'csv': '📊',
+
+        // PowerPoint 演示
+        'ppt': '📽️',
+        'pptx': '📽️',
+
+        // PDF 文档
+        'pdf': '📕',
+
+        // 文本文件
+        'txt': '📃',
+        'md': '📋',
+        'markdown': '📋',
+
+        // 代码文件
+        'html': '🌐',
+        'htm': '🌐',
+        'xml': '📰',
+        'json': '📰',
+        'yaml': '📰',
+        'yml': '📰',
+
+        // 图片
+        'jpg': '🖼️',
+        'jpeg': '🖼️',
+        'png': '🖼️',
+        'gif': '🖼️',
+        'bmp': '🖼️',
+        'svg': '🖼️',
+
+        // 压缩文件
+        'zip': '🗜️',
+        'rar': '🗜️',
+        '7z': '🗜️',
+        'tar': '🗜️',
+        'gz': '🗜️',
+    };
+
+    return iconMap[type] || '📄'; // 默认文档图标
+}
+
+// ============================================================================
 // 上传区域组件
 // ============================================================================
 function UploadArea({ uploading, uploadProgress, handleFileSelect, t }) {
@@ -393,7 +449,7 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
                 >
                     {supportedFileTypes.map(type => (
                         <option key={type} value={type}>
-                            📄 {type.toUpperCase()}
+                            {getFileIcon(type)} {type.toUpperCase()}
                         </option>
                     ))}
                 </select>
@@ -420,7 +476,7 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
                 <div className="documents-file-type-tags">
                     {advancedFilters.fileTypes.map(type => (
                         <span key={type} className="documents-file-type-tag">
-                            {type.toUpperCase()}
+                            {getFileIcon(type)} {type.toUpperCase()}
                             <button
                                 type="button"
                                 className="documents-file-type-tag-remove"
@@ -439,13 +495,15 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
 // ============================================================================
 // 文档列表组件
 // ============================================================================
-function DocumentList({ documents, formatFileSize, handleDelete, t }) {
+function DocumentList({ documents, formatFileSize, handleDelete, scrollContainerRef, t }) {
     return (
-        <div className="documents-list">
+        <div className="documents-list" ref={scrollContainerRef}>
             {documents.map((doc, index) => (
                 <div key={index} className="document-card">
                     <div className="document-info">
-                        <div className="document-title">📄 {doc.fileName}</div>
+                        <div className="document-title">
+                            {getFileIcon(doc.fileType)} {doc.fileName}
+                        </div>
                         <div className="document-meta">
                             📦 {formatFileSize(doc.fileSize)} |
                             📅 {doc.uploadTime} |

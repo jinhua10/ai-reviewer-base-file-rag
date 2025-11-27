@@ -7,7 +7,7 @@
  */
 
 function DocumentsTab() {
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
     const { t, language } = window.LanguageModule.useTranslation();
 
     // ============================================================================
@@ -29,6 +29,10 @@ function DocumentsTab() {
     // 排序状态
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
+
+    // 滚动位置管理
+    const scrollContainerRef = useRef(null);
+    const savedScrollPosition = useRef(0);
 
     // 高级搜索状态
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -78,7 +82,8 @@ function DocumentsTab() {
     // 参数变化时重新加载（注意：filterText 不在这里，改为按回车触发）
     useEffect(() => {
         if (!loading) {
-            loadDocuments();
+            // 排序、分页等操作保持滚动位置
+            loadDocuments(true);
         }
     }, [currentPage, pageSize, sortBy, sortOrder, showAdvancedSearch]);
 
@@ -86,7 +91,12 @@ function DocumentsTab() {
     // 核心功能函数
     // ============================================================================
 
-    const loadDocuments = async () => {
+    const loadDocuments = async (preserveScroll = false) => {
+        // 保存当前滚动位置
+        if (preserveScroll && scrollContainerRef.current) {
+            savedScrollPosition.current = scrollContainerRef.current.scrollTop;
+        }
+
         setLoading(true);
         setError(null);
 
@@ -118,6 +128,16 @@ function DocumentsTab() {
             setError(err.response?.data?.message || err.message || t('docsLoadError'));
         } finally {
             setLoading(false);
+
+            // 恢复滚动位置
+            if (preserveScroll && scrollContainerRef.current) {
+                // 使用 setTimeout 确保 DOM 已更新
+                setTimeout(() => {
+                    if (scrollContainerRef.current) {
+                        scrollContainerRef.current.scrollTop = savedScrollPosition.current;
+                    }
+                }, 0);
+            }
         }
     };
 
@@ -179,9 +199,9 @@ function DocumentsTab() {
     };
 
     const handleSearchSubmit = () => {
-        // 按回车时才触发搜索
+        // 按回车时才触发搜索，保持滚动位置
         setCurrentPage(1);
-        loadDocuments();
+        loadDocuments(true);
     };
 
     const handleSearchKeyPress = (e) => {
@@ -193,7 +213,8 @@ function DocumentsTab() {
     const handleSortChange = (field, order) => {
         if (field) setSortBy(field);
         if (order) setSortOrder(order);
-        setCurrentPage(1);
+        // 不重置页码，保持用户当前位置
+        // setCurrentPage(1);
     };
 
     const handlePageSizeChange = (size) => {
@@ -214,7 +235,7 @@ function DocumentsTab() {
 
     const applyFilters = () => {
         setCurrentPage(1);
-        loadDocuments();
+        loadDocuments(true);
     };
 
     const resetFilters = () => {
@@ -229,6 +250,8 @@ function DocumentsTab() {
             endDate: ''
         });
         setCurrentPage(1);
+        // 延迟加载以确保状态更新完成
+        setTimeout(() => loadDocuments(true), 0);
     };
 
     const hasActiveFilters = () => {
@@ -411,6 +434,7 @@ function DocumentsTab() {
                             documents={documents}
                             formatFileSize={formatFileSize}
                             handleDelete={handleDelete}
+                            scrollContainerRef={scrollContainerRef}
                             t={t}
                         />
 
