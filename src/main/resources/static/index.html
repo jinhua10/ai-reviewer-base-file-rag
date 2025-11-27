@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/datepicker.css">
     <link rel="stylesheet" href="assets/css/qa-tab.css">
-    <link rel="stylesheet" href="assets/css/search-tab.css">
     <link rel="stylesheet" href="assets/css/documents-tab.css">
     <link rel="stylesheet" href="assets/css/statistics-tab.css">
 
@@ -55,7 +54,6 @@
 
     <!-- 6. 标签页组件 (JSX版本) -->
     <script type="text/babel" src="js/components/tabs/QATab.jsx"></script>
-    <script type="text/babel" src="js/components/tabs/SearchTab.jsx"></script>
     <script type="text/babel" src="js/components/tabs/DocumentsTab.jsx"></script>
     <script type="text/babel" src="js/components/tabs/StatisticsTab.jsx"></script>
 
@@ -78,7 +76,6 @@
                     StyleConstants: !!window.StyleConstants,
                     LanguageModule: !!window.LanguageModule,
                     QATab: !!window.QATab,
-                    SearchTab: !!window.SearchTab,
                     DocumentsTab: !!window.DocumentsTab,
                     StatisticsTab: !!window.StatisticsTab,
                     DocumentsTabComponents: !!window.DocumentsTabComponents
@@ -98,10 +95,9 @@
                 }
 
                 // 检查Tab组件
-                if (!window.QATab || !window.SearchTab || !window.DocumentsTab || !window.StatisticsTab) {
+                if (!window.QATab || !window.DocumentsTab || !window.StatisticsTab) {
                     console.warn('⚠️ Tab components not ready yet:', {
                         QATab: !!window.QATab,
-                        SearchTab: !!window.SearchTab,
                         DocumentsTab: !!window.DocumentsTab,
                         StatisticsTab: !!window.StatisticsTab
                     });
@@ -181,31 +177,24 @@
                                         className={`tab ${activeTab === 'qa' ? 'active' : ''}`}
                                         onClick={() => setActiveTab('qa')}
                                     >
-                                        {t('tabQA')}
-                                    </button>
-                                    <button
-                                        className={`tab ${activeTab === 'search' ? 'active' : ''}`}
-                                        onClick={() => setActiveTab('search')}
-                                    >
-                                        {t('tabSearch')}
+                                        💬 {t('tabQA')}
                                     </button>
                                     <button
                                         className={`tab ${activeTab === 'documents' ? 'active' : ''}`}
                                         onClick={() => setActiveTab('documents')}
                                     >
-                                        {t('tabDocuments')}
+                                        🔍📁 {t('tabDocumentsSearch')}
                                     </button>
                                     <button
                                         className={`tab ${activeTab === 'stats' ? 'active' : ''}`}
                                         onClick={() => setActiveTab('stats')}
                                     >
-                                        {t('tabStats')}
+                                        📊 {t('tabStats')}
                                     </button>
                                 </div>
 
                                 <div className="tab-content">
                                     {activeTab === 'qa' && <QATab />}
-                                    {activeTab === 'search' && <SearchTab />}
                                     {activeTab === 'documents' && <DocumentsTab />}
                                     {activeTab === 'stats' && <StatisticsTab />}
                                 </div>

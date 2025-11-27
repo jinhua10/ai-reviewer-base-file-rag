@@ -18,10 +18,9 @@ const translations = {
         status: '状态',
 
         // Tabs
-        tabQA: '💬 智能问答',
-        tabSearch: '🔍 文档搜索',
-        tabDocuments: '📁 文档管理',
-        tabStats: '📊 统计信息',
+        tabQA: '智能问答',
+        tabDocumentsSearch: '文档搜索和管理',
+        tabStats: '统计信息',
 
         // QA Tab
         qaPlaceholder: '请输入您的问题...',
@@ -255,10 +254,9 @@ const translations = {
         status: 'Status',
 
         // Tabs
-        tabQA: '💬 Q&A',
-        tabSearch: '🔍 Search',
-        tabDocuments: '📁 Documents',
-        tabStats: '📊 Statistics',
+        tabQA: 'Q&A',
+        tabDocumentsSearch: 'Documents Search & Management',
+        tabStats: 'Statistics',
 
         // QA Tab
         qaPlaceholder: 'Enter your question...',
