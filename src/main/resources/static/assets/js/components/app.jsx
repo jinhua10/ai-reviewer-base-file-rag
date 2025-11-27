@@ -1414,7 +1414,20 @@ function DocumentsTab() {
                                         {/* 下拉多选框 */}
                                         <select
                                             className="input-field"
-                                            style={{minWidth: '200px', flex: '1'}}
+                                            style={{
+                                                width: '160px',
+                                                maxHeight: '180px',
+                                                padding: '8px 12px',
+                                                borderRadius: '6px',
+                                                border: '2px solid #e0e7ff',
+                                                background: 'white',
+                                                fontSize: '13px',
+                                                fontWeight: '500',
+                                                color: '#4b5563',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.3s ease',
+                                                outline: 'none'
+                                            }}
                                             multiple
                                             size="1"
                                             value={advancedFilters.fileTypes}
@@ -1422,12 +1435,31 @@ function DocumentsTab() {
                                                 const selected = Array.from(e.target.selectedOptions, option => option.value);
                                                 updateFilter('fileTypes', selected);
                                             }}
-                                            onFocus={(e) => e.target.size = Math.min(supportedFileTypes.length, 8)}
-                                            onBlur={(e) => e.target.size = 1}
+                                            onFocus={(e) => {
+                                                e.target.size = Math.min(supportedFileTypes.length, 5);
+                                                e.target.style.borderColor = '#667eea';
+                                                e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.size = 1;
+                                                e.target.style.borderColor = '#e0e7ff';
+                                                e.target.style.boxShadow = 'none';
+                                            }}
                                         >
                                             {supportedFileTypes.map(type => (
-                                                <option key={type} value={type}>
-                                                    {type.toUpperCase()}
+                                                <option
+                                                    key={type}
+                                                    value={type}
+                                                    style={{
+                                                        padding: '6px 10px',
+                                                        borderRadius: '4px',
+                                                        margin: '2px',
+                                                        cursor: 'pointer',
+                                                        fontWeight: '500',
+                                                        fontSize: '13px'
+                                                    }}
+                                                >
+                                                    📄 {type.toUpperCase()}
                                                 </option>
                                             ))}
                                         </select>
@@ -1436,18 +1468,60 @@ function DocumentsTab() {
                                         <button
                                             type="button"
                                             className="btn-secondary"
-                                            style={{padding: '6px 12px', fontSize: '13px'}}
+                                            style={{
+                                                padding: '7px 12px',
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                borderRadius: '6px',
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                color: 'white',
+                                                border: 'none',
+                                                boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)',
+                                                transition: 'all 0.3s ease',
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap',
+                                                minWidth: '70px'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.transform = 'translateY(-2px)';
+                                                e.target.style.boxShadow = '0 4px 8px rgba(102, 126, 234, 0.4)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.transform = 'translateY(0)';
+                                                e.target.style.boxShadow = '0 2px 4px rgba(102, 126, 234, 0.3)';
+                                            }}
                                             onClick={() => updateFilter('fileTypes', [...supportedFileTypes])}
                                         >
-                                            {t('docsSelectAll')}
+                                            ✓ {t('docsSelectAll')}
                                         </button>
                                         <button
                                             type="button"
                                             className="btn-secondary"
-                                            style={{padding: '6px 12px', fontSize: '13px'}}
+                                            style={{
+                                                padding: '7px 12px',
+                                                fontSize: '12px',
+                                                fontWeight: '500',
+                                                borderRadius: '6px',
+                                                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                                                color: 'white',
+                                                border: 'none',
+                                                boxShadow: '0 2px 4px rgba(245, 87, 108, 0.3)',
+                                                transition: 'all 0.3s ease',
+                                                cursor: 'pointer',
+                                                whiteSpace: 'nowrap',
+                                                minWidth: '70px'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.target.style.transform = 'translateY(-2px)';
+                                                e.target.style.boxShadow = '0 4px 8px rgba(245, 87, 108, 0.4)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.target.style.transform = 'translateY(0)';
+                                                e.target.style.boxShadow = '0 2px 4px rgba(245, 87, 108, 0.3)';
+                                            }}
                                             onClick={() => updateFilter('fileTypes', [])}
                                         >
-                                            {t('docsClearAll')}
+                                            ✕ {t('docsClearAll')}
                                         </button>
                                     </div>
 
