@@ -163,7 +163,7 @@ knowledge:
       # 可选值：
       #   - SIMPLE: 简单切分，按固定长度切分（性能最好，成本最低）
       #   - SMART_KEYWORD: 智能关键词切分，优先保留包含关键词的内容（推荐，平衡效果和成本）
-      #   - AI_SEMANTIC: AI语义切分，使用AI模型智能���分（效果最好，成本最高）
+      #   - AI_SEMANTIC: AI语义切分，使用AI模型智能切分（效果最好，成本最高）
       #   - NONE: 不切分，直接截断（不推荐）
       chunking-strategy: SMART_KEYWORD
 
@@ -388,3 +388,27 @@ logging:
   level:
     top.yumbo.ai.rag: INFO
 
+# classpath:simpleExcel
+
+# 反馈系统配置
+feedback:
+  # 是否需要审核才能生效（默认 false - 直接生效）
+  require-approval: false
+
+  # 是否自动应用反馈到检索优化（默认 true）
+  auto-apply: true
+
+  # 点赞权重增量（默认 0.1）
+  like-weight-increment: 0.1
+
+  # 踩的权重减量（默认 -0.15）
+  dislike-weight-decrement: -0.15
+
+  # 最小权重限制（默认 0.1）
+  min-weight: 0.1
+
+  # 最大权重限制（默认 2.0）
+  max-weight: 2.0
+
+  # 是否启用动态权重调整（默认 true）
+  enable-dynamic-weighting: true

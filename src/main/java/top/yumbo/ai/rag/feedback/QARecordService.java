@@ -3,7 +3,9 @@ package top.yumbo.ai.rag.feedback;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.config.FeedbackConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,8 +34,14 @@ public class QARecordService {
 
     private final ObjectMapper objectMapper;
     private final Path recordsPath;
+    private final FeedbackConfig feedbackConfig;
+    private final DocumentWeightService documentWeightService;
 
-    public QARecordService() {
+    @Autowired
+    public QARecordService(FeedbackConfig feedbackConfig,
+                          DocumentWeightService documentWeightService) {
+        this.feedbackConfig = feedbackConfig;
+        this.documentWeightService = documentWeightService;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.recordsPath = Paths.get(RECORDS_DIR);
@@ -195,6 +203,19 @@ public class QARecordService {
         String emoji = feedbackType == QARecord.FeedbackType.LIKE ? "👍" : "👎";
         log.info("{} 文档反馈 [{}]: {} - {}",
             emoji, recordId.substring(0, 8), documentName, feedbackType);
+
+        // 根据配置决定是否自动应用反馈
+        if (!feedbackConfig.isRequireApproval() && feedbackConfig.isAutoApply()) {
+            // 直接应用反馈到文档权重
+            documentWeightService.applyFeedback(documentName, feedbackType);
+            record.setAppliedToOptimization(true);
+            log.info("✅ 反馈已自动应用到文档权重: {}", documentName);
+        } else {
+            // 设置为待审核
+            record.setReviewStatus(QARecord.ReviewStatus.PENDING);
+            record.setAppliedToOptimization(false);
+            log.info("⏳ 反馈等待审核: {}", documentName);
+        }
 
         return updateRecord(record);
     }

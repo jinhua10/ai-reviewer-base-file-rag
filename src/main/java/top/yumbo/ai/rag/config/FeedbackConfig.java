@@ -1,0 +1,62 @@
+package top.yumbo.ai.rag.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+/**
+ * 反馈系统配置
+ *
+ * 控制反馈是否需要审核以及反馈如何影响检索相关性
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-28
+ */
+@Data
+@Component
+@ConfigurationProperties(prefix = "feedback")
+public class FeedbackConfig {
+
+    /**
+     * 是否需要审核才能生效
+     * 默认 false - 用户反馈直接生效
+     */
+    private boolean requireApproval = false;
+
+    /**
+     * 自动应用反馈到相关性优化
+     * 默认 true - 反馈直接影响文档权重
+     */
+    private boolean autoApply = true;
+
+    /**
+     * 点赞权重增量
+     * 默认 0.1 - 每次点赞增加 0.1 权重
+     */
+    private double likeWeightIncrement = 0.1;
+
+    /**
+     * 踩的权重减量
+     * 默认 -0.15 - 每次踩减少 0.15 权重
+     */
+    private double dislikeWeightDecrement = -0.15;
+
+    /**
+     * 最小权重限制
+     * 默认 0.1 - 即使被踩很多次，最低权重不低于 0.1
+     */
+    private double minWeight = 0.1;
+
+    /**
+     * 最大权重限制
+     * 默认 2.0 - 即使被点赞很多次，最高权重不超过 2.0
+     */
+    private double maxWeight = 2.0;
+
+    /**
+     * 是否启用动态权重调整
+     * 默认 true
+     */
+    private boolean enableDynamicWeighting = true;
+}
+
