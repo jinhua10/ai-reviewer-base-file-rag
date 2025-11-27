@@ -400,20 +400,32 @@
     border-radius: 6px;
     text-align: center;
     font-size: 13px;
+    transition: border-color 0.3s ease;
+}
+
+.pagination-jump-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .pagination-jump-btn {
-    padding: 5px 12px;
-    background: #f5f5f5;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* 改为渐变蓝紫色 */
+    color: white;                                                     /* 改为白色文字 */
     border: none;
     border-radius: 6px;
     cursor: pointer;
     font-size: 13px;
+    font-weight: 500;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);                 /* 添加阴影 */
 }
 
 .pagination-jump-btn:hover {
-    background: #e0e0e0;
+    background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%);  /* hover时颜色加深 */
+    transform: translateY(-2px);                                     /* 添加上浮效果 */
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);                 /* hover时阴影加深 */
 }
 
 /* ============================================================================

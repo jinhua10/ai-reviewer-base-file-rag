@@ -85,22 +85,27 @@ body {
 .tab {
     padding: 12px 24px;
     border: none;
-    background: none;
+    background: #f8f9fa;        /* 添加浅灰背景 */
     cursor: pointer;
     font-size: 16px;
-    color: #666;
+    color: #495057;             /* 使用更深的灰色 */
     border-bottom: 3px solid transparent;
+    border-radius: 8px 8px 0 0;  /* 顶部圆角 */
     transition: all 0.3s;
+    font-weight: 500;            /* 稍微加粗 */
 }
 
 .tab:hover {
     color: #667eea;
+    background: #e9ecef;        /* hover时背景稍深 */
 }
 
 .tab.active {
     color: #667eea;
+    background: white;           /* 激活时背景为白色 */
     border-bottom-color: #667eea;
     font-weight: 600;
+    box-shadow: 0 -2px 8px rgba(102, 126, 234, 0.1); /* 添加轻微阴影 */
 }
 
 /* Tab内容 */
