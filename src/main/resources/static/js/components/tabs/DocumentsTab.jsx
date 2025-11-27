@@ -13,12 +13,14 @@ function DocumentsTab() {
     // ============================================================================
     // 状态管理
     // ============================================================================
-    const [documents, setDocuments] = useState([]);
+    const [documents, setDocuments] = useState([]); // 后端返回的原始文档列表
+    const [allDocuments, setAllDocuments] = useState([]); // 用于前端过滤的完整文档列表
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(null);
     const [filterText, setFilterText] = useState('');
+    const [localFilterText, setLocalFilterText] = useState(''); // 用于前端实时过滤的文本
 
     // 分页状态
     const [currentPage, setCurrentPage] = useState(1);
@@ -30,13 +32,22 @@ function DocumentsTab() {
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
 
-    // 滚动位置管理
-    const scrollContainerRef = useRef(null);
-    const savedScrollPosition = useRef(0);
 
     // 高级搜索状态
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [advancedFilters, setAdvancedFilters] = useState({
+        search: '',
+        searchMode: 'contains',
+        fileTypes: [],
+        minSize: '',
+        maxSize: '',
+        indexed: 'all',
+        startDate: '',
+        endDate: ''
+    });
+
+    // 本地高级搜索状态（用于前端实时过滤）
+    const [localAdvancedFilters, setLocalAdvancedFilters] = useState({
         search: '',
         searchMode: 'contains',
         fileTypes: [],
@@ -82,8 +93,7 @@ function DocumentsTab() {
     // 参数变化时重新加载（注意：filterText 不在这里，改为按回车触发）
     useEffect(() => {
         if (!loading) {
-            // 排序、分页等操作保持滚动位置
-            loadDocuments(true);
+            loadDocuments();
         }
     }, [currentPage, pageSize, sortBy, sortOrder, showAdvancedSearch]);
 
@@ -91,12 +101,7 @@ function DocumentsTab() {
     // 核心功能函数
     // ============================================================================
 
-    const loadDocuments = async (preserveScroll = false) => {
-        // 保存当前滚动位置
-        if (preserveScroll && scrollContainerRef.current) {
-            savedScrollPosition.current = scrollContainerRef.current.scrollTop;
-        }
-
+    const loadDocuments = async () => {
         setLoading(true);
         setError(null);
 
@@ -118,9 +123,14 @@ function DocumentsTab() {
             const result = await window.api.listDocuments(currentPage, pageSize, sortBy, sortOrder, filters);
 
             if (result.success) {
-                setDocuments(result.documents || []);
+                const docs = result.documents || [];
+                setDocuments(docs);
+                setAllDocuments(docs); // 保存完整列表用于前端过滤
                 setTotalCount(result.total || 0);
                 setTotalPages(result.totalPages || 0);
+                // 同步本地过滤状态
+                setLocalFilterText(filterText);
+                setLocalAdvancedFilters({ ...advancedFilters });
             } else {
                 setError(result.message || t('docsGetListError'));
             }
@@ -128,16 +138,6 @@ function DocumentsTab() {
             setError(err.response?.data?.message || err.message || t('docsLoadError'));
         } finally {
             setLoading(false);
-
-            // 恢复滚动位置
-            if (preserveScroll && scrollContainerRef.current) {
-                // 使用 setTimeout 确保 DOM 已更新
-                setTimeout(() => {
-                    if (scrollContainerRef.current) {
-                        scrollContainerRef.current.scrollTop = savedScrollPosition.current;
-                    }
-                }, 0);
-            }
         }
     };
 
@@ -195,13 +195,13 @@ function DocumentsTab() {
 
     const handleSearchChange = (value) => {
         setFilterText(value);
-        // 不再立即重置页码，等待用户按回车
+        setLocalFilterText(value); // 同时更新本地过滤文本，触发实时过滤
     };
 
     const handleSearchSubmit = () => {
-        // 按回车时才触发搜索，保持滚动位置
+        // 按回车或点击搜索按钮时才触发后台搜索
         setCurrentPage(1);
-        loadDocuments(true);
+        loadDocuments();
     };
 
     const handleSearchKeyPress = (e) => {
@@ -210,11 +210,111 @@ function DocumentsTab() {
         }
     };
 
+    // 前端实时过滤文档列表
+    const getFilteredDocuments = () => {
+        if (!localFilterText || localFilterText === filterText) {
+            // 如果没有本地过滤文本，或者本地过滤文本等于后端搜索文本，返回原始列表
+            return documents;
+        }
+
+        // 前端实时过滤
+        const searchLower = localFilterText.toLowerCase();
+        return allDocuments.filter(doc =>
+            doc.fileName.toLowerCase().includes(searchLower)
+        );
+    };
+
+    // 高级搜索 - 前端实时过滤（支持所有筛选条件）
+    const getAdvancedFilteredDocuments = () => {
+        // 检查是否有任何本地过滤条件与后端过滤条件不同
+        const hasLocalFilters =
+            localAdvancedFilters.search !== advancedFilters.search ||
+            localAdvancedFilters.searchMode !== advancedFilters.searchMode ||
+            JSON.stringify(localAdvancedFilters.fileTypes) !== JSON.stringify(advancedFilters.fileTypes) ||
+            localAdvancedFilters.minSize !== advancedFilters.minSize ||
+            localAdvancedFilters.maxSize !== advancedFilters.maxSize ||
+            localAdvancedFilters.indexed !== advancedFilters.indexed ||
+            localAdvancedFilters.startDate !== advancedFilters.startDate ||
+            localAdvancedFilters.endDate !== advancedFilters.endDate;
+
+        // 如果没有本地过滤，返回后端数据
+        if (!hasLocalFilters) {
+            return documents;
+        }
+
+        // 前端实时过滤所有条件
+        return allDocuments.filter(doc => {
+            // 1. 文件名搜索过滤
+            if (localAdvancedFilters.search) {
+                const searchLower = localAdvancedFilters.search.toLowerCase();
+                let matchSearch = false;
+
+                switch (localAdvancedFilters.searchMode) {
+                    case 'exact':
+                        matchSearch = doc.fileName.toLowerCase() === searchLower;
+                        break;
+                    case 'regex':
+                        try {
+                            const regex = new RegExp(localAdvancedFilters.search, 'i');
+                            matchSearch = regex.test(doc.fileName);
+                        } catch (e) {
+                            matchSearch = doc.fileName.toLowerCase().includes(searchLower);
+                        }
+                        break;
+                    case 'contains':
+                    default:
+                        matchSearch = doc.fileName.toLowerCase().includes(searchLower);
+                }
+
+                if (!matchSearch) return false;
+            }
+
+            // 2. 文件类型过滤
+            if (localAdvancedFilters.fileTypes.length > 0) {
+                if (!localAdvancedFilters.fileTypes.includes(doc.fileType.toLowerCase())) {
+                    return false;
+                }
+            }
+
+            // 3. 文件大小过滤
+            if (localAdvancedFilters.minSize) {
+                const minBytes = parseInt(localAdvancedFilters.minSize) * 1024 * 1024;
+                if (doc.fileSize < minBytes) return false;
+            }
+            if (localAdvancedFilters.maxSize) {
+                const maxBytes = parseInt(localAdvancedFilters.maxSize) * 1024 * 1024;
+                if (doc.fileSize > maxBytes) return false;
+            }
+
+            // 4. 索引状态过滤
+            if (localAdvancedFilters.indexed !== 'all') {
+                const isIndexed = localAdvancedFilters.indexed === 'true';
+                if (doc.indexed !== isIndexed) return false;
+            }
+
+            // 5. 日期范围过滤
+            if (localAdvancedFilters.startDate || localAdvancedFilters.endDate) {
+                const docDate = new Date(doc.uploadTime);
+
+                if (localAdvancedFilters.startDate) {
+                    const startDate = new Date(localAdvancedFilters.startDate);
+                    if (docDate < startDate) return false;
+                }
+
+                if (localAdvancedFilters.endDate) {
+                    const endDate = new Date(localAdvancedFilters.endDate);
+                    endDate.setHours(23, 59, 59, 999); // 包含结束日期的整天
+                    if (docDate > endDate) return false;
+                }
+            }
+
+            return true;
+        });
+    };
+
     const handleSortChange = (field, order) => {
         if (field) setSortBy(field);
         if (order) setSortOrder(order);
-        // 不重置页码，保持用户当前位置
-        // setCurrentPage(1);
     };
 
     const handlePageSizeChange = (size) => {
@@ -224,22 +324,31 @@ function DocumentsTab() {
 
     const updateFilter = (key, value) => {
         setAdvancedFilters(prev => ({ ...prev, [key]: value }));
+        setLocalAdvancedFilters(prev => ({ ...prev, [key]: value })); // 同时更新本地状态，触发实时过滤
     };
 
     const toggleFileType = (type, checked) => {
+        const newFileTypes = checked ?
+            [...advancedFilters.fileTypes, type] :
+            advancedFilters.fileTypes.filter(t => t !== type);
+
         setAdvancedFilters(prev => ({
             ...prev,
-            fileTypes: checked ? [...prev.fileTypes, type] : prev.fileTypes.filter(t => t !== type)
+            fileTypes: newFileTypes
+        }));
+        setLocalAdvancedFilters(prev => ({
+            ...prev,
+            fileTypes: newFileTypes
         }));
     };
 
     const applyFilters = () => {
         setCurrentPage(1);
-        loadDocuments(true);
+        loadDocuments(); // 发送后端请求
     };
 
     const resetFilters = () => {
-        setAdvancedFilters({
+        const emptyFilters = {
             search: '',
             searchMode: 'contains',
             fileTypes: [],
@@ -248,10 +357,12 @@ function DocumentsTab() {
             indexed: 'all',
             startDate: '',
             endDate: ''
-        });
+        };
+        setAdvancedFilters(emptyFilters);
+        setLocalAdvancedFilters(emptyFilters);
         setCurrentPage(1);
         // 延迟加载以确保状态更新完成
-        setTimeout(() => loadDocuments(true), 0);
+        setTimeout(() => loadDocuments(), 0);
     };
 
     const hasActiveFilters = () => {
@@ -272,6 +383,18 @@ function DocumentsTab() {
         if (advancedFilters.indexed !== 'all') count++;
         if (advancedFilters.startDate || advancedFilters.endDate) count++;
         return count;
+    };
+
+    // 检查是否有本地过滤条件（用于显示实时过滤提示）
+    const hasLocalAdvancedFilters = () => {
+        return localAdvancedFilters.search !== advancedFilters.search ||
+               localAdvancedFilters.searchMode !== advancedFilters.searchMode ||
+               JSON.stringify(localAdvancedFilters.fileTypes) !== JSON.stringify(advancedFilters.fileTypes) ||
+               localAdvancedFilters.minSize !== advancedFilters.minSize ||
+               localAdvancedFilters.maxSize !== advancedFilters.maxSize ||
+               localAdvancedFilters.indexed !== advancedFilters.indexed ||
+               localAdvancedFilters.startDate !== advancedFilters.startDate ||
+               localAdvancedFilters.endDate !== advancedFilters.endDate;
     };
 
     // ============================================================================
@@ -375,12 +498,23 @@ function DocumentsTab() {
 
                                 {/* 统计信息 */}
                                 <div className="documents-stats">
-                                    {filterText ? (
+                                    {localFilterText || (showAdvancedSearch && hasLocalAdvancedFilters()) ? (
                                         <>
-                                            {t('docsFilterResult')} {totalCount} {t('logDocsCount')}
+                                            {t('docsFilterResult')} {
+                                                (showAdvancedSearch ?
+                                                    getAdvancedFilteredDocuments() :
+                                                    getFilteredDocuments()
+                                                ).length
+                                            } / {allDocuments.length} {t('logDocsCount')}
                                             <button
                                                 className="documents-stats-clear-btn"
-                                                onClick={() => handleSearchChange('')}
+                                                onClick={() => {
+                                                    if (showAdvancedSearch) {
+                                                        resetFilters();
+                                                    } else {
+                                                        handleSearchChange('');
+                                                    }
+                                                }}
                                             >
                                                 {t('docsFilterClear')}
                                             </button>
@@ -431,12 +565,27 @@ function DocumentsTab() {
                 {!error && !loading && documents.length > 0 && (
                     <>
                         <DocumentList
-                            documents={documents}
+                            documents={showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()}
                             formatFileSize={formatFileSize}
                             handleDelete={handleDelete}
-                            scrollContainerRef={scrollContainerRef}
                             t={t}
                         />
+
+                        {/* 实时过滤提示 */}
+                        {((localFilterText && localFilterText !== filterText) ||
+                          (showAdvancedSearch && hasLocalAdvancedFilters())) && (
+                            <div style={{
+                                marginTop: '10px',
+                                padding: '10px',
+                                background: '#e3f2fd',
+                                borderRadius: '6px',
+                                fontSize: '13px',
+                                color: '#1976d2',
+                                textAlign: 'center'
+                            }}>
+                                💡 {t('docsLocalFilterHint') || '正在前端实时过滤，点击"应用筛选"按钮进行完整搜索'}
+                            </div>
+                        )}
 
                         {/* 分页控制 */}
                         {pageSize !== -1 && totalPages > 1 && (
@@ -448,6 +597,18 @@ function DocumentsTab() {
                             />
                         )}
                     </>
+                )}
+
+                {/* 实时过滤后的空状态 */}
+                {!error && !loading && documents.length > 0 &&
+                 (showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()).length === 0 && (
+                    <div className="empty-state">
+                        <div className="empty-state-icon">🔍</div>
+                        <p>{t('docsNoMatchFound') || '没有找到匹配的文档'}</p>
+                        <p style={{ fontSize: '14px', marginTop: '10px', color: '#ccc' }}>
+                            {t('docsTryDifferentKeyword') || '尝试使用不同的关键词或点击搜索按钮进行完整搜索'}
+                        </p>
+                    </div>
                 )}
 
                 {/* 提示信息 */}

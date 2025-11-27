@@ -4,6 +4,7 @@
  * @since 2025-11-28
  */
 
+
 /* ============================================================================
    上传区域样式
    ============================================================================ */
@@ -302,29 +303,6 @@
 .documents-list {
     display: grid;
     gap: 10px;
-    max-height: 600px;
-    overflow-y: auto;
-    padding-right: 5px;
-    scroll-behavior: smooth;
-}
-
-/* 滚动条样式优化 */
-.documents-list::-webkit-scrollbar {
-    width: 8px;
-}
-
-.documents-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-}
-
-.documents-list::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-}
-
-.documents-list::-webkit-scrollbar-thumb:hover {
-    background: #555;
 }
 
 .document-card {

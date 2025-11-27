@@ -495,11 +495,11 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
 // ============================================================================
 // 文档列表组件
 // ============================================================================
-function DocumentList({ documents, formatFileSize, handleDelete, scrollContainerRef, t }) {
+const DocumentList = React.memo(function DocumentList({ documents, formatFileSize, handleDelete, t }) {
     return (
-        <div className="documents-list" ref={scrollContainerRef}>
-            {documents.map((doc, index) => (
-                <div key={index} className="document-card">
+        <div className="documents-list">
+            {documents.map((doc) => (
+                <div key={doc.fileName + doc.uploadTime} className="document-card">
                     <div className="document-info">
                         <div className="document-title">
                             {getFileIcon(doc.fileType)} {doc.fileName}
@@ -521,7 +521,7 @@ function DocumentList({ documents, formatFileSize, handleDelete, scrollContainer
             ))}
         </div>
     );
-}
+});
 
 // ============================================================================
 // 分页组件
