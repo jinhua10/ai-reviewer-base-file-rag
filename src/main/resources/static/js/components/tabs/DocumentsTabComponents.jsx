@@ -96,6 +96,8 @@ function SearchFilters({
     setShowAdvancedSearch,
     filterText,
     handleSearchChange,
+    handleSearchKeyPress,
+    handleSearchSubmit,
     advancedFilters,
     updateFilter,
     toggleFileType,
@@ -122,13 +124,37 @@ function SearchFilters({
 
             {/* 简单搜索 */}
             {!showAdvancedSearch && (
-                <input
-                    type="text"
-                    className="input-field documents-simple-search"
-                    placeholder={t('docsFilterPlaceholder')}
-                    value={filterText}
-                    onChange={(e) => handleSearchChange(e.target.value)}
-                />
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <input
+                        type="text"
+                        className="input-field documents-simple-search"
+                        placeholder={t('docsFilterPlaceholder')}
+                        value={filterText}
+                        onChange={(e) => handleSearchChange(e.target.value)}
+                        onKeyPress={handleSearchKeyPress}
+                        style={{ flex: 1 }}
+                    />
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleSearchSubmit}
+                        style={{ whiteSpace: 'nowrap' }}
+                    >
+                        🔍 {t('docsSearchButton')}
+                    </button>
+                    {filterText && (
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => {
+                                handleSearchChange('');
+                                handleSearchSubmit();
+                            }}
+                            style={{ whiteSpace: 'nowrap' }}
+                            title={t('docsClearSearch')}
+                        >
+                            ✕ {t('docsClearButton')}
+                        </button>
+                    )}
+                </div>
             )}
 
             {/* 高级搜索面板 */}

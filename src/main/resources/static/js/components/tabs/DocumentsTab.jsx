@@ -75,12 +75,12 @@ function DocumentsTab() {
         loadDocuments();
     }, []);
 
-    // 参数变化时重新加载
+    // 参数变化时重新加载（注意：filterText 不在这里，改为按回车触发）
     useEffect(() => {
         if (!loading) {
             loadDocuments();
         }
-    }, [currentPage, pageSize, sortBy, sortOrder, filterText, showAdvancedSearch]);
+    }, [currentPage, pageSize, sortBy, sortOrder, showAdvancedSearch]);
 
     // ============================================================================
     // 核心功能函数
@@ -175,7 +175,19 @@ function DocumentsTab() {
 
     const handleSearchChange = (value) => {
         setFilterText(value);
+        // 不再立即重置页码，等待用户按回车
+    };
+
+    const handleSearchSubmit = () => {
+        // 按回车时才触发搜索
         setCurrentPage(1);
+        loadDocuments();
+    };
+
+    const handleSearchKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
     };
 
     const handleSortChange = (field, order) => {
@@ -275,13 +287,15 @@ function DocumentsTab() {
                 />
 
                 {/* 搜索和筛选区域 */}
-                {!loading && totalCount > 0 && (
+                {!loading && (
                     <div className="documents-search-container">
                         <SearchFilters
                             showAdvancedSearch={showAdvancedSearch}
                             setShowAdvancedSearch={setShowAdvancedSearch}
                             filterText={filterText}
                             handleSearchChange={handleSearchChange}
+                            handleSearchKeyPress={handleSearchKeyPress}
+                            handleSearchSubmit={handleSearchSubmit}
                             advancedFilters={advancedFilters}
                             updateFilter={updateFilter}
                             toggleFileType={toggleFileType}
@@ -294,64 +308,66 @@ function DocumentsTab() {
                             t={t}
                         />
 
-                        {/* 排序和分页控制栏 */}
-                        <div className="documents-controls-bar">
-                            {/* 排序方式 */}
-                            <div className="documents-control-group">
-                                <label className="documents-control-label">{t('docsSortBy')}:</label>
-                                <select
-                                    className="input-field documents-control-select"
-                                    value={sortBy}
-                                    onChange={(e) => handleSortChange(e.target.value, null)}
-                                >
-                                    <option value="date">{t('docsSortByDate')}</option>
-                                    <option value="name">{t('docsSortByName')}</option>
-                                    <option value="size">{t('docsSortBySize')}</option>
-                                    <option value="type">{t('docsSortByType')}</option>
-                                </select>
-                                <select
-                                    className="input-field documents-control-select"
-                                    value={sortOrder}
-                                    onChange={(e) => handleSortChange(null, e.target.value)}
-                                >
-                                    <option value="desc">{t('docsSortDesc')}</option>
-                                    <option value="asc">{t('docsSortAsc')}</option>
-                                </select>
-                            </div>
+                        {/* 排序和分页控制栏 - 只在有文档时显示 */}
+                        {totalCount > 0 && (
+                            <div className="documents-controls-bar">
+                                {/* 排序方式 */}
+                                <div className="documents-control-group">
+                                    <label className="documents-control-label">{t('docsSortBy')}:</label>
+                                    <select
+                                        className="input-field documents-control-select"
+                                        value={sortBy}
+                                        onChange={(e) => handleSortChange(e.target.value, null)}
+                                    >
+                                        <option value="date">{t('docsSortByDate')}</option>
+                                        <option value="name">{t('docsSortByName')}</option>
+                                        <option value="size">{t('docsSortBySize')}</option>
+                                        <option value="type">{t('docsSortByType')}</option>
+                                    </select>
+                                    <select
+                                        className="input-field documents-control-select"
+                                        value={sortOrder}
+                                        onChange={(e) => handleSortChange(null, e.target.value)}
+                                    >
+                                        <option value="desc">{t('docsSortDesc')}</option>
+                                        <option value="asc">{t('docsSortAsc')}</option>
+                                    </select>
+                                </div>
 
-                            {/* 每页显示数量 */}
-                            <div className="documents-control-group">
-                                <label className="documents-control-label">{t('docsPageSize')}:</label>
-                                <select
-                                    className="input-field documents-control-select"
-                                    value={pageSize}
-                                    onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                                >
-                                    <option value={10}>10 {t('docsPageSizeItems')}</option>
-                                    <option value={20}>20 {t('docsPageSizeItems')}</option>
-                                    <option value={50}>50 {t('docsPageSizeItems')}</option>
-                                    <option value={100}>100 {t('docsPageSizeItems')}</option>
-                                    <option value={-1}>{t('docsShowAll')}</option>
-                                </select>
-                            </div>
+                                {/* 每页显示数量 */}
+                                <div className="documents-control-group">
+                                    <label className="documents-control-label">{t('docsPageSize')}:</label>
+                                    <select
+                                        className="input-field documents-control-select"
+                                        value={pageSize}
+                                        onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                    >
+                                        <option value={10}>10 {t('docsPageSizeItems')}</option>
+                                        <option value={20}>20 {t('docsPageSizeItems')}</option>
+                                        <option value={50}>50 {t('docsPageSizeItems')}</option>
+                                        <option value={100}>100 {t('docsPageSizeItems')}</option>
+                                        <option value={-1}>{t('docsShowAll')}</option>
+                                    </select>
+                                </div>
 
-                            {/* 统计信息 */}
-                            <div className="documents-stats">
-                                {filterText ? (
-                                    <>
-                                        {t('docsFilterResult')} {totalCount} {t('logDocsCount')}
-                                        <button
-                                            className="documents-stats-clear-btn"
-                                            onClick={() => handleSearchChange('')}
-                                        >
-                                            {t('docsFilterClear')}
-                                        </button>
-                                    </>
-                                ) : (
-                                    `${t('docsPaginationTotal')} ${totalCount} ${t('logDocsCount')}`
-                                )}
+                                {/* 统计信息 */}
+                                <div className="documents-stats">
+                                    {filterText ? (
+                                        <>
+                                            {t('docsFilterResult')} {totalCount} {t('logDocsCount')}
+                                            <button
+                                                className="documents-stats-clear-btn"
+                                                onClick={() => handleSearchChange('')}
+                                            >
+                                                {t('docsFilterClear')}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        `${t('docsPaginationTotal')} ${totalCount} ${t('logDocsCount')}`
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 )}
 
