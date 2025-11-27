@@ -401,6 +401,95 @@
             line-height: 1.6;
         }
 
+        /* 分页组件样式 */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .pagination-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #ccc;
+            color: #ccc;
+        }
+
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .pagination-jump-input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .pagination-jump-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .pagination-jump-btn {
+            padding: 6px 12px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .pagination-jump-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        /* 响应式分页 */
+        @media (max-width: 768px) {
+            .pagination-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .pagination-info {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
         .statistics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -1866,6 +1955,14 @@
             const [uploadProgress, setUploadProgress] = useState(null);
             const [filterText, setFilterText] = useState('');
 
+            // 分页状态
+            const [currentPage, setCurrentPage] = useState(1);
+            const [pageSize, setPageSize] = useState(20);
+
+            // 排序状态
+            const [sortBy, setSortBy] = useState('date'); // name, size, date, type
+            const [sortOrder, setSortOrder] = useState('desc'); // asc, desc
+
             useEffect(() => {
                 loadDocuments();
             }, []);
@@ -1945,10 +2042,59 @@
                 return (bytes / 1024 / 1024).toFixed(2) + ' MB';
             };
 
+            // 排序函数
+            const sortDocuments = (docs) => {
+                const sorted = [...docs];
+                sorted.sort((a, b) => {
+                    let compareResult = 0;
+
+                    switch(sortBy) {
+                        case 'name':
+                            compareResult = a.fileName.localeCompare(b.fileName);
+                            break;
+                        case 'size':
+                            compareResult = a.fileSize - b.fileSize;
+                            break;
+                        case 'date':
+                            compareResult = new Date(a.uploadTime) - new Date(b.uploadTime);
+                            break;
+                        case 'type':
+                            compareResult = a.fileType.localeCompare(b.fileType);
+                            break;
+                        default:
+                            compareResult = 0;
+                    }
+
+                    return sortOrder === 'asc' ? compareResult : -compareResult;
+                });
+
+                return sorted;
+            };
+
             // 过滤文档列表
-            const filteredDocuments = documents.filter(doc =>
-                doc.fileName.toLowerCase().includes(filterText.toLowerCase())
+            const filteredDocuments = sortDocuments(
+                documents.filter(doc =>
+                    doc.fileName.toLowerCase().includes(filterText.toLowerCase())
+                )
             );
+
+            // 分页计算
+            const totalPages = Math.ceil(filteredDocuments.length / pageSize);
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = startIndex + pageSize;
+            const paginatedDocuments = pageSize === -1 ? filteredDocuments : filteredDocuments.slice(startIndex, endIndex);
+
+            // 当过滤或排序改变时，重置到第一页
+            useEffect(() => {
+                setCurrentPage(1);
+            }, [filterText, sortBy, sortOrder, pageSize]);
+
+            // 跳转页面
+            const goToPage = (page) => {
+                if (page < 1) page = 1;
+                if (page > totalPages) page = totalPages;
+                setCurrentPage(page);
+            };
 
             return (
                 <div>
@@ -2003,27 +2149,80 @@
                                     placeholder={t('docsFilterPlaceholder')}
                                     value={filterText}
                                     onChange={(e) => setFilterText(e.target.value)}
-                                    style={{width: '100%'}}
+                                    style={{width: '100%', marginBottom: '10px'}}
                                 />
-                                {filterText && (
-                                    <div style={{fontSize: '13px', color: '#666', marginTop: '5px'}}>
-                                        {t('docsFilterResult')} {filteredDocuments.length} / {documents.length} {t('logDocsCount')}
-                                        <button
-                                            onClick={() => setFilterText('')}
-                                            style={{
-                                                marginLeft: '10px',
-                                                background: 'none',
-                                                border: 'none',
-                                                color: '#667eea',
-                                                cursor: 'pointer',
-                                                textDecoration: 'underline',
-                                                fontSize: '13px'
-                                            }}
+
+                                {/* 排序和分页控制栏 */}
+                                <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', background: '#f8f9fa', padding: '10px', borderRadius: '6px'}}>
+                                    {/* 排序方式 */}
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                                        <label style={{fontSize: '13px', color: '#666'}}>{t('docsSortBy')}:</label>
+                                        <select
+                                            className="input-field"
+                                            style={{width: 'auto', padding: '5px 8px', fontSize: '13px'}}
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value)}
                                         >
-                                            {t('docsFilterClear')}
-                                        </button>
+                                            <option value="date">{t('docsSortByDate')}</option>
+                                            <option value="name">{t('docsSortByName')}</option>
+                                            <option value="size">{t('docsSortBySize')}</option>
+                                            <option value="type">{t('docsSortByType')}</option>
+                                        </select>
+                                        <select
+                                            className="input-field"
+                                            style={{width: 'auto', padding: '5px 8px', fontSize: '13px'}}
+                                            value={sortOrder}
+                                            onChange={(e) => setSortOrder(e.target.value)}
+                                        >
+                                            <option value="desc">{t('docsSortDesc')}</option>
+                                            <option value="asc">{t('docsSortAsc')}</option>
+                                        </select>
                                     </div>
-                                )}
+
+                                    {/* 每页显示数量 */}
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
+                                        <label style={{fontSize: '13px', color: '#666'}}>{t('docsPageSize')}:</label>
+                                        <select
+                                            className="input-field"
+                                            style={{width: 'auto', padding: '5px 8px', fontSize: '13px'}}
+                                            value={pageSize}
+                                            onChange={(e) => setPageSize(Number(e.target.value))}
+                                        >
+                                            <option value={10}>10 {t('docsPageSizeItems')}</option>
+                                            <option value={20}>20 {t('docsPageSizeItems')}</option>
+                                            <option value={50}>50 {t('docsPageSizeItems')}</option>
+                                            <option value={100}>100 {t('docsPageSizeItems')}</option>
+                                            <option value={-1}>{t('docsShowAll')}</option>
+                                        </select>
+                                    </div>
+
+                                    {/* 统计信息 */}
+                                    <div style={{marginLeft: 'auto', fontSize: '13px', color: '#666'}}>
+                                        {filterText ? (
+                                            <>
+                                                {t('docsFilterResult')} {filteredDocuments.length} / {documents.length} {t('logDocsCount')}
+                                                <button
+                                                    onClick={() => setFilterText('')}
+                                                    style={{
+                                                        marginLeft: '10px',
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: '#667eea',
+                                                        cursor: 'pointer',
+                                                        textDecoration: 'underline',
+                                                        fontSize: '13px'
+                                                    }}
+                                                >
+                                                    {t('docsFilterClear')}
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {t('docsPaginationTotal')} {filteredDocuments.length} {t('logDocsCount')}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -2064,8 +2263,9 @@
                         {!error && !loading && documents.length > 0 && (
                             <>
                             {filteredDocuments.length > 0 ? (
+                            <>
                             <div style={{display: 'grid', gap: '10px'}}>
-                                {filteredDocuments.map((doc, index) => (
+                                {paginatedDocuments.map((doc, index) => (
                                     <div key={index} className="document-card" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                                         <div style={{flex: 1}}>
                                             <div className="document-title">
@@ -2093,6 +2293,64 @@
                                     </div>
                                 ))}
                             </div>
+
+                            {/* 分页控制 */}
+                            {pageSize !== -1 && totalPages > 1 && (
+                                <div className="pagination-container">
+                                    <button
+                                        className="pagination-btn"
+                                        onClick={() => goToPage(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        {t('docsPaginationPrev')}
+                                    </button>
+
+                                    <div className="pagination-info">
+                                        <span>
+                                            {t('docsPagination')} {currentPage} {t('docsPaginationPage')} / {t('docsPaginationTotal')} {totalPages} {t('docsPaginationPage')}
+                                        </span>
+                                        <span style={{margin: '0 10px', color: '#ccc'}}>|</span>
+                                        <input
+                                            type="number"
+                                            className="pagination-jump-input"
+                                            min="1"
+                                            max={totalPages}
+                                            placeholder={currentPage.toString()}
+                                            onKeyPress={(e) => {
+                                                if (e.key === 'Enter') {
+                                                    const page = parseInt(e.target.value);
+                                                    if (page && page >= 1 && page <= totalPages) {
+                                                        goToPage(page);
+                                                        e.target.value = '';
+                                                    }
+                                                }
+                                            }}
+                                        />
+                                        <button
+                                            className="pagination-jump-btn"
+                                            onClick={(e) => {
+                                                const input = e.target.previousElementSibling;
+                                                const page = parseInt(input.value);
+                                                if (page && page >= 1 && page <= totalPages) {
+                                                    goToPage(page);
+                                                    input.value = '';
+                                                }
+                                            }}
+                                        >
+                                            {t('docsPaginationJump')}
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        className="pagination-btn"
+                                        onClick={() => goToPage(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        {t('docsPaginationNext')}
+                                    </button>
+                                </div>
+                            )}
+                            </>
                             ) : (
                                 <div className="empty-state">
                                     <div className="empty-state-icon">🔍</div>

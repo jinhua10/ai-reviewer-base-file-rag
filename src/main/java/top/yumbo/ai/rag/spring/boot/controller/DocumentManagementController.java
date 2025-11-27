@@ -109,21 +109,78 @@ public class DocumentManagementController {
     }
 
     /**
-     * 获取文档列表
+     * 获取文档列表（支持分页、排序、搜索）
+     *
+     * @param page 页码（从1开始），默认1
+     * @param pageSize 每页数量，默认20，-1表示全部
+     * @param sortBy 排序字段：name, size, date, type，默认date
+     * @param sortOrder 排序方向：asc, desc，默认desc
+     * @param search 搜索关键词，默认空
      */
     @GetMapping("/list")
-    public ListResponse listDocuments() {
-        log.info("获取文档列表");
+    public ListResponse listDocuments(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam(defaultValue = "date") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortOrder,
+            @RequestParam(defaultValue = "") String search) {
+
+        log.info("获取文档列表 - 页码: {}, 每页: {}, 排序: {} {}, 搜索: '{}'",
+                page, pageSize, sortBy, sortOrder, search);
 
         try {
-            List<DocumentInfo> documents = documentService.listDocuments();
+            // 获取所有文档
+            List<DocumentInfo> allDocuments = documentService.listDocuments();
+
+            // 1. 搜索过滤
+            List<DocumentInfo> filteredDocuments = allDocuments;
+            if (search != null && !search.trim().isEmpty()) {
+                String searchLower = search.toLowerCase();
+                filteredDocuments = allDocuments.stream()
+                        .filter(doc -> doc.getFileName().toLowerCase().contains(searchLower))
+                        .collect(java.util.stream.Collectors.toList());
+                log.debug("搜索过滤后: {} -> {} 个文档", allDocuments.size(), filteredDocuments.size());
+            }
+
+            // 2. 排序
+            filteredDocuments = sortDocuments(filteredDocuments, sortBy, sortOrder);
+
+            // 3. 分页
+            int totalCount = filteredDocuments.size();
+            List<DocumentInfo> paginatedDocuments;
+            int totalPages;
+
+            if (pageSize == -1) {
+                // 显示全部
+                paginatedDocuments = filteredDocuments;
+                totalPages = 1;
+            } else {
+                // 计算分页
+                totalPages = (int) Math.ceil((double) totalCount / pageSize);
+                int startIndex = (page - 1) * pageSize;
+                int endIndex = Math.min(startIndex + pageSize, totalCount);
+
+                if (startIndex >= totalCount) {
+                    paginatedDocuments = new java.util.ArrayList<>();
+                } else {
+                    paginatedDocuments = filteredDocuments.subList(startIndex, endIndex);
+                }
+
+                log.debug("分页: 第 {} 页, 每页 {} 条, 共 {} 页, 返回 {} 条",
+                        page, pageSize, totalPages, paginatedDocuments.size());
+            }
 
             ListResponse response = new ListResponse();
             response.setSuccess(true);
-            response.setTotal(documents.size());
-            response.setDocuments(documents);
+            response.setTotal(totalCount);
+            response.setDocuments(paginatedDocuments);
+            response.setPage(page);
+            response.setPageSize(pageSize);
+            response.setTotalPages(totalPages);
 
+            log.info("文档列表获取成功: 返回 {} 个文档，共 {} 个", paginatedDocuments.size(), totalCount);
             return response;
+
         } catch (Exception e) {
             log.error("获取文档列表失败", e);
 
@@ -133,6 +190,42 @@ public class DocumentManagementController {
 
             return response;
         }
+    }
+
+    /**
+     * 对文档列表进行排序
+     */
+    private List<DocumentInfo> sortDocuments(List<DocumentInfo> documents, String sortBy, String sortOrder) {
+        List<DocumentInfo> sorted = new java.util.ArrayList<>(documents);
+
+        java.util.Comparator<DocumentInfo> comparator;
+
+        switch (sortBy.toLowerCase()) {
+            case "name":
+                comparator = java.util.Comparator.comparing(DocumentInfo::getFileName,
+                        String.CASE_INSENSITIVE_ORDER);
+                break;
+            case "size":
+                comparator = java.util.Comparator.comparingLong(DocumentInfo::getFileSize);
+                break;
+            case "type":
+                comparator = java.util.Comparator.comparing(DocumentInfo::getFileType,
+                        String.CASE_INSENSITIVE_ORDER);
+                break;
+            case "date":
+            default:
+                comparator = java.util.Comparator.comparing(DocumentInfo::getUploadTime);
+                break;
+        }
+
+        if ("desc".equalsIgnoreCase(sortOrder)) {
+            comparator = comparator.reversed();
+        }
+
+        sorted.sort(comparator);
+        log.debug("排序完成: {} {}", sortBy, sortOrder);
+
+        return sorted;
     }
 
     /**
@@ -357,8 +450,11 @@ public class DocumentManagementController {
     public static class ListResponse {
         private boolean success = true;
         private String message;
-        private int total;
+        private int total;              // 总文档数（过滤后）
         private List<DocumentInfo> documents;
+        private int page;               // 当前页码
+        private int pageSize;           // 每页数量
+        private int totalPages;         // 总页数
     }
 
     @Data
