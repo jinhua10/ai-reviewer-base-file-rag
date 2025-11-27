@@ -36,6 +36,316 @@ function useTranslation() {
     return useContext(LanguageContext);
 }
 
+// 自定义日期选择器组件
+function DatePicker({ value, onChange, placeholder, language }) {
+    const [showCalendar, setShowCalendar] = useState(false);
+    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+    const calendarRef = React.useRef(null);
+
+    // 如果有值，初始化到该日期
+    useEffect(() => {
+        if (value) {
+            const date = new Date(value);
+            setCurrentYear(date.getFullYear());
+            setCurrentMonth(date.getMonth());
+        }
+    }, [value]);
+
+    // 点击外部关闭日历
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+                setShowCalendar(false);
+            }
+        };
+        if (showCalendar) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showCalendar]);
+
+    const monthNames = language === 'zh'
+        ? ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+        : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const weekDays = language === 'zh'
+        ? ['日', '一', '二', '三', '四', '五', '六']
+        : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+    const getDaysInMonth = (year, month) => {
+        return new Date(year, month + 1, 0).getDate();
+    };
+
+    const getFirstDayOfMonth = (year, month) => {
+        return new Date(year, month, 1).getDay();
+    };
+
+    const formatDate = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const displayDate = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        if (language === 'zh') {
+            return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
+        } else {
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+    };
+
+    const handleDateSelect = (day) => {
+        const selected = new Date(currentYear, currentMonth, day);
+        onChange(formatDate(selected));
+        setShowCalendar(false);
+    };
+
+    const handlePrevMonth = () => {
+        if (currentMonth === 0) {
+            setCurrentMonth(11);
+            setCurrentYear(currentYear - 1);
+        } else {
+            setCurrentMonth(currentMonth - 1);
+        }
+    };
+
+    const handleNextMonth = () => {
+        if (currentMonth === 11) {
+            setCurrentMonth(0);
+            setCurrentYear(currentYear + 1);
+        } else {
+            setCurrentMonth(currentMonth + 1);
+        }
+    };
+
+    const renderCalendar = () => {
+        const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+        const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+        const days = [];
+        const today = new Date();
+        const selectedDate = value ? new Date(value) : null;
+
+        // 填充空白
+        for (let i = 0; i < firstDay; i++) {
+            days.push(<div key={`empty-${i}`} style={{padding: '12px'}}></div>);
+        }
+
+        // 填充日期
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentYear, currentMonth, day);
+            const isToday = date.toDateString() === today.toDateString();
+            const isSelected = selectedDate && date.toDateString() === selectedDate.toDateString();
+
+            days.push(
+                <div
+                    key={day}
+                    onClick={() => handleDateSelect(day)}
+                    style={{
+                        padding: '12px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        borderRadius: '6px',
+                        fontSize: '15px',
+                        fontWeight: isSelected ? '600' : '400',
+                        background: isSelected ? '#667eea' : isToday ? '#e3f2fd' : 'transparent',
+                        color: isSelected ? 'white' : isToday ? '#1976d2' : '#333',
+                        transition: 'all 0.2s',
+                        border: isToday && !isSelected ? '2px solid #2196f3' : '2px solid transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isSelected) {
+                            e.currentTarget.style.background = '#f5f5f5';
+                        }
+                    }}
+                    onMouseLeave={(e) => {
+                        if (!isSelected) {
+                            e.currentTarget.style.background = isToday ? '#e3f2fd' : 'transparent';
+                        }
+                    }}
+                >
+                    {day}
+                </div>
+            );
+        }
+
+        return days;
+    };
+
+    return (
+        <div ref={calendarRef} style={{position: 'relative', display: 'inline-block'}}>
+            <input
+                type="text"
+                className="input-field"
+                style={{width: '180px', cursor: 'pointer'}}
+                placeholder={placeholder}
+                value={displayDate(value)}
+                onClick={() => setShowCalendar(!showCalendar)}
+                readOnly
+            />
+            {showCalendar && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    marginTop: '5px',
+                    background: 'white',
+                    border: '2px solid #667eea',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                    zIndex: 1000,
+                    padding: '20px',
+                    minWidth: '350px'
+                }}>
+                    {/* 月份年份导航 */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '20px',
+                        paddingBottom: '15px',
+                        borderBottom: '2px solid #f0f0f0'
+                    }}>
+                        <button
+                            onClick={handlePrevMonth}
+                            style={{
+                                background: '#f5f5f5',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                fontSize: '18px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                        >
+                            ←
+                        </button>
+                        <div style={{
+                            fontSize: '18px',
+                            fontWeight: '600',
+                            color: '#333'
+                        }}>
+                            {language === 'zh'
+                                ? `${currentYear}年 ${monthNames[currentMonth]}`
+                                : `${monthNames[currentMonth]} ${currentYear}`
+                            }
+                        </div>
+                        <button
+                            onClick={handleNextMonth}
+                            style={{
+                                background: '#f5f5f5',
+                                border: 'none',
+                                borderRadius: '6px',
+                                padding: '8px 12px',
+                                cursor: 'pointer',
+                                fontSize: '18px',
+                                fontWeight: 'bold',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                        >
+                            →
+                        </button>
+                    </div>
+
+                    {/* 星期标题 */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(7, 1fr)',
+                        gap: '5px',
+                        marginBottom: '10px'
+                    }}>
+                        {weekDays.map(day => (
+                            <div key={day} style={{
+                                padding: '10px',
+                                textAlign: 'center',
+                                fontWeight: '600',
+                                color: '#666',
+                                fontSize: '14px'
+                            }}>
+                                {day}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* 日期网格 */}
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(7, 1fr)',
+                        gap: '5px'
+                    }}>
+                        {renderCalendar()}
+                    </div>
+
+                    {/* 快捷按钮 */}
+                    <div style={{
+                        marginTop: '15px',
+                        paddingTop: '15px',
+                        borderTop: '2px solid #f0f0f0',
+                        display: 'flex',
+                        gap: '10px',
+                        justifyContent: 'space-between'
+                    }}>
+                        <button
+                            onClick={() => {
+                                onChange(formatDate(new Date()));
+                                setShowCalendar(false);
+                            }}
+                            style={{
+                                flex: 1,
+                                padding: '8px 16px',
+                                background: '#667eea',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#5568d3'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#667eea'}
+                        >
+                            {language === 'zh' ? '今天' : 'Today'}
+                        </button>
+                        <button
+                            onClick={() => {
+                                onChange('');
+                                setShowCalendar(false);
+                            }}
+                            style={{
+                                flex: 1,
+                                padding: '8px 16px',
+                                background: '#f5f5f5',
+                                color: '#666',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '600',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.background = '#e0e0e0'}
+                            onMouseLeave={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                        >
+                            {language === 'zh' ? '清除' : 'Clear'}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
 // API 已在 api.js 中定义并通过 window.api 暴露
 // 这里直接使用 window.api 即可
 
@@ -741,7 +1051,7 @@ function SearchTab() {
 
 // 文档管理组件
 function DocumentsTab() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -1129,22 +1439,18 @@ function DocumentsTab() {
                                 {/* 日期范围 */}
                                 <div style={{marginBottom: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center'}}>
                                     <label style={{minWidth: '80px', fontWeight: '600'}}>{t('docsDateFilter')}</label>
-                                    <input
-                                        type="date"
-                                        className="input-field"
-                                        style={{width: '150px'}}
-                                        placeholder={t('docsDateStart')}
+                                    <DatePicker
                                         value={advancedFilters.startDate}
-                                        onChange={(e) => updateFilter('startDate', e.target.value)}
+                                        onChange={(date) => updateFilter('startDate', date)}
+                                        placeholder={t('docsDateStart')}
+                                        language={language}
                                     />
                                     <span>-</span>
-                                    <input
-                                        type="date"
-                                        className="input-field"
-                                        style={{width: '150px'}}
-                                        placeholder={t('docsDateEnd')}
+                                    <DatePicker
                                         value={advancedFilters.endDate}
-                                        onChange={(e) => updateFilter('endDate', e.target.value)}
+                                        onChange={(date) => updateFilter('endDate', date)}
+                                        placeholder={t('docsDateEnd')}
+                                        language={language}
                                     />
                                 </div>
 
