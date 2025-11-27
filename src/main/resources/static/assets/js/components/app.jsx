@@ -1082,8 +1082,30 @@ function DocumentsTab() {
         endDate: ''
     });
 
-    // 支持的文件类型列表
-    const FILE_TYPES = ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'txt', 'md', 'html', 'xml'];
+    // 支持的文件类型列表（可扩展配置）
+    const [supportedFileTypes, setSupportedFileTypes] = useState([
+        'pdf', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt', 'txt', 'md', 'html', 'xml'
+    ]);
+
+    // 从后端加载支持的文件类型（如果API提供）
+    useEffect(() => {
+        const loadSupportedFileTypes = async () => {
+            try {
+                // 尝试从API获取支持的文件类型
+                const response = await fetch('/api/documents/supported-types');
+                if (response.ok) {
+                    const types = await response.json();
+                    if (Array.isArray(types) && types.length > 0) {
+                        setSupportedFileTypes(types);
+                    }
+                }
+            } catch (err) {
+                // 如果API不存在或失败，使用默认值
+                console.log('使用默认文件类型列表');
+            }
+        };
+        loadSupportedFileTypes();
+    }, []);
 
     // 首次加载
     useEffect(() => {
@@ -1378,80 +1400,161 @@ function DocumentsTab() {
                                     </select>
                                 </div>
 
-                                {/* 文件类型多选 */}
+                                {/* 文件类型多选 - 紧凑型下拉框 */}
                                 <div style={{marginBottom: '15px'}}>
-                                    <label style={{fontWeight: '600', display: 'block', marginBottom: '8px'}}>{t('docsFileTypeFilter')}</label>
-                                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '15px'}}>
-                                        {FILE_TYPES.map(type => (
-                                            <label key={type} style={{display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer'}}>
-                                                <input
-                                                    type="checkbox"
-                                                    style={{width: '18px', height: '18px', cursor: 'pointer'}}
-                                                    checked={advancedFilters.fileTypes.includes(type)}
-                                                    onChange={(e) => toggleFileType(type, e.target.checked)}
-                                                />
-                                                <span>{type.toUpperCase()}</span>
-                                            </label>
-                                        ))}
+                                    <label style={{fontWeight: '600', display: 'block', marginBottom: '8px'}}>
+                                        {t('docsFileTypeFilter')}
+                                        {advancedFilters.fileTypes.length > 0 && (
+                                            <span style={{marginLeft: '8px', color: '#667eea', fontSize: '14px'}}>
+                                                ({advancedFilters.fileTypes.length} {t('docsSelected')})
+                                            </span>
+                                        )}
+                                    </label>
+                                    <div style={{display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap'}}>
+                                        {/* 下拉多选框 */}
+                                        <select
+                                            className="input-field"
+                                            style={{minWidth: '200px', flex: '1'}}
+                                            multiple
+                                            size="1"
+                                            value={advancedFilters.fileTypes}
+                                            onChange={(e) => {
+                                                const selected = Array.from(e.target.selectedOptions, option => option.value);
+                                                updateFilter('fileTypes', selected);
+                                            }}
+                                            onFocus={(e) => e.target.size = Math.min(supportedFileTypes.length, 8)}
+                                            onBlur={(e) => e.target.size = 1}
+                                        >
+                                            {supportedFileTypes.map(type => (
+                                                <option key={type} value={type}>
+                                                    {type.toUpperCase()}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        {/* 快捷操作按钮 */}
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            style={{padding: '6px 12px', fontSize: '13px'}}
+                                            onClick={() => updateFilter('fileTypes', [...supportedFileTypes])}
+                                        >
+                                            {t('docsSelectAll')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn-secondary"
+                                            style={{padding: '6px 12px', fontSize: '13px'}}
+                                            onClick={() => updateFilter('fileTypes', [])}
+                                        >
+                                            {t('docsClearAll')}
+                                        </button>
+                                    </div>
+
+                                    {/* 已选择的文件类型标签显示 */}
+                                    {advancedFilters.fileTypes.length > 0 && (
+                                        <div style={{marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px'}}>
+                                            {advancedFilters.fileTypes.map(type => (
+                                                <span
+                                                    key={type}
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        padding: '4px 8px',
+                                                        background: '#667eea',
+                                                        color: 'white',
+                                                        borderRadius: '4px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '500'
+                                                    }}
+                                                >
+                                                    {type.toUpperCase()}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleFileType(type, false)}
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            color: 'white',
+                                                            cursor: 'pointer',
+                                                            padding: '0',
+                                                            marginLeft: '2px',
+                                                            fontSize: '14px',
+                                                            lineHeight: '1'
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 文件大小范围 + 索引状态 (同一行，更紧凑) */}
+                                <div style={{marginBottom: '15px', display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center'}}>
+                                    {/* 文件大小 */}
+                                    <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                                        <label style={{fontWeight: '600', whiteSpace: 'nowrap'}}>{t('docsFileSizeFilter')}</label>
+                                        <input
+                                            type="number"
+                                            className="input-field"
+                                            style={{width: '100px'}}
+                                            placeholder={t('docsFileSizeMin')}
+                                            value={advancedFilters.minSize}
+                                            onChange={(e) => updateFilter('minSize', e.target.value)}
+                                            min="0"
+                                        />
+                                        <span>-</span>
+                                        <input
+                                            type="number"
+                                            className="input-field"
+                                            style={{width: '100px'}}
+                                            placeholder={t('docsFileSizeMax')}
+                                            value={advancedFilters.maxSize}
+                                            onChange={(e) => updateFilter('maxSize', e.target.value)}
+                                            min="0"
+                                        />
+                                        <span>{t('docsFileSizeUnit')}</span>
+                                    </div>
+
+                                    {/* 索引状态 (缩小宽度) */}
+                                    <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                                        <label style={{fontWeight: '600', whiteSpace: 'nowrap'}}>{t('docsIndexedFilter')}</label>
+                                        <select
+                                            className="input-field"
+                                            style={{width: '120px'}}
+                                            value={advancedFilters.indexed}
+                                            onChange={(e) => updateFilter('indexed', e.target.value)}
+                                        >
+                                            <option value="all">{t('docsIndexedAll')}</option>
+                                            <option value="true">{t('docsIndexedYes')}</option>
+                                            <option value="false">{t('docsIndexedNo')}</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                {/* 文件大小范围 */}
+                                {/* 日期范围 (调小一点) */}
                                 <div style={{marginBottom: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center'}}>
-                                    <label style={{minWidth: '80px', fontWeight: '600'}}>{t('docsFileSizeFilter')}</label>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        style={{width: '100px'}}
-                                        placeholder={t('docsFileSizeMin')}
-                                        value={advancedFilters.minSize}
-                                        onChange={(e) => updateFilter('minSize', e.target.value)}
-                                        min="0"
-                                    />
+                                    <label style={{fontWeight: '600', whiteSpace: 'nowrap'}}>{t('docsDateFilter')}</label>
+                                    <div style={{transform: 'scale(0.95)', transformOrigin: 'left center'}}>
+                                        <DatePicker
+                                            value={advancedFilters.startDate}
+                                            onChange={(date) => updateFilter('startDate', date)}
+                                            placeholder={t('docsDateStart')}
+                                            language={language}
+                                        />
+                                    </div>
                                     <span>-</span>
-                                    <input
-                                        type="number"
-                                        className="input-field"
-                                        style={{width: '100px'}}
-                                        placeholder={t('docsFileSizeMax')}
-                                        value={advancedFilters.maxSize}
-                                        onChange={(e) => updateFilter('maxSize', e.target.value)}
-                                        min="0"
-                                    />
-                                    <span>{t('docsFileSizeUnit')}</span>
-                                </div>
-
-                                {/* 索引状态 */}
-                                <div style={{marginBottom: '15px', display: 'flex', gap: '10px', alignItems: 'center'}}>
-                                    <label style={{minWidth: '80px', fontWeight: '600'}}>{t('docsIndexedFilter')}</label>
-                                    <select
-                                        className="input-field"
-                                        style={{width: '150px'}}
-                                        value={advancedFilters.indexed}
-                                        onChange={(e) => updateFilter('indexed', e.target.value)}
-                                    >
-                                        <option value="all">{t('docsIndexedAll')}</option>
-                                        <option value="true">{t('docsIndexedYes')}</option>
-                                        <option value="false">{t('docsIndexedNo')}</option>
-                                    </select>
-                                </div>
-
-                                {/* 日期范围 */}
-                                <div style={{marginBottom: '15px', display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center'}}>
-                                    <label style={{minWidth: '80px', fontWeight: '600'}}>{t('docsDateFilter')}</label>
-                                    <DatePicker
-                                        value={advancedFilters.startDate}
-                                        onChange={(date) => updateFilter('startDate', date)}
-                                        placeholder={t('docsDateStart')}
-                                        language={language}
-                                    />
-                                    <span>-</span>
-                                    <DatePicker
-                                        value={advancedFilters.endDate}
-                                        onChange={(date) => updateFilter('endDate', date)}
-                                        placeholder={t('docsDateEnd')}
-                                        language={language}
-                                    />
+                                    <div style={{transform: 'scale(0.95)', transformOrigin: 'left center'}}>
+                                        <DatePicker
+                                            value={advancedFilters.endDate}
+                                            onChange={(date) => updateFilter('endDate', date)}
+                                            placeholder={t('docsDateEnd')}
+                                            language={language}
+                                        />
+                                    </div>
                                 </div>
 
                                 {/* 操作按钮 */}
