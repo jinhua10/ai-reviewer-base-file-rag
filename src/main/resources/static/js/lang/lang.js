@@ -256,6 +256,9 @@ const translations = {
         docsSearchKeyword: '搜索关键词',
         docsSearchPlaceholder: '输入关键词搜索文档...',
         docsSearchModePrefix: '前缀匹配',
+        docsLocalFilterHint: '正在前端实时过滤，点击"搜索"或"应用筛选"按钮进行完整搜索',
+        docsNoMatchFound: '没有找到匹配的文档',
+        docsTryDifferentKeyword: '尝试使用不同的关键词或点击搜索按钮进行完整搜索',
     },
     en: {
         // Header
@@ -506,6 +509,9 @@ const translations = {
         docsSearchKeyword: 'Search Keyword',
         docsSearchPlaceholder: 'Enter keywords to search documents...',
         docsSearchModePrefix: 'Prefix Match',
+        docsLocalFilterHint: 'Real-time filtering in progress. Click "Search" or "Apply Filter" button for complete search',
+        docsNoMatchFound: 'No matching documents found',
+        docsTryDifferentKeyword: 'Try different keywords or click search button for complete search',
     }
 };
 

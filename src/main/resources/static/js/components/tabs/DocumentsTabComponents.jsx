@@ -382,23 +382,19 @@ function AdvancedSearchPanel({
                 <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
                     {t('docsDateFilter')}
                 </label>
-                <div style={{ transform: 'scale(0.95)', transformOrigin: 'left center' }}>
-                    <DatePicker
-                        value={advancedFilters.startDate}
-                        onChange={(date) => updateFilter('startDate', date)}
-                        placeholder={t('docsDateStart')}
-                        language={language}
-                    />
-                </div>
-                <span>-</span>
-                <div style={{ transform: 'scale(0.95)', transformOrigin: 'left center' }}>
-                    <DatePicker
-                        value={advancedFilters.endDate}
-                        onChange={(date) => updateFilter('endDate', date)}
-                        placeholder={t('docsDateEnd')}
-                        language={language}
-                    />
-                </div>
+                <DatePicker
+                    value={advancedFilters.startDate}
+                    onChange={(date) => updateFilter('startDate', date)}
+                    placeholder={t('docsDateStart')}
+                    language={language}
+                />
+                <span style={{ margin: '0 10px', color: '#999' }}>-</span>
+                <DatePicker
+                    value={advancedFilters.endDate}
+                    onChange={(date) => updateFilter('endDate', date)}
+                    placeholder={t('docsDateEnd')}
+                    language={language}
+                />
             </div>
 
             {/* 操作按钮 */}
