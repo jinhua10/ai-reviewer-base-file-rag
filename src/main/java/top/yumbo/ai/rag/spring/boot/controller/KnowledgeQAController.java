@@ -68,15 +68,36 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 获取知识库统计信息
+     * 获取知识库统计信息（增强版）
+     * 实时扫描文件系统，返回准确的文档数量
      */
     @GetMapping("/statistics")
     public StatisticsResponse getStatistics() {
-        LocalFileRAG.Statistics stats = qaService.getStatistics();
+        log.info("📊 获取统计信息（增强版）");
+
+        KnowledgeQAService.EnhancedStatistics stats = qaService.getEnhancedStatistics();
 
         StatisticsResponse response = new StatisticsResponse();
         response.setDocumentCount(stats.getDocumentCount());
         response.setIndexedDocumentCount(stats.getIndexedDocumentCount());
+        response.setUnindexedCount(stats.getUnindexedCount());
+        response.setIndexProgress(stats.getIndexProgress());
+
+        // 添加提示信息
+        if (stats.getUnindexedCount() > 0) {
+            response.setMessage(String.format(
+                "检测到 %d 个未索引的文档。建议执行增量索引以更新知识库。",
+                stats.getUnindexedCount()
+            ));
+            response.setNeedsIndexing(true);
+        } else {
+            response.setMessage("所有文档均已索引，知识库状态良好。");
+            response.setNeedsIndexing(false);
+        }
+
+        log.info("📊 统计信息 - 文档总数: {}, 已索引: {}, 未索引: {}, 完成度: {}%",
+            stats.getDocumentCount(), stats.getIndexedDocumentCount(),
+            stats.getUnindexedCount(), stats.getIndexProgress());
 
         return response;
     }
@@ -191,8 +212,12 @@ public class KnowledgeQAController {
 
     @Data
     public static class StatisticsResponse {
-        private long documentCount;
-        private long indexedDocumentCount;
+        private long documentCount;          // 文件系统中的文档总数
+        private long indexedDocumentCount;   // 已索引的文档数量
+        private long unindexedCount;         // 未索引的文档数量
+        private int indexProgress;           // 索引完成度百分比 (0-100)
+        private String message;              // 提示信息
+        private boolean needsIndexing;       // 是否需要执行索引
     }
 
     @Data

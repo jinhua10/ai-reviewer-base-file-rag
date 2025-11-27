@@ -16,9 +16,14 @@ import top.yumbo.ai.rag.optimization.SmartContextBuilder;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * 知识库问答服务
@@ -502,6 +507,112 @@ public class KnowledgeQAService {
             throw new IllegalStateException("知识库未初始化");
         }
         return rag.getStatistics();
+    }
+
+    /**
+     * 获取增强的统计信息（包含文件系统扫描）
+     * 返回实时的文件系统文档数量和已索引的文档数量
+     */
+    public EnhancedStatistics getEnhancedStatistics() {
+        if (rag == null) {
+            throw new IllegalStateException("知识库未初始化");
+        }
+
+        // 获取基础统计信息
+        LocalFileRAG.Statistics basicStats = rag.getStatistics();
+
+        // 扫描文件系统获取实际文件数量
+        long fileSystemDocCount = scanFileSystemDocuments();
+
+        // 构建增强的统计信息
+        EnhancedStatistics stats = new EnhancedStatistics();
+        stats.setDocumentCount(fileSystemDocCount);  // 使用文件系统的实际数量
+        stats.setIndexedDocumentCount(basicStats.getIndexedDocumentCount());
+        stats.setUnindexedCount(fileSystemDocCount - basicStats.getIndexedDocumentCount());
+        stats.setIndexProgress(fileSystemDocCount > 0 ?
+            (int) Math.round((double) basicStats.getIndexedDocumentCount() / fileSystemDocCount * 100) : 100);
+
+        log.debug("📊 增强统计信息 - 文件系统文档: {}, 已索引: {}, 未索引: {}, 完成度: {}%",
+            fileSystemDocCount, basicStats.getIndexedDocumentCount(),
+            stats.getUnindexedCount(), stats.getIndexProgress());
+
+        return stats;
+    }
+
+    /**
+     * 扫描文件系统统计文档数量
+     */
+    private long scanFileSystemDocuments() {
+        try {
+            String sourcePath = properties.getKnowledgeBase().getSourcePath();
+            Path documentsPath;
+
+            // 处理 classpath 路径
+            if (sourcePath.startsWith("classpath:")) {
+                String resourcePath = sourcePath.substring("classpath:".length());
+                try {
+                    var resource = getClass().getClassLoader().getResource(resourcePath);
+                    if (resource != null) {
+                        Path tempPath = Paths.get(resource.toURI());
+                        if (tempPath.toString().contains(".jar!")) {
+                            documentsPath = Paths.get("./data/documents");
+                        } else {
+                            documentsPath = tempPath;
+                        }
+                    } else {
+                        documentsPath = Paths.get("./data/documents");
+                    }
+                } catch (Exception e) {
+                    documentsPath = Paths.get("./data/documents");
+                }
+            } else {
+                documentsPath = Paths.get(sourcePath);
+            }
+
+            // 确保目录存在
+            if (!Files.exists(documentsPath)) {
+                log.warn("文档目录不存在: {}", documentsPath);
+                return 0;
+            }
+
+            // 支持的文件扩展名
+            List<String> supportedExtensions = Arrays.asList(
+                "xlsx", "xls", "docx", "doc", "pptx", "ppt", "pdf", "txt", "md", "html", "xml"
+            );
+
+            // 扫描并统计文件
+            try (Stream<Path> paths = Files.walk(documentsPath, 1)) {
+                long count = paths
+                    .filter(Files::isRegularFile)
+                    .filter(path -> {
+                        String filename = path.getFileName().toString();
+                        int lastDot = filename.lastIndexOf('.');
+                        if (lastDot == -1) return false;
+                        String extension = filename.substring(lastDot + 1).toLowerCase();
+                        return supportedExtensions.contains(extension);
+                    })
+                    .count();
+
+                log.debug("📂 扫描文件系统完成，找到 {} 个支持的文档", count);
+                return count;
+            }
+
+        } catch (Exception e) {
+            log.error("扫描文件系统失败", e);
+            // 出错时返回基础统计的数量
+            return rag.getStatistics().getDocumentCount();
+        }
+    }
+
+    /**
+     * 增强的统计信息类
+     */
+    @lombok.Data
+    public static class EnhancedStatistics {
+        private long documentCount;          // 文件系统中的文档数量
+        private long indexedDocumentCount;   // 已索引的文档数量
+        private long unindexedCount;         // 未索引的文档数量
+        private int indexProgress;           // 索引完成度百分比
     }
 
     /**

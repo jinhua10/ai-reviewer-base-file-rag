@@ -126,9 +126,10 @@ function StatisticsTab() {
                 </div>
                 <div className="stat-card">
                     <div className="stat-value">
-                        {stats.documentCount > 0
-                            ? Math.round((stats.indexedDocumentCount / stats.documentCount) * 100)
-                            : 0}%
+                        {stats.indexProgress !== undefined ? stats.indexProgress :
+                            (stats.documentCount > 0
+                                ? Math.round((stats.indexedDocumentCount / stats.documentCount) * 100)
+                                : 100)}%
                     </div>
                     <div className="stat-label">{t('statsIndexProgress')}</div>
                     <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
@@ -138,7 +139,7 @@ function StatisticsTab() {
             </div>
 
             {/* 如果有未索引的文档，显示警告提示 */}
-            {stats.documentCount > stats.indexedDocumentCount && (
+            {stats.needsIndexing && stats.unindexedCount > 0 && (
                 <div style={{
                     marginTop: '20px',
                     padding: '15px',
@@ -151,10 +152,10 @@ function StatisticsTab() {
                         <strong style={{ color: '#856404' }}>{t('statsOutOfSync')}</strong>
                     </div>
                     <div style={{ fontSize: '14px', color: '#856404', lineHeight: '1.6' }}>
-                        {t('statsOutOfSyncDesc', {
+                        {stats.message || t('statsOutOfSyncDesc', {
                             total: stats.documentCount,
                             indexed: stats.indexedDocumentCount,
-                            unindexed: stats.documentCount - stats.indexedDocumentCount
+                            unindexed: stats.unindexedCount
                         })}
                     </div>
                     <button
@@ -163,13 +164,34 @@ function StatisticsTab() {
                         disabled={rebuilding || incrementalIndexing}
                         style={{
                             marginTop: '10px',
-                            background: 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                            background: incrementalIndexing
+                                ? '#ccc'
+                                : 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
                         }}
                     >
                         {incrementalIndexing ? t('statsIndexing') : t('statsIncrementalIndexNow')}
                     </button>
                 </div>
             )}
+
+            {/* 如果所有文档都已索引，显示成功提示 */}
+            {!stats.needsIndexing && stats.documentCount > 0 && (
+                <div style={{
+                    marginTop: '20px',
+                    padding: '15px',
+                    background: '#d4edda',
+                    borderRadius: '8px',
+                    border: '1px solid #28a745'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <span style={{ fontSize: '18px', marginRight: '8px' }}>✅</span>
+                        <span style={{ color: '#155724', fontSize: '14px' }}>
+                            {stats.message || t('statsAllIndexed')}
+                        </span>
+                    </div>
+                </div>
+            )}
+
 
             {/* 索引进度 */}
             {(rebuilding || incrementalIndexing) && (
