@@ -1,5 +1,47 @@
 const { useState, useEffect, createContext, useContext } = React;
 
+// ============================================================================
+// 样式常量定义 / Style Constants
+// ============================================================================
+
+const BUTTON_STYLES = {
+    primary: {
+        padding: '7px 12px',
+        fontSize: '12px',
+        fontWeight: '500',
+        borderRadius: '6px',
+        border: 'none',
+        color: 'white',
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+        transition: 'all 0.3s ease',
+        minWidth: '70px'
+    },
+    gradientPurple: {
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)'
+    },
+    gradientPink: {
+        background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        boxShadow: '0 2px 4px rgba(245, 87, 108, 0.3)'
+    }
+};
+
+const INPUT_STYLES = {
+    base: {
+        padding: '8px 12px',
+        borderRadius: '6px',
+        border: '2px solid #e0e7ff',
+        fontSize: '13px',
+        outline: 'none',
+        transition: 'all 0.3s ease'
+    }
+};
+
+// ============================================================================
+// 语言上下文 / Language Context
+// ============================================================================
+
 // 语言翻译字典从 lang.js 加载
 // Translation dictionary is loaded from lang.js
 // 直接使用 window.translations，无需重新声明
@@ -35,6 +77,10 @@ function LanguageProvider({ children }) {
 function useTranslation() {
     return useContext(LanguageContext);
 }
+
+// ============================================================================
+// 公共组件 / Common Components
+// ============================================================================
 
 // 自定义日期选择器组件
 function DatePicker({ value, onChange, placeholder, language }) {
@@ -349,7 +395,10 @@ function DatePicker({ value, onChange, placeholder, language }) {
 // API 已在 api.js 中定义并通过 window.api 暴露
 // 这里直接使用 window.api 即可
 
-// 问答组件
+// ============================================================================
+// 问答标签页组件 / Q&A Tab Component (~590 lines)
+// ============================================================================
+
 function QATab() {
     const { t } = useTranslation();
     const [question, setQuestion] = useState('');
@@ -937,7 +986,10 @@ function QATab() {
     );
 }
 
-// 搜索组件
+// ============================================================================
+// 搜索标签页组件 / Search Tab Component (~112 lines)
+// ============================================================================
+
 function SearchTab() {
     const { t } = useTranslation();
     const [query, setQuery] = useState('');
@@ -1049,7 +1101,10 @@ function SearchTab() {
     );
 }
 
-// 文档管理组件
+// ============================================================================
+// 文档管理标签页组件 / Documents Tab Component (~818 lines)
+// ============================================================================
+
 function DocumentsTab() {
     const { t, language } = useTranslation();
     const [documents, setDocuments] = useState([]);
@@ -1468,20 +1523,7 @@ function DocumentsTab() {
                                         <button
                                             type="button"
                                             className="btn-secondary"
-                                            style={{
-                                                padding: '7px 12px',
-                                                fontSize: '12px',
-                                                fontWeight: '500',
-                                                borderRadius: '6px',
-                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                                color: 'white',
-                                                border: 'none',
-                                                boxShadow: '0 2px 4px rgba(102, 126, 234, 0.3)',
-                                                transition: 'all 0.3s ease',
-                                                cursor: 'pointer',
-                                                whiteSpace: 'nowrap',
-                                                minWidth: '70px'
-                                            }}
+                                            style={{...BUTTON_STYLES.primary, ...BUTTON_STYLES.gradientPurple}}
                                             onMouseEnter={(e) => {
                                                 e.target.style.transform = 'translateY(-2px)';
                                                 e.target.style.boxShadow = '0 4px 8px rgba(102, 126, 234, 0.4)';
@@ -1497,20 +1539,7 @@ function DocumentsTab() {
                                         <button
                                             type="button"
                                             className="btn-secondary"
-                                            style={{
-                                                padding: '7px 12px',
-                                                fontSize: '12px',
-                                                fontWeight: '500',
-                                                borderRadius: '6px',
-                                                background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-                                                color: 'white',
-                                                border: 'none',
-                                                boxShadow: '0 2px 4px rgba(245, 87, 108, 0.3)',
-                                                transition: 'all 0.3s ease',
-                                                cursor: 'pointer',
-                                                whiteSpace: 'nowrap',
-                                                minWidth: '70px'
-                                            }}
+                                            style={{...BUTTON_STYLES.primary, ...BUTTON_STYLES.gradientPink}}
                                             onMouseEnter={(e) => {
                                                 e.target.style.transform = 'translateY(-2px)';
                                                 e.target.style.boxShadow = '0 4px 8px rgba(245, 87, 108, 0.4)';
@@ -1867,7 +1896,10 @@ function DocumentsTab() {
     );
 }
 
-// 统计信息组件
+// ============================================================================
+// 统计信息标签页组件 / Statistics Tab Component (~197 lines)
+// ============================================================================
+
 function StatisticsTab() {
     const { t } = useTranslation();
     const [stats, setStats] = useState(null);
@@ -2067,7 +2099,10 @@ function StatisticsTab() {
     );
 }
 
-// 主应用组件
+// ============================================================================
+// 主应用组件 / Main App Component (~88 lines)
+// ============================================================================
+
 function App() {
     const { t, toggleLanguage, language } = useTranslation();
     const [activeTab, setActiveTab] = useState('qa');
@@ -2148,10 +2183,40 @@ function App() {
     );
 }
 
-// 渲染应用
+// ============================================================================
+// 应用渲染 / App Rendering
+// ============================================================================
+
 ReactDOM.render(
     <LanguageProvider>
         <App />
     </LanguageProvider>,
     document.getElementById('root')
 );
+
+// ============================================================================
+// 文件结构导航 / File Structure Navigation
+// ============================================================================
+//
+// 📋 本文件包含以下主要部分：
+//
+// 1. [行 3-44]   样式常量定义 / Style Constants
+// 2. [行 45-78]  语言上下文 / Language Context
+//    - LanguageProvider 组件
+//    - useTranslation Hook
+// 3. [行 79-393] 公共组件 / Common Components
+//    - DatePicker 组件
+// 4. [行 394-987] 问答标签页 / Q&A Tab (~590 lines)
+// 5. [行 988-1103] 搜索标签页 / Search Tab (~112 lines)
+// 6. [行 1104-1921] 文档管理标签页 / Documents Tab (~818 lines) ⚠️ 最大组件
+// 7. [行 1922-2119] 统计信息标签页 / Statistics Tab (~197 lines)
+// 8. [行 2120-2188] 主应用组件 / Main App (~88 lines)
+// 9. [行 2189-2198] 应用渲染 / App Rendering
+//
+// 💡 优化建议：
+// - 考虑将 DocumentsTab (818行) 拆分为独立文件
+// - 考虑将 QATab (590行) 拆分为独立文件
+// - 样式常量可进一步提取到独立的 styles.js
+//
+// ============================================================================
+
