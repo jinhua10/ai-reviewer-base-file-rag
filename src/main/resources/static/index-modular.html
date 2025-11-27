@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 文档审查系统 - 模块化版本</title>
+
+    <!-- 样式文件 -->
+    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/datepicker.css">
+
+    <!-- React 库 (使用 CDN 或本地文件) -->
+    <script crossorigin src="js/lib/react.production.min.js"></script>
+    <script crossorigin src="js/lib/react-dom.production.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- 加载顺序：依赖 -> 工具 -> 组件 -> 主应用 -->
+
+    <!-- 1. 翻译字典 -->
+    <script src="js/lang/lang.js"></script>
+
+    <!-- 2. API 接口 -->
+    <script src="js/api/api.js"></script>
+
+    <!-- 3. 样式常量 -->
+    <script src="js/styles/constants.js"></script>
+
+    <!-- 4. 公共组件 -->
+    <script src="js/components/common/LanguageContext.js"></script>
+    <script src="js/components/common/DatePicker.js"></script>
+
+    <!-- 5. UI组件库 -->
+    <script src="js/components/tabs/DocumentsTabComponents.js"></script>
+
+    <!-- 6. 标签页组件 -->
+    <script src="js/components/tabs/DocumentsTab.js"></script>
+    <!-- 其他标签页组件可以按需加载 -->
+
+    <!-- 7. 主应用 - 简化版 -->
+    <script>
+        (function() {
+            // 从全局对象中解构需要的模块
+            const { LanguageProvider, useTranslation } = window.LanguageModule;
+            const { useState, useEffect } = React;
+
+            // 主应用组件
+            function App() {
+                const { t, toggleLanguage, language } = useTranslation();
+            const [activeTab, setActiveTab] = useState('documents');
+            const [health, setHealth] = useState(null);
+
+            useEffect(() => {
+                checkHealth();
+            }, []);
+
+            const checkHealth = async () => {
+                try {
+                    const result = await window.api.health();
+                    setHealth(result);
+                } catch (err) {
+                    setHealth({ status: 'DOWN', message: 'Service connection failed' });
+                }
+            };
+
+            return React.createElement('div', { className: 'app-container' },
+                // 语言切换按钮
+                React.createElement('div', { className: 'language-toggle' },
+                    React.createElement('button', {
+                        onClick: toggleLanguage,
+                        style: window.StyleConstants.createButton('primary', 'gradientPurple')
+                    }, t('langToggle'))
+                ),
+
+                // 头部
+                React.createElement('header', { className: 'header' },
+                    React.createElement('h1', null, t('title')),
+                    React.createElement('p', null, t('subtitle')),
+                    health && React.createElement('div', {
+                        className: `health-status ${health.status?.toLowerCase() || 'down'}`,
+                        style: { marginTop: '10px' }
+                    }, `${t('healthStatus')}: ${health.status || 'DOWN'}`)
+                ),
+
+                // 标签页导航
+                React.createElement('div', { className: 'tabs' },
+                    ['qa', 'search', 'documents', 'statistics'].map(tab =>
+                        React.createElement('button', {
+                            key: tab,
+                            className: `tab ${activeTab === tab ? 'active' : ''}`,
+                            onClick: () => setActiveTab(tab)
+                        }, t(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`))
+                    )
+                ),
+
+                // 标签页内容
+                React.createElement('div', { className: 'tab-content' },
+                    activeTab === 'documents' && React.createElement(window.DocumentsTab),
+                    activeTab === 'qa' && React.createElement('div', { className: 'coming-soon' },
+                        React.createElement('h2', null, '💬 ' + t('tabQa')),
+                        React.createElement('p', null, t('comingSoon'))
+                    ),
+                    activeTab === 'search' && React.createElement('div', { className: 'coming-soon' },
+                        React.createElement('h2', null, '🔍 ' + t('tabSearch')),
+                        React.createElement('p', null, t('comingSoon'))
+                    ),
+                    activeTab === 'statistics' && React.createElement('div', { className: 'coming-soon' },
+                        React.createElement('h2', null, '📊 ' + t('tabStatistics')),
+                        React.createElement('p', null, t('comingSoon'))
+                    )
+                ),
+
+                // 页脚
+                React.createElement('footer', { className: 'footer' },
+                    React.createElement('p', null, '© 2024 AI Document Review System')
+                )
+            );
+        }
+
+            // 渲染应用
+            ReactDOM.render(
+                React.createElement(LanguageProvider, null,
+                    React.createElement(App)
+                ),
+                document.getElementById('root')
+            );
+        })(); // 结束立即执行函数
+    </script>
+</body>
+</html>
+
