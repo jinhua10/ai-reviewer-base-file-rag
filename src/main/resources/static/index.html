@@ -194,9 +194,15 @@
                                 </div>
 
                                 <div className="tab-content">
-                                    {activeTab === 'qa' && <QATab />}
-                                    {activeTab === 'documents' && <DocumentsTab />}
-                                    {activeTab === 'stats' && <StatisticsTab />}
+                                    <div style={{ display: activeTab === 'qa' ? 'block' : 'none' }}>
+                                        <QATab />
+                                    </div>
+                                    <div style={{ display: activeTab === 'documents' ? 'block' : 'none' }}>
+                                        <DocumentsTab />
+                                    </div>
+                                    <div style={{ display: activeTab === 'stats' ? 'block' : 'none' }}>
+                                        <StatisticsTab />
+                                    </div>
                                 </div>
                             </main>
 
