@@ -11,15 +11,24 @@
     margin-bottom: 30px;
 }
 
+.qa-input-container {
+    display: flex;
+    gap: 12px;
+    align-items: stretch;
+}
+
 .qa-question-input {
-    width: 100%;
+    flex: 1;
     min-height: 120px;
+    max-height: 300px;
     padding: 15px;
     border: 2px solid #e0e7ff;
     border-radius: 8px;
     font-size: 15px;
+    line-height: 1.6;
     resize: vertical;
     transition: all 0.3s ease;
+    font-family: inherit;
 }
 
 .qa-question-input:focus {
@@ -28,22 +37,29 @@
     outline: none;
 }
 
-.qa-button-group {
-    margin-top: 15px;
+.qa-action-buttons {
     display: flex;
+    flex-direction: column;
     gap: 10px;
+    min-width: 120px;
 }
 
-.qa-ask-button {
-    padding: 12px 30px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+.qa-ask-button,
+.qa-clear-button {
+    height: 55px;
+    padding: 0 20px;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.qa-ask-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
 }
 
 .qa-ask-button:hover:not(:disabled) {
@@ -54,21 +70,28 @@
 .qa-ask-button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+    transform: none;
 }
 
 .qa-clear-button {
-    padding: 12px 24px;
     background: #f5f5f5;
     color: #666;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
 }
 
-.qa-clear-button:hover {
+.qa-clear-button:hover:not(:disabled) {
     background: #e0e0e0;
+    color: #333;
+}
+
+.qa-clear-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.qa-button-group {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
 }
 
 /* ============================================================================
@@ -431,6 +454,21 @@
    响应式设计
    ============================================================================ */
 @media (max-width: 768px) {
+    .qa-input-container {
+        flex-direction: column;
+    }
+
+    .qa-action-buttons {
+        flex-direction: row;
+        min-width: auto;
+    }
+
+    .qa-ask-button,
+    .qa-clear-button {
+        flex: 1;
+        height: 48px;
+    }
+
     .qa-answer-header {
         flex-direction: column;
         gap: 10px;
@@ -448,13 +486,314 @@
         justify-content: space-between;
     }
 
-    .qa-button-group {
-        flex-direction: column;
+    .qa-source-header {
+        flex-wrap: wrap;
     }
 
-    .qa-ask-button,
-    .qa-clear-button {
+    .qa-source-download-btn-inline {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .qa-source-feedback-row {
         width: 100%;
     }
 }
 
+/* ============================================================================
+   统一区域 - 参考来源 + 文档切分块 + 反馈
+   ============================================================================ */
+.qa-unified-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9ff;
+    border-radius: 12px;
+    border: 2px solid #e0e7ff;
+}
+
+.qa-unified-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e0e7ff;
+}
+
+.qa-unified-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.qa-batch-download-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qa-batch-download-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+/* 参考来源卡片样式 */
+.qa-sources-with-feedback {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.qa-source-card {
+    background: white;
+    border: 1px solid #e0e7ff;
+    border-radius: 10px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.qa-source-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
+    transform: translateY(-2px);
+}
+
+.qa-source-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.qa-source-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.qa-source-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    word-break: break-all;
+    line-height: 1.4;
+}
+
+.qa-source-download-btn-inline {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.qa-source-download-btn-inline:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.qa-source-feedback-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.qa-source-feedback-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.qa-source-feedback-btn.helpful {
+    background: #e8f5e9;
+    color: #4caf50;
+    border: 1px solid #c8e6c9;
+}
+
+.qa-source-feedback-btn.helpful:hover:not(:disabled) {
+    background: #c8e6c9;
+}
+
+.qa-source-feedback-btn.not-helpful {
+    background: #ffebee;
+    color: #f44336;
+    border: 1px solid #ffcdd2;
+}
+
+.qa-source-feedback-btn.not-helpful:hover:not(:disabled) {
+    background: #ffcdd2;
+}
+
+.qa-source-feedback-btn.active {
+    font-weight: 600;
+    cursor: default;
+    opacity: 0.8;
+}
+
+.qa-source-feedback-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 文档切分块子区域 */
+.qa-chunks-subsection {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #e0e7ff;
+}
+
+.qa-chunks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.qa-chunks-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.qa-chunks-download-all-btn {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qa-chunks-download-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(79, 172, 254, 0.4);
+}
+
+.qa-chunks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.qa-chunk-card {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background: white;
+    border: 1px solid #e0e7ff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.qa-chunk-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.qa-chunk-card.downloading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.qa-chunk-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.qa-chunk-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #999;
+}
+
+.qa-chunk-index,
+.qa-chunk-size {
+    font-weight: 500;
+}
+
+/* ============================================================================
+   响应式设计 - 统一区域
+   ============================================================================ */
+@media (max-width: 768px) {
+    .qa-unified-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .qa-batch-download-btn {
+        width: 100%;
+    }
+
+    .qa-source-header {
+        flex-wrap: wrap;
+    }
+
+    .qa-source-download-btn-inline {
+        width: 100%;
+        margin-top: 8px;
+    }
+
+    .qa-source-feedback-row {
+        width: 100%;
+    }
+
+
+    .qa-chunks-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .qa-chunks-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .qa-chunks-download-all-btn {
+        width: 100%;
+    }
+}

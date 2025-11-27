@@ -313,16 +313,17 @@ function QATab() {
     return (
         <div className="qa-section qa-input-section">
             {/* 问题输入区域 */}
-            <div className="qa-button-group" style={{marginBottom: '20px'}}>
+            <div className="qa-input-container">
                 <textarea
-                    className="qa-question-input input-field"
+                    className="qa-question-input"
                     placeholder={t('qaPlaceholder')}
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     onKeyPress={handleKeyPress}
                     disabled={loading}
+                    rows={4}
                 />
-                <div className="qa-button-group">
+                <div className="qa-action-buttons">
                     <button
                         className="qa-ask-button btn btn-primary"
                         onClick={handleAsk}
@@ -331,7 +332,7 @@ function QATab() {
                         {loading ? t('qaThinking') : t('qaButton')}
                     </button>
                     <button
-                        className="qa-clear-button"
+                        className="qa-clear-button btn btn-secondary"
                         onClick={() => {
                             setQuestion('');
                             setAnswer(null);
@@ -343,7 +344,7 @@ function QATab() {
                         }}
                         disabled={loading}
                     >
-                        {t('clearButton') || '清空'}
+                        {t('docsClearButton') || '清空'}
                     </button>
                 </div>
             </div>
@@ -388,119 +389,106 @@ function QATab() {
                             }}
                         />
 
-                        {/* 参考来源 */}
-                        {answer.sources && answer.sources.length > 0 && (
-                            <div className="qa-sources-section">
-                                <h4 className="qa-sources-title">{t('qaSources')}</h4>
-                                <div className="qa-sources-list">
-                                    {answer.sources.map((source, index) => (
-                                        <div key={index} className="qa-source-item">
-                                            <div className="qa-source-info">
-                                                <span className="qa-source-name">
-                                                    {index + 1}. {source}
-                                                </span>
-                                            </div>
-                                            <div className="qa-source-actions">
-                                                <button
-                                                    className="qa-source-download-btn"
-                                                    onClick={() => handleDownload(source)}
-                                                    title={t('qaDownload')}
-                                                >
-                                                    {t('qaDownload')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                        {/* 参考来源、文档切分块和反馈 - 统一区域 */}
+                        {((answer.sources && answer.sources.length > 0) || (answer.chunks && answer.chunks.length > 0)) && (
+                            <div className="qa-unified-section">
+                                <div className="qa-unified-header">
+                                    <h4 className="qa-unified-title">
+                                        📚 {t('qaChunksAndFeedback')}
+                                    </h4>
+                                    {answer.sources && answer.sources.length > 1 && (
+                                        <button
+                                            className="qa-batch-download-btn"
+                                            onClick={handleBatchDownload}
+                                            title={t('qaBatchDownload')}
+                                        >
+                                            📦 {t('qaBatchDownload')} ({answer.sources.length})
+                                        </button>
+                                    )}
                                 </div>
-                            </div>
-                        )}
 
-                        {/* 文档切分块和反馈区域 */}
-                        {((answer.chunks && answer.chunks.length > 0) || (answer.sources && answer.sources.length > 0)) && (
-                            <div className="chunks-section" style={{marginTop: '20px'}}>
-                                <h4>📦 {t('qaChunksAndFeedback')}</h4>
+                                {/* 参考来源列表 - 带下载和反馈 */}
+                                {answer.sources && answer.sources.length > 0 && (
+                                    <div className="qa-sources-with-feedback">
+                                        {answer.sources.map((source, index) => (
+                                            <div key={index} className="qa-source-card">
+                                                <div className="qa-source-header">
+                                                    <span className="qa-source-number">{index + 1}</span>
+                                                    <span className="qa-source-name">{source}</span>
+                                                    <button
+                                                        className="qa-source-download-btn-inline"
+                                                        onClick={() => handleDownload(source)}
+                                                        title={t('qaDownload')}
+                                                    >
+                                                         {t('qaDownload')}
+                                                    </button>
+                                                </div>
+
+                                                {/* 反馈按钮行 */}
+                                                <div className="qa-source-feedback-row">
+                                                    <button
+                                                        className={`qa-source-feedback-btn helpful ${documentFeedbacks[source] === 'HELPFUL' ? 'active' : ''}`}
+                                                        onClick={() => handleDocumentHelpful(source)}
+                                                        disabled={documentFeedbacks[source] !== undefined}
+                                                        title={t('feedbackDocumentHelpful')}
+                                                    >
+                                                        {documentFeedbacks[source] === 'HELPFUL'
+                                                            ?  t('feedbackDocumentSubmitted')
+                                                            :  t('feedbackDocumentHelpful')}
+                                                    </button>
+                                                    <button
+                                                        className={`qa-source-feedback-btn not-helpful ${documentFeedbacks[source] === 'NOT_HELPFUL' ? 'active' : ''}`}
+                                                        onClick={() => handleDocumentNotHelpful(source)}
+                                                        disabled={documentFeedbacks[source] !== undefined}
+                                                        title={t('feedbackDocumentNotHelpful')}
+                                                    >
+                                                        {documentFeedbacks[source] === 'NOT_HELPFUL'
+                                                            ?  t('feedbackDocumentSubmitted')
+                                                            :  t('feedbackDocumentNotHelpful')}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* 文档切分块 */}
                                 {answer.chunks && answer.chunks.length > 0 && (
-                                    <>
-                                        <div style={{
-                                            marginBottom: '10px',
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            alignItems: 'center'
-                                        }}>
-                                            <span style={{fontSize: '14px', color: '#666'}}>
-                                                {answer.chunks.length} {t('qaChunksAvailable')}
-                                            </span>
+                                    <div className="qa-chunks-subsection">
+                                        <div className="qa-chunks-header">
+                                            <h5 className="qa-chunks-subtitle">
+                                                📄 {t('qaChunksTitle')} ({answer.chunks.length})
+                                            </h5>
                                             <button
-                                                className="btn-batch-download-chunks"
+                                                className="qa-chunks-download-all-btn"
                                                 onClick={handleBatchDownloadChunks}
                                                 title={t('qaChunksDownloadAll')}
                                             >
-                                                {t('qaChunksDownloadAll')}
+                                                📦 {t('qaChunksDownloadAll')}
                                             </button>
                                         </div>
-                                        <div className="chunks-grid">
+                                        <div className="qa-chunks-grid">
                                             {answer.chunks.map((chunk) => (
                                                 <button
                                                     key={chunk.chunkId}
-                                                    className="chunk-button"
+                                                    className="qa-chunk-card"
                                                     onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
                                                     title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
                                                 >
-                                                    <div className="chunk-title">
+                                                    <div className="qa-chunk-title">
                                                         📄 {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
                                                     </div>
-                                                    <div className="chunk-info">
-                                                        <span className="chunk-index">
+                                                    <div className="qa-chunk-info">
+                                                        <span className="qa-chunk-index">
                                                             {chunk.chunkIndex + 1}/{chunk.totalChunks || answer.chunks.length}
                                                         </span>
-                                                        <span className="chunk-size">
+                                                        <span className="qa-chunk-size">
                                                             {(chunk.contentLength / 1024).toFixed(1)} KB
                                                         </span>
                                                     </div>
                                                 </button>
                                             ))}
                                         </div>
-                                    </>
-                                )}
-
-                                {/* 文档反馈区域 */}
-                                {answer.sources && answer.sources.length > 0 && (
-                                    <div
-                                        className="document-feedback-area"
-                                        style={{marginTop: answer.chunks && answer.chunks.length > 0 ? '20px' : '0'}}
-                                    >
-                                        <h5 style={{marginBottom: '15px', color: '#1565c0', fontSize: '15px'}}>
-                                            📚 {t('feedbackDocumentQuestion')}
-                                        </h5>
-                                        {answer.sources.map((source, index) => (
-                                            <div key={index} className="document-feedback-item">
-                                                <div className="document-feedback-name">
-                                                    {index + 1}. {source}
-                                                </div>
-                                                <div className="document-feedback-buttons">
-                                                    <button
-                                                        className={`qa-feedback-button helpful ${documentFeedbacks[source] === 'HELPFUL' ? 'active' : ''}`}
-                                                        onClick={() => handleDocumentHelpful(source)}
-                                                        disabled={documentFeedbacks[source] !== undefined}
-                                                    >
-                                                        {documentFeedbacks[source] === 'HELPFUL'
-                                                            ? t('feedbackDocumentSubmitted')
-                                                            : t('feedbackDocumentHelpful')}
-                                                    </button>
-                                                    <button
-                                                        className={`qa-feedback-button not-helpful ${documentFeedbacks[source] === 'NOT_HELPFUL' ? 'active' : ''}`}
-                                                        onClick={() => handleDocumentNotHelpful(source)}
-                                                        disabled={documentFeedbacks[source] !== undefined}
-                                                    >
-                                                        {documentFeedbacks[source] === 'NOT_HELPFUL'
-                                                            ? t('feedbackDocumentSubmitted')
-                                                            : t('feedbackDocumentNotHelpful')}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 )}
                             </div>
