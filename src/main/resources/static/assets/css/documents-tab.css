@@ -1,0 +1,432 @@
+/**
+ * Documents Tab 样式文件
+ * @author AI Reviewer Team
+ * @since 2025-11-28
+ */
+
+/* ============================================================================
+   上传区域样式
+   ============================================================================ */
+.documents-upload-area {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f8f9ff;
+    border-radius: 8px;
+}
+
+.documents-upload-area h3 {
+    margin-bottom: 15px;
+}
+
+.documents-upload-input {
+    display: none;
+}
+
+.documents-upload-label {
+    display: inline-block;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.documents-upload-label:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.documents-upload-label.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.documents-upload-hint {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
+
+.documents-upload-progress {
+    margin-top: 15px;
+    padding: 10px;
+    background: white;
+    border-radius: 4px;
+}
+
+.documents-upload-progress-text {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* ============================================================================
+   列表头部样式
+   ============================================================================ */
+.documents-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.documents-list-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ============================================================================
+   搜索过滤样式
+   ============================================================================ */
+.documents-search-container {
+    margin-bottom: 15px;
+}
+
+.documents-search-toggle {
+    margin-bottom: 10px;
+}
+
+.documents-simple-search {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 高级搜索面板 */
+.documents-advanced-search-panel {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 2px solid #667eea;
+}
+
+.documents-search-row {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.documents-search-label {
+    min-width: 80px;
+    font-weight: 600;
+}
+
+.documents-search-input {
+    flex: 1;
+    min-width: 200px;
+}
+
+/* 文件类型选择器 */
+.documents-file-type-selector {
+    margin-bottom: 15px;
+}
+
+.documents-file-type-header {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.documents-file-type-count {
+    margin-left: 8px;
+    color: #667eea;
+    font-size: 14px;
+}
+
+.documents-file-type-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.documents-file-type-select {
+    width: 160px;
+    max-height: 180px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 2px solid #e0e7ff;
+    background: white;
+    font-size: 13px;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.documents-file-type-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.documents-file-type-tags {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.documents-file-type-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: #667eea;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.documents-file-type-tag-remove {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 2px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+/* 按钮样式 */
+.documents-btn-primary {
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 6px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+    min-width: 70px;
+}
+
+.documents-btn-gradient-purple {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.documents-btn-gradient-purple:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.documents-btn-gradient-pink {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 2px 4px rgba(245, 87, 108, 0.3);
+}
+
+.documents-btn-gradient-pink:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 87, 108, 0.4);
+}
+
+/* 激活的筛选条件提示 */
+.documents-active-filters {
+    background: #e3f2fd;
+    padding: 10px 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    border-left: 4px solid #2196f3;
+    font-size: 14px;
+}
+
+.documents-active-filters-text {
+    font-weight: 600;
+}
+
+/* 操作按钮组 */
+.documents-action-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+/* ============================================================================
+   排序和分页控制栏
+   ============================================================================ */
+.documents-controls-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+}
+
+.documents-control-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.documents-control-label {
+    font-size: 13px;
+    color: #666;
+}
+
+.documents-control-select {
+    width: auto;
+    padding: 5px 8px;
+    font-size: 13px;
+}
+
+.documents-stats {
+    margin-left: auto;
+    font-size: 13px;
+    color: #666;
+}
+
+.documents-stats-clear-btn {
+    margin-left: 10px;
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 13px;
+}
+
+/* ============================================================================
+   文档列表样式
+   ============================================================================ */
+.documents-list {
+    display: grid;
+    gap: 10px;
+}
+
+.document-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.document-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.document-meta {
+    font-size: 13px;
+    color: #999;
+    margin-top: 5px;
+}
+
+.document-delete-btn {
+    padding: 8px 16px;
+    background: #ff4d4f;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+}
+
+.document-delete-btn:hover {
+    background: #ff7875;
+    transform: translateY(-2px);
+}
+
+/* ============================================================================
+   分页样式
+   ============================================================================ */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-jump-input {
+    width: 60px;
+    padding: 5px 8px;
+    border: 2px solid #e0e7ff;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.pagination-jump-btn {
+    padding: 5px 12px;
+    background: #f5f5f5;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.pagination-jump-btn:hover {
+    background: #e0e0e0;
+}
+
+/* ============================================================================
+   状态样式
+   ============================================================================ */
+.documents-tip {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #856404;
+}
+
+/* 加载、错误、空状态等样式继承自 main.css */
+

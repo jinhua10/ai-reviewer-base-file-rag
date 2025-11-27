@@ -1,0 +1,463 @@
+/**
+ * Documents Tab UI Components / 文档管理标签页UI组件库
+ * JSX 版本 - 使用 Babel 转译
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-28
+ */
+
+// ============================================================================
+// 上传区域组件
+// ============================================================================
+function UploadArea({ uploading, uploadProgress, handleFileSelect, t }) {
+    return (
+        <div className="documents-upload-area">
+            <h3>{t('docsUploadArea')}</h3>
+            <input
+                type="file"
+                id="fileInput"
+                className="documents-upload-input"
+                multiple
+                accept=".xlsx,.xls,.docx,.doc,.pptx,.ppt,.pdf,.txt,.md,.html,.xml"
+                onChange={handleFileSelect}
+                disabled={uploading}
+            />
+            <label
+                htmlFor="fileInput"
+                className={`documents-upload-label btn btn-primary ${uploading ? 'disabled' : ''}`}
+            >
+                {uploading ? t('docsUploading') : t('docsUploadButton')}
+            </label>
+            <p className="documents-upload-hint">
+                {t('docsUploadFormats')}
+            </p>
+
+            {uploadProgress && (
+                <div className="documents-upload-progress">
+                    <div>
+                        {t('docsUploadProgress')} {uploadProgress.current}/{uploadProgress.total}
+                    </div>
+                    <div className="documents-upload-progress-text">
+                        {t('docsUploadSuccessCount')} {uploadProgress.success} |
+                        {t('docsUploadFailedCount')} {uploadProgress.failed}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================================
+// 列表头部组件
+// ============================================================================
+function DocumentListHeader({ loading, totalCount, documentsLength, loadDocuments, t }) {
+    return (
+        <div className="documents-list-header">
+            <h3 className="documents-list-title">
+                {t('docsListTitle')}
+                {!loading && totalCount > 0 && ` (${documentsLength}/${totalCount})`}
+            </h3>
+            <button
+                className="btn btn-secondary"
+                onClick={loadDocuments}
+                disabled={loading}
+            >
+                {loading ? t('docsListRefreshing') : t('docsListRefresh')}
+            </button>
+        </div>
+    );
+}
+
+// ============================================================================
+// 搜索过滤组件
+// ============================================================================
+function SearchFilters({
+    showAdvancedSearch,
+    setShowAdvancedSearch,
+    filterText,
+    handleSearchChange,
+    advancedFilters,
+    updateFilter,
+    toggleFileType,
+    supportedFileTypes,
+    applyFilters,
+    resetFilters,
+    hasActiveFilters,
+    getActiveFilterCount,
+    language,
+    t
+}) {
+    return (
+        <div style={{ marginBottom: '15px' }}>
+            {/* 搜索模式切换按钮 */}
+            <div className="documents-search-toggle">
+                <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                    style={{ marginRight: '10px' }}
+                >
+                    {showAdvancedSearch ? t('docsSimpleSearch') : t('docsAdvancedSearch')}
+                </button>
+            </div>
+
+            {/* 简单搜索 */}
+            {!showAdvancedSearch && (
+                <input
+                    type="text"
+                    className="input-field documents-simple-search"
+                    placeholder={t('docsFilterPlaceholder')}
+                    value={filterText}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                />
+            )}
+
+            {/* 高级搜索面板 */}
+            {showAdvancedSearch && (
+                <AdvancedSearchPanel
+                    advancedFilters={advancedFilters}
+                    updateFilter={updateFilter}
+                    toggleFileType={toggleFileType}
+                    supportedFileTypes={supportedFileTypes}
+                    applyFilters={applyFilters}
+                    resetFilters={resetFilters}
+                    language={language}
+                    t={t}
+                />
+            )}
+
+            {/* 当前激活的筛选条件显示 */}
+            {showAdvancedSearch && hasActiveFilters() && (
+                <div className="documents-active-filters">
+                    <span className="documents-active-filters-text">
+                        {t('docsActiveFilters')}: {getActiveFilterCount()} {t('docsFilterCount')}
+                    </span>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================================
+// 高级搜索面板组件
+// ============================================================================
+function AdvancedSearchPanel({
+    advancedFilters,
+    updateFilter,
+    toggleFileType,
+    supportedFileTypes,
+    applyFilters,
+    resetFilters,
+    language,
+    t
+}) {
+    const DatePicker = window.DatePicker;
+
+    return (
+        <div className="documents-advanced-search-panel">
+            {/* 文件名搜索 + 搜索模式 */}
+            <div className="documents-search-row">
+                <label className="documents-search-label">{t('docsFilterPlaceholder')}</label>
+                <input
+                    type="text"
+                    className="input-field documents-search-input"
+                    placeholder={t('docsFilterPlaceholder')}
+                    value={advancedFilters.search}
+                    onChange={(e) => updateFilter('search', e.target.value)}
+                />
+                <select
+                    className="input-field"
+                    style={{ width: 'auto' }}
+                    value={advancedFilters.searchMode}
+                    onChange={(e) => updateFilter('searchMode', e.target.value)}
+                >
+                    <option value="contains">{t('docsSearchModeContains')}</option>
+                    <option value="exact">{t('docsSearchModeExact')}</option>
+                    <option value="regex">{t('docsSearchModeRegex')}</option>
+                </select>
+            </div>
+
+            {/* 文件类型多选 */}
+            <FileTypeSelector
+                advancedFilters={advancedFilters}
+                updateFilter={updateFilter}
+                toggleFileType={toggleFileType}
+                supportedFileTypes={supportedFileTypes}
+                t={t}
+            />
+
+            {/* 文件大小范围 + 索引状态 */}
+            <div className="documents-search-row">
+                {/* 文件大小 */}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
+                        {t('docsFileSizeFilter')}
+                    </label>
+                    <input
+                        type="number"
+                        className="input-field"
+                        style={{ width: '100px' }}
+                        placeholder={t('docsFileSizeMin')}
+                        value={advancedFilters.minSize}
+                        onChange={(e) => updateFilter('minSize', e.target.value)}
+                        min="0"
+                    />
+                    <span>-</span>
+                    <input
+                        type="number"
+                        className="input-field"
+                        style={{ width: '100px' }}
+                        placeholder={t('docsFileSizeMax')}
+                        value={advancedFilters.maxSize}
+                        onChange={(e) => updateFilter('maxSize', e.target.value)}
+                        min="0"
+                    />
+                    <span>{t('docsFileSizeUnit')}</span>
+                </div>
+
+                {/* 索引状态 */}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
+                        {t('docsIndexedFilter')}
+                    </label>
+                    <select
+                        className="input-field"
+                        style={{ width: '120px' }}
+                        value={advancedFilters.indexed}
+                        onChange={(e) => updateFilter('indexed', e.target.value)}
+                    >
+                        <option value="all">{t('docsIndexedAll')}</option>
+                        <option value="true">{t('docsIndexedYes')}</option>
+                        <option value="false">{t('docsIndexedNo')}</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* 日期范围 */}
+            <div className="documents-search-row">
+                <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
+                    {t('docsDateFilter')}
+                </label>
+                <div style={{ transform: 'scale(0.95)', transformOrigin: 'left center' }}>
+                    <DatePicker
+                        value={advancedFilters.startDate}
+                        onChange={(date) => updateFilter('startDate', date)}
+                        placeholder={t('docsDateStart')}
+                        language={language}
+                    />
+                </div>
+                <span>-</span>
+                <div style={{ transform: 'scale(0.95)', transformOrigin: 'left center' }}>
+                    <DatePicker
+                        value={advancedFilters.endDate}
+                        onChange={(date) => updateFilter('endDate', date)}
+                        placeholder={t('docsDateEnd')}
+                        language={language}
+                    />
+                </div>
+            </div>
+
+            {/* 操作按钮 */}
+            <div className="documents-action-buttons">
+                <button onClick={applyFilters} className="btn btn-primary">
+                    {t('docsApplyFilter')}
+                </button>
+                <button onClick={resetFilters} className="btn btn-secondary">
+                    {t('docsResetFilter')}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ============================================================================
+// 文件类型选择器组件
+// ============================================================================
+function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, supportedFileTypes, t }) {
+    return (
+        <div className="documents-file-type-selector">
+            <label className="documents-file-type-header">
+                {t('docsFileTypeFilter')}
+                {advancedFilters.fileTypes.length > 0 && (
+                    <span className="documents-file-type-count">
+                        ({advancedFilters.fileTypes.length} {t('docsSelected')})
+                    </span>
+                )}
+            </label>
+
+            <div className="documents-file-type-controls">
+                {/* 下拉多选框 */}
+                <select
+                    className="documents-file-type-select input-field"
+                    multiple
+                    size={1}
+                    value={advancedFilters.fileTypes}
+                    onChange={(e) => {
+                        const selected = Array.from(e.target.selectedOptions, option => option.value);
+                        updateFilter('fileTypes', selected);
+                    }}
+                    onFocus={(e) => {
+                        e.target.size = Math.min(supportedFileTypes.length, 5);
+                    }}
+                    onBlur={(e) => {
+                        e.target.size = 1;
+                    }}
+                >
+                    {supportedFileTypes.map(type => (
+                        <option key={type} value={type}>
+                            📄 {type.toUpperCase()}
+                        </option>
+                    ))}
+                </select>
+
+                {/* 快捷操作按钮 */}
+                <button
+                    type="button"
+                    className="documents-btn-primary documents-btn-gradient-purple"
+                    onClick={() => updateFilter('fileTypes', [...supportedFileTypes])}
+                >
+                    ✓ {t('docsSelectAll')}
+                </button>
+                <button
+                    type="button"
+                    className="documents-btn-primary documents-btn-gradient-pink"
+                    onClick={() => updateFilter('fileTypes', [])}
+                >
+                    ✕ {t('docsClearAll')}
+                </button>
+            </div>
+
+            {/* 已选择的文件类型标签显示 */}
+            {advancedFilters.fileTypes.length > 0 && (
+                <div className="documents-file-type-tags">
+                    {advancedFilters.fileTypes.map(type => (
+                        <span key={type} className="documents-file-type-tag">
+                            {type.toUpperCase()}
+                            <button
+                                type="button"
+                                className="documents-file-type-tag-remove"
+                                onClick={() => toggleFileType(type, false)}
+                            >
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
+// ============================================================================
+// 文档列表组件
+// ============================================================================
+function DocumentList({ documents, formatFileSize, handleDelete, t }) {
+    return (
+        <div className="documents-list">
+            {documents.map((doc, index) => (
+                <div key={index} className="document-card">
+                    <div className="document-info">
+                        <div className="document-title">📄 {doc.fileName}</div>
+                        <div className="document-meta">
+                            📦 {formatFileSize(doc.fileSize)} |
+                            📅 {doc.uploadTime} |
+                            🏷️ {doc.fileType.toUpperCase()}
+                            {doc.indexed && <span style={{ marginLeft: '5px' }}>| ✅ {t('docsIndexed')}</span>}
+                        </div>
+                    </div>
+                    <button
+                        className="document-delete-btn btn btn-secondary"
+                        onClick={() => handleDelete(doc.fileName)}
+                    >
+                        {t('docsListDelete')}
+                    </button>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+// ============================================================================
+// 分页组件
+// ============================================================================
+function Pagination({ currentPage, totalPages, goToPage, t }) {
+    return (
+        <div className="pagination-container">
+            <button
+                className="pagination-btn"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+            >
+                {t('docsPaginationPrev')}
+            </button>
+
+            <div className="pagination-info">
+                <span>
+                    {t('docsPagination')} {currentPage} {t('docsPaginationPage')} /
+                    {t('docsPaginationTotal')} {totalPages} {t('docsPaginationPage')}
+                </span>
+                <span style={{ margin: '0 10px', color: '#ccc' }}>|</span>
+                <input
+                    type="number"
+                    className="pagination-jump-input"
+                    min="1"
+                    max={totalPages}
+                    placeholder={currentPage.toString()}
+                    onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                            const page = parseInt(e.target.value);
+                            if (page && page >= 1 && page <= totalPages) {
+                                goToPage(page);
+                                e.target.value = '';
+                            }
+                        }
+                    }}
+                />
+                <button
+                    className="pagination-jump-btn"
+                    onClick={(e) => {
+                        const input = e.target.previousElementSibling;
+                        const page = parseInt(input.value);
+                        if (page && page >= 1 && page <= totalPages) {
+                            goToPage(page);
+                            input.value = '';
+                        }
+                    }}
+                >
+                    {t('docsPaginationJump')}
+                </button>
+            </div>
+
+            <button
+                className="pagination-btn"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+            >
+                {t('docsPaginationNext')}
+            </button>
+        </div>
+    );
+}
+
+// ============================================================================
+// 导出组件
+// ============================================================================
+const DocumentsTabComponents = {
+    UploadArea,
+    DocumentListHeader,
+    SearchFilters,
+    AdvancedSearchPanel,
+    FileTypeSelector,
+    DocumentList,
+    Pagination
+};
+
+// 导出到全局
+if (typeof window !== 'undefined') {
+    window.DocumentsTabComponents = DocumentsTabComponents;
+}
+
+// 如果支持模块导出
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = DocumentsTabComponents;
+}
+

@@ -1,0 +1,249 @@
+/**
+ * Statistics Tab Component / 统计信息标签页组件
+ * JSX 版本 - 使用 Babel 转译
+ * 负责显示系统统计信息、索引管理
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-28
+ */
+
+function StatisticsTab() {
+    const { useState, useEffect } = React;
+    const { t } = window.LanguageModule.useTranslation();
+
+    // 状态管理
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [rebuilding, setRebuilding] = useState(false);
+    const [incrementalIndexing, setIncrementalIndexing] = useState(false);
+    const [rebuildResult, setRebuildResult] = useState(null);
+
+    useEffect(() => {
+        loadStatistics();
+    }, []);
+
+    const loadStatistics = async () => {
+        setLoading(true);
+        setError(null);
+
+        try {
+            const result = await window.api.getStatistics();
+            setStats(result);
+        } catch (err) {
+            setError(err.message || t('statsLoadError'));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRebuild = async () => {
+        if (!confirm(t('statsRebuildConfirm'))) return;
+
+        setRebuilding(true);
+        setError(null);
+        setRebuildResult(null);
+
+        try {
+            const result = await window.api.rebuild();
+            setRebuildResult(result);
+
+            if (result.success) {
+                setTimeout(() => loadStatistics(), 1000);
+            }
+        } catch (err) {
+            setError(err.message || t('statsRebuildError'));
+        } finally {
+            setRebuilding(false);
+        }
+    };
+
+    const handleIncrementalIndex = async () => {
+        if (!confirm(t('statsIncrementalConfirm'))) return;
+
+        setIncrementalIndexing(true);
+        setError(null);
+        setRebuildResult(null);
+
+        try {
+            const result = await window.api.incrementalIndex();
+            setRebuildResult(result);
+
+            if (result.success) {
+                setTimeout(() => loadStatistics(), 1000);
+            }
+        } catch (err) {
+            setError(err.message || t('statsIncrementalError'));
+        } finally {
+            setIncrementalIndexing(false);
+        }
+    };
+
+    // 加载状态
+    if (loading) {
+        return (
+            <div className="loading">
+                <div className="spinner"></div>
+                <p>{t('statsLoadingStats')}</p>
+            </div>
+        );
+    }
+
+    // 错误状态
+    if (error) {
+        return (
+            <div className="error">
+                {t('qaErrorPrefix')} {error}
+                <button
+                    className="btn btn-secondary"
+                    onClick={loadStatistics}
+                    style={{ marginTop: '10px' }}
+                >
+                    {t('statsRetry')}
+                </button>
+            </div>
+        );
+    }
+
+    // 主渲染
+    return (
+        <div>
+            {/* 统计卡片网格 */}
+            <div className="statistics-grid">
+                <div className="stat-card">
+                    <div className="stat-value">{stats.documentCount}</div>
+                    <div className="stat-label">{t('statsDocCount')}</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">{stats.indexedDocumentCount}</div>
+                    <div className="stat-label">{t('statsIndexedCount')}</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-value">
+                        {stats.documentCount > 0
+                            ? Math.round((stats.indexedDocumentCount / stats.documentCount) * 100)
+                            : 0}%
+                    </div>
+                    <div className="stat-label">{t('statsIndexProgress')}</div>
+                </div>
+            </div>
+
+            {/* 索引进度 */}
+            {(rebuilding || incrementalIndexing) && (
+                <div className="loading" style={{ marginTop: '30px' }}>
+                    <div className="spinner"></div>
+                    <p>
+                        {rebuilding ? t('statsRebuilding') : t('statsIncrementalIndexing')}
+                    </p>
+                    <p style={{ fontSize: '14px', color: '#999', marginTop: '10px' }}>
+                        {rebuilding ? t('statsRebuildWait') : t('statsIncrementalWait')}
+                    </p>
+                </div>
+            )}
+
+            {/* 重建结果 */}
+            {rebuildResult && !rebuilding && !incrementalIndexing && (
+                <div
+                    className={rebuildResult.success ? 'answer-card' : 'error'}
+                    style={{ marginTop: '30px' }}
+                >
+                    <h3>
+                        {rebuildResult.success ? t('statsSuccess') : t('statsFailed')}
+                    </h3>
+                    <div style={{ marginTop: '10px' }}>
+                        <p>{rebuildResult.message}</p>
+                        {rebuildResult.success && rebuildResult.processedFiles > 0 && (
+                            <div style={{ marginTop: '15px', fontSize: '14px' }}>
+                                <p>
+                                    {t('statsProcessedFiles')}: {rebuildResult.processedFiles} {t('statsCount')}
+                                </p>
+                                <p>
+                                    {t('statsTotalDocs')}: {rebuildResult.totalDocuments} {t('statsCount')}
+                                </p>
+                                <p>
+                                    {t('statsDuration')}: {(rebuildResult.durationMs / 1000).toFixed(2)} {t('statsSeconds')}
+                                </p>
+                            </div>
+                        )}
+                        {rebuildResult.suggestion && (
+                            <p style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
+                                {t('statsSuggestion')} {rebuildResult.suggestion}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* 索引指南和操作按钮 */}
+            <div style={{ marginTop: '30px' }}>
+                <div
+                    style={{
+                        padding: '20px',
+                        background: '#f8f9ff',
+                        borderRadius: '8px',
+                        marginBottom: '20px'
+                    }}
+                >
+                    <h4 style={{ marginBottom: '10px', color: '#667eea' }}>
+                        {t('statsIndexGuideTitle')}
+                    </h4>
+                    <div style={{ fontSize: '14px', lineHeight: '1.8', color: '#666' }}>
+                        <p style={{ marginBottom: '8px' }}>
+                            {t('statsIncrementalDesc')}
+                        </p>
+                        <p>{t('statsRebuildDesc')}</p>
+                    </div>
+                </div>
+
+                {/* 操作按钮 */}
+                <div
+                    style={{
+                        textAlign: 'center',
+                        display: 'flex',
+                        gap: '10px',
+                        justifyContent: 'center',
+                        flexWrap: 'wrap'
+                    }}
+                >
+                    <button
+                        className="btn btn-secondary"
+                        onClick={loadStatistics}
+                        disabled={rebuilding || incrementalIndexing}
+                    >
+                        {t('statsRefresh')}
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleIncrementalIndex}
+                        disabled={rebuilding || incrementalIndexing}
+                        style={{
+                            background: incrementalIndexing
+                                ? '#ccc'
+                                : 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
+                        }}
+                    >
+                        {incrementalIndexing ? t('statsIndexing') : t('statsIncrementalIndex')}
+                    </button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={handleRebuild}
+                        disabled={rebuilding || incrementalIndexing}
+                    >
+                        {rebuilding ? t('statsIndexingProgress') : t('statsRebuildIndex')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// 导出到全局
+if (typeof window !== 'undefined') {
+    window.StatisticsTab = StatisticsTab;
+}
+
+// 如果支持模块导出
+if (typeof module !== 'undefined') {
+    module.exports = StatisticsTab;
+}
+

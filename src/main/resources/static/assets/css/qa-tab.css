@@ -1,0 +1,460 @@
+/**
+ * QA Tab 样式文件
+ * @author AI Reviewer Team
+ * @since 2025-11-28
+ */
+
+/* ============================================================================
+   问答输入区域
+   ============================================================================ */
+.qa-input-section {
+    margin-bottom: 30px;
+}
+
+.qa-question-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e0e7ff;
+    border-radius: 8px;
+    font-size: 15px;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+.qa-question-input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    outline: none;
+}
+
+.qa-button-group {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.qa-ask-button {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qa-ask-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.qa-ask-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.qa-clear-button {
+    padding: 12px 24px;
+    background: #f5f5f5;
+    color: #666;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qa-clear-button:hover {
+    background: #e0e0e0;
+}
+
+/* ============================================================================
+   答案显示区域
+   ============================================================================ */
+.qa-answer-section {
+    margin-top: 30px;
+}
+
+.qa-answer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.qa-answer-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+.qa-download-all-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.qa-download-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 87, 108, 0.4);
+}
+
+.qa-answer-card {
+    background: white;
+    border: 2px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.qa-answer-text {
+    line-height: 1.8;
+    color: #333;
+    font-size: 15px;
+}
+
+.qa-answer-text h1,
+.qa-answer-text h2,
+.qa-answer-text h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #667eea;
+}
+
+.qa-answer-text pre {
+    background: #f5f7fa;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 15px 0;
+}
+
+.qa-answer-text code {
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 14px;
+}
+
+.qa-answer-text p {
+    margin: 10px 0;
+}
+
+.qa-answer-text ul,
+.qa-answer-text ol {
+    margin: 10px 0;
+    padding-left: 30px;
+}
+
+.qa-answer-text li {
+    margin: 5px 0;
+}
+
+/* ============================================================================
+   参考文档区域
+   ============================================================================ */
+.qa-sources-section {
+    margin-top: 20px;
+}
+
+.qa-sources-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.qa-sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.qa-source-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: #f8f9ff;
+    border-radius: 8px;
+    border: 1px solid #e0e7ff;
+    transition: all 0.3s ease;
+}
+
+.qa-source-item:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.qa-source-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.qa-source-name {
+    color: #333;
+    font-weight: 500;
+}
+
+.qa-source-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.qa-source-download-btn {
+    padding: 6px 12px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.qa-source-download-btn:hover {
+    background: #5568d3;
+}
+
+.qa-feedback-button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.qa-feedback-button.helpful {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+
+.qa-feedback-button.helpful:hover {
+    background: #c8e6c9;
+}
+
+.qa-feedback-button.not-helpful {
+    background: #ffebee;
+    color: #f44336;
+}
+
+.qa-feedback-button.not-helpful:hover {
+    background: #ffcdd2;
+}
+
+.qa-feedback-button.active {
+    font-weight: 600;
+}
+
+/* ============================================================================
+   反馈区域
+   ============================================================================ */
+.qa-feedback-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9ff;
+    border-radius: 12px;
+    border: 2px solid #e0e7ff;
+}
+
+.qa-feedback-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.qa-rating-stars {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.qa-star {
+    font-size: 32px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.qa-star:hover {
+    transform: scale(1.2);
+}
+
+.qa-star.filled {
+    color: #ffc107;
+}
+
+.qa-star.empty {
+    color: #ddd;
+}
+
+.qa-feedback-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 2px solid #e0e7ff;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 15px;
+}
+
+.qa-feedback-textarea:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.qa-feedback-submit-btn {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.qa-feedback-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.qa-feedback-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.qa-feedback-success {
+    padding: 15px;
+    background: #e8f5e9;
+    border-radius: 8px;
+    color: #2e7d32;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* ============================================================================
+   反馈原因模态框
+   ============================================================================ */
+.qa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.qa-modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.qa-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.qa-modal-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px;
+    border: 2px solid #e0e7ff;
+    border-radius: 8px;
+    font-size: 14px;
+    resize: vertical;
+    margin-bottom: 20px;
+}
+
+.qa-modal-textarea:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.qa-modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.qa-modal-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.qa-modal-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.qa-modal-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+}
+
+.qa-modal-btn-secondary {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.qa-modal-btn-secondary:hover {
+    background: #e0e0e0;
+}
+
+/* ============================================================================
+   响应式设计
+   ============================================================================ */
+@media (max-width: 768px) {
+    .qa-answer-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .qa-source-item {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .qa-source-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .qa-button-group {
+        flex-direction: column;
+    }
+
+    .qa-ask-button,
+    .qa-clear-button {
+        width: 100%;
+    }
+}
+
