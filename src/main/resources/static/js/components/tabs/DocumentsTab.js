@@ -105,21 +105,23 @@ function DocumentsTab() {
             const file = files[i];
             try {
                 await window.api.uploadDocument(file);
-                updateState({
+                setState(prev => ({
+                    ...prev,
                     uploadProgress: {
-                        ...state.uploadProgress,
+                        ...prev.uploadProgress,
                         current: i + 1,
-                        success: state.uploadProgress.success + 1
+                        success: prev.uploadProgress.success + 1
                     }
-                });
+                }));
             } catch (err) {
-                updateState({
+                setState(prev => ({
+                    ...prev,
                     uploadProgress: {
-                        ...state.uploadProgress,
+                        ...prev.uploadProgress,
                         current: i + 1,
-                        failed: state.uploadProgress.failed + 1
+                        failed: prev.uploadProgress.failed + 1
                     }
-                });
+                }));
             }
         }
 
@@ -239,7 +241,12 @@ function DocumentsTab() {
             );
         }
 
-        return DocumentsTabComponents.renderAdvancedSearch(
+        if (!window.DocumentsTabComponents) {
+            console.error('DocumentsTabComponents not loaded');
+            return null;
+        }
+
+        return window.DocumentsTabComponents.renderAdvancedSearch(
             advancedFilters,
             state.supportedFileTypes,
             updateFilter,
@@ -269,16 +276,26 @@ function DocumentsTab() {
             );
         }
 
+        if (!window.DocumentsTabComponents) {
+            console.error('DocumentsTabComponents not loaded');
+            return null;
+        }
+
         return React.createElement('div', { className: 'documents-list' },
             ...state.documents.map(doc =>
-                DocumentsTabComponents.renderDocumentCard(doc, handleDelete, handleIndex, t)
+                window.DocumentsTabComponents.renderDocumentCard(doc, handleDelete, handleIndex, t)
             )
         );
     };
 
     // 渲染分页
     const renderPagination = () => {
-        return DocumentsTabComponents.renderPagination(
+        if (!window.DocumentsTabComponents) {
+            console.error('DocumentsTabComponents not loaded');
+            return null;
+        }
+
+        return window.DocumentsTabComponents.renderPagination(
             state.currentPage,
             state.totalPages,
             state.pageSize,
@@ -291,7 +308,7 @@ function DocumentsTab() {
     // 主渲染
     return React.createElement('div', { className: 'documents-tab' },
         renderToolbar(),
-        state.uploadProgress && DocumentsTabComponents.renderUploadProgress(state.uploadProgress, t),
+        state.uploadProgress && window.DocumentsTabComponents && window.DocumentsTabComponents.renderUploadProgress(state.uploadProgress, t),
         renderSearchArea(),
         renderDocumentList(),
         renderPagination()

@@ -220,6 +220,31 @@ const translations = {
 
         // Language Toggle
         langToggle: '🌐 English',
+
+        // Common
+        comingSoon: '功能开发中...',
+        tabStatistics: '📊 统计信息',
+
+        // Documents - Missing Keys
+        docsEmpty: '暂无文档',
+        docsLoading: '加载中...',
+        docsNotIndexed: '未索引',
+        docsFileSize: '文件大小',
+        docsFileType: '文件类型',
+        docsUploadTime: '上传时间',
+        docsIndexButton: '索引',
+        docsDeleteButton: '删除',
+        docsIndexSuccess: '索引成功',
+        docsIndexError: '索引失败',
+        docsBatchIndex: '批量索引',
+        docsBatchIndexConfirm: '确认批量索引所有文档？',
+        docsBatchIndexSuccess: '批量索引成功',
+        docsBatchIndexError: '批量索引失败',
+        docsShowAdvanced: '显示高级搜索',
+        docsHideAdvanced: '隐藏高级搜索',
+        docsSearchKeyword: '搜索关键词',
+        docsSearchPlaceholder: '输入关键词搜索文档...',
+        docsSearchModePrefix: '前缀匹配',
     },
     en: {
         // Header
@@ -432,6 +457,31 @@ const translations = {
 
         // Language Toggle
         langToggle: '🌐 中文',
+
+        // Common
+        comingSoon: 'Coming Soon...',
+        tabStatistics: '📊 Statistics',
+
+        // Documents - Missing Keys
+        docsEmpty: 'No documents',
+        docsLoading: 'Loading...',
+        docsNotIndexed: 'Not Indexed',
+        docsFileSize: 'File Size',
+        docsFileType: 'File Type',
+        docsUploadTime: 'Upload Time',
+        docsIndexButton: 'Index',
+        docsDeleteButton: 'Delete',
+        docsIndexSuccess: 'Index successful',
+        docsIndexError: 'Index failed',
+        docsBatchIndex: 'Batch Index',
+        docsBatchIndexConfirm: 'Confirm batch indexing all documents?',
+        docsBatchIndexSuccess: 'Batch indexing successful',
+        docsBatchIndexError: 'Batch indexing failed',
+        docsShowAdvanced: 'Show Advanced Search',
+        docsHideAdvanced: 'Hide Advanced Search',
+        docsSearchKeyword: 'Search Keyword',
+        docsSearchPlaceholder: 'Enter keywords to search documents...',
+        docsSearchModePrefix: 'Prefix Match',
     }
 };
 
