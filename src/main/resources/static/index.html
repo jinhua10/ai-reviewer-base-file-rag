@@ -592,6 +592,33 @@
             font-size: 11px;
         }
 
+        .btn-batch-download-chunks {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-batch-download-chunks:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-batch-download-chunks:active {
+            transform: translateY(0);
+        }
+
+        .document-feedback-area {
+            padding-top: 15px;
+            border-top: 2px solid rgba(255, 255, 255, 0.5);
+        }
+
         /* 图片样式优化 */
         .answer-text img {
             max-width: 100%;
@@ -1263,6 +1290,58 @@
                 }
             };
 
+            // 批量下载所有文档块
+            const handleBatchDownloadChunks = async () => {
+                if (!answer || !answer.chunks || answer.chunks.length === 0) {
+                    alert(t('qaChunkDownloadError'));
+                    return;
+                }
+
+                try {
+                    let successCount = 0;
+                    let failCount = 0;
+
+                    for (let i = 0; i < answer.chunks.length; i++) {
+                        const chunk = answer.chunks[i];
+                        try {
+                            const response = await fetch(`/api/chunks/download/${encodeURIComponent(chunk.documentId)}/${encodeURIComponent(chunk.chunkId)}`);
+
+                            if (!response.ok) {
+                                throw new Error('Download failed');
+                            }
+
+                            const blob = await response.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `${chunk.title || 'chunk_' + (chunk.chunkIndex + 1)}.md`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+
+                            successCount++;
+
+                            // 延迟一下避免浏览器阻止多个下载
+                            if (i < answer.chunks.length - 1) {
+                                await new Promise(resolve => setTimeout(resolve, 300));
+                            }
+                        } catch (err) {
+                            console.error(`Failed to download chunk ${chunk.chunkId}:`, err);
+                            failCount++;
+                        }
+                    }
+
+                    if (failCount > 0) {
+                        alert(`${t('qaChunksDownloadAll')}: ${successCount}/${answer.chunks.length} ${t('docsUploadSuccess')}, ${failCount} ${t('docsUploadError')}`);
+                    } else {
+                        alert(`${t('qaChunksDownloadAll')}: ${successCount}/${answer.chunks.length} ${t('docsUploadSuccess')}`);
+                    }
+                } catch (err) {
+                    alert(t('qaChunkDownloadError') + ': ' + err.message);
+                }
+            };
+
             // 图片点击放大
             useEffect(() => {
                 const handleImageClick = (e) => {
@@ -1465,39 +1544,90 @@
                                 </div>
                             )}
 
-                            {/* 文档切分块下载区域 */}
-                            {answer.chunks && answer.chunks.length > 0 && (
+                            {/* 文档切分块下载区域与文档反馈区域（合并） */}
+                            {(answer.chunks && answer.chunks.length > 0) || (answer.sources && answer.sources.length > 0) ? (
                                 <div className="chunks-section">
                                     <h4>
-                                        📦 {t('qaChunksTitle')}
-                                        <span style={{fontSize: '12px', fontWeight: 'normal', color: '#666'}}>
-                                            ({answer.chunks.length} {t('qaChunksAvailable')})
-                                        </span>
+                                        📦 {t('qaChunksAndFeedback')}
                                     </h4>
-                                    <div className="chunks-grid">
-                                        {answer.chunks.map((chunk, index) => (
-                                            <button
-                                                key={chunk.chunkId}
-                                                className="chunk-button"
-                                                onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
-                                                title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
-                                            >
-                                                <div className="chunk-title">
-                                                    📄 {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
+
+                                    {/* 文档切分块 */}
+                                    {answer.chunks && answer.chunks.length > 0 && (
+                                        <>
+                                            <div style={{marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                                <span style={{fontSize: '14px', color: '#666'}}>
+                                                    {answer.chunks.length} {t('qaChunksAvailable')}
+                                                </span>
+                                                <button
+                                                    className="btn-batch-download-chunks"
+                                                    onClick={handleBatchDownloadChunks}
+                                                    title={t('qaChunksDownloadAll')}
+                                                >
+                                                    {t('qaChunksDownloadAll')}
+                                                </button>
+                                            </div>
+                                            <div className="chunks-grid">
+                                                {answer.chunks.map((chunk, index) => (
+                                                    <button
+                                                        key={chunk.chunkId}
+                                                        className="chunk-button"
+                                                        onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
+                                                        title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
+                                                    >
+                                                        <div className="chunk-title">
+                                                            📄 {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
+                                                        </div>
+                                                        <div className="chunk-info">
+                                                            <span className="chunk-index">
+                                                                {chunk.chunkIndex + 1}/{chunk.totalChunks || answer.chunks.length}
+                                                            </span>
+                                                            <span className="chunk-size">
+                                                                {(chunk.contentLength / 1024).toFixed(1)} KB
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* 文档反馈区域 */}
+                                    {answer.sources && answer.sources.length > 0 && (
+                                        <div className="document-feedback-area" style={{marginTop: answer.chunks && answer.chunks.length > 0 ? '20px' : '0'}}>
+                                            <h5 style={{marginBottom: '15px', color: '#1565c0', fontSize: '15px'}}>
+                                                📚 {t('feedbackDocumentQuestion')}
+                                            </h5>
+                                            {answer.sources.map((source, index) => (
+                                                <div key={index} className="document-feedback-item">
+                                                    <div className="document-feedback-name">
+                                                        {index + 1}. {source}
+                                                    </div>
+                                                    <div className="document-feedback-buttons">
+                                                        <button
+                                                            className={`document-feedback-btn ${documentFeedbacks[source] === 'HELPFUL' ? 'liked' : ''}`}
+                                                            onClick={() => handleDocumentHelpful(source)}
+                                                            disabled={documentFeedbacks[source] !== undefined}
+                                                        >
+                                                            {documentFeedbacks[source] === 'HELPFUL'
+                                                                ? t('feedbackDocumentSubmitted')
+                                                                : t('feedbackDocumentHelpful')}
+                                                        </button>
+                                                        <button
+                                                            className={`document-feedback-btn ${documentFeedbacks[source] === 'NOT_HELPFUL' ? 'disliked' : ''}`}
+                                                            onClick={() => handleDocumentNotHelpful(source)}
+                                                            disabled={documentFeedbacks[source] !== undefined}
+                                                        >
+                                                            {documentFeedbacks[source] === 'NOT_HELPFUL'
+                                                                ? t('feedbackDocumentSubmitted')
+                                                                : t('feedbackDocumentNotHelpful')}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className="chunk-info">
-                                                    <span className="chunk-index">
-                                                        {chunk.chunkIndex + 1}/{chunk.totalChunks || answer.chunks.length}
-                                                    </span>
-                                                    <span className="chunk-size">
-                                                        {(chunk.contentLength / 1024).toFixed(1)} KB
-                                                    </span>
-                                                </div>
-                                            </button>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            ) : null}
 
                             {/* 用户反馈区域 */}
                             {!feedbackSubmitted ? (
@@ -1560,39 +1690,6 @@
                                 </div>
                             )}
 
-                            {/* 文档反馈区域 */}
-                            {answer.sources && answer.sources.length > 0 && (
-                                <div className="document-feedback-section">
-                                    <h4>📚 {t('feedbackDocumentQuestion')}</h4>
-                                    {answer.sources.map((source, index) => (
-                                        <div key={index} className="document-feedback-item">
-                                            <div className="document-feedback-name">
-                                                {index + 1}. {source}
-                                            </div>
-                                            <div className="document-feedback-buttons">
-                                                <button
-                                                    className={`document-feedback-btn ${documentFeedbacks[source] === 'HELPFUL' ? 'liked' : ''}`}
-                                                    onClick={() => handleDocumentHelpful(source)}
-                                                    disabled={documentFeedbacks[source] !== undefined}
-                                                >
-                                                    {documentFeedbacks[source] === 'HELPFUL'
-                                                        ? t('feedbackDocumentSubmitted')
-                                                        : t('feedbackDocumentHelpful')}
-                                                </button>
-                                                <button
-                                                    className={`document-feedback-btn ${documentFeedbacks[source] === 'NOT_HELPFUL' ? 'disliked' : ''}`}
-                                                    onClick={() => handleDocumentNotHelpful(source)}
-                                                    disabled={documentFeedbacks[source] !== undefined}
-                                                >
-                                                    {documentFeedbacks[source] === 'NOT_HELPFUL'
-                                                        ? t('feedbackDocumentSubmitted')
-                                                        : t('feedbackDocumentNotHelpful')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
 
                             <div className="response-time">
                                 {t('qaResponseTime')}: {answer.responseTimeMs}ms

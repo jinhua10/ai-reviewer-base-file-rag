@@ -134,6 +134,8 @@ const translations = {
         qaChunkDownload: '下载',
         qaChunkDownloading: '下载中...',
         qaChunkDownloadError: '下载失败',
+        qaChunksDownloadAll: '📦 批量下载所有块',
+        qaChunksAndFeedback: '文档切分块与反馈',
 
         // Image Modal
         qaImageClose: '关闭',
@@ -300,6 +302,8 @@ const translations = {
         qaChunkDownload: 'Download',
         qaChunkDownloading: 'Downloading...',
         qaChunkDownloadError: 'Download failed',
+        qaChunksDownloadAll: '📦 Download All Chunks',
+        qaChunksAndFeedback: 'Document Chunks & Feedback',
 
         // Image Modal
         qaImageClose: 'Close',
