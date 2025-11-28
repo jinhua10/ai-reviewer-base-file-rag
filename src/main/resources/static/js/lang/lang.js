@@ -210,6 +210,9 @@ const translations = {
         feedbackSubmit: '提交反馈',
         feedbackThankYou: '✅ 感谢您的反馈！',
         feedbackError: '提交失败，请稍后重试',
+        feedbackSubmitSuccess: '✅ 反馈提交成功！感谢您的反馈。',
+        feedbackSubmitError: '❌ 反馈提交失败，请重试',
+        networkError: '网络错误',
         feedbackDocumentTitle: '📚 文档反馈',
         feedbackDocumentQuestion: '这些文档对回答问题有帮助吗？',
         feedbackDocumentHelpful: '👍 有帮助',
@@ -226,6 +229,11 @@ const translations = {
         logDocsCount: '个文档',
         logLoadFailed: '加载失败:',
         logLoadException: '加载文档列表异常:',
+        logFeedbackError: '提交反馈失败:',
+        logDocumentFeedbackError: '提交文档反馈失败:',
+        logChunkDownloadFailed: '下载分块失败',
+        logUseDefaultFileTypes: '使用默认文件类型列表',
+        logDateFilterError: '日期过滤错误:',
 
         // Footer
         footerText: '© 2025 LocalFileRAG 知识库问答系统 | 由 Java & React 驱动',
@@ -464,6 +472,9 @@ const translations = {
         feedbackSubmit: 'Submit Feedback',
         feedbackThankYou: '✅ Thank you for your feedback!',
         feedbackError: 'Submission failed, please try again later',
+        feedbackSubmitSuccess: '✅ Feedback submitted successfully! Thank you.',
+        feedbackSubmitError: '❌ Failed to submit feedback, please try again',
+        networkError: 'Network error',
         feedbackDocumentTitle: '📚 Document Feedback',
         feedbackDocumentQuestion: 'Were these documents helpful in answering the question?',
         feedbackDocumentHelpful: '👍 Helpful',
@@ -480,6 +491,11 @@ const translations = {
         logDocsCount: 'documents',
         logLoadFailed: 'Load failed:',
         logLoadException: 'Document list loading exception:',
+        logFeedbackError: 'Feedback submission failed:',
+        logDocumentFeedbackError: 'Document feedback submission failed:',
+        logChunkDownloadFailed: 'Failed to download chunk',
+        logUseDefaultFileTypes: 'Using default file types list',
+        logDateFilterError: 'Date filter error:',
 
         // Footer
         footerText: '© 2025 LocalFileRAG Knowledge QA System | Powered by Java & React',

@@ -617,7 +617,7 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
                         <span>
                             {advancedFilters.fileTypes.length > 0 
                                 ? `${advancedFilters.fileTypes.length} ${t('docsSelected')}`
-                                : t('docsSelectFileTypes') || '选择文件类型'}
+                                : t('docsSelectFileTypes')}
                         </span>
                         <span className="documents-dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
                     </div>

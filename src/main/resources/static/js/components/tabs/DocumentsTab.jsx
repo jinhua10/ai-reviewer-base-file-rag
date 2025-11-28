@@ -83,7 +83,7 @@ function DocumentsTab() {
                     }
                 }
             } catch (err) {
-                console.log('使用默认文件类型列表');
+                console.log(t('logUseDefaultFileTypes'));
             }
         };
         loadSupportedFileTypes();
@@ -328,7 +328,7 @@ function DocumentsTab() {
                         if (docDate > endDate) return false;
                     }
                 } catch (e) {
-                    console.error('日期过滤错误:', e);
+                    console.error(t('logDateFilterError'), e);
                     return false;
                 }
             }
@@ -622,7 +622,7 @@ function DocumentsTab() {
                                 color: '#1976d2',
                                 textAlign: 'center'
                             }}>
-                                💡 {t('docsLocalFilterHint') || '正在前端实时过滤，点击"应用筛选"按钮进行完整搜索'}
+                                💡 {t('docsLocalFilterHint')}
                             </div>
                         )}
 
@@ -643,9 +643,9 @@ function DocumentsTab() {
                  (showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()).length === 0 && (
                     <div className="empty-state">
                         <div className="empty-state-icon">🔍</div>
-                        <p>{t('docsNoMatchFound') || '没有找到匹配的文档'}</p>
+                        <p>{t('docsNoMatchFound')}</p>
                         <p style={{ fontSize: '14px', marginTop: '10px', color: '#ccc' }}>
-                            {t('docsTryDifferentKeyword') || '尝试使用不同的关键词或点击搜索按钮进行完整搜索'}
+                            {t('docsTryDifferentKeyword')}
                         </p>
                     </div>
                 )}

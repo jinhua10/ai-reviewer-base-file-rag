@@ -187,7 +187,7 @@ function QATab() {
                         await new Promise(resolve => setTimeout(resolve, 300));
                     }
                 } catch (err) {
-                    console.error(`Failed to download chunk ${chunk.chunkId}:`, err);
+                    console.error(`${t('logChunkDownloadFailed')} ${chunk.chunkId}:`, err);
                     failCount++;
                 }
             }
@@ -255,7 +255,7 @@ function QATab() {
                 alert(t('feedbackError'));
             }
         } catch (err) {
-            console.error('提交反馈失败:', err);
+            console.error(t('logFeedbackError'), err);
             alert(t('feedbackError'));
         }
     };
@@ -274,23 +274,17 @@ function QATab() {
             if (result.success) {
                 setDocumentFeedbacks(prev => ({ ...prev, [docName]: 'LIKE' }));
                 // 显示成功提示
-                const message = language === 'zh'
-                    ? '✅ 反馈提交成功！感谢您的反馈。'
-                    : '✅ Feedback submitted successfully! Thank you.';
+                const message = t('feedbackSubmitSuccess');
 
                 // 使用非阻塞的提示
                 showToast(message, 'success');
             } else {
-                const errorMsg = language === 'zh'
-                    ? '❌ 反馈提交失败，请重试'
-                    : '❌ Failed to submit feedback, please try again';
+                const errorMsg = t('feedbackSubmitError');
                 showToast(errorMsg, 'error');
             }
         } catch (err) {
-            console.error('提交文档反馈失败:', err);
-            const errorMsg = language === 'zh'
-                ? '❌ 反馈提交失败：' + (err.message || '网络错误')
-                : '❌ Failed to submit feedback: ' + (err.message || 'Network error');
+            console.error(t('logDocumentFeedbackError'), err);
+            const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
             showToast(errorMsg, 'error');
         }
     };
@@ -315,21 +309,15 @@ function QATab() {
             if (result.success) {
                 setDocumentFeedbacks(prev => ({ ...prev, [currentFeedbackDoc]: 'DISLIKE' }));
                 // 显示成功提示
-                const message = language === 'zh'
-                    ? '✅ 反馈提交成功！感谢您的反馈。'
-                    : '✅ Feedback submitted successfully! Thank you.';
+                const message = t('feedbackSubmitSuccess');
                 showToast(message, 'success');
             } else {
-                const errorMsg = language === 'zh'
-                    ? '❌ 反馈提交失败，请重试'
-                    : '❌ Failed to submit feedback, please try again';
+                const errorMsg = t('feedbackSubmitError');
                 showToast(errorMsg, 'error');
             }
         } catch (err) {
-            console.error('提交文档反馈失败:', err);
-            const errorMsg = language === 'zh'
-                ? '❌ 反馈提交失败：' + (err.message || '网络错误')
-                : '❌ Failed to submit feedback: ' + (err.message || 'Network error');
+            console.error(t('logDocumentFeedbackError'), err);
+            const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
             showToast(errorMsg, 'error');
         } finally {
             setShowReasonModal(false);
@@ -407,7 +395,7 @@ function QATab() {
                         }}
                         disabled={loading}
                     >
-                        {t('docsClearButton') || '清空'}
+                        {t('docsClearButton')}
                     </button>
                 </div>
             </div>
@@ -496,8 +484,8 @@ function QATab() {
                                                         title={documentFeedbacks[source] === 'LIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentHelpful')}
                                                     >
                                                         {documentFeedbacks[source] === 'LIKE'
-                                                            ? '✅ ' + t('feedbackDocumentSubmitted')
-                                                            : '👍 ' + t('feedbackDocumentHelpful')}
+                                                            ? t('feedbackDocumentSubmitted')
+                                                            : t('feedbackDocumentHelpful')}
                                                     </button>
                                                     <button
                                                         className={`qa-source-feedback-btn not-helpful ${documentFeedbacks[source] === 'DISLIKE' ? 'active submitted' : ''} ${documentFeedbacks[source] ? 'disabled' : ''}`}
@@ -506,8 +494,8 @@ function QATab() {
                                                         title={documentFeedbacks[source] === 'DISLIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentNotHelpful')}
                                                     >
                                                         {documentFeedbacks[source] === 'DISLIKE'
-                                                            ? '✅ ' + t('feedbackDocumentSubmitted')
-                                                            : '👎 ' + t('feedbackDocumentNotHelpful')}
+                                                            ? t('feedbackDocumentSubmitted')
+                                                            : t('feedbackDocumentNotHelpful')}
                                                     </button>
                                                 </div>
                                             </div>
