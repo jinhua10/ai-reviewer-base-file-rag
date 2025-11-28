@@ -435,6 +435,13 @@
                 <configuration>
                     <!-- 与 settings.xml 中的 <server><id>...</id></server> 对应 -->
                     <publishingServerId>${serverId}</publishingServerId>
+                    <!--
+                        排除 fat jar（jar-with-dependencies）不发布到中央仓库
+                        只发布：主JAR、POM、sources.jar、javadoc.jar 及其签名
+                    -->
+                    <excludeArtifacts>
+                        <excludeArtifact>*:*:*:jar-with-dependencies</excludeArtifact>
+                    </excludeArtifacts>
                 </configuration>
             </plugin>
 
