@@ -368,12 +368,6 @@ function QATab() {
             }, 300);
         }, 3000);
     };
-            console.error('提交文档反馈失败:', err);
-        } finally {
-            setShowReasonModal(false);
-            setCurrentFeedbackDoc(null);
-        }
-    };
 
     // ============================================================================
     // 主渲染
