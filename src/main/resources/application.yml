@@ -47,7 +47,10 @@ knowledge:
       #   - E:/文档/知识库             # 中文路径
       #   - ./data/documents/file.xlsx # 单个文件
       #   - classpath:simpleExcel      # resources下的目录
-      source-path: classpath:simpleExcel
+      # 
+      # 注意：使用 classpath 路径时，中文文件名可能在构建过程中出现编码问题
+      # 推荐使用文件系统路径以获得更好的中文文件名支持
+      source-path: ./data/documents
 
       # 启动时索引模式
       # true: 完全重建（删除旧索引，重新索引所有文件）

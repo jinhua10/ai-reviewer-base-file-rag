@@ -137,7 +137,8 @@ const api = {
      * @returns {Promise<Blob>} 文件数据
      */
     downloadDocument: async (fileName) => {
-        const response = await axios.get(`${API_DOCS_URL}/download/${encodeURIComponent(fileName)}`, {
+        const response = await axios.get(`${API_DOCS_URL}/download`, {
+            params: { fileName: fileName },
             responseType: 'blob'
         });
         return response.data;

@@ -404,28 +404,35 @@ public class DocumentManagementController {
     /**
      * 下载单个文档
      */
-    @GetMapping("/download/{fileName}")
-    public ResponseEntity<Resource> downloadDocument(@PathVariable String fileName) {
+    @GetMapping("/download")
+    public ResponseEntity<Resource> downloadDocument(@RequestParam("fileName") String fileName) {
         log.info("下载文档: {}", fileName);
+        log.debug("文件名字节: {}", java.util.Arrays.toString(fileName.getBytes(StandardCharsets.UTF_8)));
 
         try {
+            // URL解码已由Spring自动处理
             Path filePath = documentService.getDocumentPath(fileName);
-            
+            log.debug("查找路径: {}", filePath.toAbsolutePath());
+
             if (!Files.exists(filePath)) {
-                log.warn("文件不存在: {}", fileName);
+                log.warn("❌ 文件不存在: {} (路径: {})", fileName, filePath.toAbsolutePath());
+                log.warn("💡 可能原因：");
+                log.warn("   1. 文件只存在于知识库索引中，但源文件已被删除");
+                log.warn("   2. 文件名包含特殊字符导致路径解析错误");
+                log.warn("   3. 文件从未上传到documents目录");
                 return ResponseEntity.notFound().build();
             }
 
             Resource resource = new UrlResource(filePath.toUri());
-            
+
             if (!resource.exists() || !resource.isReadable()) {
                 log.warn("文件不可读: {}", fileName);
                 return ResponseEntity.notFound().build();
             }
 
-            // 设置响应头
+            // 设置响应头 - 使用RFC 5987编码方式
             String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
-            
+
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + encodedFileName + "\"; filename*=UTF-8''" + encodedFileName)
@@ -443,6 +450,7 @@ public class DocumentManagementController {
     @PostMapping("/download-batch")
     public ResponseEntity<Resource> downloadBatch(@RequestBody List<String> fileNames) {
         log.info("批量下载文档: {} 个", fileNames.size());
+        log.debug("文件名列表: {}", fileNames);
 
         try {
             // 创建临时ZIP文件
@@ -452,7 +460,8 @@ public class DocumentManagementController {
                 for (String fileName : fileNames) {
                     try {
                         Path filePath = documentService.getDocumentPath(fileName);
-                        
+                        log.debug("查找文件: {} -> {}", fileName, filePath.toAbsolutePath());
+
                         if (Files.exists(filePath)) {
                             ZipEntry zipEntry = new ZipEntry(fileName);
                             zipOut.putNextEntry(zipEntry);
@@ -462,7 +471,7 @@ public class DocumentManagementController {
                             
                             log.debug("已添加到ZIP: {}", fileName);
                         } else {
-                            log.warn("文件不存在，跳过: {}", fileName);
+                            log.warn("文件不存在，跳过: {} (路径: {})", fileName, filePath.toAbsolutePath());
                         }
                     } catch (Exception e) {
                         log.error("添加文件到ZIP失败: {}", fileName, e);
