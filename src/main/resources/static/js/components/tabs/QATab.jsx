@@ -131,7 +131,7 @@ function QATab() {
 
         setLoadingMore(true);
         try {
-            // 获取下一批文档
+            // 切换到下一批文档
             const response = await fetch(`/api/search/session/${sessionId}/next`, {
                 method: 'POST'
             });
@@ -143,7 +143,7 @@ function QATab() {
             const sessionDocs = await response.json();
 
             // 使用新文档重新生成回答
-            const result = await window.api.askWithDocuments(question, sessionDocs.documents);
+            const result = await window.api.askWithSessionDocuments(question, sessionId);
 
             // 更新答案
             setAnswer(result);
@@ -165,6 +165,7 @@ function QATab() {
 
         setLoadingMore(true);
         try {
+            // 切换到上一批文档
             const response = await fetch(`/api/search/session/${sessionId}/previous`, {
                 method: 'POST'
             });
@@ -174,8 +175,14 @@ function QATab() {
             }
 
             const sessionDocs = await response.json();
-            const result = await window.api.askWithDocuments(question, sessionDocs.documents);
+
+            // 使用新文档重新生成回答
+            const result = await window.api.askWithSessionDocuments(question, sessionId);
+
+            // 更新答案
             setAnswer(result);
+
+            // 更新会话信息
             await fetchSessionInfo(sessionId);
 
             showToast(t('qaLoadPreviousSuccess') || `已加载第 ${sessionDocs.currentPage} 批文档`, 'success');

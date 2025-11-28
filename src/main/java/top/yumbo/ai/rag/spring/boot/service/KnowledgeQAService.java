@@ -452,6 +452,174 @@ public class KnowledgeQAService {
     }
 
     /**
+     * 使用会话中的特定批次文档进行问答
+     *
+     * @param question 问题
+     * @param sessionId 会话ID
+     * @return 回答
+     */
+    public AIAnswer askWithSessionDocuments(String question, String sessionId) {
+        if (rag == null || llmClient == null) {
+            throw new IllegalStateException("问答系统未初始化");
+        }
+
+        long startTime = System.currentTimeMillis();
+
+        try {
+            log.info("\n" + "=".repeat(80));
+            log.info("❓ 问题: {} (使用会话: {})", question, sessionId);
+            log.info("=".repeat(80));
+
+            // 从会话获取当前批次的文档
+            SearchSessionService.SessionDocuments sessionDocs =
+                sessionService.getCurrentDocuments(sessionId);
+
+            List<top.yumbo.ai.rag.model.Document> documents = sessionDocs.getDocuments();
+
+            log.info("📝 使用会话文档: 总{}个, 当前第{}页/{}, 本次使用{}个",
+                sessionDocs.getTotalDocuments(),
+                sessionDocs.getCurrentPage(),
+                sessionDocs.getTotalPages(),
+                documents.size());
+
+            // 获取会话信息
+            SearchSessionService.SessionInfo sessionInfo =
+                sessionService.getSessionInfo(sessionId);
+
+            // 步骤2: 构建智能上下文
+            if (!documents.isEmpty() && contextBuilder != null) {
+                String firstDocTitle = documents.get(0).getTitle();
+                contextBuilder.setCurrentDocumentId(firstDocTitle);
+            }
+
+            String context = contextBuilder.buildSmartContext(question, documents);
+            log.info("Context stats: {}", contextBuilder.getContextStats(context));
+
+            // 步骤3: 收集可用的图片信息
+            List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
+            StringBuilder imageContext = new StringBuilder();
+
+            for (top.yumbo.ai.rag.model.Document doc : documents) {
+                try {
+                    List<top.yumbo.ai.rag.image.ImageInfo> docImages =
+                        imageStorageService.listImages(doc.getTitle());
+
+                    if (!docImages.isEmpty()) {
+                        allImages.addAll(docImages);
+
+                        imageContext.append("\n\n【可用图片 - ").append(doc.getTitle()).append("】\n");
+                        for (int i = 0; i < Math.min(docImages.size(), 5); i++) {
+                            top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
+                            String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
+                                ? img.getDescription()
+                                : "相关图片";
+                            imageContext.append(String.format(
+                                "- 图片 %d: %s (引用方式: ![%s](%s))\n",
+                                i + 1, imgDesc, imgDesc, img.getUrl()
+                            ));
+                        }
+                        if (docImages.size() > 5) {
+                            imageContext.append(String.format("  ...还有 %d 张图片\n", docImages.size() - 5));
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to load images for document: {}", doc.getTitle(), e);
+                }
+            }
+
+            // 步骤4: 构建增强的 Prompt
+            List<String> usedDocTitles = documents.stream()
+                .map(top.yumbo.ai.rag.model.Document::getTitle)
+                .distinct()
+                .toList();
+
+            boolean hasMoreDocs = sessionInfo.isHasNext();
+            int remainingDocsCount = sessionInfo.getRemainingDocuments();
+
+            String prompt = buildEnhancedPrompt(
+                question,
+                context,
+                imageContext.toString(),
+                !allImages.isEmpty(),
+                usedDocTitles,
+                hasMoreDocs,
+                remainingDocsCount
+            );
+
+            if (!allImages.isEmpty()) {
+                log.info("🖼️ 上下文中包含 {} 张图片信息", allImages.size());
+            }
+
+            log.info("📚 本次使用 {} 个文档生成回答", usedDocTitles.size());
+            if (hasMoreDocs) {
+                log.info("ℹ️ 还有 {} 个相关文档未包含在本次回答中", remainingDocsCount);
+            }
+
+            // 步骤5: 调用 LLM 生成答案
+            String answer = llmClient.generate(prompt);
+
+            // 步骤6: 提取文档来源
+            List<String> sources = documents.stream()
+                    .map(Document::getTitle)
+                    .distinct()
+                    .toList();
+
+            // 步骤7: 获取切分块信息
+            List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks = Collections.emptyList();
+            List<top.yumbo.ai.rag.image.ImageInfo> images = Collections.emptyList();
+
+            if (!documents.isEmpty()) {
+                String firstDocTitle = documents.get(0).getTitle();
+                try {
+                    chunks = chunkStorageService.listChunks(firstDocTitle);
+                    images = imageStorageService.listImages(firstDocTitle);
+                    log.info("📦 Found {} chunks and {} images for document", chunks.size(), images.size());
+                } catch (Exception e) {
+                    log.warn("Failed to load chunks/images info", e);
+                }
+            }
+
+            long totalTime = System.currentTimeMillis() - startTime;
+
+            // 显示结果
+            log.info("\n💡 回答:");
+            log.info(answer);
+            log.info("\n📚 数据来源 (共{}个文档):", sources.size());
+            sources.forEach(source -> log.info("   - {}", source));
+            log.info("\n⏱️  响应时间: {}ms", totalTime);
+            log.info("=".repeat(80));
+
+            // 保存问答记录
+            String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
+
+            AIAnswer aiAnswer = new AIAnswer(
+                answer,
+                sources,
+                totalTime,
+                chunks,
+                images,
+                usedDocTitles,
+                sessionInfo.getTotalDocuments(),
+                hasMoreDocs
+            );
+
+            aiAnswer.setRecordId(recordId);
+            aiAnswer.setSessionId(sessionId);
+
+            return aiAnswer;
+
+        } catch (Exception e) {
+            log.error("❌ 使用会话文档问答失败", e);
+            long totalTime = System.currentTimeMillis() - startTime;
+            return new AIAnswer(
+                    "抱歉，处理您的问题时出现错误：" + e.getMessage(),
+                    List.of(),
+                    totalTime
+            );
+        }
+    }
+
+    /**
      * 构建 LLM Prompt
      */
     private String buildPrompt(String question, String context) {

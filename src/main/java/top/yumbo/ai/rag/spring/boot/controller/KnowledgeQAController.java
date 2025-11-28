@@ -43,6 +43,34 @@ public class KnowledgeQAController {
         response.setAnswer(answer.getAnswer());
         response.setSources(answer.getSources());
         response.setResponseTimeMs(answer.getResponseTimeMs());
+        response.setSessionId(answer.getSessionId());
+        response.setUsedDocuments(answer.getUsedDocuments());
+        response.setTotalRetrieved(answer.getTotalRetrieved());
+        response.setHasMoreDocuments(answer.isHasMoreDocuments());
+        response.setRecordId(answer.getRecordId());
+
+        return response;
+    }
+
+    /**
+     * 使用会话文档进行问答（用于分页引用）
+     */
+    @PostMapping("/ask-with-session")
+    public QuestionResponse askWithSession(@RequestBody SessionQuestionRequest request) {
+        log.info("使用会话进行问答: 问题={}, sessionId={}", request.getQuestion(), request.getSessionId());
+
+        AIAnswer answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
+
+        QuestionResponse response = new QuestionResponse();
+        response.setQuestion(request.getQuestion());
+        response.setAnswer(answer.getAnswer());
+        response.setSources(answer.getSources());
+        response.setResponseTimeMs(answer.getResponseTimeMs());
+        response.setSessionId(answer.getSessionId());
+        response.setUsedDocuments(answer.getUsedDocuments());
+        response.setTotalRetrieved(answer.getTotalRetrieved());
+        response.setHasMoreDocuments(answer.isHasMoreDocuments());
+        response.setRecordId(answer.getRecordId());
 
         return response;
     }
@@ -188,11 +216,22 @@ public class KnowledgeQAController {
     }
 
     @Data
+    public static class SessionQuestionRequest {
+        private String question;
+        private String sessionId;
+    }
+
+    @Data
     public static class QuestionResponse {
         private String question;
         private String answer;
         private List<String> sources;
         private long responseTimeMs;
+        private String sessionId;              // 会话ID
+        private List<String> usedDocuments;    // 本次使用的文档
+        private int totalRetrieved;            // 检索到的总文档数
+        private boolean hasMoreDocuments;      // 是否还有更多文档
+        private String recordId;               // 记录ID（用于反馈）
     }
 
     @Data
