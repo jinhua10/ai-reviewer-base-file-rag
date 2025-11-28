@@ -66,7 +66,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <lucene.version>9.9.1</lucene.version>
         <netty.version>4.1.114.Final</netty.version>
-        <poi.version>5.4.0</poi.version>
+        <poi.version>5.4.1</poi.version>
         <tika.version>3.2.3</tika.version>
         <console.encoding>UTF-8</console.encoding>
     </properties>
@@ -179,7 +179,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <version>4.5.0</version>
         </dependency>
 
         <!-- 不要删除onnxruntime此依赖！它是整个知识库问答系统的基础，
@@ -238,7 +238,7 @@
         <dependency>
             <groupId>net.sourceforge.tess4j</groupId>
             <artifactId>tess4j</artifactId>
-            <version>5.9.0</version>
+            <version>5.16.0</version>
         </dependency>
 
         <!-- Apache Commons -->

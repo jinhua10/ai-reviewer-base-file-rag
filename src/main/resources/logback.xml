@@ -49,4 +49,8 @@
     <logger name="top.yumbo.ai.rag" level="INFO"/>
     <logger name="org.apache.lucene" level="WARN"/>
     <logger name="org.apache.tika" level="WARN"/>
+
+    <!-- 抑制PDFBox字体加载的警告 - Windows系统损坏的字体文件不影响功能 -->
+    <logger name="org.apache.pdfbox.pdmodel.font.FileSystemFontProvider" level="ERROR"/>
+    <logger name="org.apache.fontbox" level="ERROR"/>
 </configuration>
