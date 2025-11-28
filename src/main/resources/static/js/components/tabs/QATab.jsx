@@ -17,6 +17,11 @@ function QATab() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // 分页引用相关状态
+    const [sessionId, setSessionId] = useState(null);
+    const [sessionInfo, setSessionInfo] = useState(null);
+    const [loadingMore, setLoadingMore] = useState(false);
+
     // 反馈相关状态
     const [feedbackRating, setFeedbackRating] = useState(0);
     const [feedbackComment, setFeedbackComment] = useState('');
@@ -79,10 +84,18 @@ function QATab() {
         setFeedbackRating(0);
         setFeedbackComment('');
         setDocumentFeedbacks({});
+        setSessionId(null);
+        setSessionInfo(null);
 
         try {
             const result = await window.api.ask(question);
             setAnswer(result);
+
+            // 保存会话ID并获取会话信息
+            if (result.sessionId) {
+                setSessionId(result.sessionId);
+                await fetchSessionInfo(result.sessionId);
+            }
         } catch (err) {
             setError(err.message || t('qaRequestError'));
         } finally {
@@ -94,6 +107,83 @@ function QATab() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleAsk();
+        }
+    };
+
+    // ============================================================================
+    // 会话管理和分页引用函数
+    // ============================================================================
+
+    const fetchSessionInfo = async (sid) => {
+        try {
+            const response = await fetch(`/api/search/session/${sid}/info`);
+            if (response.ok) {
+                const info = await response.json();
+                setSessionInfo(info);
+            }
+        } catch (err) {
+            console.error('Failed to fetch session info:', err);
+        }
+    };
+
+    const handleLoadMore = async () => {
+        if (!sessionId || loadingMore) return;
+
+        setLoadingMore(true);
+        try {
+            // 获取下一批文档
+            const response = await fetch(`/api/search/session/${sessionId}/next`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load more documents');
+            }
+
+            const sessionDocs = await response.json();
+
+            // 使用新文档重新生成回答
+            const result = await window.api.askWithDocuments(question, sessionDocs.documents);
+
+            // 更新答案
+            setAnswer(result);
+
+            // 更新会话信息
+            await fetchSessionInfo(sessionId);
+
+            showToast(t('qaLoadMoreSuccess') || `已加载第 ${sessionDocs.currentPage} 批文档`, 'success');
+        } catch (err) {
+            console.error('Failed to load more documents:', err);
+            showToast(t('qaLoadMoreError') || '加载更多文档失败', 'error');
+        } finally {
+            setLoadingMore(false);
+        }
+    };
+
+    const handleLoadPrevious = async () => {
+        if (!sessionId || loadingMore) return;
+
+        setLoadingMore(true);
+        try {
+            const response = await fetch(`/api/search/session/${sessionId}/previous`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load previous documents');
+            }
+
+            const sessionDocs = await response.json();
+            const result = await window.api.askWithDocuments(question, sessionDocs.documents);
+            setAnswer(result);
+            await fetchSessionInfo(sessionId);
+
+            showToast(t('qaLoadPreviousSuccess') || `已加载第 ${sessionDocs.currentPage} 批文档`, 'success');
+        } catch (err) {
+            console.error('Failed to load previous documents:', err);
+            showToast(t('qaLoadPreviousError') || '加载上一批文档失败', 'error');
+        } finally {
+            setLoadingMore(false);
         }
     };
 
@@ -439,6 +529,59 @@ function QATab() {
                                     : answer.answer
                             }}
                         />
+
+                        {/* 会话信息和分页控制 */}
+                        {sessionInfo && (
+                            <div className="qa-session-info">
+                                <div className="qa-session-stats">
+                                    <span className="qa-session-stat">
+                                        📊 检索到 <strong>{sessionInfo.totalDocuments}</strong> 个文档
+                                    </span>
+                                    <span className="qa-session-stat">
+                                        📄 当前使用 <strong>{answer.usedDocuments?.length || sessionInfo.documentsPerQuery}</strong> 个
+                                    </span>
+                                    {sessionInfo.remainingDocuments > 0 && (
+                                        <span className="qa-session-stat">
+                                            📝 剩余 <strong>{sessionInfo.remainingDocuments}</strong> 个未引用
+                                        </span>
+                                    )}
+                                    <span className="qa-session-stat">
+                                        📑 第 <strong>{sessionInfo.currentPage}</strong> / <strong>{sessionInfo.totalPages}</strong> 页
+                                    </span>
+                                </div>
+
+                                {/* 分页控制按钮 */}
+                                {(sessionInfo.hasPrevious || sessionInfo.hasNext) && (
+                                    <div className="qa-pagination-controls">
+                                        <button
+                                            className="qa-pagination-btn"
+                                            onClick={handleLoadPrevious}
+                                            disabled={!sessionInfo.hasPrevious || loadingMore}
+                                        >
+                                            ⬅️ {t('qaPreviousBatch') || '上一批'}
+                                        </button>
+
+                                        <span className="qa-pagination-info">
+                                            {sessionInfo.currentPage} / {sessionInfo.totalPages}
+                                        </span>
+
+                                        <button
+                                            className="qa-pagination-btn qa-pagination-btn-primary"
+                                            onClick={handleLoadMore}
+                                            disabled={!sessionInfo.hasNext || loadingMore}
+                                        >
+                                            {loadingMore ? '加载中...' : `${t('qaNextBatch') || '下一批'} ➡️`}
+                                        </button>
+                                    </div>
+                                )}
+
+                                {sessionInfo.remainingDocuments === 0 && !sessionInfo.hasNext && (
+                                    <div className="qa-all-docs-used">
+                                        ✅ 所有相关文档已引用完毕
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* 参考来源、文档切分块和反馈 - 统一区域 */}
                         {((answer.sources && answer.sources.length > 0) || (answer.chunks && answer.chunks.length > 0)) && (

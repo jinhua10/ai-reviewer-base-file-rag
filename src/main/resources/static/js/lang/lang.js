@@ -197,6 +197,14 @@ const translations = {
         qaImageClose: '关闭',
         qaImageAlt: '图片',
 
+        // Session and Pagination
+        qaNextBatch: '下一批',
+        qaPreviousBatch: '上一批',
+        qaLoadMoreSuccess: '成功加载更多文档',
+        qaLoadMoreError: '加载更多文档失败',
+        qaLoadPreviousSuccess: '成功加载上一批文档',
+        qaLoadPreviousError: '加载上一批文档失败',
+
         // Feedback System
         feedbackTitle: '💬 回答反馈',
         feedbackQuestion: '这个回答对您有帮助吗？',
@@ -458,6 +466,14 @@ const translations = {
         // Image Modal
         qaImageClose: 'Close',
         qaImageAlt: 'Image',
+
+        // Session and Pagination
+        qaNextBatch: 'Next Batch',
+        qaPreviousBatch: 'Previous Batch',
+        qaLoadMoreSuccess: 'Successfully loaded more documents',
+        qaLoadMoreError: 'Failed to load more documents',
+        qaLoadPreviousSuccess: 'Successfully loaded previous batch',
+        qaLoadPreviousError: 'Failed to load previous batch',
 
         // Feedback System
         feedbackTitle: '💬 Answer Feedback',

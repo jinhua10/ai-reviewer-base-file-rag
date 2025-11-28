@@ -873,3 +873,108 @@
 .toast-info::before {
     content: 'ℹ️';
 }
+/* ============================================================================
+   会话信息和分页引用样式
+   ============================================================================ */
+.qa-session-info {
+    margin: 20px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+.qa-session-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+.qa-session-stat {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: white;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.qa-session-stat strong {
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+.qa-pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+.qa-pagination-btn {
+    padding: 10px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+.qa-pagination-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.qa-pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+.qa-pagination-btn-primary {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.7);
+}
+.qa-pagination-btn-primary:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.4);
+    border-color: white;
+}
+.qa-pagination-info {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.qa-all-docs-used {
+    text-align: center;
+    padding: 12px;
+    background: rgba(76, 175, 80, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-top: 15px;
+}
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .qa-session-stats {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .qa-session-stat {
+        text-align: center;
+    }
+    .qa-pagination-controls {
+        flex-direction: column;
+    }
+    .qa-pagination-btn {
+        width: 100%;
+    }
+}

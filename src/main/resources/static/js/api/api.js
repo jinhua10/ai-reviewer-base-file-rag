@@ -25,6 +25,25 @@ const api = {
     },
 
     /**
+     * 使用指定文档批次进行问答（用于分页引用）
+     * @param {string} question - 问题文本
+     * @param {Array} documents - 文档列表
+     * @returns {Promise<Object>} 回答结果
+     */
+    askWithDocuments: async (question, documents) => {
+        // 注意：这个功能需要后端支持，这里先返回模拟数据
+        // TODO: 实现后端接口后更新
+        console.log('Using documents for question:', question, documents);
+        // 暂时返回一个提示
+        return {
+            answer: `正在使用新的文档批次（共 ${documents.length} 个文档）重新生成回答...\n\n文档列表：\n${documents.map(d => `- ${d.title}`).join('\n')}`,
+            sources: documents.map(d => d.title),
+            responseTimeMs: 0,
+            usedDocuments: documents.map(d => d.title)
+        };
+    },
+
+    /**
      * 搜索文档
      * @param {string} query - 搜索关键词
      * @param {number} limit - 结果数量限制
