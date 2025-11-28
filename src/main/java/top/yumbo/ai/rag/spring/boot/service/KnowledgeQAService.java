@@ -38,10 +38,12 @@ public class KnowledgeQAService {
     private final KnowledgeQAProperties properties;
     private final KnowledgeBaseService knowledgeBaseService;
     private final HybridSearchService hybridSearchService;
+    private final SearchSessionService sessionService;
+    private final SearchConfigService configService;
     private final LLMClient llmClient;
     private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;
     private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
-    private final top.yumbo.ai.rag.feedback.QARecordService qaRecordService;  // 新增
+    private final top.yumbo.ai.rag.feedback.QARecordService qaRecordService;
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -51,17 +53,21 @@ public class KnowledgeQAService {
     public KnowledgeQAService(KnowledgeQAProperties properties,
                               KnowledgeBaseService knowledgeBaseService,
                               HybridSearchService hybridSearchService,
+                              SearchSessionService sessionService,
+                              SearchConfigService configService,
                               LLMClient llmClient,
                               top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService,
                               top.yumbo.ai.rag.image.ImageStorageService imageStorageService,
-                              top.yumbo.ai.rag.feedback.QARecordService qaRecordService) {  // 新增参数
+                              top.yumbo.ai.rag.feedback.QARecordService qaRecordService) {
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
+        this.sessionService = sessionService;
+        this.configService = configService;
         this.llmClient = llmClient;
         this.chunkStorageService = chunkStorageService;
         this.imageStorageService = imageStorageService;
-        this.qaRecordService = qaRecordService;  // 新增
+        this.qaRecordService = qaRecordService;
     }
 
     /**
@@ -280,19 +286,30 @@ public class KnowledgeQAService {
                 log.info("✅ 使用关键词检索");
             }
 
-            // 根据配置限制文档数量，防止内存溢出
-            int maxDocsPerQuery = properties.getLlm().getMaxDocumentsPerQuery();
+            // 根据配置限制文档数量，使用会话管理支持分页引用
+            int docsPerQuery = configService.getDocumentsPerQuery();
             int totalDocs = documents.size();
             boolean hasMoreDocs = false;
             List<top.yumbo.ai.rag.model.Document> remainingDocs = new ArrayList<>();
+            String sessionId = null;
 
-            if (totalDocs > maxDocsPerQuery) {
-                log.warn("⚠️ 检索到 {} 个文档，本次处理前 {} 个（根据配置 max-documents-per-query）",
-                        totalDocs, maxDocsPerQuery);
+            // 创建会话以支持分页引用
+            if (totalDocs > 0) {
+                sessionId = sessionService.createSession(question, documents, docsPerQuery);
 
-                remainingDocs = documents.subList(maxDocsPerQuery, totalDocs);
-                documents = documents.subList(0, maxDocsPerQuery);
-                hasMoreDocs = true;
+                // 获取第一批文档
+                SearchSessionService.SessionDocuments firstBatch =
+                    sessionService.getCurrentDocuments(sessionId);
+                documents = firstBatch.getDocuments();
+                hasMoreDocs = firstBatch.isHasNext();
+
+                log.info("📝 创建会话: sessionId={}, 总文档数={}, 本次使用={}, 剩余={}",
+                    sessionId, totalDocs, documents.size(), firstBatch.getRemainingDocuments());
+            }
+
+            if (totalDocs > docsPerQuery) {
+                log.warn("⚠️ 检索到 {} 个文档，本次处理前 {} 个（配置: documents-per-query）",
+                        totalDocs, docsPerQuery);
 
                 log.info("📋 剩余 {} 个文档未处理，用户可继续提问", remainingDocs.size());
             } else {
@@ -417,6 +434,9 @@ public class KnowledgeQAService {
 
             // 设置记录ID，方便后续反馈
             aiAnswer.setRecordId(recordId);
+
+            // 设置会话ID，支持分页引用
+            aiAnswer.setSessionId(sessionId);
 
             return aiAnswer;
 

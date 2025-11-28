@@ -21,6 +21,9 @@ public class AIAnswer {
     // 新增：问答记录ID（用于反馈）
     private String recordId;
 
+    // 新增：会话ID（用于分页引用）
+    private String sessionId;
+
     public AIAnswer(String answer, List<String> sources, long responseTimeMs) {
         this(answer, sources, responseTimeMs, Collections.emptyList(), Collections.emptyList(),
              Collections.emptyList(), 0, false);
@@ -57,4 +60,6 @@ public class AIAnswer {
     public boolean isHasMoreDocuments() { return hasMoreDocuments; }
     public String getRecordId() { return recordId; }
     public void setRecordId(String recordId) { this.recordId = recordId; }
+    public String getSessionId() { return sessionId; }
+    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
 }
