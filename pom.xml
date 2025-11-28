@@ -62,9 +62,72 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
         <lucene.version>9.9.1</lucene.version>
+        <netty.version>4.1.114.Final</netty.version>
         <console.encoding>UTF-8</console.encoding>
     </properties>
 
+    <!-- 依赖管理 - 统一管理依赖版本，避免传递依赖的安全漏洞 -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- 统一管理所有Netty模块版本，防止传递依赖引入旧版本 -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- 升级Spring Framework以修复部分安全漏洞 -->
+            <!-- 注意：Spring Boot 2.7.18默认使用Spring Framework 5.3.31 -->
+            <!-- 这里保持与Spring Boot兼容的最新5.3.x版本 -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>5.3.39</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- 升级Logback以修复安全漏洞 -->
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.13</version>
+            </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-core</artifactId>
+                <version>1.2.13</version>
+            </dependency>
+
+            <!-- 升级SnakeYAML以修复安全漏洞 -->
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>2.2</version>
+            </dependency>
+
+            <!-- 升级Tomcat以修复安全漏洞 -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>9.0.98</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>9.0.98</version>
+            </dependency>
+
+            <!-- 升级Commons Compress以修复安全漏洞 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>1.27.1</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -187,10 +250,10 @@
         </dependency>
 
         <!-- Netty - HTTP服务器 (Optional) -->
+        <!-- 版本由dependencyManagement统一管理，避免传递依赖的安全漏洞 -->
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.104.Final</version>
             <optional>true</optional>
         </dependency>
 
@@ -219,7 +282,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.14.0</version>
+            <version>3.17.0</version>
         </dependency>
 
         <!-- OkHttp - HTTP 客户端 (用于 OpenAI API 调用) -->
