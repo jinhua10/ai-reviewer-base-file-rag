@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.image.extractor.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
@@ -30,7 +31,7 @@ public class PdfImageExtractor implements DocumentImageExtractor {
     public List<ExtractedImage> extractImages(InputStream documentStream, String documentName) throws Exception {
         List<ExtractedImage> images = new ArrayList<>();
 
-        try (PDDocument document = PDDocument.load(documentStream)) {
+        try (PDDocument document = Loader.loadPDF(documentStream.readAllBytes())) {
             int totalPages = document.getNumberOfPages();
             log.info("📄 Processing PDF: {}, pages: {}", documentName, totalPages);
 
