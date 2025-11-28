@@ -293,14 +293,28 @@
 
     <build>
         <plugins>
+            <!-- Maven JAR Plugin - 确保生成标准的Maven JAR（用于发布到中央仓库） -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <addMavenDescriptor>true</addMavenDescriptor>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
             <!-- Spring Boot Maven Plugin - 使用 Spring Boot 原生打包，自动处理所有依赖和启动逻辑 -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>top.yumbo.ai.rag.Application</mainClass>
-                    <!-- 设置 JAR 文件名为 jar-with-dependencies 以保持兼容性 -->
-                    <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -310,12 +324,17 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>repackage</id>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <!-- 保持原始 JAR，生成新的可执行 JAR -->
-                            <attach>false</attach>
+                            <!--
+                                关键配置：使用classifier避免替换主JAR
+                                - 主JAR (ai-reviewer-base-file-rag-1.1.jar): 标准Maven JAR，用于发布到中央仓库，支持依赖传递
+                                - Fat JAR (ai-reviewer-base-file-rag-1.1-jar-with-dependencies.jar): 包含所有依赖，用于本地运行
+                            -->
+                            <classifier>jar-with-dependencies</classifier>
                         </configuration>
                     </execution>
                 </executions>
