@@ -13,7 +13,7 @@
 
     <groupId>top.yumbo.ai</groupId>
     <artifactId>ai-reviewer-base-file-rag</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
     <name>AI Reviewer Base File RAG</name>
@@ -299,8 +299,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>top.yumbo.ai.rag.Application</mainClass>
-                    <!-- 生成可执行的 JAR -->
-                    <executable>true</executable>
                     <!-- 设置 JAR 文件名为 jar-with-dependencies 以保持兼容性 -->
                     <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
                     <excludes>
