@@ -146,8 +146,9 @@ public class HybridSearchService {
                         hybridScores.size() - sortedScores.size(), minScore, sortedScores.size());
             }
 
-            log.info("🎲 混合评分 Top-{} (Lucene权重:0.3 + 向量权重:0.7):", Math.min(topK, sortedScores.size()));
-            for (int i = 0; i < Math.min(sortedScores.size(), 10); i++) {
+            log.info("🎲 混合评分 Top-{} (Lucene权重:0.3 + 向量权重:0.7):", sortedScores.size());
+            int displayCount = 0;
+            for (int i = 0; i < Math.min(sortedScores.size(), 20); i++) {
                 var entry = sortedScores.get(i);
                 Document doc = rag.getDocument(entry.getKey());
                 if (doc != null) {
@@ -168,19 +169,41 @@ public class HybridSearchService {
                         }
                     }
 
-                    log.info("   {}. {} (混合分: {:.3f} = Lucene排名#{} + 向量:{:.3f})",
-                        i + 1, doc.getTitle(), entry.getValue(),
-                        luceneRank > 0 ? luceneRank : "N/A", vectorScore);
+                    log.info("   {}. {} (混合分: {} = Lucene排名#{} + 向量:{})",
+                        i + 1, doc.getTitle(), String.format("%.3f", entry.getValue()),
+                        luceneRank > 0 ? luceneRank : "N/A", String.format("%.3f", vectorScore));
+                    displayCount++;
+                } else {
+                    log.warn("   ⚠️ {}. 文档ID={} 无法获取文档对象 (评分: {})",
+                        i + 1, entry.getKey(), String.format("%.3f", entry.getValue()));
                 }
+            }
+
+            if (displayCount == 0 && !sortedScores.isEmpty()) {
+                log.error("❌ 严重问题：有 {} 个评分文档，但都无法获取文档对象！", sortedScores.size());
+                log.error("   文档ID列表: {}", sortedScores.stream()
+                    .limit(5)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.joining(", ")));
             }
 
             // 5. 从 RAG 获取完整文档
             List<Document> finalDocs = new ArrayList<>();
+            int nullCount = 0;
             for (var entry : sortedScores) {
                 Document doc = rag.getDocument(entry.getKey());
                 if (doc != null) {
                     finalDocs.add(doc);
+                } else {
+                    nullCount++;
+                    if (nullCount <= 3) { // 只输出前3个null的详细信息
+                        log.warn("⚠️ 无法获取文档: ID={}, 评分={}", entry.getKey(), String.format("%.3f", entry.getValue()));
+                    }
                 }
+            }
+
+            if (nullCount > 0) {
+                log.warn("⚠️ 总计 {} 个文档无法获取（共 {} 个评分文档）", nullCount, sortedScores.size());
             }
 
             long elapsed = System.currentTimeMillis() - startTime;
