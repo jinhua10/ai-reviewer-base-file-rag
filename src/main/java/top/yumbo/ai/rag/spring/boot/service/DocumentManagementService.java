@@ -246,5 +246,28 @@ public class DocumentManagementService {
 
         return filePath;
     }
+
+    /**
+     * 获取已上传文档的文件类型列表（动态扫描）
+     *
+     * @return 实际已上传的文件扩展名列表（去重且排序）
+     */
+    public List<String> getSupportedTypes() throws IOException {
+        List<String> fileTypes = new ArrayList<>();
+
+        try (Stream<Path> paths = Files.walk(documentsPath, 1)) {
+            fileTypes = paths
+                    .filter(Files::isRegularFile)
+                    .map(path -> getFileExtension(path.getFileName().toString()))
+                    .filter(ext -> !ext.isEmpty() && SUPPORTED_EXTENSIONS.contains(ext.toLowerCase()))
+                    .map(String::toLowerCase)
+                    .distinct()
+                    .sorted()
+                    .collect(Collectors.toList());
+        }
+
+        log.debug("扫描到的文件类型: {}", fileTypes);
+        return fileTypes;
+    }
 }
 

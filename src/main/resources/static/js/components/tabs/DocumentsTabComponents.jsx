@@ -9,57 +9,207 @@
 // ============================================================================
 // 工具函数 - 根据文件类型返回对应图标
 // ============================================================================
+
+// 全局文件类型图标映射
+window.fileIconMap = window.fileIconMap || {
+    // Word 文档
+    'doc': '📝',
+    'docx': '📝',
+
+    // Excel 表格
+    'xls': '📊',
+    'xlsx': '📊',
+    'csv': '📊',
+
+    // PowerPoint 演示
+    'ppt': '📽️',
+    'pptx': '📽️',
+
+    // PDF 文档
+    'pdf': '📕',
+
+    // 文本文件
+    'txt': '📃',
+    'md': '📋',
+    'markdown': '📋',
+
+    // 代码文件
+    'html': '🌐',
+    'htm': '🌐',
+    'xml': '📰',
+    'json': '📰',
+    'yaml': '📰',
+    'yml': '📰',
+
+    // 图片
+    'jpg': '🖼️',
+    'jpeg': '🖼️',
+    'png': '🖼️',
+    'gif': '🖼️',
+    'bmp': '🖼️',
+    'svg': '🖼️',
+
+    // 压缩文件
+    'zip': '🗜️',
+    'rar': '🗜️',
+    '7z': '🗜️',
+    'tar': '🗜️',
+    'gz': '🗜️',
+
+    // 音频文件
+    'mp3': '🎵',
+    'wav': '🎵',
+    'ogg': '🎵',
+    'flac': '🎵',
+    'aac': '🎵',
+    'm4a': '🎵',
+    'wma': '🎵',
+
+    // 视频文件
+    'mp4': '🎬',
+    'avi': '🎬',
+    'mkv': '🎬',
+    'mov': '🎬',
+    'wmv': '🎬',
+    'flv': '🎬',
+    'webm': '🎬',
+    'm4v': '🎬',
+
+    // 其他常见类型
+    'rtf': '📝',
+    'odt': '📝',
+    'ods': '📊',
+    'odp': '📽️',
+    'tex': '📄',
+    'log': '📋',
+};
+
+// 根据文件扩展名智能推断图标
+function guessFileIcon(fileType) {
+    const type = fileType.toLowerCase();
+    
+    // 文档类型
+    if (['doc', 'docx', 'rtf', 'odt'].includes(type)) return '📝';
+    
+    // 表格类型
+    if (['xls', 'xlsx', 'csv', 'ods'].includes(type)) return '📊';
+    
+    // 演示类型
+    if (['ppt', 'pptx', 'odp'].includes(type)) return '📽️';
+    
+    // PDF
+    if (type === 'pdf') return '📕';
+    
+    // 文本和标记语言
+    if (['txt', 'text', 'log'].includes(type)) return '📃';
+    if (['md', 'markdown', 'rst'].includes(type)) return '📋';
+    
+    // 网页和结构化数据
+    if (['html', 'htm', 'xhtml'].includes(type)) return '🌐';
+    if (['xml', 'json', 'yaml', 'yml', 'toml'].includes(type)) return '📰';
+    
+    // 图片
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico'].includes(type)) return '🖼️';
+    
+    // 压缩文件
+    if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(type)) return '🗜️';
+    
+    // 音视频
+    if (['mp3', 'wav', 'ogg', 'flac', 'aac'].includes(type)) return '🎵';
+    if (['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv'].includes(type)) return '🎬';
+    
+    // 代码文件
+    if (['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'swift', 'kt'].includes(type)) return '💻';
+    
+    // 默认文档图标
+    return '📄';
+}
+
 function getFileIcon(fileType) {
     const type = fileType.toLowerCase();
+    
+    // 优先使用映射表中的图标
+    if (window.fileIconMap[type]) {
+        return window.fileIconMap[type];
+    }
+    
+    // 如果映射表中没有，使用智能推断
+    const guessedIcon = guessFileIcon(type);
+    
+    // 将推断的图标添加到映射表中（缓存）
+    window.fileIconMap[type] = guessedIcon;
+    
+    return guessedIcon;
+}
 
-    // 文档类图标映射
-    const iconMap = {
-        // Word 文档
-        'doc': '📝',
-        'docx': '📝',
+// 更新文件类型图标映射的工具函数
+window.updateFileIconMap = function(fileTypes) {
+    if (!Array.isArray(fileTypes)) return;
+    
+    fileTypes.forEach(type => {
+        const lowerType = type.toLowerCase();
+        if (!window.fileIconMap[lowerType]) {
+            // 使用智能推断为新类型分配图标
+            window.fileIconMap[lowerType] = guessFileIcon(lowerType);
+        }
+    });
+};
 
-        // Excel 表格
-        'xls': '📊',
-        'xlsx': '📊',
-        'csv': '📊',
-
-        // PowerPoint 演示
-        'ppt': '📽️',
-        'pptx': '📽️',
-
-        // PDF 文档
-        'pdf': '📕',
-
-        // 文本文件
-        'txt': '📃',
-        'md': '📋',
-        'markdown': '📋',
-
-        // 代码文件
-        'html': '🌐',
-        'htm': '🌐',
-        'xml': '📰',
-        'json': '📰',
-        'yaml': '📰',
-        'yml': '📰',
-
-        // 图片
-        'jpg': '🖼️',
-        'jpeg': '🖼️',
-        'png': '🖼️',
-        'gif': '🖼️',
-        'bmp': '🖼️',
-        'svg': '🖼️',
-
-        // 压缩文件
-        'zip': '🗜️',
-        'rar': '🗜️',
-        '7z': '🗜️',
-        'tar': '🗜️',
-        'gz': '🗜️',
-    };
-
-    return iconMap[type] || '📄'; // 默认文档图标
+// ============================================================================
+// 通用自定义下拉选择器组件
+// ============================================================================
+function CustomSelect({ value, onChange, options, style, className }) {
+    const { useState, useEffect, useRef } = React;
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    
+    // 点击外部关闭下拉菜单
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
+    
+    const selectedOption = options.find(opt => opt.value === value);
+    
+    return (
+        <div className={`custom-select-wrapper ${className || ''}`} style={style} ref={dropdownRef}>
+            <div 
+                className="custom-select-trigger"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span>{selectedOption ? selectedOption.label : ''}</span>
+                <span className="custom-select-arrow">{isOpen ? '▲' : '▼'}</span>
+            </div>
+            
+            {isOpen && (
+                <div className="custom-select-menu">
+                    {options.map(option => (
+                        <div
+                            key={option.value}
+                            className={`custom-select-option ${option.value === value ? 'selected' : ''}`}
+                            onClick={() => {
+                                onChange(option.value);
+                                setIsOpen(false);
+                            }}
+                        >
+                            {option.label}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }
 
 // ============================================================================
@@ -305,23 +455,21 @@ function AdvancedSearchPanel({
                             }}
                             title={t('docsClearSearch')}
                         >
-                            ✕
-                        </button>
-                    )}
-                </div>
-                <select
-                    className="input-field"
-                    style={{ width: 'auto' }}
-                    value={advancedFilters.searchMode}
-                    onChange={(e) => updateFilter('searchMode', e.target.value)}
-                >
-                    <option value="contains">{t('docsSearchModeContains')}</option>
-                    <option value="exact">{t('docsSearchModeExact')}</option>
-                    <option value="regex">{t('docsSearchModeRegex')}</option>
-                </select>
+                        ✕
+                    </button>
+                )}
             </div>
-
-            {/* 文件类型多选 */}
+            <CustomSelect
+                value={advancedFilters.searchMode}
+                onChange={(val) => updateFilter('searchMode', val)}
+                options={[
+                    { value: 'contains', label: t('docsSearchModeContains') },
+                    { value: 'exact', label: t('docsSearchModeExact') },
+                    { value: 'regex', label: t('docsSearchModeRegex') }
+                ]}
+                style={{ width: 'auto', minWidth: '150px' }}
+            />
+        </div>            {/* 文件类型多选 */}
             <FileTypeSelector
                 advancedFilters={advancedFilters}
                 updateFilter={updateFilter}
@@ -359,42 +507,44 @@ function AdvancedSearchPanel({
                     <span>{t('docsFileSizeUnit')}</span>
                 </div>
 
-                {/* 索引状态 */}
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
-                        {t('docsIndexedFilter')}
-                    </label>
-                    <select
-                        className="input-field"
-                        style={{ width: '120px' }}
-                        value={advancedFilters.indexed}
-                        onChange={(e) => updateFilter('indexed', e.target.value)}
-                    >
-                        <option value="all">{t('docsIndexedAll')}</option>
-                        <option value="true">{t('docsIndexedYes')}</option>
-                        <option value="false">{t('docsIndexedNo')}</option>
-                    </select>
-                </div>
+            {/* 索引状态 */}
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
+                    {t('docsIndexedFilter')}
+                </label>
+                <CustomSelect
+                    value={advancedFilters.indexed}
+                    onChange={(val) => updateFilter('indexed', val)}
+                    options={[
+                        { value: 'all', label: t('docsIndexedAll') },
+                        { value: 'true', label: t('docsIndexedYes') },
+                        { value: 'false', label: t('docsIndexedNo') }
+                    ]}
+                    style={{ width: '150px' }}
+                />
             </div>
-
-            {/* 日期范围 */}
-            <div className="documents-search-row">
+        </div>            {/* 日期范围 */}
+            <div className="documents-search-row documents-date-range-row">
                 <label style={{ fontWeight: '600', whiteSpace: 'nowrap' }}>
                     {t('docsDateFilter')}
                 </label>
-                <DatePicker
-                    value={advancedFilters.startDate}
-                    onChange={(date) => updateFilter('startDate', date)}
-                    placeholder={t('docsDateStart')}
-                    language={language}
-                />
+                <div className="documents-date-picker-container">
+                    <DatePicker
+                        value={advancedFilters.startDate}
+                        onChange={(date) => updateFilter('startDate', date)}
+                        placeholder={t('docsDateStart')}
+                        language={language}
+                    />
+                </div>
                 <span style={{ margin: '0 10px', color: '#999' }}>-</span>
-                <DatePicker
-                    value={advancedFilters.endDate}
-                    onChange={(date) => updateFilter('endDate', date)}
-                    placeholder={t('docsDateEnd')}
-                    language={language}
-                />
+                <div className="documents-date-picker-container">
+                    <DatePicker
+                        value={advancedFilters.endDate}
+                        onChange={(date) => updateFilter('endDate', date)}
+                        placeholder={t('docsDateEnd')}
+                        language={language}
+                    />
+                </div>
             </div>
 
             {/* 操作按钮 */}
@@ -414,6 +564,38 @@ function AdvancedSearchPanel({
 // 文件类型选择器组件
 // ============================================================================
 function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, supportedFileTypes, t }) {
+    const { useState, useEffect, useRef } = React;
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+    
+    // 对文件类型进行排序
+    const sortedFileTypes = [...supportedFileTypes].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+    
+    // 将文件类型分成3列
+    const columns = 3;
+    const itemsPerColumn = Math.ceil(sortedFileTypes.length / columns);
+    const columnData = [];
+    for (let i = 0; i < columns; i++) {
+        columnData.push(sortedFileTypes.slice(i * itemsPerColumn, (i + 1) * itemsPerColumn));
+    }
+    
+    // 点击外部关闭下拉菜单
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen]);
+    
     return (
         <div className="documents-file-type-selector">
             <label className="documents-file-type-header">
@@ -426,29 +608,47 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
             </label>
 
             <div className="documents-file-type-controls">
-                {/* 下拉多选框 */}
-                <select
-                    className="documents-file-type-select input-field"
-                    multiple
-                    size={1}
-                    value={advancedFilters.fileTypes}
-                    onChange={(e) => {
-                        const selected = Array.from(e.target.selectedOptions, option => option.value);
-                        updateFilter('fileTypes', selected);
-                    }}
-                    onFocus={(e) => {
-                        e.target.size = Math.min(supportedFileTypes.length, 5);
-                    }}
-                    onBlur={(e) => {
-                        e.target.size = 1;
-                    }}
-                >
-                    {supportedFileTypes.map(type => (
-                        <option key={type} value={type}>
-                            {getFileIcon(type)} {type.toUpperCase()}
-                        </option>
-                    ))}
-                </select>
+                {/* 自定义下拉选择器 */}
+                <div className="documents-file-type-dropdown" ref={dropdownRef}>
+                    <div 
+                        className="documents-file-type-dropdown-trigger"
+                        onClick={() => setIsOpen(!isOpen)}
+                    >
+                        <span>
+                            {advancedFilters.fileTypes.length > 0 
+                                ? `${advancedFilters.fileTypes.length} ${t('docsSelected')}`
+                                : t('docsSelectFileTypes') || '选择文件类型'}
+                        </span>
+                        <span className="documents-dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
+                    </div>
+                    
+                    {isOpen && (
+                        <div className="documents-file-type-dropdown-menu">
+                            <div className="documents-file-type-grid-3col">
+                                {columnData.map((column, colIndex) => (
+                                    <div key={colIndex} className="documents-file-type-column">
+                                        {column.map(type => (
+                                            <label key={type} className="documents-file-type-checkbox-item">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={advancedFilters.fileTypes.includes(type)}
+                                                    onChange={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFileType(type, e.target.checked);
+                                                    }}
+                                                />
+                                                <span className="documents-file-type-label">
+                                                    <span className="documents-file-type-icon">{getFileIcon(type)}</span>
+                                                    <span className="documents-file-type-name">{type.toUpperCase()}</span>
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* 快捷操作按钮 */}
                 <button
@@ -585,6 +785,7 @@ function Pagination({ currentPage, totalPages, goToPage, t }) {
 // 导出组件
 // ============================================================================
 const DocumentsTabComponents = {
+    CustomSelect,
     UploadArea,
     DocumentListHeader,
     SearchFilters,

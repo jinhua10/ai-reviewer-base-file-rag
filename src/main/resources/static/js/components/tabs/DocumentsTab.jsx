@@ -76,6 +76,10 @@ function DocumentsTab() {
                     const types = await response.json();
                     if (Array.isArray(types) && types.length > 0) {
                         setSupportedFileTypes(types);
+                        // 更新文件图标映射
+                        if (window.updateFileIconMap) {
+                            window.updateFileIconMap(types);
+                        }
                     }
                 }
             } catch (err) {

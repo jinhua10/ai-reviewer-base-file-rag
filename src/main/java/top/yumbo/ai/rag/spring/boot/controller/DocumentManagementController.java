@@ -532,6 +532,32 @@ public class DocumentManagementController {
         }
     }
 
+    /**
+     * 获取已上传文档的文件类型列表（动态扫描）
+     */
+    @GetMapping("/supported-types")
+    public SupportedTypesResponse getSupportedTypes() {
+        log.info("获取已上传文档的文件类型列表");
+
+        SupportedTypesResponse response = new SupportedTypesResponse();
+
+        try {
+            List<String> types = documentService.getSupportedTypes();
+            response.setSuccess(true);
+            response.setTypes(types);
+            response.setMessage("成功获取文件类型列表，共 " + types.size() + " 种");
+            response.setCount(types.size());
+        } catch (Exception e) {
+            log.error("获取文件类型列表失败", e);
+            response.setSuccess(false);
+            response.setMessage("获取文件类型列表失败: " + e.getMessage());
+            response.setTypes(new java.util.ArrayList<>());
+            response.setCount(0);
+        }
+
+        return response;
+    }
+
     // ========== DTO 类 ==========
 
     @Data
@@ -588,6 +614,14 @@ public class DocumentManagementController {
         private String message;
         private List<String> successFiles = new java.util.ArrayList<>();
         private List<String> failedFiles = new java.util.ArrayList<>();
+    }
+
+    @Data
+    public static class SupportedTypesResponse {
+        private boolean success;
+        private String message;
+        private List<String> types;
+        private int count;  // 文件类型数量
     }
 }
 
