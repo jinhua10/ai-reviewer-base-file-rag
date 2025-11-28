@@ -797,3 +797,79 @@
         width: 100%;
     }
 }
+
+/* ============================================================================
+   反馈按钮已提交状态（灰色禁用样式）
+   ============================================================================ */
+.qa-source-feedback-btn.submitted {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.qa-source-feedback-btn.disabled {
+    opacity: 0.5;
+    filter: grayscale(50%);
+}
+
+.qa-source-feedback-btn.helpful.submitted {
+    background: #c8e6c9 !important;
+    border-color: #a5d6a7 !important;
+}
+
+.qa-source-feedback-btn.not-helpful.submitted {
+    background: #ffcdd2 !important;
+    border-color: #ef9a9a !important;
+}
+
+.qa-source-feedback-btn.submitted:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ============================================================================
+   Toast 提示样式和动画
+   ============================================================================ */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast-notification {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toast-notification::before {
+    content: '';
+    font-size: 18px;
+}
+
+.toast-success::before {
+    content: '✅';
+}
+
+.toast-error::before {
+    content: '❌';
+}
+
+.toast-info::before {
+    content: 'ℹ️';
+}

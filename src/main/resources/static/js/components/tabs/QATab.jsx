@@ -267,19 +267,36 @@ function QATab() {
             const result = await window.api.submitDocumentFeedback(
                 answer.recordId || Date.now().toString(),
                 docName,
-                'HELPFUL',
+                'LIKE',  // 修改为 LIKE
                 null
             );
 
             if (result.success) {
-                setDocumentFeedbacks(prev => ({ ...prev, [docName]: 'HELPFUL' }));
+                setDocumentFeedbacks(prev => ({ ...prev, [docName]: 'LIKE' }));
+                // 显示成功提示
+                const message = language === 'zh'
+                    ? '✅ 反馈提交成功！感谢您的反馈。'
+                    : '✅ Feedback submitted successfully! Thank you.';
+
+                // 使用非阻塞的提示
+                showToast(message, 'success');
+            } else {
+                const errorMsg = language === 'zh'
+                    ? '❌ 反馈提交失败，请重试'
+                    : '❌ Failed to submit feedback, please try again';
+                showToast(errorMsg, 'error');
             }
         } catch (err) {
             console.error('提交文档反馈失败:', err);
+            const errorMsg = language === 'zh'
+                ? '❌ 反馈提交失败：' + (err.message || '网络错误')
+                : '❌ Failed to submit feedback: ' + (err.message || 'Network error');
+            showToast(errorMsg, 'error');
         }
     };
 
     const handleDocumentNotHelpful = (docName) => {
+        if (documentFeedbacks[docName]) return;
         setCurrentFeedbackDoc(docName);
         setShowReasonModal(true);
     };
@@ -291,14 +308,66 @@ function QATab() {
             const result = await window.api.submitDocumentFeedback(
                 answer.recordId || Date.now().toString(),
                 currentFeedbackDoc,
-                'NOT_HELPFUL',
+                'DISLIKE',  // 修改为 DISLIKE
                 reason
             );
 
             if (result.success) {
-                setDocumentFeedbacks(prev => ({ ...prev, [currentFeedbackDoc]: 'NOT_HELPFUL' }));
+                setDocumentFeedbacks(prev => ({ ...prev, [currentFeedbackDoc]: 'DISLIKE' }));
+                // 显示成功提示
+                const message = language === 'zh'
+                    ? '✅ 反馈提交成功！感谢您的反馈。'
+                    : '✅ Feedback submitted successfully! Thank you.';
+                showToast(message, 'success');
+            } else {
+                const errorMsg = language === 'zh'
+                    ? '❌ 反馈提交失败，请重试'
+                    : '❌ Failed to submit feedback, please try again';
+                showToast(errorMsg, 'error');
             }
         } catch (err) {
+            console.error('提交文档反馈失败:', err);
+            const errorMsg = language === 'zh'
+                ? '❌ 反馈提交失败：' + (err.message || '网络错误')
+                : '❌ Failed to submit feedback: ' + (err.message || 'Network error');
+            showToast(errorMsg, 'error');
+        } finally {
+            setShowReasonModal(false);
+            setCurrentFeedbackDoc(null);
+        }
+    };
+
+    // Toast 提示函数
+    const showToast = (message, type = 'info') => {
+        const toast = document.createElement('div');
+        toast.className = `toast-notification toast-${type}`;
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10001;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 400px;
+        `;
+
+        document.body.appendChild(toast);
+
+        // 3秒后自动消失
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    };
             console.error('提交文档反馈失败:', err);
         } finally {
             setShowReasonModal(false);
@@ -427,24 +496,24 @@ function QATab() {
                                                 {/* 反馈按钮行 */}
                                                 <div className="qa-source-feedback-row">
                                                     <button
-                                                        className={`qa-source-feedback-btn helpful ${documentFeedbacks[source] === 'HELPFUL' ? 'active' : ''}`}
+                                                        className={`qa-source-feedback-btn helpful ${documentFeedbacks[source] === 'LIKE' ? 'active submitted' : ''} ${documentFeedbacks[source] ? 'disabled' : ''}`}
                                                         onClick={() => handleDocumentHelpful(source)}
                                                         disabled={documentFeedbacks[source] !== undefined}
-                                                        title={t('feedbackDocumentHelpful')}
+                                                        title={documentFeedbacks[source] === 'LIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentHelpful')}
                                                     >
-                                                        {documentFeedbacks[source] === 'HELPFUL'
-                                                            ?  t('feedbackDocumentSubmitted')
-                                                            :  t('feedbackDocumentHelpful')}
+                                                        {documentFeedbacks[source] === 'LIKE'
+                                                            ? '✅ ' + t('feedbackDocumentSubmitted')
+                                                            : '👍 ' + t('feedbackDocumentHelpful')}
                                                     </button>
                                                     <button
-                                                        className={`qa-source-feedback-btn not-helpful ${documentFeedbacks[source] === 'NOT_HELPFUL' ? 'active' : ''}`}
+                                                        className={`qa-source-feedback-btn not-helpful ${documentFeedbacks[source] === 'DISLIKE' ? 'active submitted' : ''} ${documentFeedbacks[source] ? 'disabled' : ''}`}
                                                         onClick={() => handleDocumentNotHelpful(source)}
                                                         disabled={documentFeedbacks[source] !== undefined}
-                                                        title={t('feedbackDocumentNotHelpful')}
+                                                        title={documentFeedbacks[source] === 'DISLIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentNotHelpful')}
                                                     >
-                                                        {documentFeedbacks[source] === 'NOT_HELPFUL'
-                                                            ?  t('feedbackDocumentSubmitted')
-                                                            :  t('feedbackDocumentNotHelpful')}
+                                                        {documentFeedbacks[source] === 'DISLIKE'
+                                                            ? '✅ ' + t('feedbackDocumentSubmitted')
+                                                            : '👎 ' + t('feedbackDocumentNotHelpful')}
                                                     </button>
                                                 </div>
                                             </div>
