@@ -25,9 +25,11 @@ import java.util.stream.Collectors;
 public class HybridSearchService {
 
     private final KnowledgeQAProperties properties;
+    private final SearchConfigService configService;
 
-    public HybridSearchService(KnowledgeQAProperties properties) {
+    public HybridSearchService(KnowledgeQAProperties properties, SearchConfigService configService) {
         this.properties = properties;
+        this.configService = configService;
     }
 
     /**
@@ -49,15 +51,16 @@ public class HybridSearchService {
             String keywords = extractKeywords(question);
             log.info("🔍 提取关键词: {}", keywords);
 
-            int luceneLimit = properties.getVectorSearch().getTopK() * 2; // Lucene 返回更多候选
+            int luceneLimit = configService.getLuceneTopK();
             SearchResult luceneResult = rag.search(Query.builder()
                 .queryText(keywords)
                 .limit(luceneLimit)
                 .build());
 
-            log.info("📚 Lucene检索找到 {} 个文档 (总命中: {})",
+            log.info("📚 Lucene检索找到 {} 个文档 (总命中: {}, 配置limit={})",
                 luceneResult.getDocuments().size(),
-                luceneResult.getTotalHits());
+                luceneResult.getTotalHits(),
+                luceneLimit);
 
             // 显示 Lucene Top-10（带评分）
             if (!luceneResult.getDocuments().isEmpty()) {
@@ -75,11 +78,12 @@ public class HybridSearchService {
             // 2. 向量检索（语义精排）
             float[] queryVector = embeddingEngine.embed(question);
             float threshold = properties.getVectorSearch().getSimilarityThreshold();
+            int vectorLimit = configService.getVectorTopK();
 
             List<SimpleVectorIndexEngine.VectorSearchResult> vectorResults =
-                vectorIndexEngine.search(queryVector, luceneLimit, threshold);
+                vectorIndexEngine.search(queryVector, vectorLimit, threshold);
 
-            log.info("🎯 向量检索找到 {} 个文档", vectorResults.size());
+            log.info("🎯 向量检索找到 {} 个文档 (配置limit={})", vectorResults.size(), vectorLimit);
 
             // 显示向量 Top-10
             if (!vectorResults.isEmpty()) {
@@ -112,9 +116,9 @@ public class HybridSearchService {
                 hybridScores.put(docId, currentScore + 0.7 * result.getSimilarity());
             }
 
-            // 4. 按混合分数排序
-            int topK = properties.getVectorSearch().getTopK();
-            float minScore = properties.getVectorSearch().getMinScoreThreshold();
+            // 4. 按混合分数排序并去重
+            int topK = configService.getHybridTopK();
+            float minScore = configService.getMinScoreThreshold();
 
             // 先排序，看看未过滤前的 Top 文档
             List<Map.Entry<String, Double>> allSortedScores = hybridScores.entrySet().stream()
@@ -123,7 +127,7 @@ public class HybridSearchService {
 
             // 显示未过滤前的 Top 5
             if (!allSortedScores.isEmpty()) {
-                log.info("📊 混合评分 Top-5 (过滤前，阈值={}):", minScore);
+                log.info("📊 混合评分 Top-5 (过滤前，阈值={}, 配置topK={}):", minScore, topK);
                 for (int i = 0; i < Math.min(5, allSortedScores.size()); i++) {
                     var entry = allSortedScores.get(i);
                     Document doc = rag.getDocument(entry.getKey());

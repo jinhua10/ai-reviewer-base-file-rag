@@ -86,8 +86,34 @@ public class KnowledgeQAProperties {
         private float similarityThreshold = 0.5f;
 
         /**
-         * 检索返回的文档数量上限
+         * Lucene 检索返回的候选文档数量
+         * 用于第一步粗筛，通常设置为 hybridTopK 的 2-3 倍
          */
+        private int luceneTopK = 40;
+
+        /**
+         * 向量检索返回的候选文档数量
+         * 用于语义精排，通常设置为 hybridTopK 的 2-3 倍
+         */
+        private int vectorTopK = 40;
+
+        /**
+         * 混合检索最终返回的文档数量（去重后）
+         * 这些文档会按评分排序，用于后续的分批引用
+         */
+        private int hybridTopK = 20;
+
+        /**
+         * 每次问答引用的文档数量
+         * 用户可以通过 next 接口获取剩余文档
+         */
+        private int documentsPerQuery = 5;
+
+        /**
+         * 检索返回的文档数量上限（已废弃，请使用 hybridTopK）
+         * @deprecated 使用 hybridTopK 替代
+         */
+        @Deprecated
         private int topK = 20;
 
         /**
