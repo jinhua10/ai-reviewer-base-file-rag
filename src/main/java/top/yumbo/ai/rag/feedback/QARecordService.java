@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.config.FeedbackConfig;
+import top.yumbo.ai.rag.spring.boot.service.QAArchiveService;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +37,7 @@ public class QARecordService {
     private final Path recordsPath;
     private final FeedbackConfig feedbackConfig;
     private final DocumentWeightService documentWeightService;
+    private QAArchiveService qaArchiveService; // 延迟注入，避免循环依赖
 
     @Autowired
     public QARecordService(FeedbackConfig feedbackConfig,
@@ -53,6 +55,14 @@ public class QARecordService {
         } catch (IOException e) {
             log.error("Failed to create QA records directory", e);
         }
+    }
+
+    /**
+     * 设置问答归档服务（延迟注入）
+     */
+    @Autowired(required = false)
+    public void setQaArchiveService(QAArchiveService qaArchiveService) {
+        this.qaArchiveService = qaArchiveService;
     }
 
     /**
@@ -160,7 +170,23 @@ public class QARecordService {
             recordId.substring(0, 8), rating,
             feedback != null && !feedback.isEmpty() ? feedback : "无");
 
-        return updateRecord(record);
+        boolean updated = updateRecord(record);
+
+        // ✨ 新增：高评分自动归档
+        if (updated && rating >= 4 && qaArchiveService != null) {
+            try {
+                if (qaArchiveService.shouldArchive(record)) {
+                    String archivePath = qaArchiveService.archiveQA(record);
+                    if (archivePath != null) {
+                        log.info("⭐ 高评分问答已归档: rating={}, path={}", rating, archivePath);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("❌ 归档问答失败", e);
+            }
+        }
+
+        return updated;
     }
 
     /**

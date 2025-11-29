@@ -1072,5 +1072,59 @@ public class KnowledgeBaseService {
         int lastDot = fileName.lastIndexOf('.');
         return lastDot > 0 ? fileName.substring(lastDot + 1).toLowerCase() : "";
     }
-}
 
+    /**
+     * 增量索引单个文件（用于问答归档）
+     *
+     * @param filePath 文件路径
+     */
+    public void incrementalIndexFile(Path filePath) {
+        try {
+            String storagePath = properties.getKnowledgeBase().getStoragePath();
+            File file = filePath.toFile();
+
+            if (!file.exists()) {
+                log.warn("⚠️ 文件不存在: {}", filePath);
+                return;
+            }
+
+            log.info("📑 索引单个文件: {}", file.getName());
+
+            // 打开知识库
+            LocalFileRAG rag = LocalFileRAG.builder()
+                    .storagePath(storagePath)
+                    .build();
+
+            // 初始化向量检索引擎（如果启用）
+            LocalEmbeddingEngine embeddingEngine = null;
+            SimpleVectorIndexEngine vectorIndexEngine = null;
+
+            if (properties.getVectorSearch().isEnabled()) {
+                try {
+                    embeddingEngine = new LocalEmbeddingEngine();
+                    vectorIndexEngine = new SimpleVectorIndexEngine(
+                            properties.getVectorSearch().getIndexPath(),
+                            embeddingEngine.getEmbeddingDim()
+                    );
+                } catch (Exception e) {
+                    log.warn("⚠️ 向量检索引擎初始化失败", e);
+                }
+            }
+
+            // 处理文档
+            List<Document> docs = processDocumentOptimized(
+                    file, rag, embeddingEngine, vectorIndexEngine);
+
+            if (docs != null && !docs.isEmpty()) {
+                rag.commit();
+                log.info("✅ 文件索引完成: {}", file.getName());
+            }
+
+            // 必须关闭以释放锁
+            rag.close();
+
+        } catch (Exception e) {
+            log.error("❌ 索引文件失败: {}", filePath, e);
+        }
+    }
+}
