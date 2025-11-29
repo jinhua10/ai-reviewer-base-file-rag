@@ -201,5 +201,84 @@ public class FeedbackController {
             ));
         }
     }
+
+    /**
+     * 星级评价文档有用性（用户友好的评分接口）
+     *
+     * @param request 包含 recordId, documentName, rating (1-5星)
+     * @return 响应结果
+     */
+    @PostMapping("/document/rate")
+    public ResponseEntity<?> rateDocumentQuality(@RequestBody Map<String, Object> request) {
+        try {
+            String recordId = (String) request.get("recordId");
+            String documentName = (String) request.get("documentName");
+            Integer rating = (Integer) request.get("rating");
+            String comment = (String) request.get("comment");
+
+            // 参数验证
+            if (recordId == null || documentName == null || rating == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "recordId, documentName 和 rating 不能为空"
+                ));
+            }
+
+            if (rating < 1 || rating > 5) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "评分必须在 1-5 星之间"
+                ));
+            }
+
+            // 调用服务层处理星级评价
+            boolean success = qaRecordService.addDocumentRating(recordId, documentName, rating, comment);
+
+            if (success) {
+                String stars = "⭐".repeat(rating);
+                log.info("{} 收到文档星级评价: recordId={}, document={}, rating={}",
+                    stars, recordId, documentName, rating);
+
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "感谢您的评价！",
+                    "rating", rating,
+                    "impact", getImpactDescription(rating)
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "记录不存在"
+                ));
+            }
+
+        } catch (Exception e) {
+            log.error("处理文档星级评价失败", e);
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "message", "处理失败: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * 获取评分影响的用户友好描述
+     */
+    private String getImpactDescription(int rating) {
+        switch (rating) {
+            case 5:
+                return "这个文档非常有用！系统会优先推荐它 🚀";
+            case 4:
+                return "这个文档很有帮助，系统会增加推荐权重 📈";
+            case 3:
+                return "这个文档还行，系统会保持当前权重 ➡️";
+            case 2:
+                return "这个文档帮助不大，系统会降低推荐权重 📉";
+            case 1:
+                return "这个文档没有帮助，系统会大幅降低推荐权重 ⚠️";
+            default:
+                return "";
+        }
+    }
 }
 

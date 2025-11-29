@@ -204,6 +204,24 @@ const api = {
             reason
         });
         return response.data;
+    },
+
+    /**
+     * 星级评价文档质量（用户友好接口）
+     * @param {string} recordId - 记录ID
+     * @param {string} documentName - 文档名
+     * @param {number} rating - 星级评分 (1-5)
+     * @param {string} comment - 可选评论
+     * @returns {Promise<Object>} 提交结果
+     */
+    rateDocumentQuality: async (recordId, documentName, rating, comment) => {
+        const response = await axios.post(`${API_FEEDBACK_URL}/document/rate`, {
+            recordId,
+            documentName,
+            rating,
+            comment: comment || null
+        });
+        return response.data;
     }
 };
 

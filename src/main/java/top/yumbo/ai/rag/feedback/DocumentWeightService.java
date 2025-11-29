@@ -217,5 +217,65 @@ public class DocumentWeightService {
 
         return stats;
     }
-}
 
+    /**
+     * 应用星级评价到文档权重（用户友好接口）
+     *
+     * @param documentName 文档名称
+     * @param rating 星级评分 (1-5)
+     * @param weightAdjustment 权重调整值
+     */
+    public void applyRatingFeedback(String documentName, int rating, double weightAdjustment) {
+        if (!feedbackConfig.isEnableDynamicWeighting()) {
+            log.debug("动态权重调整已禁用");
+            return;
+        }
+
+        DocumentWeight docWeight = documentWeights.computeIfAbsent(
+            documentName,
+            k -> {
+                DocumentWeight dw = new DocumentWeight();
+                dw.setDocumentName(documentName);
+                return dw;
+            }
+        );
+
+        // 直接应用指定的权重调整
+        adjustWeightDirect(docWeight, weightAdjustment);
+
+        // 更新计数（根据星级）
+        if (rating >= 4) {
+            docWeight.setLikeCount(docWeight.getLikeCount() + 1);
+        } else if (rating <= 2) {
+            docWeight.setDislikeCount(docWeight.getDislikeCount() + 1);
+        }
+
+        docWeight.setLastUpdated(System.currentTimeMillis());
+
+        // 保存权重
+        saveWeights();
+
+        String stars = "⭐".repeat(rating);
+        log.info("📊 文档权重更新(星级): {} -> 权重={} ({}星, 调整{}, 👍{} 👎{})",
+            documentName,
+            String.format("%.2f", docWeight.getWeight()),
+            stars,
+            String.format("%+.1f", weightAdjustment),
+            docWeight.getLikeCount(),
+            docWeight.getDislikeCount()
+        );
+    }
+
+    /**
+     * 直接调整权重（用于星级评价）
+     */
+    private void adjustWeightDirect(DocumentWeight docWeight, double delta) {
+        double newWeight = docWeight.getWeight() + delta;
+
+        // 应用限制
+        newWeight = Math.max(feedbackConfig.getMinWeight(), newWeight);
+        newWeight = Math.min(feedbackConfig.getMaxWeight(), newWeight);
+
+        docWeight.setWeight(newWeight);
+    }
+}

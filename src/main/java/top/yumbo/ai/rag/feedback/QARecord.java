@@ -126,6 +126,7 @@ public class QARecord {
      */
     public enum FeedbackType {
         LIKE,      // 点赞
+        NEUTRAL,   // 中性（3星评价）
         DISLIKE    // 踩
     }
 

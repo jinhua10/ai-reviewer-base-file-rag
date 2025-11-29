@@ -221,6 +221,100 @@ public class QARecordService {
     }
 
     /**
+     * 添加文档星级评价（用户友好接口）
+     *
+     * 星级到权重调整的映射：
+     * 5星 (非常有用) → +0.5 权重
+     * 4星 (很有帮助) → +0.2 权重
+     * 3星 (一般) → 0 权重（不变）
+     * 2星 (帮助不大) → -0.2 权重
+     * 1星 (没有帮助) → -0.5 权重
+     */
+    public boolean addDocumentRating(String recordId, String documentName, int rating, String comment) {
+        Optional<QARecord> recordOpt = getRecord(recordId);
+        if (recordOpt.isEmpty()) {
+            return false;
+        }
+
+        QARecord record = recordOpt.get();
+        if (record.getDocumentFeedbacks() == null) {
+            record.setDocumentFeedbacks(new ArrayList<>());
+        }
+
+        // 将星级转换为反馈类型和权重调整
+        QARecord.FeedbackType feedbackType;
+        double weightAdjustment;
+
+        switch (rating) {
+            case 5:
+                feedbackType = QARecord.FeedbackType.LIKE;
+                weightAdjustment = 0.5;  // 大幅提升
+                break;
+            case 4:
+                feedbackType = QARecord.FeedbackType.LIKE;
+                weightAdjustment = 0.2;  // 提升
+                break;
+            case 3:
+                feedbackType = QARecord.FeedbackType.NEUTRAL;  // 需要在 QARecord 中添加
+                weightAdjustment = 0.0;  // 保持不变
+                break;
+            case 2:
+                feedbackType = QARecord.FeedbackType.DISLIKE;
+                weightAdjustment = -0.2;  // 降低
+                break;
+            case 1:
+                feedbackType = QARecord.FeedbackType.DISLIKE;
+                weightAdjustment = -0.5;  // 大幅降低
+                break;
+            default:
+                return false;
+        }
+
+        // 检查是否已经反馈过
+        Optional<QARecord.DocumentFeedback> existing = record.getDocumentFeedbacks().stream()
+            .filter(f -> f.getDocumentName().equals(documentName))
+            .findFirst();
+
+        if (existing.isPresent()) {
+            // 更新现有反馈
+            existing.get().setFeedbackType(feedbackType);
+            existing.get().setReason(comment);
+            existing.get().setFeedbackTime(LocalDateTime.now());
+        } else {
+            // 添加新反馈
+            record.getDocumentFeedbacks().add(
+                QARecord.DocumentFeedback.builder()
+                    .documentName(documentName)
+                    .feedbackType(feedbackType)
+                    .reason(comment)
+                    .feedbackTime(LocalDateTime.now())
+                    .build()
+            );
+        }
+
+        String stars = "⭐".repeat(rating);
+        log.info("{} 文档星级评价 [{}]: {} - {}星 (权重调整: {})",
+            stars, recordId.substring(0, 8), documentName, rating,
+            String.format("%+.1f", weightAdjustment));
+
+        // 根据配置决定是否自动应用反馈
+        if (!feedbackConfig.isRequireApproval() && feedbackConfig.isAutoApply()) {
+            // 直接应用权重调整
+            documentWeightService.applyRatingFeedback(documentName, rating, weightAdjustment);
+            record.setAppliedToOptimization(true);
+            log.info("✅ 星级评价已自动应用到文档权重: {} ({}星 → 权重{})",
+                documentName, rating, String.format("%+.1f", weightAdjustment));
+        } else {
+            // 设置为待审核
+            record.setReviewStatus(QARecord.ReviewStatus.PENDING);
+            record.setAppliedToOptimization(false);
+            log.info("⏳ 星级评价等待审核: {} ({}星)", documentName, rating);
+        }
+
+        return updateRecord(record);
+    }
+
+    /**
      * 获取最近的记录
      */
     public List<QARecord> getRecentRecords(int limit) {

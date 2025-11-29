@@ -27,8 +27,11 @@ function QATab() {
     const [feedbackComment, setFeedbackComment] = useState('');
     const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
     const [documentFeedbacks, setDocumentFeedbacks] = useState({});
+    const [documentRatings, setDocumentRatings] = useState({}); // 新增：文档星级评价
     const [showReasonModal, setShowReasonModal] = useState(false);
     const [currentFeedbackDoc, setCurrentFeedbackDoc] = useState(null);
+    const [showRatingModal, setShowRatingModal] = useState(false); // 新增：星级评价模态框
+    const [currentRatingDoc, setCurrentRatingDoc] = useState(null); // 新增：当前评价的文档
 
     // ============================================================================
     // 副作用 / Effects
@@ -84,6 +87,7 @@ function QATab() {
         setFeedbackRating(0);
         setFeedbackComment('');
         setDocumentFeedbacks({});
+        setDocumentRatings({}); // 清除文档星级评价
         setSessionId(null);
         setSessionInfo(null);
 
@@ -422,6 +426,55 @@ function QATab() {
         }
     };
 
+    // ============================================================================
+    // 星级评价功能函数
+    // ============================================================================
+
+    const handleDocumentRate = (docName) => {
+        if (documentRatings[docName]) return; // 已经评价过
+        setCurrentRatingDoc(docName);
+        setFeedbackComment(''); // 清空评论
+        setShowRatingModal(true);
+    };
+
+    const [tempRating, setTempRating] = useState(0); // 临时评分
+
+    const submitDocumentRating = async (rating, comment) => {
+        if (!currentRatingDoc || rating === 0) {
+            showToast('请选择星级评分', 'error');
+            return;
+        }
+
+        try {
+            const result = await window.api.rateDocumentQuality(
+                answer.recordId || Date.now().toString(),
+                currentRatingDoc,
+                rating,
+                comment
+            );
+
+            if (result.success) {
+                setDocumentRatings(prev => ({ ...prev, [currentRatingDoc]: rating }));
+
+                // 显示成功提示（包含影响说明）
+                const message = result.impact || t('feedbackSubmitSuccess');
+                showToast(message, 'success');
+
+                setShowRatingModal(false);
+                setCurrentRatingDoc(null);
+                setTempRating(0);
+                setFeedbackComment('');
+            } else {
+                const errorMsg = t('feedbackSubmitError');
+                showToast(errorMsg, 'error');
+            }
+        } catch (err) {
+            console.error('星级评价失败:', err);
+            const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
+            showToast(errorMsg, 'error');
+        }
+    };
+
     // Toast 提示函数
     const showToast = (message, type = 'info') => {
         const toast = document.createElement('div');
@@ -627,13 +680,14 @@ function QATab() {
 
                                                 {/* 反馈按钮行 */}
                                                 <div className="qa-source-feedback-row">
+                                                    {/* 简单反馈按钮 */}
                                                     <button
                                                         className={`qa-source-feedback-btn helpful ${documentFeedbacks[source] === 'LIKE' ? 'active submitted' : ''} ${documentFeedbacks[source] ? 'disabled' : ''}`}
                                                         onClick={() => handleDocumentHelpful(source)}
                                                         disabled={documentFeedbacks[source] !== undefined}
                                                         title={documentFeedbacks[source] === 'LIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentHelpful')}
                                                     >
-                                                        {documentFeedbacks[source] === 'LIKE'
+                                                        👍 {documentFeedbacks[source] === 'LIKE'
                                                             ? t('feedbackDocumentSubmitted')
                                                             : t('feedbackDocumentHelpful')}
                                                     </button>
@@ -643,9 +697,23 @@ function QATab() {
                                                         disabled={documentFeedbacks[source] !== undefined}
                                                         title={documentFeedbacks[source] === 'DISLIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentNotHelpful')}
                                                     >
-                                                        {documentFeedbacks[source] === 'DISLIKE'
+                                                        👎 {documentFeedbacks[source] === 'DISLIKE'
                                                             ? t('feedbackDocumentSubmitted')
                                                             : t('feedbackDocumentNotHelpful')}
+                                                    </button>
+
+                                                    {/* 星级评价按钮 */}
+                                                    <button
+                                                        className={`qa-source-feedback-btn rate-quality ${documentRatings[source] ? 'rated' : ''}`}
+                                                        onClick={() => handleDocumentRate(source)}
+                                                        disabled={documentRatings[source] !== undefined}
+                                                        title={documentRatings[source] ? `已评价 ${documentRatings[source]} 星` : '评价文档质量'}
+                                                    >
+                                                        {documentRatings[source] ? (
+                                                            <>⭐ {documentRatings[source]} 星</>
+                                                        ) : (
+                                                            <>⭐ 评价质量</>
+                                                        )}
                                                     </button>
                                                 </div>
                                             </div>
@@ -775,6 +843,77 @@ function QATab() {
                                 }}
                             >
                                 {t('feedbackSubmit')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 星级评价模态框 */}
+            {showRatingModal && (
+                <div
+                    className="qa-modal-overlay"
+                    onClick={() => {
+                        setShowRatingModal(false);
+                        setCurrentRatingDoc(null);
+                        setTempRating(0);
+                    }}
+                >
+                    <div
+                        className="qa-modal-content qa-rating-modal"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h4 className="qa-modal-title">💎 评价文档质量</h4>
+                        <p className="qa-modal-subtitle">这个文档对回答问题有多大帮助？</p>
+
+                        <div className="qa-modal-rating-container">
+                            <div className="qa-rating-stars qa-modal-rating-stars">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <span
+                                        key={star}
+                                        className={`qa-star ${star <= tempRating ? 'filled' : 'empty'}`}
+                                        onClick={() => setTempRating(star)}
+                                    >
+                                        ★
+                                    </span>
+                                ))}
+                            </div>
+                            <p className="qa-rating-description">
+                                {tempRating === 0 && '请选择星级'}
+                                {tempRating === 1 && '😞 完全没用'}
+                                {tempRating === 2 && '🙁 帮助不大'}
+                                {tempRating === 3 && '😐 一般般'}
+                                {tempRating === 4 && '😊 很有用'}
+                                {tempRating === 5 && '🤩 非常有用'}
+                            </p>
+                        </div>
+
+                        <textarea
+                            className="qa-modal-textarea"
+                            placeholder="可选：说说您的想法..."
+                            value={feedbackComment}
+                            onChange={(e) => setFeedbackComment(e.target.value)}
+                            rows={3}
+                        />
+
+                        <div className="qa-modal-buttons">
+                            <button
+                                className="qa-modal-btn qa-modal-btn-secondary"
+                                onClick={() => {
+                                    setShowRatingModal(false);
+                                    setCurrentRatingDoc(null);
+                                    setTempRating(0);
+                                    setFeedbackComment('');
+                                }}
+                            >
+                                取消
+                            </button>
+                            <button
+                                className="qa-modal-btn qa-modal-btn-primary"
+                                onClick={() => submitDocumentRating(tempRating, feedbackComment)}
+                                disabled={tempRating === 0}
+                            >
+                                提交评价
                             </button>
                         </div>
                     </div>
