@@ -848,22 +848,16 @@
     gap: 8px;
 }
 
-.toast-notification::before {
-    content: '';
+/* 图标通过JS动态添加，不需要CSS ::before */
+.toast-icon {
     font-size: 18px;
+    flex-shrink: 0;
 }
 
-.toast-success::before {
-    content: '✅';
+.toast-message {
+    flex: 1;
 }
 
-.toast-error::before {
-    content: '❌';
-}
-
-.toast-info::before {
-    content: 'ℹ️';
-}
 /* ============================================================================
    会话信息和分页引用样式
    ============================================================================ */

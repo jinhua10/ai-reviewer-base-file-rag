@@ -479,7 +479,11 @@ function QATab() {
     const showToast = (message, type = 'info') => {
         const toast = document.createElement('div');
         toast.className = `toast-notification toast-${type}`;
-        toast.textContent = message;
+
+        // 使用innerHTML避免CSS ::before图标被覆盖
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-message">${message}</span>`;
+
         toast.style.cssText = `
             position: fixed;
             top: 20px;
@@ -494,6 +498,9 @@ function QATab() {
             font-weight: 500;
             animation: slideInRight 0.3s ease-out;
             max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         `;
 
         document.body.appendChild(toast);
@@ -502,7 +509,9 @@ function QATab() {
         setTimeout(() => {
             toast.style.animation = 'slideOutRight 0.3s ease-out';
             setTimeout(() => {
-                document.body.removeChild(toast);
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
             }, 300);
         }, 3000);
     };
