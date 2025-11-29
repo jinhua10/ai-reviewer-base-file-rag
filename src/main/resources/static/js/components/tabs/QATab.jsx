@@ -657,7 +657,7 @@ function QATab() {
                             <div className="qa-unified-section">
                                 <div className="qa-unified-header">
                                     <h4 className="qa-unified-title">
-                                        📚 {t('qaChunksAndFeedback')}
+                                        {t('qaChunksAndFeedback')}
                                     </h4>
                                     {answer.sources && answer.sources.length > 1 && (
                                         <button
@@ -665,7 +665,7 @@ function QATab() {
                                             onClick={handleBatchDownload}
                                             title={t('qaBatchDownload')}
                                         >
-                                            📦 {t('qaBatchDownload')} ({answer.sources.length})
+                                            {t('qaBatchDownload')} ({answer.sources.length})
                                         </button>
                                     )}
                                 </div>
@@ -696,7 +696,7 @@ function QATab() {
                                                         disabled={documentFeedbacks[source] !== undefined}
                                                         title={documentFeedbacks[source] === 'LIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentHelpful')}
                                                     >
-                                                        👍 {documentFeedbacks[source] === 'LIKE'
+                                                        {documentFeedbacks[source] === 'LIKE'
                                                             ? t('feedbackDocumentSubmitted')
                                                             : t('feedbackDocumentHelpful')}
                                                     </button>
@@ -706,7 +706,7 @@ function QATab() {
                                                         disabled={documentFeedbacks[source] !== undefined}
                                                         title={documentFeedbacks[source] === 'DISLIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentNotHelpful')}
                                                     >
-                                                        👎 {documentFeedbacks[source] === 'DISLIKE'
+                                                        {documentFeedbacks[source] === 'DISLIKE'
                                                             ? t('feedbackDocumentSubmitted')
                                                             : t('feedbackDocumentNotHelpful')}
                                                     </button>
@@ -725,6 +725,12 @@ function QATab() {
                                                         )}
                                                     </button>
                                                 </div>
+                                                            <>⭐ {documentRatings[source]} 星</>
+                                                        ) : (
+                                                            <>⭐ 评价质量</>
+                                                        )}
+                                                    </button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -735,14 +741,14 @@ function QATab() {
                                     <div className="qa-chunks-subsection">
                                         <div className="qa-chunks-header">
                                             <h5 className="qa-chunks-subtitle">
-                                                📄 {t('qaChunksTitle')} ({answer.chunks.length})
+                                                {t('qaChunksTitle')} ({answer.chunks.length})
                                             </h5>
                                             <button
                                                 className="qa-chunks-download-all-btn"
                                                 onClick={handleBatchDownloadChunks}
                                                 title={t('qaChunksDownloadAll')}
                                             >
-                                                📦 {t('qaChunksDownloadAll')}
+                                                {t('qaChunksDownloadAll')}
                                             </button>
                                         </div>
                                         <div className="qa-chunks-grid">
@@ -754,7 +760,7 @@ function QATab() {
                                                     title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
                                                 >
                                                     <div className="qa-chunk-title">
-                                                        📄 {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
+                                                        {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
                                                     </div>
                                                     <div className="qa-chunk-info">
                                                         <span className="qa-chunk-index">
