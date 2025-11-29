@@ -441,7 +441,7 @@ function QATab() {
 
     const submitDocumentRating = async (rating, comment) => {
         if (!currentRatingDoc || rating === 0) {
-            showToast('请选择星级评分', 'error');
+            showToast(t('qaRatingSelectStar'), 'error');
             return;
         }
 
@@ -469,7 +469,7 @@ function QATab() {
                 showToast(errorMsg, 'error');
             }
         } catch (err) {
-            console.error('星级评价失败:', err);
+            console.error(t('logDocumentRatingError'), err);
             const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
             showToast(errorMsg, 'error');
         }
@@ -604,18 +604,18 @@ function QATab() {
                             <div className="qa-session-info">
                                 <div className="qa-session-stats">
                                     <span className="qa-session-stat">
-                                        📊 检索到 <strong>{sessionInfo.totalDocuments}</strong> 个文档
+                                        {t('qaSessionTotalDocs')} <strong>{sessionInfo.totalDocuments}</strong> {t('qaSessionDocsCount')}
                                     </span>
                                     <span className="qa-session-stat">
-                                        📄 当前使用 <strong>{answer.usedDocuments?.length || sessionInfo.documentsPerQuery}</strong> 个
+                                        {t('qaSessionCurrentUsed')} <strong>{answer.usedDocuments?.length || sessionInfo.documentsPerQuery}</strong> {t('qaSessionUsedCount')}
                                     </span>
                                     {sessionInfo.remainingDocuments > 0 && (
                                         <span className="qa-session-stat">
-                                            📝 剩余 <strong>{sessionInfo.remainingDocuments}</strong> 个未引用
+                                            {t('qaSessionRemaining')} <strong>{sessionInfo.remainingDocuments}</strong> {t('qaSessionRemainingCount')}
                                         </span>
                                     )}
                                     <span className="qa-session-stat">
-                                        📑 第 <strong>{sessionInfo.currentPage}</strong> / <strong>{sessionInfo.totalPages}</strong> 页
+                                        {t('qaSessionPageInfo')} <strong>{sessionInfo.currentPage}</strong> {t('qaSessionPageOf')} <strong>{sessionInfo.totalPages}</strong> {t('qaSessionPageSuffix')}
                                     </span>
                                 </div>
 
@@ -627,11 +627,11 @@ function QATab() {
                                             onClick={handleLoadPrevious}
                                             disabled={!sessionInfo.hasPrevious || loadingMore}
                                         >
-                                            ⬅️ {t('qaPreviousBatch') || '上一批'}
+                                            {t('qaPreviousBatch')}
                                         </button>
 
                                         <span className="qa-pagination-info">
-                                            {sessionInfo.currentPage} / {sessionInfo.totalPages}
+                                            {sessionInfo.currentPage} {t('qaSessionPageOf')} {sessionInfo.totalPages}
                                         </span>
 
                                         <button
@@ -639,14 +639,14 @@ function QATab() {
                                             onClick={handleLoadMore}
                                             disabled={!sessionInfo.hasNext || loadingMore}
                                         >
-                                            {loadingMore ? '加载中...' : `${t('qaNextBatch') || '下一批'} ➡️`}
+                                            {loadingMore ? t('qaLoadingMore') : t('qaNextBatch')}
                                         </button>
                                     </div>
                                 )}
 
                                 {sessionInfo.remainingDocuments === 0 && !sessionInfo.hasNext && (
                                     <div className="qa-all-docs-used">
-                                        ✅ 所有相关文档已引用完毕
+                                        {t('qaSessionAllDocsUsed')}
                                     </div>
                                 )}
                             </div>
@@ -716,18 +716,12 @@ function QATab() {
                                                         className={`qa-source-feedback-btn rate-quality ${documentRatings[source] ? 'rated' : ''}`}
                                                         onClick={() => handleDocumentRate(source)}
                                                         disabled={documentRatings[source] !== undefined}
-                                                        title={documentRatings[source] ? `已评价 ${documentRatings[source]} 星` : '评价文档质量'}
+                                                        title={documentRatings[source] ? t('qaRatedStars').replace('{rating}', documentRatings[source]) : t('qaRateQuality')}
                                                     >
                                                         {documentRatings[source] ? (
-                                                            <>⭐ {documentRatings[source]} 星</>
+                                                            t('qaRatedStars').replace('{rating}', documentRatings[source])
                                                         ) : (
-                                                            <>⭐ 评价质量</>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                                            <>⭐ {documentRatings[source]} 星</>
-                                                        ) : (
-                                                            <>⭐ 评价质量</>
+                                                            t('qaRateQuality')
                                                         )}
                                                     </button>
                                                 </div>
@@ -878,8 +872,8 @@ function QATab() {
                         className="qa-modal-content qa-rating-modal"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h4 className="qa-modal-title">💎 评价文档质量</h4>
-                        <p className="qa-modal-subtitle">这个文档对回答问题有多大帮助？</p>
+                        <h4 className="qa-modal-title">{t('qaRatingModalTitle')}</h4>
+                        <p className="qa-modal-subtitle">{t('qaRatingModalSubtitle')}</p>
 
                         <div className="qa-modal-rating-container">
                             <div className="qa-rating-stars qa-modal-rating-stars">
@@ -894,18 +888,18 @@ function QATab() {
                                 ))}
                             </div>
                             <p className="qa-rating-description">
-                                {tempRating === 0 && '请选择星级'}
-                                {tempRating === 1 && '😞 完全没用'}
-                                {tempRating === 2 && '🙁 帮助不大'}
-                                {tempRating === 3 && '😐 一般般'}
-                                {tempRating === 4 && '😊 很有用'}
-                                {tempRating === 5 && '🤩 非常有用'}
+                                {tempRating === 0 && t('qaRatingSelectStar')}
+                                {tempRating === 1 && t('qaRatingUseless')}
+                                {tempRating === 2 && t('qaRatingNotHelpful')}
+                                {tempRating === 3 && t('qaRatingNeutral')}
+                                {tempRating === 4 && t('qaRatingHelpful')}
+                                {tempRating === 5 && t('qaRatingVeryHelpful')}
                             </p>
                         </div>
 
                         <textarea
                             className="qa-modal-textarea"
-                            placeholder="可选：说说您的想法..."
+                            placeholder={t('qaRatingOptionalComment')}
                             value={feedbackComment}
                             onChange={(e) => setFeedbackComment(e.target.value)}
                             rows={3}
@@ -921,14 +915,14 @@ function QATab() {
                                     setFeedbackComment('');
                                 }}
                             >
-                                取消
+                                {t('qaRatingCancel')}
                             </button>
                             <button
                                 className="qa-modal-btn qa-modal-btn-primary"
                                 onClick={() => submitDocumentRating(tempRating, feedbackComment)}
                                 disabled={tempRating === 0}
                             >
-                                提交评价
+                                {t('qaRatingSubmit')}
                             </button>
                         </div>
                     </div>

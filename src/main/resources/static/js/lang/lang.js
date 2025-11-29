@@ -198,8 +198,8 @@ const translations = {
         qaImageAlt: '图片',
 
         // Session and Pagination
-        qaNextBatch: '下一批',
-        qaPreviousBatch: '上一批',
+        qaNextBatch: '下一批 ➡️',
+        qaPreviousBatch: '⬅️ 上一批',
         qaLoadMoreSuccess: '成功加载更多文档',
         qaLoadMoreError: '加载更多文档失败',
         qaLoadPreviousSuccess: '成功加载上一批文档',
@@ -230,6 +230,35 @@ const translations = {
         feedbackAlreadySubmitted: '您已提交过反馈',
         feedbackPleaseRate: '请先评分',
 
+        // Session Statistics
+        qaSessionTotalDocs: '📊 检索到',
+        qaSessionDocsCount: '个文档',
+        qaSessionCurrentUsed: '📄 当前使用',
+        qaSessionUsedCount: '个',
+        qaSessionRemaining: '📝 剩余',
+        qaSessionRemainingCount: '个未引用',
+        qaSessionPageInfo: '📑 第',
+        qaSessionPageOf: '/',
+        qaSessionPageSuffix: '页',
+        qaSessionAllDocsUsed: '✅ 所有相关文档已引用完毕',
+        qaLoading: '加载中...',
+        qaLoadingMore: '加载更多...',
+
+        // Document Rating
+        qaRateQuality: '⭐ 评价质量',
+        qaRatedStars: '⭐ {rating} 星',
+        qaRatingModalTitle: '💎 评价文档质量',
+        qaRatingModalSubtitle: '这个文档对回答问题有多大帮助？',
+        qaRatingSelectStar: '请选择星级',
+        qaRatingUseless: '😞 完全没用',
+        qaRatingNotHelpful: '🙁 帮助不大',
+        qaRatingNeutral: '😐 一般般',
+        qaRatingHelpful: '😊 很有用',
+        qaRatingVeryHelpful: '🤩 非常有用',
+        qaRatingOptionalComment: '可选：说说您的想法...',
+        qaRatingCancel: '取消',
+        qaRatingSubmit: '提交评价',
+
         // Console Logs (for debugging)
         logLoadingDocs: '开始加载文档列表...',
         logDocsResponse: '文档列表响应:',
@@ -239,6 +268,7 @@ const translations = {
         logLoadException: '加载文档列表异常:',
         logFeedbackError: '提交反馈失败:',
         logDocumentFeedbackError: '提交文档反馈失败:',
+        logDocumentRatingError: '星级评价失败:',
         logChunkDownloadFailed: '下载分块失败',
         logUseDefaultFileTypes: '使用默认文件类型列表',
         logDateFilterError: '日期过滤错误:',
@@ -468,8 +498,8 @@ const translations = {
         qaImageAlt: 'Image',
 
         // Session and Pagination
-        qaNextBatch: 'Next Batch',
-        qaPreviousBatch: 'Previous Batch',
+        qaNextBatch: 'Next Batch ➡️',
+        qaPreviousBatch: '⬅️ Previous Batch',
         qaLoadMoreSuccess: 'Successfully loaded more documents',
         qaLoadMoreError: 'Failed to load more documents',
         qaLoadPreviousSuccess: 'Successfully loaded previous batch',
@@ -500,6 +530,35 @@ const translations = {
         feedbackAlreadySubmitted: 'You have already submitted feedback',
         feedbackPleaseRate: 'Please rate first',
 
+        // Session Statistics
+        qaSessionTotalDocs: '📊 Retrieved',
+        qaSessionDocsCount: 'documents',
+        qaSessionCurrentUsed: '📄 Currently using',
+        qaSessionUsedCount: '',
+        qaSessionRemaining: '📝 Remaining',
+        qaSessionRemainingCount: 'unreferenced',
+        qaSessionPageInfo: '📑 Page',
+        qaSessionPageOf: '/',
+        qaSessionPageSuffix: '',
+        qaSessionAllDocsUsed: '✅ All relevant documents have been referenced',
+        qaLoading: 'Loading...',
+        qaLoadingMore: 'Loading more...',
+
+        // Document Rating
+        qaRateQuality: '⭐ Rate Quality',
+        qaRatedStars: '⭐ {rating} Stars',
+        qaRatingModalTitle: '💎 Rate Document Quality',
+        qaRatingModalSubtitle: 'How helpful was this document in answering the question?',
+        qaRatingSelectStar: 'Please select a rating',
+        qaRatingUseless: '😞 Completely useless',
+        qaRatingNotHelpful: '🙁 Not very helpful',
+        qaRatingNeutral: '😐 Neutral',
+        qaRatingHelpful: '😊 Very helpful',
+        qaRatingVeryHelpful: '🤩 Extremely helpful',
+        qaRatingOptionalComment: 'Optional: Share your thoughts...',
+        qaRatingCancel: 'Cancel',
+        qaRatingSubmit: 'Submit Rating',
+
         // Console Logs (for debugging)
         logLoadingDocs: 'Loading document list...',
         logDocsResponse: 'Document list response:',
@@ -509,6 +568,7 @@ const translations = {
         logLoadException: 'Document list loading exception:',
         logFeedbackError: 'Feedback submission failed:',
         logDocumentFeedbackError: 'Document feedback submission failed:',
+        logDocumentRatingError: 'Document rating failed:',
         logChunkDownloadFailed: 'Failed to download chunk',
         logUseDefaultFileTypes: 'Using default file types list',
         logDateFilterError: 'Date filter error:',
