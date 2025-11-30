@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 查询模型
- * 封装搜索查询的所有参数
+ * 查询模型（Query model）
+ * 封装搜索查询的所有参数（Encapsulates all parameters of a search query）
  *
  * @author AI Reviewer Team
  * @since 2025-11-21
@@ -22,91 +22,203 @@ import java.util.Map;
 public class Query {
 
     /**
-     * 查询文本
+     * 查询文本（Query text）
      */
     private String queryText;
 
     /**
-     * 查询字段（默认查询所有字段）
+     * 查询字段（默认查询所有字段）（Query fields (default query all fields)）
      */
     @Builder.Default
     private String[] fields = new String[]{"title", "content"};
 
     /**
-     * 返回结果数量限制
+     * 返回结果数量限制（Return result count limit）
      */
     @Builder.Default
     private int limit = 10;
 
     /**
-     * 结果偏移量（用于分页）
+     * 结果偏移量（用于分页）（Result offset (for pagination)）
      */
     @Builder.Default
     private int offset = 0;
 
     /**
-     * 过滤条件
+     * 过滤条件（Filter conditions）
      */
     @Builder.Default
     private Map<String, String> filters = new HashMap<>();
 
     /**
-     * 排序字段
+     * 排序字段（Sort field）
      */
     private String sortField;
 
     /**
-     * 排序方向（true=升序，false=降序）
+     * 排序方向（Sort direction）
      */
-    @Builder.Default
-    private boolean sortAscending = false;
+    private String sortOrder;
 
     /**
-     * 模糊查询的最大编辑距离
+     * 最小分数阈值（Minimum score threshold）
      */
-    @Builder.Default
-    private int fuzzyMaxEdits = 2;
+    private Float minScore;
 
     /**
-     * 是否启用模糊查询
+     * 最大分数阈值（Maximum score threshold）
      */
-    @Builder.Default
-    private boolean enableFuzzy = false;
+    private Float maxScore;
 
     /**
-     * 添加过滤条件
+     * 查询超时时间（毫秒）（Query timeout (milliseconds)）
      */
-    public Query withFilter(String field, String value) {
-        if (this.filters == null) {
-            this.filters = new HashMap<>();
+    private Long timeoutMs;
+
+    /**
+     * 是否启用模糊搜索（Whether to enable fuzzy search）
+     */
+    @Builder.Default
+    private Boolean fuzzy = false;
+
+    /**
+     * 模糊搜索编辑距离（Fuzzy search edit distance）
+     */
+    @Builder.Default
+    private Integer fuzzyDistance = 2;
+
+    /**
+     * 是否启用通配符搜索（Whether to enable wildcard search）
+     */
+    @Builder.Default
+    private Boolean wildcard = false;
+
+    /**
+     * 是否启用短语搜索（Whether to enable phrase search）
+     */
+    @Builder.Default
+    private Boolean phrase = false;
+
+    /**
+     * 搜索操作符（Search operator）
+     */
+    @Builder.Default
+    private String operator = "OR";
+
+    /**
+     * 搜索模式（Search mode）
+     */
+    @Builder.Default
+    private SearchMode searchMode = SearchMode.STANDARD;
+
+    /**
+     * 搜索模式枚举（Search mode enumeration）
+     */
+    public enum SearchMode {
+        /**
+         * 标准搜索（Standard search）
+         */
+        STANDARD,
+
+        /**
+         * 布尔搜索（Boolean search）
+         */
+        BOOLEAN,
+
+        /**
+         * 向量搜索（Vector search）
+         */
+        VECTOR,
+
+        /**
+         * 混合搜索（Hybrid search）
+         */
+        HYBRID
+    }
+
+    /**
+     * 添加过滤条件（Add filter condition）
+     */
+    public void addFilter(String key, String value) {
+        if (filters == null) {
+            filters = new HashMap<>();
         }
-        this.filters.put(field, value);
-        return this;
+        filters.put(key, value);
     }
 
     /**
-     * 设置结果数量限制
+     * 移除过滤条件（Remove filter condition）
      */
-    public Query withLimit(int limit) {
-        this.limit = limit;
-        return this;
+    public void removeFilter(String key) {
+        if (filters != null) {
+            filters.remove(key);
+        }
     }
 
     /**
-     * 设置偏移量
+     * 清空过滤条件（Clear filter conditions）
      */
-    public Query withOffset(int offset) {
-        this.offset = offset;
-        return this;
+    public void clearFilters() {
+        if (filters != null) {
+            filters.clear();
+        }
     }
 
     /**
-     * 创建查询实例的便捷方法
+     * 获取过滤条件值（Get filter condition value）
      */
-    public static Query of(String queryText) {
+    public String getFilter(String key) {
+        return filters != null ? filters.get(key) : null;
+    }
+
+    /**
+     * 检查是否包含过滤条件（Check if contains filter condition）
+     */
+    public boolean hasFilter(String key) {
+        return filters != null && filters.containsKey(key);
+    }
+
+    /**
+     * 获取所有过滤条件（Get all filter conditions）
+     */
+    public Map<String, String> getFilters() {
+        return filters != null ? new HashMap<>(filters) : new HashMap<>();
+    }
+
+    /**
+     * 设置过滤条件（Set filter conditions）
+     */
+    public void setFilters(Map<String, String> filters) {
+        this.filters = filters != null ? new HashMap<>(filters) : null;
+    }
+
+    /**
+     * 创建简单查询（Create simple query）
+     */
+    public static Query simple(String queryText) {
         return Query.builder()
                 .queryText(queryText)
                 .build();
     }
-}
 
+    /**
+     * 创建高级查询（Create advanced query）
+     */
+    public static Query advanced(String queryText, String[] fields, int limit) {
+        return Query.builder()
+                .queryText(queryText)
+                .fields(fields)
+                .limit(limit)
+                .build();
+    }
+
+    /**
+     * 创建过滤查询（Create filtered query）
+     */
+    public static Query filtered(String queryText, Map<String, String> filters) {
+        return Query.builder()
+                .queryText(queryText)
+                .filters(filters)
+                .build();
+    }
+}

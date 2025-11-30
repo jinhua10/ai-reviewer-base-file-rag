@@ -9,6 +9,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.text.PDFTextStripper;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,8 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PDF 图片提取器
- * 使用 Apache PDFBox 提取 PDF 中的图片
+ * PDF 图片提取器（PDF image extractor）
+ * 使用 Apache PDFBox 提取 PDF 中的图片（Use Apache PDFBox to extract images from PDF）
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -33,30 +34,30 @@ public class PdfImageExtractor implements DocumentImageExtractor {
 
         try (PDDocument document = Loader.loadPDF(documentStream.readAllBytes())) {
             int totalPages = document.getNumberOfPages();
-            log.info("📄 Processing PDF: {}, pages: {}", documentName, totalPages);
+            log.info(LogMessageProvider.getMessage("log.image.pdf.processing", documentName, totalPages));
 
             for (int pageNum = 0; pageNum < totalPages; pageNum++) {
                 PDPage page = document.getPage(pageNum);
 
-                // 提取页面文本作为上下文
+                // 提取页面文本作为上下文（Extract page text as context）
                 String pageText = extractPageText(document, pageNum);
 
-                // 提取页面图片
+                // 提取页面图片（Extract page images）
                 List<ExtractedImage> pageImages = extractImagesFromPage(
-                    page, pageNum + 1, pageText
+                        page, pageNum + 1, pageText
                 );
 
                 images.addAll(pageImages);
             }
 
-            log.info("✅ Extracted {} images from PDF: {}", images.size(), documentName);
+            log.info(LogMessageProvider.getMessage("log.image.pdf.extracted", images.size(), documentName));
         }
 
         return images;
     }
 
     /**
-     * 从页面中提取图片
+     * 从页面中提取图片（Extract images from page）
      */
     private List<ExtractedImage> extractImagesFromPage(PDPage page, int pageNum, String pageText) {
         List<ExtractedImage> images = new ArrayList<>();
@@ -99,23 +100,21 @@ public class PdfImageExtractor implements DocumentImageExtractor {
 
                         images.add(extractedImage);
 
-                        log.debug("  📸 Image found on page {}: {}x{}, {}KB",
-                                pageNum, bufferedImage.getWidth(), bufferedImage.getHeight(),
-                                imageData.length / 1024);
+                        log.debug(LogMessageProvider.getMessage("log.image.pdf.found", pageNum, bufferedImage.getWidth(), bufferedImage.getHeight(), imageData.length / 1024));
                     }
                 } catch (Exception e) {
-                    log.warn("Failed to extract image: {}", cosName, e);
+                    log.warn(LogMessageProvider.getMessage("log.image.pdf.extract_failed", cosName.getName()), e);
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to process page {}", pageNum, e);
+            log.error(LogMessageProvider.getMessage("log.image.pdf.process_failed", pageNum), e);
         }
 
         return images;
     }
 
     /**
-     * 提取页面文本
+     * 提取页面文本（Extract page text）
      */
     private String extractPageText(PDDocument document, int pageNum) {
         try {
@@ -132,13 +131,13 @@ public class PdfImageExtractor implements DocumentImageExtractor {
 
             return text.trim();
         } catch (Exception e) {
-            log.warn("Failed to extract text from page {}", pageNum, e);
+            log.warn(LogMessageProvider.getMessage("log.image.pdf.text_failed", pageNum), e);
             return "";
         }
     }
 
     /**
-     * 将 BufferedImage 转换为字节数组
+     * 将 BufferedImage 转换为字节数组（Convert BufferedImage to byte array）
      */
     private byte[] imageToBytes(BufferedImage image, String format) throws Exception {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
@@ -157,4 +156,3 @@ public class PdfImageExtractor implements DocumentImageExtractor {
         return "PDF Image Extractor";
     }
 }
-

@@ -5,7 +5,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * 问答归档配置
+ * 问答归档配置（QA archive configuration）
  *
  * @author AI Reviewer Team
  * @since 2025-11-30
@@ -58,4 +58,3 @@ public class QAArchiveProperties {
      */
     private int tempDocumentExpiryDays = 30;
 }
-

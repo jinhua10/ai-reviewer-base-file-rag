@@ -2,18 +2,17 @@ package top.yumbo.ai.rag.image.extractor.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
-import org.openxmlformats.schemas.drawingml.x2006.picture.CTPicture;
-import org.openxmlformats.schemas.drawingml.x2006.wordprocessingDrawing.CTInline;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Word 文档图片提取器
- * 支持 .docx 格式（使用 Apache POI）
+ * Word 文档图片提取器（Word document image extractor）
+ * 支持 .docx 格式（使用 Apache POI）（Supports .docx format (using Apache POI)）
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -26,16 +25,16 @@ public class WordImageExtractor implements DocumentImageExtractor {
         List<ExtractedImage> images = new ArrayList<>();
 
         try (XWPFDocument document = new XWPFDocument(documentStream)) {
-            log.info("📄 Processing Word document: {}", documentName);
+            log.info(LogMessageProvider.getMessage("log.image.word.processing", documentName));
 
             int position = 1;
 
-            // 遍历所有段落
+            // 遍历所有段落（Traverse all paragraphs）
             for (XWPFParagraph paragraph : document.getParagraphs()) {
-                // 提取段落周围的文本作为上下文
+                // 提取段落周围的文本作为上下文（Extract text around the paragraph as context）
                 String contextText = extractContext(document, paragraph);
 
-                // 提取段落中的图片
+                // 提取段落中的图片（Extract images from paragraph）
                 List<ExtractedImage> paragraphImages = extractImagesFromParagraph(
                     paragraph, position, contextText
                 );
@@ -44,7 +43,7 @@ public class WordImageExtractor implements DocumentImageExtractor {
                 position += paragraphImages.size();
             }
 
-            // 提取表格中的图片
+            // 提取表格中的图片（Extract images from tables）
             for (XWPFTable table : document.getTables()) {
                 for (XWPFTableRow row : table.getRows()) {
                     for (XWPFTableCell cell : row.getTableCells()) {
@@ -60,14 +59,14 @@ public class WordImageExtractor implements DocumentImageExtractor {
                 }
             }
 
-            log.info("✅ Extracted {} images from Word: {}", images.size(), documentName);
+            log.info(LogMessageProvider.getMessage("log.image.word.extracted", images.size(), documentName));
         }
 
         return images;
     }
 
     /**
-     * 从段落中提取图片
+     * 从段落中提取图片（Extract images from paragraph）
      */
     private List<ExtractedImage> extractImagesFromParagraph(XWPFParagraph paragraph,
                                                              int position,
@@ -76,7 +75,7 @@ public class WordImageExtractor implements DocumentImageExtractor {
 
         try {
             for (XWPFRun run : paragraph.getRuns()) {
-                // 获取嵌入的图片
+                // 获取嵌入的图片（Get embedded pictures）
                 List<XWPFPicture> pictures = run.getEmbeddedPictures();
 
                 for (XWPFPicture picture : pictures) {
@@ -85,8 +84,8 @@ public class WordImageExtractor implements DocumentImageExtractor {
 
                         byte[] data = pictureData.getData();
 
-                        // 跳过过小的图片
-                        if (data.length < 1024) { // 小于 1KB
+                        // 跳过过小的图片（Skip small images）
+                        if (data.length < 1024) { // 小于 1KB（Less than 1KB）
                             continue;
                         }
 
@@ -103,22 +102,21 @@ public class WordImageExtractor implements DocumentImageExtractor {
 
                         images.add(extractedImage);
 
-                        log.debug("  📸 Image found: {}, {}KB",
-                                pictureData.getFileName(), data.length / 1024);
+                        log.debug(LogMessageProvider.getMessage("log.image.word.found", pictureData.getFileName(), data.length / 1024));
                     } catch (Exception e) {
-                        log.warn("Failed to extract picture", e);
+                        log.warn(LogMessageProvider.getMessage("log.image.word.extract_failed"), e);
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to process paragraph", e);
+            log.error(LogMessageProvider.getMessage("log.image.word.process_failed"), e);
         }
 
         return images;
     }
 
     /**
-     * 提取图片周围的上下文文本
+     * 提取图片周围的上下文文本（Extract context text around the image）
      */
     private String extractContext(XWPFDocument document, XWPFParagraph currentParagraph) {
         StringBuilder context = new StringBuilder();
@@ -126,7 +124,7 @@ public class WordImageExtractor implements DocumentImageExtractor {
         List<XWPFParagraph> paragraphs = document.getParagraphs();
         int currentIndex = paragraphs.indexOf(currentParagraph);
 
-        // 获取前后各 2 个段落的文本
+        // 获取前后各 2 个段落的文本（Get text from 2 paragraphs before and after）
         int start = Math.max(0, currentIndex - 2);
         int end = Math.min(paragraphs.size(), currentIndex + 3);
 
@@ -136,7 +134,7 @@ public class WordImageExtractor implements DocumentImageExtractor {
 
         String text = context.toString().trim();
 
-        // 限制长度
+        // 限制长度（Limit length）
         if (text.length() > 1000) {
             text = text.substring(0, 1000);
         }
@@ -145,14 +143,14 @@ public class WordImageExtractor implements DocumentImageExtractor {
     }
 
     /**
-     * 从 MIME 类型获取格式
+     * 从 MIME 类型获取格式（Get format from MIME type）
      */
     private String getFormatFromMimeType(String mimeType) {
         if (mimeType.contains("png")) return "png";
         if (mimeType.contains("jpeg") || mimeType.contains("jpg")) return "jpg";
         if (mimeType.contains("gif")) return "gif";
         if (mimeType.contains("bmp")) return "bmp";
-        return "png"; // 默认
+        return "png"; // 默认（Default）
     }
 
     @Override
@@ -165,4 +163,3 @@ public class WordImageExtractor implements DocumentImageExtractor {
         return "Word Image Extractor";
     }
 }
-

@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 查询请求模型
- * 封装所有查询参数
+ * 查询请求模型（Query request model）
+ * 封装所有查询参数（Encapsulates all query parameters）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -106,4 +106,3 @@ public class QueryRequest {
         return sb.toString();
     }
 }
-

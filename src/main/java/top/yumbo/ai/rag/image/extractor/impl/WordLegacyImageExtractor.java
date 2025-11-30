@@ -6,14 +6,15 @@ import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.PictureType;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Word 97-2003 文档图片提取器
- * 支持 .doc 格式（使用 Apache POI HWPF）
+ * Word 97-2003 文档图片提取器（Word 97-2003 document image extractor）
+ * 支持 .doc 格式（使用 Apache POI HWPF）（Supports .doc format (using Apache POI HWPF)）
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -26,17 +27,17 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
         List<ExtractedImage> images = new ArrayList<>();
 
         try (HWPFDocument document = new HWPFDocument(documentStream)) {
-            log.info("📄 Processing Word 97-2003 document: {}", documentName);
+            log.info(LogMessageProvider.getMessage("log.image.word.legacy.processing", documentName));
 
-            // 获取所有图片
+            // 获取所有图片（Get all pictures）
             List<Picture> pictures = document.getPicturesTable().getAllPictures();
 
             if (pictures.isEmpty()) {
-                log.info("No images found in document: {}", documentName);
+                log.info(LogMessageProvider.getMessage("log.image.word.legacy.no_images", documentName));
                 return images;
             }
 
-            // 提取文档文本作为上下文
+            // 提取文档文本作为上下文（Extract document text as context）
             String contextText = extractDocumentText(document);
 
             int position = 1;
@@ -44,8 +45,8 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
                 try {
                     byte[] data = picture.getContent();
 
-                    // 跳过过小的图片
-                    if (data.length < 1024) { // 小于 1KB
+                    // 跳过过小的图片（Skip small images）
+                    if (data.length < 1024) { // 小于 1KB（Less than 1KB）
                         continue;
                     }
 
@@ -64,49 +65,48 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
 
                     images.add(extractedImage);
 
-                    log.debug("  📸 Image found: {}x{}, {}KB",
-                            picture.getWidth(), picture.getHeight(), data.length / 1024);
+                    log.debug(LogMessageProvider.getMessage("log.image.word.legacy.found", picture.getWidth(), picture.getHeight(), data.length / 1024));
 
                     position++;
                 } catch (Exception e) {
-                    log.warn("Failed to extract picture at position {}", position, e);
+                    log.warn(LogMessageProvider.getMessage("log.image.word.legacy.extract_failed", position), e);
                 }
             }
 
-            log.info("✅ Extracted {} images from Word 97-2003: {}", images.size(), documentName);
+            log.info(LogMessageProvider.getMessage("log.image.word.legacy.extracted", images.size(), documentName));
         }
 
         return images;
     }
 
     /**
-     * 提取文档文本
+     * 提取文档文本（Extract document text）
      */
     private String extractDocumentText(HWPFDocument document) {
         try {
             String text = document.getText().toString();
 
-            // 限制长度
+            // 限制长度（Limit length）
             if (text.length() > 1000) {
                 text = text.substring(0, 1000);
             }
 
             return text.trim();
         } catch (Exception e) {
-            log.warn("Failed to extract document text", e);
+            log.warn(LogMessageProvider.getMessage("log.image.word.legacy.text_failed"), e);
             return "";
         }
     }
 
     /**
-     * 从图片类型获取格式
+     * 从图片类型获取格式（Get format from picture type）
      */
     private String getFormatFromPictureType(PictureType pictureType) {
         if (pictureType == null) {
             return "png";
         }
 
-        // 使用 toString() 来判断，避免枚举常量不存在的问题
+        // 使用 toString() 来判断，避免枚举常量不存在的问题（Use toString() to judge, avoid non-existent enum constants）
         String type = pictureType.toString().toUpperCase();
 
         if (type.contains("PNG")) return "png";
@@ -116,7 +116,7 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
         if (type.contains("TIFF")) return "tiff";
         if (type.contains("WMF") || type.contains("EMF")) return "wmf";
 
-        return "png"; // 默认
+        return "png"; // 默认（Default）
     }
 
     @Override
@@ -129,4 +129,3 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
         return "Word 97-2003 Image Extractor";
     }
 }
-

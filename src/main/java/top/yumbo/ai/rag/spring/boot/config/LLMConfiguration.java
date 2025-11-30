@@ -5,16 +5,17 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.llm.MockLLMClient;
 import top.yumbo.ai.rag.spring.boot.llm.OpenAILLMClient;
 
 /**
- * LLM 客户端配置
+ * LLM 客户端配置（LLM client configuration）
  *
  * 支持多种 LLM 提供商：
  * - openai: OpenAI 兼容 API（默认，支持 OpenAI、DeepSeek 等）
- * - mock: Mock 模式（测试用，返回固定回答）
+ * - mock: Mock 模式（测试用）
  *
  * OpenAI 兼容 API 说明：
  * OpenAILLMClient 支持所有 OpenAI API 兼容的服务，包括：
@@ -55,11 +56,11 @@ public class LLMConfiguration {
         String apiUrl = properties.getLlm().getApiUrl();
 
         if (apiKey == null || apiKey.isEmpty()) {
-            log.warn("⚠️  未配置 LLM API Key");
-            log.warn("💡 提示: 设置环境变量:");
-            log.warn("      - DeepSeek: export AI_API_KEY=your-deepseek-key");
-            log.warn("      - OpenAI: export OPENAI_API_KEY=your-openai-key");
-            log.warn("💡 将降级使用 Mock 模式");
+            log.warn(LogMessageProvider.getMessage("log.llm.api_key_missing"));
+            log.warn(LogMessageProvider.getMessage("log.llm.api_key_hint"));
+            log.warn(LogMessageProvider.getMessage("log.llm.api_key_deepseek"));
+            log.warn(LogMessageProvider.getMessage("log.llm.api_key_openai"));
+            log.warn(LogMessageProvider.getMessage("log.llm.fallback_mock"));
             return new MockLLMClient();
         }
 
@@ -69,9 +70,9 @@ public class LLMConfiguration {
             serviceName = "DeepSeek";
         }
 
-        log.info("🤖 创建 {} LLM 客户端", serviceName);
-        log.info("   - 模型: {}", model);
-        log.info("   - API: {}", apiUrl);
+        log.info(LogMessageProvider.getMessage("log.llm.client_created", serviceName));
+        log.info(LogMessageProvider.getMessage("log.llm.model", model));
+        log.info(LogMessageProvider.getMessage("log.llm.api_url", apiUrl));
 
         return new OpenAILLMClient(apiKey, model, apiUrl);
     }
@@ -87,16 +88,16 @@ public class LLMConfiguration {
     )
     @ConditionalOnMissingBean
     public LLMClient mockLLMClient() {
-        log.info("🤖 创建 Mock LLM 客户端（仅用于测试）");
-        log.info("   ⚠️  Mock 模式将返回固定的模拟回答");
-        log.info("   💡 如需使用真实 LLM，请配置:");
-        log.info("      knowledge.qa.llm.provider=openai");
-        log.info("      并设置相应的 API Key 和 URL");
+        log.info(LogMessageProvider.getMessage("log.llm.mock_created"));
+        log.info(LogMessageProvider.getMessage("log.llm.mock_warning"));
+        log.info(LogMessageProvider.getMessage("log.llm.mock_hint"));
+        log.info(LogMessageProvider.getMessage("log.llm.mock_provider"));
+        log.info(LogMessageProvider.getMessage("log.llm.mock_apikey"));
         return new MockLLMClient();
     }
 
     /**
-     * 解析环境变量占位符
+     * 解析环境变量占位符（Resolve environment variable placeholders）
      */
     private String resolveEnvVariable(String value) {
         if (value == null || value.isEmpty()) {
@@ -117,4 +118,3 @@ public class LLMConfiguration {
         return value;
     }
 }
-

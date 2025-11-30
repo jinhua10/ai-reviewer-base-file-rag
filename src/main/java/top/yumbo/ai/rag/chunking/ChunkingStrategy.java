@@ -56,6 +56,7 @@ public enum ChunkingStrategy {
 
     /**
      * 从字符串解析策略 (Parse strategy from string)
+     * Parse strategy from string
      */
     public static ChunkingStrategy fromString(String strategy) {
         if (strategy == null || strategy.isEmpty()) {

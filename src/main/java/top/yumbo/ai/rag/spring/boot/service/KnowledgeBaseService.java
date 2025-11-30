@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * 知识库构建服务
- * 支持多种文件格式：Excel, Word, PowerPoint, PDF, TXT等
+ * 知识库构建服务（Knowledge base construction service）
+ * 支持多种文件格式：Excel, Word, PowerPoint, PDF, TXT等（Supports multiple file formats: Excel, Word, PowerPoint, PDF, TXT, etc.）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -56,12 +56,12 @@ public class KnowledgeBaseService {
     }
 
     /**
-     * 构建知识库（使用增量索引）
-     * 启动时的默认行为：只索引新增和修改的文件
+     * 构建知识库（使用增量索引）（Build knowledge base (using incremental indexing)）
+     * 启动时的默认行为：只索引新增和修改的文件（Default behavior at startup: only index new and modified files）
      *
-     * @param sourcePath 文档源路径
-     * @param storagePath 知识库存储路径
-     * @return 构建结果
+     * @param sourcePath 文档源路径（Document source path）
+     * @param storagePath 知识库存储路径（Knowledge base storage path）
+     * @return 构建结果（Build result）
      */
     public BuildResult buildKnowledgeBaseWithIncrementalIndex(
             String sourcePath, String storagePath) {
@@ -73,10 +73,10 @@ public class KnowledgeBaseService {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 1. 初始化文件追踪
+            // 1. 初始化文件追踪（Initialize file tracking）
             fileTrackingService.initialize(storagePath);
 
-            // 2. 扫描文件
+            // 2. 扫描文件（Scan files）
             List<File> allFiles = scanDocuments(sourcePath);
             result.setTotalFiles(allFiles.size());
 
@@ -91,7 +91,7 @@ public class KnowledgeBaseService {
 
             log.info(LogMessageProvider.getMessage("log.kb.found_files", allFiles.size()));
 
-            // 3. 打开或创建知识库
+            // 3. 打开或创建知识库（Open or create knowledge base）
             LocalFileRAG rag = LocalFileRAG.builder()
                 .storagePath(storagePath)
                 .build();
@@ -105,7 +105,7 @@ public class KnowledgeBaseService {
                 log.info(LogMessageProvider.getMessage("log.kb.first_create"));
             }
 
-            // 4. 筛选需要更新的文件
+            // 4. 筛选需要更新的文件（Filter files that need updating）
             List<File> filesToUpdate = new ArrayList<>();
             for (File file : allFiles) {
                 if (fileTrackingService.needsUpdate(file)) {
@@ -121,12 +121,12 @@ public class KnowledgeBaseService {
                 result.setFailedCount(0);
                 result.setTotalDocuments((int) stats.getDocumentCount());
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
-                // 必须关闭以释放锁
+                // 必须关闭以释放锁（Must close to release lock）
                 rag.close();
                 return result;
             }
 
-            // 5. 初始化向量检索引擎（如果启用）
+            // 5. 初始化向量检索引擎（如果启用）（Initialize vector indexing engine if enabled）
             LocalEmbeddingEngine embeddingEngine = null;
             SimpleVectorIndexEngine vectorIndexEngine = null;
 
@@ -143,10 +143,10 @@ public class KnowledgeBaseService {
                 }
             }
 
-            // 6. 处理需要更新的文档
+            // 6. 处理需要更新的文档（Process documents that need updating）
             log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
 
-            // 检查是否启用并行处理
+            // 检查是否启用并行处理（Check if parallel processing is enabled）
             boolean useParallel = properties.getDocument().isParallelProcessing()
                 && filesToUpdate.size() > 5;
 
@@ -166,13 +166,13 @@ public class KnowledgeBaseService {
             optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.gc_before"));
 
             if (useParallel) {
-                // 并行处理
+                // 并行处理（Parallel processing）
                 var result_counts = processDocumentsInParallel(
                     filesToUpdate, rag, embeddingEngine, vectorIndexEngine);
                 successCount = result_counts[0];
                 failedCount = result_counts[1];
             } else {
-                // 串行处理（原有逻辑）
+                // 串行处理（原有逻辑）（Serial processing (original logic)）
                 successCount = 0;
                 failedCount = 0;
                 List<Document> batchDocuments = new ArrayList<>();
@@ -181,7 +181,7 @@ public class KnowledgeBaseService {
                     File file = filesToUpdate.get(i);
 
                     try {
-                        // 处理文档
+                        // 处理文档（Process document）
                         List<Document> docs = processDocumentOptimized(
                             file, rag, embeddingEngine, vectorIndexEngine);
 
@@ -189,16 +189,16 @@ public class KnowledgeBaseService {
                             batchDocuments.addAll(docs);
                             successCount++;
 
-                            // 标记文件已索引
+                            // 标记文件已索引（Mark file as indexed）
                             fileTrackingService.markAsIndexed(file);
 
-                            // 估算内存使用
+                            // 估算内存使用（Estimate memory usage）
                             long estimatedMemory = docs.stream()
                                 .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
                                 .sum();
                             optimizer.addBatchMemory(estimatedMemory);
 
-                            // 检查是否需要批处理或GC
+                            // 检查是否需要批处理或GC（Check if batch processing or GC is needed）
                             if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
                                 log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
 
@@ -214,28 +214,28 @@ public class KnowledgeBaseService {
                         failedCount++;
                     }
 
-                    // 定期打印进度和内存状态
+                    // 定期打印进度和内存状态（Print progress and memory status regularly）
                     if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
                         optimizer.logMemoryUsage(
                             String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, filesToUpdate.size()));
                     }
                 }
 
-                // 处理剩余的批次
+                // 处理剩余的批次（Process remaining batches）
                 if (!batchDocuments.isEmpty()) {
                     log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
                     rag.commit();
                 }
             }
 
-            // 7. 填充构建结果
+            // 7. 填充构建结果（Fill build result）
             result.setSuccessCount(successCount);
             result.setFailedCount(failedCount);
             result.setTotalDocuments((int) rag.getStatistics().getDocumentCount());
             result.setBuildTimeMs(System.currentTimeMillis() - startTime);
 
-            // 8. 关闭资源（包括 RAG 实例）
-            // 必须关闭以释放 Lucene 写锁，否则后续实例无法获取锁
+            // 8. 关闭资源（包括 RAG 实例）（Close resources (including RAG instance)）
+            // 必须关闭以释放 Lucene 写锁，否则后续实例无法获取锁（Must close to release Lucene write lock, otherwise subsequent instances cannot acquire lock）
             if (embeddingEngine != null) {
                 embeddingEngine.close();
             }
@@ -256,15 +256,15 @@ public class KnowledgeBaseService {
     /**
      * 构建知识库
      *
-     * @param sourcePath 文档源路径
-     * @param storagePath 知识库存储路径
-     * @param rebuild 是否重建
-     * @return 构建结果
+     * @param sourcePath 文档源路径（Document source path）
+     * @param storagePath 知识库存储路径（Knowledge base storage path）
+     * @param rebuild 是否重建（Whether to rebuild）
+     * @return 构建结果（Build result）
      */
     public BuildResult buildKnowledgeBase(
             String sourcePath, String storagePath, boolean rebuild) {
 
-        log.info("📂 扫描文档: {}", sourcePath);
+        log.info(LogMessageProvider.getMessage("log.kb.scanning", sourcePath));
 
         BuildResult result =
             new BuildResult();
@@ -272,22 +272,22 @@ public class KnowledgeBaseService {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 1. 扫描文件
+            // 1. 扫描文件（Scan files）
             List<File> files = scanDocuments(sourcePath);
             result.setTotalFiles(files.size());
 
             if (files.isEmpty()) {
-                log.warn("⚠️  未找到支持的文档文件");
-                log.info("💡 提示: 请将文档放到 {} 目录", sourcePath);
-                log.info("      支持格式: {}", properties.getDocument().getSupportedFormats());
+                log.warn(LogMessageProvider.getMessage("log.kb.no_documents"));
+                log.info(LogMessageProvider.getMessage("log.kb.hint_put_docs", sourcePath));
+                log.info(LogMessageProvider.getMessage("log.kb.supported_formats", properties.getDocument().getSupportedFormats()));
 
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
                 return result;
             }
 
-            log.info("✅ 找到 {} 个文档文件", files.size());
+            log.info(LogMessageProvider.getMessage("log.kb.found_files", files.size()));
 
-            // 2. 检查是否需要构建
+            // 2. 检查是否需要构建（Check if build is needed）
             LocalFileRAG rag = LocalFileRAG.builder()
                 .storagePath(storagePath)
                 .build();
@@ -296,8 +296,8 @@ public class KnowledgeBaseService {
             boolean knowledgeBaseExists = stats.getDocumentCount() > 0;
 
             if (knowledgeBaseExists && !rebuild) {
-                log.info("📚 检测到已有知识库 ({} 个文档)", stats.getDocumentCount());
-                log.info("✅ 跳过构建，使用已有知识库");
+                log.info(LogMessageProvider.getMessage("log.kb.exists", stats.getDocumentCount()));
+                log.info(LogMessageProvider.getMessage("log.kb.skip_build"));
 
                 result.setSuccessCount(0);
                 result.setFailedCount(0);
@@ -309,22 +309,22 @@ public class KnowledgeBaseService {
             }
 
             if (knowledgeBaseExists && rebuild) {
-                log.info("🔄 检测到已有知识库，准备重建...");
-                // 清空知识库
+                log.info(LogMessageProvider.getMessage("log.kb.rebuild_prepare"));
+                // 清空知识库（Clear knowledge base）
                 rag.deleteAllDocuments();
-                log.info("✓ 已清空旧知识库");
+                log.info(LogMessageProvider.getMessage("log.kb.old_kb_cleared"));
 
-                // 清空文件追踪信息
+                // 清空文件追踪信息（Clear file tracking information）
                 fileTrackingService.initialize(storagePath);
                 fileTrackingService.clearAll();
-                log.info("✓ 已清空文件追踪信息");
+                log.info(LogMessageProvider.getMessage("log.kb.tracking_cleared"));
             }
 
-            // 3. 处理文档
-            log.info("\n📝 开始处理文档...");
+            // 3. 处理文档（Process documents）
+            log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
             long processStartTime = System.currentTimeMillis();
 
-            // 初始化向量检索引擎（如果启用）
+            // 初始化向量检索引擎（如果启用）（Initialize vector indexing engine if enabled）
             LocalEmbeddingEngine embeddingEngine = null;
             SimpleVectorIndexEngine vectorIndexEngine = null;
 
@@ -335,13 +335,13 @@ public class KnowledgeBaseService {
                         properties.getVectorSearch().getIndexPath(),
                         embeddingEngine.getEmbeddingDim()
                     );
-                    log.info("✅ 向量检索引擎已启用");
+                    log.info(LogMessageProvider.getMessage("log.kb.vector_enabled"));
                 } catch (Exception e) {
-                    log.warn("⚠️  向量检索引擎初始化失败，将只使用关键词索引", e);
+                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
                 }
             }
 
-            // 检查是否启用并行处理
+            // 检查是否启用并行处理（Check if parallel processing is enabled）
             boolean useParallel = properties.getDocument().isParallelProcessing()
                 && files.size() > 5;
 
@@ -350,32 +350,32 @@ public class KnowledgeBaseService {
                 if (threads == 0) {
                     threads = Runtime.getRuntime().availableProcessors();
                 }
-                log.info("🚀 使用并行处理模式（{} 个线程）", threads);
+                log.info(LogMessageProvider.getMessage("log.kb.parallel_mode", threads));
             } else {
-                log.info("📝 使用串行处理模式");
+                log.info(LogMessageProvider.getMessage("log.kb.serial_mode"));
             }
 
             int successCount;
             int failedCount;
 
-            // 记录初始内存
-            optimizer.logMemoryUsage("开始处理前");
+            // 记录初始内存（Record initial memory）
+            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_before"));
 
             if (useParallel) {
-                // 并行处理
+                // 并行处理（Parallel processing）
                 var result_counts = processDocumentsInParallel(
                     files, rag, embeddingEngine, vectorIndexEngine);
                 successCount = result_counts[0];
                 failedCount = result_counts[1];
 
-                // 标记文件已索引
+                // 标记文件已索引（Mark files as indexed）
                 if (rebuild) {
                     for (File file : files) {
                         fileTrackingService.markAsIndexed(file);
                     }
                 }
             } else {
-                // 串行处理（原有逻辑）
+                // 串行处理（原有逻辑）（Serial processing (original logic)）
                 successCount = 0;
                 failedCount = 0;
                 List<Document> batchDocuments = new ArrayList<>();
@@ -384,7 +384,7 @@ public class KnowledgeBaseService {
                     File file = files.get(i);
 
                     try {
-                        // 处理文档并收集到批次
+                        // 处理文档并收集到批次（Process document and collect to batch）
                         List<Document> docs = processDocumentOptimized(
                             file, rag, embeddingEngine, vectorIndexEngine);
 
@@ -392,21 +392,20 @@ public class KnowledgeBaseService {
                             batchDocuments.addAll(docs);
                             successCount++;
 
-                            // 标记文件已索引（用于增量索引）
+                            // 标记文件已索引（用于增量索引）（Mark file as indexed (for incremental indexing)）
                             if (rebuild) {
                                 fileTrackingService.markAsIndexed(file);
                             }
 
-                            // 估算内存使用
+                            // 估算内存使用（Estimate memory usage）
                             long estimatedMemory = docs.stream()
                                 .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
                                 .sum();
                             optimizer.addBatchMemory(estimatedMemory);
 
-                            // 检查是否需要批处理或GC
+                            // 检查是否需要批处理或GC（Check if batch processing or GC is needed）
                             if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                                log.info("📦 批处理: {} 个文档 ({} / {})",
-                                    batchDocuments.size(), i + 1, files.size());
+                                log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, files.size()));
 
                                 rag.commit();
                                 batchDocuments.clear();
@@ -416,71 +415,70 @@ public class KnowledgeBaseService {
                         }
 
                     } catch (Exception e) {
-                        log.error("❌ 处理文件失败: {}", file.getName(), e);
+                        log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
                         failedCount++;
                     }
 
-                    // 定期打印进度和内存状态
+                    // 定期打印进度和内存状态（Print progress and memory status regularly）
                     if ((i + 1) % 5 == 0 || i == files.size() - 1) {
                         optimizer.logMemoryUsage(
-                            String.format("进度 %d/%d", i + 1, files.size()));
+                            String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, files.size()));
                     }
                 }
 
-                // 处理剩余的批次
+                // 处理剩余的批次（Process remaining batches）
                 if (!batchDocuments.isEmpty()) {
-                    log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
+                    log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
                     rag.commit();
                 }
             }
 
             long processEndTime = System.currentTimeMillis();
 
-            // 4. 填充构建结果
+            // 4. 填充构建结果（Fill build result）
             result.setSuccessCount(successCount);
             result.setFailedCount(failedCount);
             result.setTotalDocuments((int) rag.getStatistics().getDocumentCount());
             result.setBuildTimeMs(processEndTime - processStartTime);
 
-            // 获取峰值内存使用
+            // 获取峰值内存使用（Get peak memory usage）
             long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             result.setPeakMemoryMB(usedMemory / 1024 / 1024);
 
-            // 5. 显示结果
-            log.info("\n" + "=".repeat(80));
-            log.info("✅ 知识库构建完成");
-            log.info("=".repeat(80));
-            log.info("   - 成功: {} 个文件", result.getSuccessCount());
-            log.info("   - 失败: {} 个文件", result.getFailedCount());
-            log.info("   - 总文档: {} 个", result.getTotalDocuments());
-            log.info("   - 耗时: {} 秒", String.format("%.2f", result.getBuildTimeMs() / 1000.0));
-            log.info("   - 峰值内存: {} MB", result.getPeakMemoryMB());
-            log.info("=".repeat(80));
+            // 5. 显示结果（Display results）
+            log.info(LogMessageProvider.getMessage("log.kb.build_complete"));
+            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
+            log.info(LogMessageProvider.getMessage("log.kb.build_success", result.getSuccessCount()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_failed", result.getFailedCount()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_total", result.getTotalDocuments()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_time", String.format("%.2f", result.getBuildTimeMs() / 1000.0)));
+            log.info(LogMessageProvider.getMessage("log.kb.build_memory", result.getPeakMemoryMB()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
 
-            // 6. 保存文件追踪信息（用于增量索引）
+            // 6. 保存文件追踪信息（用于增量索引）（Save file tracking information (for incremental indexing)）
             if (rebuild) {
                 fileTrackingService.saveTracking();
-                log.info("✓ 已保存文件追踪信息");
+                log.info(LogMessageProvider.getMessage("log.kb.tracking_saved"));
             }
 
-            // 7. 优化和提交
+            // 7. 优化和提交（Optimize and commit）
             optimizer.commitAndOptimize(rag);
 
-            // 8. 保存向量索引
+            // 8. 保存向量索引（Save vector index）
             optimizer.saveVectorIndex(vectorIndexEngine);
 
-            // 9. 清理资源
+            // 9. 清理资源（Clean up resources）
             optimizer.closeEmbeddingEngine(embeddingEngine);
 
-            // 10. 最终内存状态
-            optimizer.logMemoryUsage("构建完成");
+            // 10. 最终内存状态（Final memory status）
+            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_after"));
 
             rag.close();
 
             return result;
 
         } catch (Exception e) {
-            log.error("❌ 知识库构建失败", e);
+            log.error(LogMessageProvider.getMessage("log.kb.build_failed"), e);
 
             result.setError(e.getMessage());
             result.setBuildTimeMs(System.currentTimeMillis() - startTime);
@@ -493,15 +491,15 @@ public class KnowledgeBaseService {
      * 增量索引知识库
      * 只处理新增和修改的文档，大幅提升性能
      *
-     * @param sourcePath 文档源路径
-     * @param storagePath 知识库存储路径
-     * @return 构建结果
+     * @param sourcePath 文档源路径（Document source path）
+     * @param storagePath 知识库存储路径（Knowledge base storage path）
+     * @return 构建结果（Build result）
      */
     public BuildResult incrementalIndex(
             String sourcePath, String storagePath) {
 
-        log.info("🔄 开始增量索引...");
-        log.info("📂 扫描文档: {}", sourcePath);
+        log.info(LogMessageProvider.getMessage("log.kb.incremental_start"));
+        log.info(LogMessageProvider.getMessage("log.kb.scanning", sourcePath));
 
         BuildResult result =
             new BuildResult();
@@ -509,22 +507,22 @@ public class KnowledgeBaseService {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 1. 初始化文件追踪
+            // 1. 初始化文件追踪（Initialize file tracking）
             fileTrackingService.initialize(storagePath);
 
-            // 2. 扫描所有文件
+            // 2. 扫描所有文件（Scan all files）
             List<File> allFiles = scanDocuments(sourcePath);
             result.setTotalFiles(allFiles.size());
 
             if (allFiles.isEmpty()) {
-                log.warn("⚠️  未找到支持的文档文件");
+                log.warn(LogMessageProvider.getMessage("log.kb.no_documents"));
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
                 return result;
             }
 
-            log.info("✅ 找到 {} 个文档文件", allFiles.size());
+            log.info(LogMessageProvider.getMessage("log.kb.found_files", allFiles.size()));
 
-            // 3. 筛选需要更新的文件
+            // 3. 筛选需要更新的文件（Filter files that need updating）
             List<File> filesToUpdate = new ArrayList<>();
             for (File file : allFiles) {
                 if (fileTrackingService.needsUpdate(file)) {
@@ -532,10 +530,10 @@ public class KnowledgeBaseService {
                 }
             }
 
-            log.info("📝 需要更新的文件: {} 个", filesToUpdate.size());
+            log.info(LogMessageProvider.getMessage("log.kb.files_to_update", filesToUpdate.size()));
 
             if (filesToUpdate.isEmpty()) {
-                log.info("✅ 所有文件都是最新的，无需更新");
+                log.info(LogMessageProvider.getMessage("log.kb.up_to_date"));
                 LocalFileRAG rag = LocalFileRAG.builder()
                     .storagePath(storagePath)
                     .build();
@@ -544,17 +542,17 @@ public class KnowledgeBaseService {
                 result.setFailedCount(0);
                 result.setTotalDocuments((int) stats.getDocumentCount());
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
-                // 必须关闭以释放锁
+                // 必须关闭以释放锁（Must close to release lock）
                 rag.close();
                 return result;
             }
 
-            // 4. 打开知识库
+            // 4. 打开知识库（Open knowledge base）
             LocalFileRAG rag = LocalFileRAG.builder()
                 .storagePath(storagePath)
                 .build();
 
-            // 5. 初始化向量检索引擎（如果启用）
+            // 5. 初始化向量检索引擎（如果启用）（Initialize vector indexing engine if enabled）
             LocalEmbeddingEngine embeddingEngine = null;
             SimpleVectorIndexEngine vectorIndexEngine = null;
 
@@ -565,25 +563,25 @@ public class KnowledgeBaseService {
                         properties.getVectorSearch().getIndexPath(),
                         embeddingEngine.getEmbeddingDim()
                     );
-                    log.info("✅ 向量检索引擎已启用");
+                    log.info(LogMessageProvider.getMessage("log.kb.vector_enabled"));
                 } catch (Exception e) {
-                    log.warn("⚠️  向量检索引擎初始化失败，将只使用关键词索引", e);
+                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
                 }
             }
 
-            // 6. 处理需要更新的文档
-            log.info("\n📝 开始处理文档...");
+            // 6. 处理需要更新的文档（Process documents that need updating）
+            log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
             int successCount = 0;
             int failedCount = 0;
             List<Document> batchDocuments = new ArrayList<>();
 
-            optimizer.logMemoryUsage("增量索引开始前");
+            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_before"));
 
             for (int i = 0; i < filesToUpdate.size(); i++) {
                 File file = filesToUpdate.get(i);
 
                 try {
-                    // 处理文档
+                    // 处理文档（Process document）
                     List<Document> docs = processDocumentOptimized(
                         file, rag, embeddingEngine, vectorIndexEngine);
 
@@ -591,19 +589,18 @@ public class KnowledgeBaseService {
                         batchDocuments.addAll(docs);
                         successCount++;
 
-                        // 标记为已索引
+                        // 标记为已索引（Mark as indexed）
                         fileTrackingService.markAsIndexed(file);
 
-                        // 估算内存使用
+                        // 估算内存使用（Estimate memory usage）
                         long estimatedMemory = docs.stream()
                             .mapToLong(d -> optimizer.estimateMemoryUsage(d.getContent().length()))
                             .sum();
                         optimizer.addBatchMemory(estimatedMemory);
 
-                        // 检查是否需要批处理或GC
+                        // 检查是否需要批处理或GC（Check if batch processing or GC is needed）
                         if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                            log.info("📦 批处理: {} 个文档 ({} / {})",
-                                batchDocuments.size(), i + 1, filesToUpdate.size());
+                            log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
 
                             rag.commit();
                             batchDocuments.clear();
@@ -613,69 +610,68 @@ public class KnowledgeBaseService {
                     }
 
                 } catch (Exception e) {
-                    log.error("❌ 处理文件失败: {}", file.getName(), e);
+                    log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
                     failedCount++;
                 }
 
-                // 定期打印进度
+                // 定期打印进度（Print progress regularly）
                 if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
                     optimizer.logMemoryUsage(
-                        String.format("进度 %d/%d", i + 1, filesToUpdate.size()));
+                        String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, filesToUpdate.size()));
                 }
             }
 
-            // 处理剩余的批次
+            // 处理剩余的批次（Process remaining batches）
             if (!batchDocuments.isEmpty()) {
-                log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
+                log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
                 rag.commit();
             }
 
-            // 7. 保存文件追踪信息
+            // 7. 保存文件追踪信息（Save file tracking information）
             fileTrackingService.saveTracking();
 
             long processEndTime = System.currentTimeMillis();
 
-            // 8. 填充构建结果
+            // 8. 填充构建结果（Fill build result）
             result.setSuccessCount(successCount);
             result.setFailedCount(failedCount);
             result.setTotalDocuments((int) rag.getStatistics().getDocumentCount());
             result.setBuildTimeMs(processEndTime - startTime);
 
-            // 获取峰值内存使用
+            // 获取峰值内存使用（Get peak memory usage）
             long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
             result.setPeakMemoryMB(usedMemory / 1024 / 1024);
 
-            // 9. 显示结果
-            log.info("\n" + "=".repeat(80));
-            log.info("✅ 增量索引完成");
-            log.info("=".repeat(80));
-            log.info("   - 更新文件: {} 个", filesToUpdate.size());
-            log.info("   - 成功: {} 个文件", result.getSuccessCount());
-            log.info("   - 失败: {} 个文件", result.getFailedCount());
-            log.info("   - 总文档: {} 个", result.getTotalDocuments());
-            log.info("   - 耗时: {} 秒", String.format("%.2f", result.getBuildTimeMs() / 1000.0));
-            log.info("   - 峰值内存: {} MB", result.getPeakMemoryMB());
-            log.info("=".repeat(80));
+            // 9. 显示结果（Display results）
+            log.info(LogMessageProvider.getMessage("log.kb.incremental_complete"));
+            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
+            log.info(LogMessageProvider.getMessage("log.kb.incremental_files", filesToUpdate.size()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_success", result.getSuccessCount()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_failed", result.getFailedCount()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_total", result.getTotalDocuments()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_time", String.format("%.2f", result.getBuildTimeMs() / 1000.0)));
+            log.info(LogMessageProvider.getMessage("log.kb.build_memory", result.getPeakMemoryMB()));
+            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
 
-            // 10. 优化和提交
+            // 10. 优化和提交（Optimize and commit）
             optimizer.commitAndOptimize(rag);
 
-            // 11. 保存向量索引
+            // 11. 保存向量索引（Save vector index）
             optimizer.saveVectorIndex(vectorIndexEngine);
 
-            // 12. 清理资源
+            // 12. 清理资源（Clean up resources）
             optimizer.closeEmbeddingEngine(embeddingEngine);
 
-            // 13. 最终内存状态
-            optimizer.logMemoryUsage("增量索引完成");
+            // 13. 最终内存状态（Final memory status）
+            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_after"));
 
-            // 必须关闭 RAG 实例以释放 Lucene 写锁
+            // 必须关闭 RAG 实例以释放 Lucene 写锁（Must close RAG instance to release Lucene write lock）
             rag.close();
 
             return result;
 
         } catch (Exception e) {
-            log.error("❌ 增量索引失败", e);
+            log.error(LogMessageProvider.getMessage("log.kb.incremental_failed"), e);
 
             result.setError(e.getMessage());
             result.setBuildTimeMs(System.currentTimeMillis() - startTime);
@@ -685,33 +681,33 @@ public class KnowledgeBaseService {
     }
 
     /**
-     * 扫描文档文件
+     * 扫描文档文件（Scan document files）
      */
     private List<File> scanDocuments(String sourcePath) throws IOException {
-        log.info("📂 源路径: {}", sourcePath);
+        log.info(LogMessageProvider.getMessage("log.kb.source_path", sourcePath));
 
-        // 处理 classpath: 前缀
+        // 处理 classpath: 前缀（Handle classpath: prefix）
         if (sourcePath.startsWith("classpath:")) {
             return scanClasspathResources(sourcePath.substring("classpath:".length()));
         }
 
-        // 处理普通文件系统路径
+        // 处理普通文件系统路径（Handle regular file system paths）
         File sourceFile = new File(sourcePath);
 
         if (!sourceFile.exists()) {
-            log.warn("⚠️  路径不存在: {}", sourcePath);
+            log.warn(LogMessageProvider.getMessage("log.kb.path_not_exists", sourcePath));
             return Collections.emptyList();
         }
 
         List<File> files = new ArrayList<>();
 
         if (sourceFile.isFile()) {
-            // 单个文件
+            // 单个文件（Single file）
             if (isSupportedFile(sourceFile)) {
                 files.add(sourceFile);
             }
         } else if (sourceFile.isDirectory()) {
-            // 文件夹 - 递归扫描
+            // 文件夹 - 递归扫描（Folder - recursive scan）
             try (var stream = Files.walk(Paths.get(sourcePath))) {
                 stream.filter(Files::isRegularFile)
                     .map(Path::toFile)
@@ -724,43 +720,43 @@ public class KnowledgeBaseService {
     }
 
     /**
-     * 扫描 classpath 资源
+     * 扫描 classpath 资源（Scan classpath resources）
      */
     private List<File> scanClasspathResources(String resourcePath) throws IOException {
-        log.info("📦 扫描 classpath 资源: {}", resourcePath);
+        log.info(LogMessageProvider.getMessage("log.kb.scan_classpath", resourcePath));
 
         List<File> files = new ArrayList<>();
 
         try {
-            // 获取资源 URL
+            // 获取资源 URL（Get resource URL）
             var resource = getClass().getClassLoader().getResource(resourcePath);
 
             if (resource == null) {
-                log.warn("⚠️  classpath 资源不存在: {}", resourcePath);
+                log.warn(LogMessageProvider.getMessage("log.kb.classpath_not_exists", resourcePath));
                 return files;
             }
 
-            log.info("✓ 找到资源: {}", resource);
+            log.info(LogMessageProvider.getMessage("log.kb.resource_found", resource));
 
-            // 转换为 File 对象
+            // 转换为 File 对象（Convert to File object）
             File resourceFile = new File(resource.toURI());
 
             if (!resourceFile.exists()) {
-                log.warn("⚠️  资源文件不存在: {}", resourceFile.getAbsolutePath());
+                log.warn(LogMessageProvider.getMessage("log.kb.resource_file_not_exists", resourceFile.getAbsolutePath()));
                 return files;
             }
 
-            log.info("✓ 资源路径: {}", resourceFile.getAbsolutePath());
+            log.info(LogMessageProvider.getMessage("log.kb.resource_path", resourceFile.getAbsolutePath()));
 
             if (resourceFile.isFile()) {
-                // 单个文件
+                // 单个文件（Single file）
                 if (isSupportedFile(resourceFile)) {
                     files.add(resourceFile);
-                    log.info("✓ 添加文件: {}", resourceFile.getName());
+                    log.info(LogMessageProvider.getMessage("log.kb.add_file", resourceFile.getName()));
                 }
             } else if (resourceFile.isDirectory()) {
-                // 目录 - 递归扫描
-                log.info("✓ 扫描目录...");
+                // 目录 - 递归扫描（Directory - recursive scan）
+                log.info(LogMessageProvider.getMessage("log.kb.scan_directory"));
                 try (var stream = Files.walk(resourceFile.toPath())) {
                     stream.filter(Files::isRegularFile)
                         .map(Path::toFile)
@@ -770,11 +766,11 @@ public class KnowledgeBaseService {
                             log.debug("   - {}", f.getName());
                         });
                 }
-                log.info("✓ 找到 {} 个支持的文件", files.size());
+                log.info(LogMessageProvider.getMessage("log.kb.files_found", files.size()));
             }
 
         } catch (Exception e) {
-            log.error("❌ 扫描 classpath 资源失败: {}", resourcePath, e);
+            log.error(LogMessageProvider.getMessage("log.kb.scan_classpath_failed", resourcePath), e);
             throw new IOException("扫描 classpath 资源失败", e);
         }
 
@@ -793,7 +789,7 @@ public class KnowledgeBaseService {
     }
 
     /**
-     * 并行处理文档列表
+     * 并行处理文档列表（Parallel processing of document list）
      *
      * @return int[] {successCount, failedCount}
      */
@@ -817,22 +813,22 @@ public class KnowledgeBaseService {
         List<Future<?>> futures = new ArrayList<>();
         int totalFiles = filesToProcess.size();
 
-        // 创建线程池
+        // 创建线程池（Create thread pool）
         ExecutorService executor = Executors.newFixedThreadPool(threads);
 
         try {
-            // 分批处理文件
+            // 分批处理文件（Process files in batches）
             for (int i = 0; i < totalFiles; i += batchSize) {
                 final int batchEnd = Math.min(i + batchSize, totalFiles);
                 List<File> batch = filesToProcess.subList(i, batchEnd);
 
                 Future<?> future = executor.submit(() -> {
-                    // 每个线程独立的文档列表
+                    // 每个线程独立的文档列表（Each thread has its own document list）
                     List<Document> threadDocuments = new ArrayList<>();
 
                     for (File file : batch) {
                         try {
-                            // 处理文档
+                            // 处理文档（Process document）
                             List<Document> docs = processDocumentOptimized(
                                 file, rag, embeddingEngine, vectorIndexEngine);
 
@@ -840,36 +836,34 @@ public class KnowledgeBaseService {
                                 threadDocuments.addAll(docs);
                                 successCount.incrementAndGet();
 
-                                // 标记文件已索引
+                                // 标记文件已索引（Mark file as indexed）
                                 fileTrackingService.markAsIndexed(file);
                             }
 
                         } catch (Exception e) {
-                            log.error("❌ 处理文件失败: {}", file.getName(), e);
+                            log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
                             failedCount.incrementAndGet();
                         }
 
-                        // 更新进度
+                        // 更新进度（Update progress）
                         int current = processedCount.incrementAndGet();
                         if (current % 10 == 0 || current == totalFiles) {
-                            log.info("📊 处理进度: {}/{} ({} 成功, {} 失败)",
-                                current, totalFiles,
-                                successCount.get(), failedCount.get());
+                            log.info(LogMessageProvider.getMessage("log.kb.parallel_progress", current, totalFiles, successCount.get(), failedCount.get()));
 
                             optimizer.logMemoryUsage(
-                                String.format("并行处理 %d/%d", current, totalFiles));
+                                String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.parallel_memory"), current, totalFiles));
                         }
                     }
 
-                    // 批次提交（使用 RAG 的同步机制）
+                    // 批次提交（使用 RAG 的同步机制）（Batch commit (using RAG's synchronization mechanism)）
                     synchronized (rag) {
                         if (!threadDocuments.isEmpty()) {
-                            log.info("📦 提交批次: {} 个文档", threadDocuments.size());
+                            log.info(LogMessageProvider.getMessage("log.kb.batch_commit", threadDocuments.size()));
                             rag.commit();
                         }
                     }
 
-                    // 定期触发GC
+                    // 定期触发GC（Trigger GC regularly）
                     if (processedCount.get() % (batchSize * 3) == 0) {
                         optimizer.checkAndTriggerGC();
                     }
@@ -878,17 +872,17 @@ public class KnowledgeBaseService {
                 futures.add(future);
             }
 
-            // 等待所有任务完成
+            // 等待所有任务完成（Wait for all tasks to complete）
             for (Future<?> future : futures) {
                 try {
                     future.get();
                 } catch (Exception e) {
-                    log.error("❌ 批处理任务失败", e);
+                    log.error(LogMessageProvider.getMessage("log.kb.batch_task_failed"), e);
                 }
             }
 
         } finally {
-            // 关闭线程池
+            // 关闭线程池（Shutdown thread pool）
             executor.shutdown();
             try {
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
@@ -900,66 +894,61 @@ public class KnowledgeBaseService {
             }
         }
 
-        // 最后提交一次
+        // 最后提交一次（Final commit）
         rag.commit();
 
         return new int[]{successCount.get(), failedCount.get()};
     }
 
     /**
-     * 处理单个文档（优化版，返回文档列表以支持批处理）
+     * 处理单个文档（优化版，返回文档列表以支持批处理）（Process single document (optimized version, returns document list to support batch processing)）
      */
     private List<Document> processDocumentOptimized(File file, LocalFileRAG rag,
                                                      LocalEmbeddingEngine embeddingEngine,
                                                      SimpleVectorIndexEngine vectorIndexEngine) {
 
-        log.info("📄 处理: {} ({} KB)", file.getName(), file.length() / 1024);
+        log.info(LogMessageProvider.getMessage("log.kb.processing_file", file.getName(), file.length() / 1024));
         List<Document> createdDocuments = new ArrayList<>();
 
         try {
-            // 1. 检查文件大小
+            // 1. 检查文件大小（Check file size）
             if (!optimizer.checkFileSize(file.length())) {
-                log.warn("   ⚠️  文件过大，跳过: {} MB > {} MB",
-                    file.length() / 1024 / 1024,
-                    properties.getDocument().getMaxFileSizeMb());
+                log.warn(LogMessageProvider.getMessage("log.kb.file_too_large", file.length() / 1024 / 1024, properties.getDocument().getMaxFileSizeMb()));
                 return createdDocuments;
             }
 
-            // 2. 解析文档内容
+            // 2. 解析文档内容（Parse document content）
             String content = documentParser.parse(file);
 
             if (content == null || content.trim().isEmpty()) {
-                log.warn("   ⚠️  解析内容为空，跳过");
+                log.warn(LogMessageProvider.getMessage("log.kb.content_empty"));
                 return createdDocuments;
             }
 
             int originalLength = content.length();
 
-            // 2.1 立即截断超大内容，防止后续处理内存溢出
-            // 这是关键：在索引阶段就限制大小，而不是在问答时才处理
+            // 2.1 立即截断超大内容，防止后续处理内存溢出（Immediately truncate oversized content to prevent memory overflow）
+            // 这是关键：在索引阶段就限制大小，而不是在问答时才处理（This is key: limit size at indexing stage, not at Q&A time）
             int maxContentLength = properties.getDocument().getMaxIndexContentLength();
             if (content.length() > maxContentLength) {
-                log.warn("   ⚠️  内容过大 ({} 字符 = {} KB)，截断为 {} 字符以防止内存溢出（配置: max-index-content-length）",
-                        originalLength, originalLength / 512, maxContentLength);
+                log.warn(LogMessageProvider.getMessage("log.kb.content_too_large", originalLength, originalLength / 512, maxContentLength));
                 content = content.substring(0, maxContentLength);
-                log.info("   ✂️  已截断 {} 字符 ({} %)，可通过配置 max-index-content-length 调整",
-                        originalLength - maxContentLength,
-                        (originalLength - maxContentLength) * 100 / originalLength);
+                log.info(LogMessageProvider.getMessage("log.kb.content_truncated", originalLength - maxContentLength, (originalLength - maxContentLength) * 100 / originalLength));
             }
 
-            log.info("   ✓ 提取 {} 字符", content.length());
+            log.info(LogMessageProvider.getMessage("log.kb.content_extracted", content.length()));
 
-            // 2.5 提取图片并将图片信息文本化添加到内容中（关键优化）
-            // 这样图片信息会被索引和向量化，在问答时直接可用，不需要重新处理
+            // 2.5 提取图片并将图片信息文本化添加到内容中（关键优化）（Extract images and add image information to content as text (key optimization)）
+            // 这样图片信息会被索引和向量化，在问答时直接可用，不需要重新处理（This way image information will be indexed and vectorized, directly available at Q&A time without reprocessing）
             if (imageExtractionService != null && imageExtractionService.supportsDocument(file.getName())) {
                 try {
                     List<top.yumbo.ai.rag.image.ImageInfo> images =
                         imageExtractionService.extractAndSaveImages(file, file.getName());
 
                     if (!images.isEmpty()) {
-                        log.info("   🖼️  提取 {} 张图片", images.size());
+                        log.info(LogMessageProvider.getMessage("log.kb.images_extracted", images.size()));
 
-                        // 将图片信息添加到文档内容中，这样就可以被检索到
+                        // 将图片信息添加到文档内容中，这样就可以被检索到（Add image information to document content so it can be retrieved）
                         StringBuilder imageText = new StringBuilder();
                         imageText.append("\n\n=== 文档包含的图片 ===\n");
 
@@ -980,69 +969,67 @@ public class KnowledgeBaseService {
 
                         imageText.append("\n=== 图片列表结束 ===\n");
 
-                        // 将图片信息添加到内容末尾
+                        // 将图片信息添加到内容末尾（Add image information to the end of content）
                         content = content + imageText.toString();
 
-                        log.info("   ✓ 图片信息已添加到文档内容中，便于检索");
+                        log.info(LogMessageProvider.getMessage("log.kb.images_added"));
                     }
                 } catch (Exception e) {
-                    log.warn("   ⚠️  图片提取失败: {}", e.getMessage());
-                    // 不中断文档处理流程
+                    log.warn(LogMessageProvider.getMessage("log.kb.image_extraction_failed", e.getMessage()));
+                    // 不中断文档处理流程（Do not interrupt document processing flow）
                 }
             }
 
-            // 3. 检查内容大小并判断分块策略
+            // 3. 检查内容大小并判断分块策略（Check content size and determine chunking strategy）
             boolean forceChunk = optimizer.needsForceChunking(content.length());
             boolean autoChunk = optimizer.shouldAutoChunk(content.length());
 
             if (forceChunk) {
-                log.warn("   ⚠️  内容过大 ({} MB)，强制分块",
-                    content.length() / 1024 / 1024);
+                log.warn(LogMessageProvider.getMessage("log.kb.force_chunk", content.length() / 1024 / 1024));
             } else if (autoChunk) {
-                log.info("   📝 内容较大 ({} KB)，自动分块",
-                    content.length() / 1024);
+                log.info(LogMessageProvider.getMessage("log.kb.auto_chunk", content.length() / 1024));
             }
 
-            // 4. 创建文档
+            // 4. 创建文档（Create document）
             Document document = Document.builder()
                 .title(file.getName())
                 .content(content)
                 .metadata(buildMetadata(file))
                 .build();
 
-            // 5. 判断是否需要分块
+            // 5. 判断是否需要分块（Determine if chunking is needed）
             List<Document> documentsToIndex;
 
             if (forceChunk || autoChunk) {
                 documentsToIndex = documentChunker.chunk(document);
-                log.info("   ✓ 分块: {} 个", documentsToIndex.size());
+                log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
             } else {
                 documentsToIndex = List.of(document);
             }
 
-            // 6. 索引文档
+            // 6. 索引文档（Index documents）
             for (Document doc : documentsToIndex) {
                 String docId = rag.index(doc);
                 doc.setId(docId);
                 createdDocuments.add(doc);
 
-                // 7. 生成向量索引（如果启用）
+                // 7. 生成向量索引（如果启用）（Generate vector index if enabled）
                 if (embeddingEngine != null && vectorIndexEngine != null) {
                     try {
                         float[] vector = embeddingEngine.embed(doc.getContent());
                         vectorIndexEngine.addDocument(docId, vector);
                     } catch (Exception e) {
-                        log.debug("向量生成失败: {}", e.getMessage());
+                        log.debug(LogMessageProvider.getMessage("log.kb.vector_generation_failed", e.getMessage()));
                     }
                 }
             }
 
-            log.info("   ✅ 索引完成 ({} 个文档)", createdDocuments.size());
+            log.info(LogMessageProvider.getMessage("log.kb.indexing_complete", createdDocuments.size()));
 
             return createdDocuments;
 
         } catch (Exception e) {
-            log.error("   ❌ 处理失败", e);
+            log.error(LogMessageProvider.getMessage("log.kb.processing_failed"), e);
             throw new RuntimeException("文档处理失败: " + file.getName(), e);
         }
     }
@@ -1071,9 +1058,9 @@ public class KnowledgeBaseService {
     }
 
     /**
-     * 增量索引单个文件（用于问答归档）
+     * 增量索引单个文件（用于问答归档）（Incremental index single file (for Q&A archiving)）
      *
-     * @param filePath 文件路径
+     * @param filePath 文件路径（File path）
      */
     public void incrementalIndexFile(Path filePath) {
         try {
@@ -1081,18 +1068,18 @@ public class KnowledgeBaseService {
             File file = filePath.toFile();
 
             if (!file.exists()) {
-                log.warn("⚠️ 文件不存在: {}", filePath);
+                log.warn(LogMessageProvider.getMessage("log.kb.file_not_exists", filePath));
                 return;
             }
 
-            log.info("📑 索引单个文件: {}", file.getName());
+            log.info(LogMessageProvider.getMessage("log.kb.index_single_file", file.getName()));
 
-            // 打开知识库
+            // 打开知识库（Open knowledge base）
             LocalFileRAG rag = LocalFileRAG.builder()
                     .storagePath(storagePath)
                     .build();
 
-            // 初始化向量检索引擎（如果启用）
+            // 初始化向量检索引擎（如果启用）（Initialize vector indexing engine if enabled）
             LocalEmbeddingEngine embeddingEngine = null;
             SimpleVectorIndexEngine vectorIndexEngine = null;
 
@@ -1104,24 +1091,24 @@ public class KnowledgeBaseService {
                             embeddingEngine.getEmbeddingDim()
                     );
                 } catch (Exception e) {
-                    log.warn("⚠️ 向量检索引擎初始化失败", e);
+                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
                 }
             }
 
-            // 处理文档
+            // 处理文档（Process document）
             List<Document> docs = processDocumentOptimized(
                     file, rag, embeddingEngine, vectorIndexEngine);
 
             if (docs != null && !docs.isEmpty()) {
                 rag.commit();
-                log.info("✅ 文件索引完成: {}", file.getName());
+                log.info(LogMessageProvider.getMessage("log.kb.file_indexed", file.getName()));
             }
 
-            // 必须关闭以释放锁
+            // 必须关闭以释放锁（Must close to release lock）
             rag.close();
 
         } catch (Exception e) {
-            log.error("❌ 索引文件失败: {}", filePath, e);
+            log.error(LogMessageProvider.getMessage("log.kb.index_file_failed", filePath), e);
         }
     }
 }

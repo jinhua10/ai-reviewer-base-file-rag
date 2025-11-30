@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.query;
 import top.yumbo.ai.rag.model.SearchResult;
 
 /**
- * 查询处理器接口
+ * 查询处理器接口（Query processor interface）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -30,4 +30,3 @@ public interface QueryProcessor {
      */
     CacheStatistics getCacheStatistics();
 }
-

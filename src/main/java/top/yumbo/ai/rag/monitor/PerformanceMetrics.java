@@ -1,5 +1,6 @@
 package top.yumbo.ai.rag.monitor;
 import lombok.Data;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 @Data
@@ -57,14 +58,9 @@ public class PerformanceMetrics {
         cacheMisses.reset();
     }
     public String generateReport() {
-        return String.format(
-            "Performance Metrics:\n" +
-            "  Indexed: %d docs, Avg: %.2fms, Errors: %d\n" +
-            "  Searches: %d, Avg: %.2fms, Errors: %d\n" +
-            "  Cache Hit Rate: %.2f%%",
+        return LogMessageProvider.getMessage("log.monitor.performance.report",
             indexedDocuments.sum(), getAvgIndexTime(), indexErrors.sum(),
             searchCount.sum(), getAvgSearchTime(), searchErrors.sum(),
-            getCacheHitRate() * 100
-        );
+            getCacheHitRate() * 100);
     }
 }

@@ -15,8 +15,8 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * RAG引擎工厂
- * 用于创建各种引擎的默认实现
+ * RAG引擎工厂 (RAG engine factory)
+ * 用于创建各种引擎的默认实现 (Used to create default implementations of various engines)
  *
  * @author AI Reviewer Team
  * @since 2025-11-21
@@ -39,7 +39,7 @@ public class RAGEngineFactory {
     }
 
     /**
-     * 创建默认的存储引擎
+     * 创建默认的存储引擎 (Create default storage engine)
      */
     public static StorageEngine createStorageEngine(RAGConfiguration config) {
         String m = fmt("log.factory.create_filesystem");
@@ -52,7 +52,7 @@ public class RAGEngineFactory {
     }
 
     /**
-     * 创建默认的索引引擎
+     * 创建默认的索引引擎 (Create default index engine)
      */
     public static IndexEngine createIndexEngine(RAGConfiguration config) {
         String m = fmt("log.factory.create_lucene");
@@ -65,7 +65,7 @@ public class RAGEngineFactory {
     }
 
     /**
-     * 创建默认的缓存引擎
+     * 创建默认的缓存引擎 (Create default cache engine)
      */
     public static CacheEngine createCacheEngine(RAGConfiguration config) {
         String m = fmt("log.factory.create_caffeine");

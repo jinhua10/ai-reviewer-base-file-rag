@@ -2,8 +2,8 @@ package top.yumbo.ai.rag.spring.boot.service;
 
 import ai.onnxruntime.OrtException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.model.ScoredDocument;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -987,7 +988,9 @@ public class KnowledgeQAService {
                 .limit(limit)
                 .build());
 
-        return result.getDocuments();
+        return result.getDocuments().stream()
+            .map(ScoredDocument::getDocument)
+            .collect(Collectors.toList());
     }
 
     /**

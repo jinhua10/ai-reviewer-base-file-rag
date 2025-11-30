@@ -8,7 +8,10 @@ import javax.crypto.spec.IvParameterSpec;
 import java.util.Base64;
 
 /**
- * 加密服务
+ * 加密服务（Encryption service）
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-22
  */
 @Slf4j
 public class EncryptionService {

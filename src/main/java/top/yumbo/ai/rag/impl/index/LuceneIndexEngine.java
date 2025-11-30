@@ -26,8 +26,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Lucene索引引擎实现
- * 使用Apache Lucene进行全文索引和搜索
+ * Lucene索引引擎实现 (Lucene index engine implementation)
+ * 使用Apache Lucene进行全文索引和搜索 (Uses Apache Lucene for full-text indexing and search)
  *
  * @author AI Reviewer Team
  * @since 2025-11-21
@@ -197,7 +197,7 @@ public class LuceneIndexEngine implements IndexEngine {
                         .score(scoreDoc.score)
                         .build();
 
-                result.addDocument(scoredDoc);
+                result.addScoredDocument(scoredDoc);
             }
 
             result.setQueryTimeMs(System.currentTimeMillis() - startTime);

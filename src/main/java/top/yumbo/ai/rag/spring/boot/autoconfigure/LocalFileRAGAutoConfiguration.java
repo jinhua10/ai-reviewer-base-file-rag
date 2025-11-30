@@ -10,15 +10,15 @@ import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
- * LocalFileRAG 自动配置 (LocalFileRAG Auto-configuration)
+ * LocalFileRAG 自动配置（LocalFileRAG Auto-configuration）
  *
- * 使用方式： (Usage:)
- * 1. 在 application.yml 中配置: (Configure in application.yml:)
+ * 使用方式：（Usage:)
+ * 1. 在 application.yml 中配置:（Configure in application.yml:)
  *    local-file-rag:
  *      enabled: true
  *      storage-path: ./data/rag
  *
- * 2. 直接注入使用: (Inject and use directly:)
+ * 2. 直接注入使用:（Inject and use directly:)
  *    {@code @Autowired}
  *    private LocalFileRAG rag;
  *
@@ -38,7 +38,7 @@ public class LocalFileRAGAutoConfiguration {
     }
 
     /**
-     * 自动配置 LocalFileRAG Bean (Auto-configure LocalFileRAG Bean)
+     * 自动配置 LocalFileRAG Bean（Auto-configure LocalFileRAG Bean）
      */
     @Bean
     @ConditionalOnMissingBean
@@ -60,7 +60,7 @@ public class LocalFileRAGAutoConfiguration {
     }
 
     /**
-     * 自动配置 RAG 服务 (Auto-configure RAG service)
+     * 自动配置 RAG 服务（Auto-configure RAG service）
      */
     @Bean
     @ConditionalOnMissingBean

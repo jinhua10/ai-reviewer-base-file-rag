@@ -1,6 +1,14 @@
 package top.yumbo.ai.rag.query;
 import lombok.Getter;
 import top.yumbo.ai.rag.model.SearchResult;
+
+/**
+ * 分页结果（Paged result）
+ * 封装分页查询的结果信息
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-22
+ */
 @Getter
 public class PagedResult {
     private final SearchResult searchResult;
@@ -23,7 +31,7 @@ public class PagedResult {
     public long getQueryTimeMs() {
         return searchResult.getQueryTimeMs();
     }
-    public java.util.List<top.yumbo.ai.rag.model.Document> getDocuments() {
-        return searchResult.getDocuments();
+    public java.util.List<top.yumbo.ai.rag.model.ScoredDocument> getDocuments() {
+        return searchResult.getScoredDocuments();
     }
 }

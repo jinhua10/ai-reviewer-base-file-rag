@@ -99,7 +99,7 @@ public class MemoryMonitor {
      */
     public void suggestGC() {
         long beforeUsed = getUsedMemoryMB();
-        log.info("Suggesting garbage collection, current memory usage: {}MB", beforeUsed);
+        log.info(LogMessageProvider.getMessage("log.optimization.memory.suggest_gc", beforeUsed));
 
         System.gc();
 
@@ -114,9 +114,9 @@ public class MemoryMonitor {
         long freed = beforeUsed - afterUsed;
 
         if (freed > 0) {
-            log.info("GC completed, freed approximately {}MB of memory", freed);
+            log.info(LogMessageProvider.getMessage("log.optimization.memory.gc_freed", freed));
         } else {
-            log.info("GC completed, no significant memory freed");
+            log.info(LogMessageProvider.getMessage("log.optimization.memory.gc_no_freed"));
         }
     }
 

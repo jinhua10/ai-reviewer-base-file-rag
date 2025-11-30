@@ -4,6 +4,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.Set;
+
+/**
+ * 用户模型（User model）
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-22
+ */
 @Data
 @Builder
 @NoArgsConstructor

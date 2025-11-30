@@ -4,12 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 健康检查服务
+ * 健康检查服务（Health check service）
  */
 @Data
 public class HealthCheckService {
@@ -17,7 +18,7 @@ public class HealthCheckService {
     private final LocalFileRAG rag;
     
     /**
-     * 健康检查结果
+     * 健康检查结果（Health check result）
      */
     @Data
     @Builder
@@ -39,21 +40,21 @@ public class HealthCheckService {
     }
     
     /**
-     * 执行健康检查
+     * 执行健康检查（Execute health check）
      */
     public HealthStatus check() {
         Map<String, ComponentHealth> components = new HashMap<>();
         
-        // 检查存储
+        // 检查存储（Check storage）
         components.put("storage", checkStorage());
         
-        // 检查索引
+        // 检查索引（Check index）
         components.put("index", checkIndex());
         
-        // 检查缓存
+        // 检查缓存（Check cache）
         components.put("cache", checkCache());
         
-        // 确定总体状态
+        // 确定总体状态（Determine overall status）
         String overallStatus = components.values().stream()
             .allMatch(c -> "UP".equals(c.getStatus())) ? "UP" : "DOWN";
         
@@ -66,32 +67,32 @@ public class HealthCheckService {
     
     private ComponentHealth checkStorage() {
         try {
-            // 简单检查：获取统计信息
+            // 简单检查：获取统计信息（Simple check: get statistics）
             var stats = rag.getStatistics();
             return ComponentHealth.builder()
                 .status("UP")
-                .message("Storage OK, docs: " + stats.getDocumentCount())
+                .message(LogMessageProvider.getMessage("log.monitor.health.storage_ok", stats.getDocumentCount()))
                 .build();
         } catch (Exception e) {
             return ComponentHealth.builder()
                 .status("DOWN")
-                .message("Storage error: " + e.getMessage())
+                .message(LogMessageProvider.getMessage("log.monitor.health.storage_error", e.getMessage()))
                 .build();
         }
     }
     
     private ComponentHealth checkIndex() {
         try {
-            // 简单检查：获取统计信息
+            // 简单检查：获取统计信息（Simple check: get statistics）
             var stats = rag.getStatistics();
             return ComponentHealth.builder()
                 .status("UP")
-                .message("Index OK, indexed: " + stats.getIndexedDocumentCount())
+                .message(LogMessageProvider.getMessage("log.monitor.health.index_ok", stats.getIndexedDocumentCount()))
                 .build();
         } catch (Exception e) {
             return ComponentHealth.builder()
                 .status("DOWN")
-                .message("Index error: " + e.getMessage())
+                .message(LogMessageProvider.getMessage("log.monitor.health.index_error", e.getMessage()))
                 .build();
         }
     }
@@ -100,12 +101,12 @@ public class HealthCheckService {
         try {
             return ComponentHealth.builder()
                 .status("UP")
-                .message("Cache OK")
+                .message(LogMessageProvider.getMessage("log.monitor.health.cache_ok"))
                 .build();
         } catch (Exception e) {
             return ComponentHealth.builder()
                 .status("DOWN")
-                .message("Cache error: " + e.getMessage())
+                .message(LogMessageProvider.getMessage("log.monitor.health.cache_error", e.getMessage()))
                 .build();
         }
     }

@@ -3,6 +3,13 @@ import java.util.*;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
+/**
+ * 批量处理器（Batch processor）
+ * 用于批量处理数据，支持缓冲和分批执行（Used for batch processing data, supports buffering and batch execution）
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-30
+ */
 @Slf4j
 public class BatchProcessor<T> {
     private final int batchSize;
@@ -14,6 +21,10 @@ public class BatchProcessor<T> {
         this.processor = processor;
         this.buffer = new ArrayList<>(batchSize);
     }
+    /**
+     * 添加项目到缓冲区（Add item to buffer）
+     * 如果缓冲区满，则自动刷新（Auto flush if buffer is full）
+     */
     public void add(T item) {
         buffer.add(item);
         if (buffer.size() >= batchSize) {
@@ -30,7 +41,10 @@ public class BatchProcessor<T> {
             }
         }
     }
-    public static <T> void processList(List<T> items, int batchSize, 
+    /**
+     * 批量处理列表（Process list in batches）
+     */
+    public static <T> void processList(List<T> items, int batchSize,
                                         Consumer<List<T>> processor) {
         for (int i = 0; i < items.size(); i += batchSize) {
             int end = Math.min(i + batchSize, items.size());
@@ -38,6 +52,9 @@ public class BatchProcessor<T> {
             processor.accept(batch);
         }
     }
+    /**
+     * 获取缓冲区大小（Get buffer size）
+     */
     public int getBufferSize() {
         return buffer.size();
     }

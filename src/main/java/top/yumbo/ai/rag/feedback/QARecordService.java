@@ -20,8 +20,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 问答记录存储服务
- * 负责问答记录的存储、查询和管理
+ * 问答记录存储服务（QA Record Storage Service）
+ * 负责问答记录的存储、查询和管理（Responsible for storing, querying, and managing QA records）
  *
  * @author AI Reviewer Team
  * @since 2025-11-27
@@ -38,7 +38,7 @@ public class QARecordService {
     private final Path recordsPath;
     private final FeedbackConfig feedbackConfig;
     private final DocumentWeightService documentWeightService;
-    private QAArchiveService qaArchiveService; // 延迟注入，避免循环依赖
+    private QAArchiveService qaArchiveService; // 延迟注入，避免循环依赖（Lazy injection to avoid circular dependency）
 
     @Autowired
     public QARecordService(FeedbackConfig feedbackConfig,
@@ -49,17 +49,12 @@ public class QARecordService {
         this.objectMapper.registerModule(new JavaTimeModule());
         this.recordsPath = Paths.get(RECORDS_DIR);
 
-        // 确保目录存在
-        try {
-            Files.createDirectories(recordsPath);
-            log.info(LogMessageProvider.getMessage("log.qa.records_dir", recordsPath.toAbsolutePath().toString()));
-        } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.qa.records_dir_failed", e.getMessage()), e);
-        }
+        // 初始化存储目录（Initialize storage directory）
+        initStorageDirectory();
     }
 
     /**
-     * 设置问答归档服务（延迟注入）
+     * 设置问答归档服务（延迟注入）（Set QA archive service (lazy injection)）
      */
     @Autowired(required = false)
     public void setQaArchiveService(QAArchiveService qaArchiveService) {
@@ -67,7 +62,7 @@ public class QARecordService {
     }
 
     /**
-     * 保存问答记录
+     * 保存问答记录（Save QA record）
      */
     public String saveRecord(QARecord record) {
         try {
@@ -110,11 +105,11 @@ public class QARecordService {
     }
 
     /**
-     * 根据ID获取记录
+     * 根据ID获取记录（Get record by ID）
      */
     public Optional<QARecord> getRecord(String id) {
         try {
-            // 遍历所有日期目录查找
+            // 遍历所有日期目录查找（Traverse all date directories to find）
             return Files.walk(recordsPath, 2)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(".json"))
@@ -128,11 +123,11 @@ public class QARecordService {
     }
 
     /**
-     * 更新记录
+     * 更新记录（Update record）
      */
     public boolean updateRecord(QARecord record) {
         try {
-            // 查找现有文件
+            // 查找现有文件（Find existing file）
             Optional<Path> existingFile = Files.walk(recordsPath, 2)
                 .filter(Files::isRegularFile)
                 .filter(p -> p.toString().endsWith(".json"))
@@ -155,7 +150,7 @@ public class QARecordService {
     }
 
     /**
-     * 添加整体反馈
+     * 添加整体反馈（Add overall feedback）
      */
     public boolean addOverallFeedback(String recordId, int rating, String feedback) {
         Optional<QARecord> recordOpt = getRecord(recordId);
@@ -172,7 +167,7 @@ public class QARecordService {
 
         boolean updated = updateRecord(record);
 
-        // ✨ 新增：高评分自动归档
+        // ✨ 新增：高评分自动归档（New feature: High rating auto-archive）
         if (updated && rating >= 4 && qaArchiveService != null) {
             try {
                 if (qaArchiveService.shouldArchive(record)) {
@@ -190,7 +185,7 @@ public class QARecordService {
     }
 
     /**
-     * 添加文档反馈
+     * 添加文档反馈（Add document feedback）
      */
     public boolean addDocumentFeedback(String recordId, String documentName,
                                       QARecord.FeedbackType feedbackType, String reason) {
@@ -204,18 +199,18 @@ public class QARecordService {
             record.setDocumentFeedbacks(new ArrayList<>());
         }
 
-        // 检查是否已经反馈过
+        // 检查是否已经反馈过（Check if feedback already exists）
         Optional<QARecord.DocumentFeedback> existing = record.getDocumentFeedbacks().stream()
             .filter(f -> f.getDocumentName().equals(documentName))
             .findFirst();
 
         if (existing.isPresent()) {
-            // 更新现有反馈
+            // 更新现有反馈（Update existing feedback）
             existing.get().setFeedbackType(feedbackType);
             existing.get().setReason(reason);
             existing.get().setFeedbackTime(LocalDateTime.now());
         } else {
-            // 添加新反馈
+            // 添加新反馈（Add new feedback）
             record.getDocumentFeedbacks().add(
                 QARecord.DocumentFeedback.builder()
                     .documentName(documentName)
@@ -229,14 +224,14 @@ public class QARecordService {
         String emoji = feedbackType == QARecord.FeedbackType.LIKE ? "👍" : "👎";
         log.info(LogMessageProvider.getMessage("log.qa.document_feedback", emoji, recordId.substring(0, 8), documentName, feedbackType));
 
-        // 根据配置决定是否自动应用反馈
+        // 根据配置决定是否自动应用反馈（Decide whether to apply feedback automatically based on configuration）
         if (!feedbackConfig.isRequireApproval() && feedbackConfig.isAutoApply()) {
-            // 直接应用反馈到文档权重
+            // 直接应用反馈到文档权重（Apply feedback directly to document weight）
             documentWeightService.applyFeedback(documentName, feedbackType);
             record.setAppliedToOptimization(true);
             log.info(LogMessageProvider.getMessage("log.qa.feedback_applied", documentName));
         } else {
-            // 设置为待审核
+            // 设置为待审核（Set status to pending review）
             record.setReviewStatus(QARecord.ReviewStatus.PENDING);
             record.setAppliedToOptimization(false);
             log.info(LogMessageProvider.getMessage("log.qa.feedback_pending", documentName));
@@ -246,14 +241,14 @@ public class QARecordService {
     }
 
     /**
-     * 添加文档星级评价（用户友好接口）
+     * 添加文档星级评价（用户友好接口）（Add document rating (user-friendly interface)）
      *
-     * 星级到权重调整的映射：
-     * 5星 (非常有用) → +0.5 权重
-     * 4星 (很有帮助) → +0.2 权重
-     * 3星 (一般) → 0 权重（不变）
-     * 2星 (帮助不大) → -0.2 权重
-     * 1星 (没有帮助) → -0.5 权重
+     * 星级到权重调整的映射：（Star rating to weight adjustment mapping:）
+     * 5星 (非常有用) → +0.5 权重（5 stars (very useful) → +0.5 weight）
+     * 4星 (很有帮助) → +0.2 权重（4 stars (very helpful) → +0.2 weight）
+     * 3星 (一般) → 0 权重（不变）（3 stars (average) → 0 weight (unchanged)）
+     * 2星 (帮助不大) → -0.2 权重（2 stars (not very helpful) → -0.2 weight）
+     * 1星 (没有帮助) → -0.5 权重（1 star (not helpful) → -0.5 weight）
      */
     public boolean addDocumentRating(String recordId, String documentName, int rating, String comment) {
         Optional<QARecord> recordOpt = getRecord(recordId);
@@ -266,47 +261,47 @@ public class QARecordService {
             record.setDocumentFeedbacks(new ArrayList<>());
         }
 
-        // 将星级转换为反馈类型和权重调整
+        // 将星级转换为反馈类型和权重调整（Convert star rating to feedback type and weight adjustment）
         QARecord.FeedbackType feedbackType;
         double weightAdjustment;
 
         switch (rating) {
             case 5:
                 feedbackType = QARecord.FeedbackType.LIKE;
-                weightAdjustment = 0.5;  // 大幅提升
+                weightAdjustment = 0.5;  // 大幅提升（Significantly increase）
                 break;
             case 4:
                 feedbackType = QARecord.FeedbackType.LIKE;
-                weightAdjustment = 0.2;  // 提升
+                weightAdjustment = 0.2;  // 提升（Increase）
                 break;
             case 3:
-                feedbackType = QARecord.FeedbackType.NEUTRAL;  // 需要在 QARecord 中添加
-                weightAdjustment = 0.0;  // 保持不变
+                feedbackType = QARecord.FeedbackType.NEUTRAL;  // 需要在 QARecord 中添加（Need to add in QARecord）
+                weightAdjustment = 0.0;  // 保持不变（Keep unchanged）
                 break;
             case 2:
                 feedbackType = QARecord.FeedbackType.DISLIKE;
-                weightAdjustment = -0.2;  // 降低
+                weightAdjustment = -0.2;  // 降低（Decrease）
                 break;
             case 1:
                 feedbackType = QARecord.FeedbackType.DISLIKE;
-                weightAdjustment = -0.5;  // 大幅降低
+                weightAdjustment = -0.5;  // 大幅降低（Significantly decrease）
                 break;
             default:
                 return false;
         }
 
-        // 检查是否已经反馈过
+        // 检查是否已经反馈过（Check if feedback already exists）
         Optional<QARecord.DocumentFeedback> existing = record.getDocumentFeedbacks().stream()
             .filter(f -> f.getDocumentName().equals(documentName))
             .findFirst();
 
         if (existing.isPresent()) {
-            // 更新现有反馈
+            // 更新现有反馈（Update existing feedback）
             existing.get().setFeedbackType(feedbackType);
             existing.get().setReason(comment);
             existing.get().setFeedbackTime(LocalDateTime.now());
         } else {
-            // 添加新反馈
+            // 添加新反馈（Add new feedback）
             record.getDocumentFeedbacks().add(
                 QARecord.DocumentFeedback.builder()
                     .documentName(documentName)
@@ -320,14 +315,14 @@ public class QARecordService {
         String stars = "⭐".repeat(rating);
         log.info(LogMessageProvider.getMessage("log.qa.rating_submitted", stars, recordId.substring(0, 8), documentName, rating, String.format("%+.1f", weightAdjustment)));
 
-        // 根据配置决定是否自动应用反馈
+        // 根据配置决定是否自动应用反馈（Decide whether to apply feedback automatically based on configuration）
         if (!feedbackConfig.isRequireApproval() && feedbackConfig.isAutoApply()) {
-            // 直接应用权重调整
+            // 直接应用权重调整（Apply weight adjustment directly）
             documentWeightService.applyRatingFeedback(documentName, rating, weightAdjustment);
             record.setAppliedToOptimization(true);
             log.info(LogMessageProvider.getMessage("log.qa.rating_applied", documentName, rating, String.format("%+.1f", weightAdjustment)));
         } else {
-            // 设置为待审核
+            // 设置为待审核（Set status to pending review）
             record.setReviewStatus(QARecord.ReviewStatus.PENDING);
             record.setAppliedToOptimization(false);
             log.info(LogMessageProvider.getMessage("log.qa.rating_pending", documentName, rating));
@@ -337,7 +332,7 @@ public class QARecordService {
     }
 
     /**
-     * 获取最近的记录
+     * 获取最近的记录（Get recent records）
      */
     public List<QARecord> getRecentRecords(int limit) {
         try {
@@ -356,7 +351,7 @@ public class QARecordService {
     }
 
     /**
-     * 获取待审核的记录
+     * 获取待审核的记录（Get pending review records）
      */
     public List<QARecord> getPendingRecords() {
         try {
@@ -376,7 +371,7 @@ public class QARecordService {
     }
 
     /**
-     * 获取统计信息
+     * 获取统计信息（Get statistics）
      */
     public QAStatistics getStatistics() {
         try {
@@ -414,7 +409,7 @@ public class QARecordService {
     }
 
     /**
-     * 加载记录
+     * 加载记录（Load record）
      */
     private QARecord loadRecord(Path path) {
         try {
@@ -426,7 +421,19 @@ public class QARecordService {
     }
 
     /**
-     * 统计信息
+     * 初始化存储目录（Initialize storage directory）
+     */
+    private void initStorageDirectory() {
+        try {
+            Files.createDirectories(recordsPath);
+            log.info(LogMessageProvider.getMessage("log.qa.records_dir", recordsPath.toAbsolutePath()));
+        } catch (IOException e) {
+            log.error(LogMessageProvider.getMessage("log.qa.records_dir_failed", recordsPath), e);
+        }
+    }
+
+    /**
+     * 统计信息（Statistics）
      */
     @lombok.Data
     @lombok.Builder
@@ -439,4 +446,3 @@ public class QARecordService {
         private long pendingReview;
     }
 }
-

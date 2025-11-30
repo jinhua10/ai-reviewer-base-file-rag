@@ -6,6 +6,7 @@ import top.yumbo.ai.rag.chunking.ChunkingStrategy;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
 import top.yumbo.ai.rag.chunking.DocumentChunkerFactory;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
@@ -15,20 +16,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 智能上下文构建器
- * 解决大文档RAG的上下文窗口限制问题
+ * 智能上下文构建器（Smart context builder）
+ * 解决大文档RAG的上下文窗口限制问题（Solve the context window limitation problem for large document RAG）
  *
  * 核心功能：
- * 1. 动态调整文档长度以适应LLM上下文限制
- * 2. 智能分块策略，确保内容不丢失
- * 3. 在句子边界处切分，保持语义完整性
- * 4. 优先保留包含查询关键词的内容
- * 5. 当文档过长时，分成多个语义完整的块
- * 6. 支持可配置的切分策略（SIMPLE/SMART_KEYWORD/AI_SEMANTIC）
+ * 1. 动态调整文档长度以适应LLM上下文限制（Dynamically adjust document length to fit LLM context limits）
+ * 2. 智能分块策略，确保内容不丢失（Smart chunking strategy to ensure no content is lost）
+ * 3. 在句子边界处切分，保持语义完整性（Split at sentence boundaries to maintain semantic integrity）
+ * 4. 优先保留包含查询关键词的内容（Prioritize content containing query keywords）
+ * 5. 当文档过长时，分成多个语义完整的块（When documents are too long, split into multiple semantically complete chunks）
+ * 6. 支持可配置的切分策略（SIMPLE/SMART_KEYWORD/AI_SEMANTIC）（Support configurable chunking strategies (SIMPLE/SMART_KEYWORD/AI_SEMANTIC)）
  *
  * 版本历史：
- * v1.0 (2025-11-22) - 初始版本
- * v1.1 (2025-11-26) - 添加可配置切分器支持
+ * v1.0 (2025-11-22) - 初始版本（Initial version）
+ * v1.1 (2025-11-26) - 添加可配置切分器支持（Added configurable chunker support）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -99,12 +100,12 @@ public class SmartContextBuilder {
             this.chunker = DocumentChunkerFactory.createChunker(
                 chunkingStrategy, chunkingConfig, llmClient
             );
-            log.info("SmartContextBuilder initialized with chunker: strategy={}, maxContext={}chars, maxDoc={}chars, storage={}",
-                chunkingStrategy, maxContextLength, maxDocLength, chunkStorageService != null ? "enabled" : "disabled");
+            log.info(LogMessageProvider.getMessage("log.optimization.context.initialized_with_chunker",
+                chunkingStrategy, maxContextLength, maxDocLength, chunkStorageService != null ? "enabled" : "disabled"));
         } else {
             this.chunker = null;
-            log.info("SmartContextBuilder initialized: maxContext={}chars, maxDoc={}chars, preserveFullContent={}",
-                maxContextLength, maxDocLength, preserveFullContent);
+            log.info(LogMessageProvider.getMessage("log.optimization.context.initialized",
+                maxContextLength, maxDocLength, preserveFullContent));
         }
     }
 
@@ -165,9 +166,8 @@ public class SmartContextBuilder {
         }
 
         String result = context.toString();
-        log.info("Smart context built: {}chars from {} documents ({}% of max)",
-            result.length(), processedDocs,
-            result.length() * 100 / maxContextLength);
+        log.info(LogMessageProvider.getMessage("log.optimization.context.built",
+            result.length(), processedDocs, result.length() * 100 / maxContextLength));
 
         return result;
     }
@@ -376,7 +376,7 @@ public class SmartContextBuilder {
         // 如果还有未处理的内容，添加剩余部分的摘要
         if (processedLength < content.length()) {
             int remaining = content.length() - processedLength;
-            result.append(String.format("\n[... 还有 %d 字符未显示，内容已按关键词优先级提取]", remaining));
+            result.append(LogMessageProvider.getMessage("log.optimization.context.remaining_chars", remaining));
         }
 
         String extracted = result.toString();
@@ -453,7 +453,7 @@ public class SmartContextBuilder {
 
         if (pos < content.length()) {
             int remaining = content.length() - pos;
-            result.append(String.format("\n[... 还有 %d 字符未显示]", remaining));
+            result.append(LogMessageProvider.getMessage("log.optimization.context.remaining_chars", remaining));
         }
 
         return result.toString();

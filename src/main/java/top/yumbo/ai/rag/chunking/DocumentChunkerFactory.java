@@ -10,8 +10,8 @@ import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
- * 文档切分器工厂
- * 根据策略创建相应的切分器
+ * 文档切分器工厂 (Document chunker factory)
+ * 根据策略创建相应的切分器 (Creates appropriate chunker based on strategy)
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -20,12 +20,12 @@ import top.yumbo.ai.rag.i18n.LogMessageProvider;
 public class DocumentChunkerFactory {
 
     /**
-     * 创建切分器
+     * 创建切分器 (Creates chunker)
      *
-     * @param strategy 切分策略
-     * @param config 切分配置
-     * @param llmClient LLM 客户端（仅 AI_SEMANTIC 策略需要）
-     * @return 文档切分器
+     * @param strategy 切分策略 (chunking strategy)
+     * @param config 切分配置 (chunking config)
+     * @param llmClient LLM 客户端（仅 AI_SEMANTIC 策略需要） (LLM client, required only for AI_SEMANTIC strategy)
+     * @return 文档切分器 (document chunker)
      */
     public static DocumentChunker createChunker(ChunkingStrategy strategy,
                                                  ChunkingConfig config,
@@ -61,7 +61,7 @@ public class DocumentChunkerFactory {
     }
 
     /**
-     * 创建切分器（从字符串解析策略）
+     * 创建切分器（从字符串解析策略） (Creates chunker from string strategy name)
      */
     @SuppressWarnings("unused")
     public static DocumentChunker createChunker(String strategyName,
@@ -72,7 +72,7 @@ public class DocumentChunkerFactory {
     }
 
     /**
-     * 不切分器（NONE 策略）
+     * 不切分器（NONE 策略） (None chunker for NONE strategy)
      */
     private static class NoneChunker implements DocumentChunker {
 

@@ -14,6 +14,13 @@ import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * HTTP 请求处理器 (HTTP request handler)
+ * 处理 Netty HTTP 请求并路由到相应的控制器 (Handles Netty HTTP requests and routes to appropriate controllers)
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-26
+ */
 @Slf4j
 public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     
@@ -52,6 +59,14 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         }
     }
     
+    /**
+     * 路由请求 (Route request)
+     *
+     * @param request 请求对象 (request object)
+     * @param uri URI (URI)
+     * @param method HTTP方法 (HTTP method)
+     * @return 响应对象 (response object)
+     */
     private Object routeRequest(FullHttpRequest request, String uri, HttpMethod method) {
         // 文档管理端点 (Document management endpoint)
         if (uri.startsWith("/api/documents")) {
@@ -70,6 +85,14 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         }
     }
     
+    /**
+     * 路由文档请求 (Route document request)
+     *
+     * @param request 请求对象 (request object)
+     * @param uri URI (URI)
+     * @param method HTTP方法 (HTTP method)
+     * @return 响应对象 (response object)
+     */
     private Object routeDocumentRequest(FullHttpRequest request, String uri, HttpMethod method) {
         if (method == HttpMethod.POST && uri.equals("/api/documents")) {
             return documentController.createDocument(getRequestBody(request));
@@ -94,6 +117,14 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         }
     }
     
+    /**
+     * 路由搜索请求 (Route search request)
+     *
+     * @param request 请求对象 (request object)
+     * @param uri URI (URI)
+     * @param method HTTP方法 (HTTP method)
+     * @return 响应对象 (response object)
+     */
     private Object routeSearchRequest(FullHttpRequest request, String uri, HttpMethod method) {
         if (method == HttpMethod.POST && uri.equals("/api/search")) {
             return searchController.search(getRequestBody(request));
@@ -106,6 +137,14 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         }
     }
     
+    /**
+     * 路由管理请求 (Route admin request)
+     *
+     * @param request 请求对象 (request object)
+     * @param uri URI (URI)
+     * @param method HTTP方法 (HTTP method)
+     * @return 响应对象 (response object)
+     */
     private Object routeAdminRequest(FullHttpRequest request, String uri, HttpMethod method) {
         if (method == HttpMethod.GET && uri.equals("/api/health")) {
             return adminController.health();
@@ -156,3 +195,4 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         ctx.close();
     }
 }
+

@@ -1,10 +1,15 @@
 package top.yumbo.ai.rag.security;
 
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
+
 import java.util.Set;
 
 /**
- * 授权服务
+ * 授权服务（Authorization service）
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-22
  */
 @Slf4j
 public class AuthorizationService {
@@ -42,7 +47,7 @@ public class AuthorizationService {
      */
     public void requirePermission(User user, String permission) {
         if (!hasPermission(user, permission)) {
-            throw new SecurityException("Permission denied: " + permission);
+            throw new SecurityException(LogMessageProvider.getMessage("error.auth.permission_denied", permission));
         }
     }
 }

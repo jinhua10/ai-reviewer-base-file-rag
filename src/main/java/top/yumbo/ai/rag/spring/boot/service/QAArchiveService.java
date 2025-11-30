@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.feedback.QARecord;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.config.QAArchiveProperties;
 
 import java.io.IOException;
@@ -18,8 +19,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 问答归档服务
- * 将高质量问答转化为新的知识文档并索引
+ * 问答归档服务（QA archive service）
+ * 将高质量问答转化为新的知识文档并索引（Convert high-quality Q&A into new knowledge documents and index them）
  *
  * @author AI Reviewer Team
  * @since 2025-11-30
@@ -50,7 +51,7 @@ public class QAArchiveService {
     }
 
     /**
-     * 初始化目录结构
+     * 初始化目录结构（Initialize directory structure）
      */
     private void initDirectories() {
         try {
@@ -61,14 +62,14 @@ public class QAArchiveService {
             Files.createDirectories(archivePath.resolve("temp"));
             Files.createDirectories(archivePath.resolve("rejected"));
 
-            log.info("📂 问答归档目录初始化完成: {}", archivePath.toAbsolutePath());
+            log.info(LogMessageProvider.getMessage("log.qa.archive.init", archivePath.toAbsolutePath()));
         } catch (IOException e) {
-            log.error("❌ 初始化归档目录失败", e);
+            log.error(LogMessageProvider.getMessage("log.qa.archive.init_failed"), e);
         }
     }
 
     /**
-     * 判断是否应该归档
+     * 判断是否应该归档（Determine if should archive）
      */
     public boolean shouldArchive(QARecord record) {
         if (!archiveProperties.isEnabled()) {
@@ -83,30 +84,30 @@ public class QAArchiveService {
             case "feedback-based":
                 return shouldArchiveFeedbackBased(record);
             case "manual":
-                return false; // 手动模式不自动归档
+                return false; // 手动模式不自动归档（Manual mode does not auto-archive）
             default:
-                log.warn("⚠️ 未知的归档策略: {}", strategy);
+                log.warn(LogMessageProvider.getMessage("log.qa.archive.unknown_strategy", strategy));
                 return false;
         }
     }
 
     /**
-     * 自动归档策略
+     * 自动归档策略（Auto archive strategy）
      */
     private boolean shouldArchiveAuto(QARecord record) {
-        // 检查问题长度
+        // 检查问题长度（Check question length）
         if (record.getQuestion() == null ||
                 record.getQuestion().length() < archiveProperties.getMinQuestionLength()) {
             return false;
         }
 
-        // 检查回答长度
+        // 检查回答长度（Check answer length）
         if (record.getAnswer() == null ||
                 record.getAnswer().length() < archiveProperties.getMinAnswerLength()) {
             return false;
         }
 
-        // 检查是否包含 "无法回答" 等关键词
+        // 检查是否包含 "无法回答" 等关键词（Check if contains keywords like "unable to answer"）
         String answer = record.getAnswer().toLowerCase();
         if (answer.contains("无法回答") ||
                 answer.contains("没有相关信息") ||
@@ -119,43 +120,43 @@ public class QAArchiveService {
     }
 
     /**
-     * 基于反馈的归档策略
+     * 基于反馈的归档策略（Feedback-based archive strategy）
      */
     private boolean shouldArchiveFeedbackBased(QARecord record) {
-        // 必须有评分
+        // 必须有评分（Must have rating）
         if (record.getOverallRating() == null) {
             return false;
         }
 
-        // 评分必须 >= 阈值
+        // 评分必须 >= 阈值（Rating must >= threshold）
         if (record.getOverallRating() < archiveProperties.getMinRating()) {
             return false;
         }
 
-        // 同时满足自动归档的基本条件
+        // 同时满足自动归档的基本条件（Also meet basic auto-archive conditions）
         return shouldArchiveAuto(record);
     }
 
     /**
-     * 归档问答为新文档
+     * 归档问答为新文档（Archive Q&A as new document）
      */
     public String archiveQA(QARecord record) {
         try {
-            // 1. 构建文档内容
+            // 1. 构建文档内容（Build document content）
             String content = buildDocumentContent(record);
 
-            // 2. 确定分类和路径
+            // 2. 确定分类和路径（Determine category and path）
             String category = detectCategory(record.getQuestion(), record.getAnswer());
             String status = determineStatus(record);
 
-            // 3. 生成文件名（使用系统默认时区）
+            // 3. 生成文件名（使用系统默认时区）（Generate filename (using system default timezone)）
             String timestamp = LocalDateTime.now().format(FILENAME_FORMATTER);
             String questionPrefix = sanitizeFileName(
                     record.getQuestion().substring(0, Math.min(30, record.getQuestion().length()))
             );
             String fileName = String.format("%s-QA-%s.md", timestamp, questionPrefix);
 
-            // 4. 确定保存路径
+            // 4. 确定保存路径（Determine save path）
             Path targetPath;
             if ("approved".equals(status)) {
                 targetPath = archivePath.resolve("approved").resolve(category).resolve(fileName);
@@ -163,30 +164,30 @@ public class QAArchiveService {
                 targetPath = archivePath.resolve("temp").resolve(fileName);
             }
 
-            // 5. 保存文件
+            // 5. 保存文件（Save file）
             Files.writeString(targetPath, content);
-            log.info("💾 问答归档成功: {}", targetPath.getFileName());
+            log.info(LogMessageProvider.getMessage("log.qa.archive.saved", targetPath.getFileName()));
 
-            // 6. 自动索引（如果配置了）
+            // 6. 自动索引（如果配置了）（Auto index if configured）
             if (archiveProperties.isAutoIndex()) {
                 try {
                     knowledgeBaseService.incrementalIndexFile(targetPath);
-                    log.info("📑 归档文档已索引: {}", fileName);
+                    log.info(LogMessageProvider.getMessage("log.qa.archive.indexed", fileName));
                 } catch (Exception e) {
-                    log.warn("⚠️ 归档文档索引失败: {}, 错误: {}", fileName, e.getMessage());
+                    log.warn(LogMessageProvider.getMessage("log.qa.archive.index_failed", fileName, e.getMessage()));
                 }
             }
 
             return targetPath.toString();
 
         } catch (Exception e) {
-            log.error("❌ 问答归档失败: recordId={}", record.getId(), e);
+            log.error(LogMessageProvider.getMessage("log.qa.archive.failed", record.getId()), e);
             return null;
         }
     }
 
     /**
-     * 构建文档内容（Markdown 格式）
+     * 构建文档内容（Markdown 格式）（Build document content (Markdown format)）
      */
     private String buildDocumentContent(QARecord record) {
         StringBuilder content = new StringBuilder();
@@ -272,7 +273,7 @@ public class QAArchiveService {
     }
 
     /**
-     * 检测问题类别
+     * 检测问题类别（Detect question category）
      */
     private String detectCategory(String question, String answer) {
         question = question.toLowerCase();
@@ -296,7 +297,7 @@ public class QAArchiveService {
     }
 
     /**
-     * 获取分类显示名称
+     * 获取分类显示名称（Get category display name）
      */
     private String getCategoryDisplayName(String category) {
         switch (category) {
@@ -312,7 +313,7 @@ public class QAArchiveService {
     }
 
     /**
-     * 确定文档状态
+     * 确定文档状态（Determine document status）
      */
     private String determineStatus(QARecord record) {
         if ("feedback-based".equals(archiveProperties.getStrategy())) {
@@ -320,14 +321,14 @@ public class QAArchiveService {
                     record.getOverallRating() >= archiveProperties.getMinRating()
                     ? "approved" : "temp";
         }
-        return "temp"; // 自动归档默认为临时状态
+        return "temp"; // 自动归档默认为临时状态（Auto archive defaults to temp status）
     }
 
     /**
-     * 提取关键词
+     * 提取关键词（Extract keywords）
      */
     private List<String> extractKeywords(String question, String answer) {
-        // 简单实现：提取问题中的名词
+        // 简单实现：提取问题中的名词（Simple implementation: extract nouns from question）
         List<String> stopWords = List.of(
                 "的", "是", "在", "了", "和", "有", "我", "你", "他", "她",
                 "什么", "怎么", "如何", "为什么", "吗", "呢", "啊"
@@ -341,21 +342,21 @@ public class QAArchiveService {
     }
 
     /**
-     * 清理文件名（移除非法字符）
+     * 清理文件名（移除非法字符）（Clean filename (remove illegal characters)）
      */
     private String sanitizeFileName(String fileName) {
         return fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
     /**
-     * 转义 YAML 特殊字符
+     * 转义 YAML 特殊字符（Escape YAML special characters）
      */
     private String escapeYaml(String text) {
         return text.replace("\"", "\\\"").replace("\n", "\\n");
     }
 
     /**
-     * 获取归档统计信息
+     * 获取归档统计信息（Get archive statistics）
      */
     public ArchiveStatistics getStatistics() {
         try {
@@ -370,7 +371,7 @@ public class QAArchiveService {
                     .rejectedCount(rejectedCount)
                     .build();
         } catch (Exception e) {
-            log.error("获取归档统计失败", e);
+            log.error(LogMessageProvider.getMessage("log.qa.archive.stats_failed"), e);
             return ArchiveStatistics.builder().build();
         }
     }
@@ -399,4 +400,3 @@ public class QAArchiveService {
         private long rejectedCount;
     }
 }
-

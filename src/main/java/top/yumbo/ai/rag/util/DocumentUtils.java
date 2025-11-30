@@ -12,8 +12,8 @@ import java.nio.file.Path;
 import java.time.Instant;
 
 /**
- * 文档工具类
- * 提供文档创建和处理的便捷方法
+ * 文档工具类（Document utilities）
+ * 提供文档创建和处理的便捷方法（Provides convenient methods for document creation and processing）
  *
  * @author AI Reviewer Team
  * @since 2025-11-21
@@ -24,7 +24,7 @@ public class DocumentUtils {
     private static final TikaDocumentParser parser = new TikaDocumentParser();
 
     /**
-     * 从文件创建文档
+     * 从文件创建文档（Create document from file）
      */
     public static Document fromFile(File file) {
         if (file == null || !file.exists()) {
@@ -59,14 +59,14 @@ public class DocumentUtils {
     }
 
     /**
-     * 从Path创建文档
+     * 从Path创建文档（Create document from path）
      */
     public static Document fromPath(Path path) {
         return fromFile(path.toFile());
     }
 
     /**
-     * 从文本内容创建文档
+     * 从文本内容创建文档（Create document from text content）
      */
     public static Document fromText(String title, String content) {
         return Document.builder()
@@ -79,7 +79,7 @@ public class DocumentUtils {
     }
 
     /**
-     * 从字节数组创建文档
+     * 从字节数组创建文档（Create document from byte array）
      */
     public static Document fromBytes(String title, byte[] bytes, String mimeType) {
         String content = parser.parse(bytes, mimeType);
@@ -95,7 +95,7 @@ public class DocumentUtils {
     }
 
     /**
-     * 批量从目录创建文档
+     * 批量从目录创建文档（Batch create documents from directory）
      */
     public static java.util.List<Document> fromDirectory(File directory) {
         return fromDirectory(directory, true);
@@ -148,7 +148,7 @@ public class DocumentUtils {
     }
 
     /**
-     * 检查文件是否支持解析
+     * 检查文件是否支持解析（Check if file is supported for parsing）
      */
     public static boolean isSupported(File file) {
         if (file == null || !file.exists()) {
@@ -160,7 +160,7 @@ public class DocumentUtils {
     }
 
     /**
-     * 获取文件扩展名
+     * 获取文件扩展名（Get file extension）
      */
     private static String getFileExtension(String filename) {
         int lastDot = filename.lastIndexOf('.');

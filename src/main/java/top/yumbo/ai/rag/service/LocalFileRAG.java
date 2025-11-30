@@ -16,8 +16,8 @@ import java.io.Closeable;
 import java.util.List;
 
 /**
- * Local File RAG - 本地文件存储RAG替代框架
- * 主入口类，提供统一的API接口
+ * Local File RAG - 本地文件存储RAG替代框架（Local File RAG - Local file storage RAG alternative framework）
+ * 主入口类，提供统一的API接口（Main entry class, provides unified API interface）
  *
  * @author AI Reviewer Team
  * @since 2025-11-21
@@ -57,10 +57,10 @@ public class LocalFileRAG implements Closeable {
     }
 
     /**
-     * 索引单个文档
+     * 索引单个文档 (Index single document)
      *
-     * @param document 文档对象
-     * @return 文档ID
+     * @param document 文档对象 (document object)
+     * @return 文档ID (document ID)
      */
     public String index(Document document) {
         // 1. 存储文档
@@ -80,10 +80,10 @@ public class LocalFileRAG implements Closeable {
     }
 
     /**
-     * 批量索引文档
+     * 批量索引文档 (Batch index documents)
      *
-     * @param documents 文档列表
-     * @return 成功索引的文档数量
+     * @param documents 文档列表 (list of documents)
+     * @return 成功索引的文档数量 (number of successfully indexed documents)
      */
     public int indexBatch(List<Document> documents) {
         // 1. 批量存储
@@ -97,10 +97,10 @@ public class LocalFileRAG implements Closeable {
     }
 
     /**
-     * 搜索文档
+     * 搜索文档 (Search documents)
      *
-     * @param query 查询对象
-     * @return 搜索结果
+     * @param query 查询对象 (query object)
+     * @return 搜索结果 (search result)
      */
     public SearchResult search(Query query) {
         long startTime = System.currentTimeMillis();

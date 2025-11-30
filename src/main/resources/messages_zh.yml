@@ -3,6 +3,17 @@
     expected_json_array: '期望 JSON 数组，但得到: {0}'
     no_valid_chunks: 在 AI 响应中未找到有效的切分块
     no_valid_json: 响应中未找到有效的 JSON
+  auth:
+    user_exists: 用户已存在
+    invalid_credentials: 无效凭据
+    permission_denied: '权限被拒绝: {0}'
+  file:
+    not_exists: '文件不存在: {0}'
+    not_a_file: '不是文件: {0}'
+    empty: '文件内容为空: {0}'
+    index_failed: '索引文件失败: {0}'
+    directory_not_exists: '目录不存在: {0}'
+    not_a_directory: '不是目录: {0}'
 log:
   admin:
     cache_cleared: 缓存已清除
@@ -96,6 +107,27 @@ log:
     create_caffeine: 创建 Caffeine 缓存引擎
     create_filesystem: 创建文件系统存储引擎
     create_lucene: 创建 Lucene 索引引擎
+  feedback:
+    document_failed: "处理文档反馈失败"
+    document_received: "收到文档反馈 {0}: recordId={1}, document={2}"
+    get_pending_failed: "获取待处理的 QA 记录失败"
+    get_recent_failed: "获取最近的 QA 记录失败"
+    get_record_failed: "获取 QA 记录失败"
+    get_statistics_failed: "获取 QA 统计信息失败"
+    overall_failed: "处理整体反馈失败"
+    overall_received: "收到整体反馈: recordId={0}, rating={1}"
+    rating_failed: "处理评分失败"
+    rating_submitted: "已提交评分 {0} [{1}]: {2} - {3}星 (影响: {4})"
+    weight_disabled: 动态权重调整已禁用
+    weight_updated: "📊 文档权重更新: {0} -> 权重={1} (👍{2} 👎{3})"
+    weight_reset: "🔄 重置文档权重: {0} -> {1}"
+    weights_cleared: 🧹 清除所有文档权重
+    weights_saved: "💾 保存文档权重: {0} 个文档"
+    save_failed: 保存文档权重失败
+    weights_loaded: "📂 加载文档权重: {0} 个文档"
+    load_failed: 加载文档权重失败
+    weights_file_not_exists: 📂 文档权重文件不存在，使用默认权重
+    rating_updated: "📊 文档权重更新(星级): {0} -> 权重={1} ({2}星, 调整{3}, 👍{4} 👎{5})"
   filetracking:
     check_failed: '检查文件状态失败: {0}'
     clear_failed: '清空文件追踪信息失败: {0}'
@@ -202,6 +234,18 @@ log:
     gc_trigger: '⚠️  内存使用率 {0}% 超过阈值，触发GC...'
     usage: '阶段 {0} - 已使用内存: {1} MB / 最大: {2} MB ({3}%)'
     warning: '阶段 {0} - 内存使用较高: {1}%'
+  monitor:
+    health:
+      storage_ok: '存储正常，文档数: {0}'
+      storage_error: '存储错误: {0}'
+      index_ok: '索引正常，已索引: {0}'
+      index_error: '索引错误: {0}'
+      cache_ok: 缓存正常
+      cache_error: '缓存错误: {0}'
+    metrics:
+      report: '指标:\n  HTTP: {0} 请求, {1} 错误\n  文档: {2} 创建, {3} 更新, {4} 删除\n  搜索: {5} 请求, {6} 错误\n  认证: {7} 尝试, {8} 失败'
+    performance:
+      report: '性能指标:\n  索引: {0} 文档, 平均: {1}ms, 错误: {2}\n  搜索: {3}, 平均: {4}ms, 错误: {5}\n  缓存命中率: {6}%'
   optimizer:
     commit: '📝 提交更改...'
     done: '✅ 提交和优化完成'
@@ -210,6 +254,20 @@ log:
     save_failed: '❌ 保存向量索引失败'
     saving_vectors: '💾 保存向量索引...'
     vectors_saved: '✅ 向量索引已保存'
+  optimization:
+    chunker:
+      initialized: 'DocumentChunker 初始化完成 - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
+      chunked: '文档 {0} 已分块为 {1} 部分'
+      batch_completed: '批量分块完成: {0} 个文档 -> {1} 个分块'
+    memory:
+      suggest_gc: '建议执行垃圾回收，当前内存使用: {0}MB'
+      gc_freed: 'GC 完成，释放了大约 {0}MB 内存'
+      gc_no_freed: 'GC 完成，未释放显著内存'
+    context:
+      initialized: 'SmartContextBuilder 初始化: maxContext={0}字符, maxDoc={1}字符, preserveFullContent={2}'
+      initialized_with_chunker: 'SmartContextBuilder 初始化（含切分器）: strategy={0}, maxContext={1}字符, maxDoc={2}字符, storage={3}'
+      built: '智能上下文构建完成: {0}字符 来自 {1} 个文档 ({2}% 最大值)'
+      remaining_chars: '\n[... 还有 {0} 字符未显示，内容已按关键词优先级提取]'
   qa:
     archive_failed: 归档问答失败
     archived: '高评分问答已归档: rating={0}, 路径={1}'
@@ -249,7 +307,11 @@ log:
     doc_deleted: '文档已删除: {0}'
     doc_indexed: '文档索引成功: {0}'
     doc_updated: '文档已更新: {0}'
+    enable_cache: '启用缓存: {0}'
+    enable_compression: '启用压缩: {0}'
     found_to_delete: '找到 {0} 个要删除的文档'
+    init: '初始化 Local File RAG...'
+    init_done: 'Local File RAG 初始化完成'
     initialized: 'Local File RAG 已使用配置初始化: {0}'
     load_content_failed: '加载文档内容失败: {0}'
     loaded_content: '已加载文档内容: {0}, 长度: {1}'
@@ -257,6 +319,9 @@ log:
     optimized: 索引优化完成
     optimizing: 正在优化索引...
     search_completed: '搜索完成，耗时 {0}ms，找到 {1} 个结果'
+    simple_init: '初始化简单 RAG 服务...'
+    simple_init_done: '简单 RAG 服务初始化完成'
+    storage: '存储路径: {0}'
   search:
     advanced_completed: '高级搜索完成: query=''{0}'', 命中={1}'
     advanced_failed: 高级搜索失败
@@ -301,3 +366,22 @@ log:
       test_failed: '❌ 测试失败'
       test_success: '✅ 测试成功！向量检索引擎初始化正常'
     vector_count: '   - 向量数量: {0}'
+  llm:
+    api_key_missing: ⚠️ 未配置 LLM API Key
+    api_key_hint: "💡 提示: 设置环境变量:"
+    api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
+    api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
+    fallback_mock: 💡 将降级使用 Mock 模式
+    client_created: '🤖 创建 {} LLM 客户端'
+    model: '   - 模型: {}'
+    api_url: '   - API: {}'
+    mock_created: 🤖 创建 Mock LLM 客户端（仅用于测试）
+    mock_warning: ⚠️ Mock 模式将返回固定的模拟回答
+    mock_hint: "💡 如需使用真实 LLM，请配置:"
+    mock_provider: '      knowledge.qa.llm.provider=openai'
+    mock_apikey: '      并设置相应的 API Key 和 URL'
+storage:
+    chunk_storage_init: '初始化文档块存储服务，路径: {}'
+    image_storage_init: '初始化图片存储服务，路径: {}'
+    ai_image_analyzer_init: '初始化 AI 图片分析器: enabled={}, model={}'
+    document_image_extraction_init: '初始化文档图片提取服务: AI 分析={}'

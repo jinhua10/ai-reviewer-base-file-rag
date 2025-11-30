@@ -6,6 +6,10 @@ error:
     no_valid_json: "No valid JSON found in response"
     overlap_less_than_size: "chunk-overlap must be less than chunk-size"
     overlap_non_negative: "chunk-overlap must be non-negative"
+  auth:
+    user_exists: "User already exists"
+    invalid_credentials: "Invalid credentials"
+    permission_denied: "Permission denied: {0}"
   invalid_admin_endpoint: "Invalid admin endpoint"
   invalid_document_endpoint: "Invalid document endpoint"
   invalid_search_endpoint: "Invalid search endpoint"
@@ -111,6 +115,16 @@ log:
     overall_received: "Received overall feedback: recordId={0}, rating={1}"
     rating_failed: "Failed to process rating"
     rating_submitted: "Rating submitted {0} [{1}]: {2} - {3} stars (impact: {4})"
+    weight_disabled: Dynamic weighting adjustment disabled
+    weight_updated: "📊 Document weight updated: {0} -> weight={1} (👍{2} 👎{3})"
+    weight_reset: "🔄 Reset document weight: {0} -> {1}"
+    weights_cleared: 🧹 Cleared all document weights
+    weights_saved: "💾 Saved document weights: {0} documents"
+    save_failed: Failed to save document weights
+    weights_loaded: "📂 Loaded document weights: {0} documents"
+    load_failed: Failed to load document weights
+    weights_file_not_exists: Document weights file not exists, using default weights
+    rating_updated: "Document weight updated (rating): {0} -> weight={1} ({2}star, adjust{3}, 👍{4} 👎{5})"
   filetracking:
     check_failed: "Failed to check file status: {0}"
     clear_failed: "Failed to clear file tracking info: {0}"
@@ -222,6 +236,18 @@ log:
     usage: "Phase {0} - Used memory: {1} MB/ Max: {2} MB ({3}%)"
     usage_phase: "Phase {0} - Used memory: {1} MB/ Max: {2} MB ({3}%)"
     warning: "Phase {0} - High memory usage: {1}%"
+  monitor:
+    health:
+      storage_ok: 'Storage OK, docs: {0}'
+      storage_error: 'Storage error: {0}'
+      index_ok: 'Index OK, indexed: {0}'
+      index_error: 'Index error: {0}'
+      cache_ok: Cache OK
+      cache_error: 'Cache error: {0}'
+    metrics:
+      report: 'Metrics:\n  HTTP: {0} requests, {1} errors\n  Documents: {2} created, {3} updated, {4} deleted\n  Search: {5} requests, {6} errors\n  Auth: {7} attempts, {8} failures'
+    performance:
+      report: 'Performance Metrics:\n  Indexed: {0} docs, Avg: {1}ms, Errors: {2}\n  Searches: {3}, Avg: {4}ms, Errors: {5}\n  Cache Hit Rate: {6}%'
   optimizer:
     commit: "Committing RAG changes"
     done: "Commit and optimization completed"
@@ -230,6 +256,20 @@ log:
     save_failed: "Failed to save vector index"
     saving_vectors: "Saving vector index..."
     vectors_saved: "Vector index saved successfully"
+  optimization:
+    chunker:
+      initialized: 'DocumentChunker initialized - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
+      chunked: 'Document {0} chunked into {1} parts'
+      batch_completed: 'Batch chunking completed: {0} documents -> {1} chunks'
+    memory:
+      suggest_gc: 'Suggesting garbage collection, current memory usage: {0}MB'
+      gc_freed: 'GC completed, freed approximately {0}MB of memory'
+      gc_no_freed: 'GC completed, no significant memory freed'
+    context:
+      initialized: 'SmartContextBuilder initialized: maxContext={0}chars, maxDoc={1}chars, preserveFullContent={2}'
+      initialized_with_chunker: 'SmartContextBuilder initialized with chunker: strategy={0}, maxContext={1}chars, maxDoc={2}chars, storage={3}'
+      built: 'Smart context built: {0}chars from {1} documents ({2}% of max)'
+      remaining_chars: '\n[... {0} more characters not displayed, content extracted by keyword priority]'
   qa:
     archive_failed: "Failed to archive QA record"
     archived: "High rating QA archived: rating={0}, path={1}"
@@ -269,7 +309,11 @@ log:
     doc_deleted: "Document deleted: {0}"
     doc_indexed: "Document indexed successfully: {0}"
     doc_updated: "Document updated: {0}"
+    enable_cache: "Enable cache: {0}"
+    enable_compression: "Enable compression: {0}"
     found_to_delete: "Found {0} documents to delete"
+    init: "Initializing Local File RAG..."
+    init_done: "Local File RAG initialization completed"
     initialized: "Local File RAG initialized with configuration: {0}"
     load_content_failed: "Failed to load content for document: {0}"
     loaded_content: "Loaded content for document: {0}, length: {1}"
@@ -277,16 +321,16 @@ log:
     optimized: "Index optimization completed"
     optimizing: "Optimizing index..."
     search_completed: "Search completed in {0}ms, found {1} results"
-  session:
-    cleaned: "Cleaned expired session: sessionId={0}"
-    cleaned_count: "Cleaned {0} expired sessions"
-    create: "Created search session: sessionId={0}, totalDocs={1}, perQuery={2}"
-    deleted: "Deleted search session: sessionId={0}"
-    goto_page: "Goto page {0}: sessionId={1}, offset={2}"
-    next: "Switched to next batch: sessionId={0}, offset={1}"
-    no_next: "No next batch available for session {0}"
-    no_prev: "No previous batch available for session {0}"
-    prev: "Switched to previous batch: sessionId={0}, offset={1}"
+    simple_init: "Initializing simple RAG service..."
+    simple_init_done: "Simple RAG service initialization completed"
+    storage: "Storage path: {0}"
+  search:
+    advanced_completed: 'Advanced search completed: query=''{0}'', hits={1}'
+    advanced_failed: Advanced search failed
+    advanced_failed_detail: 'Advanced search failed: {0}'
+    completed: 'Search completed: query=''{0}'', hits={1}'
+    failed: Search failed
+    failed_detail: 'Search failed: {0}'
   similar:
     failed: "Failed to find similar QAs"
     found: "Found {0} similar QAs (keywords: {1})"
@@ -302,3 +346,51 @@ log:
     scanned_files: "Scanned {0} files"
     search_results: "Search '{0}' found {1} results"
     shutdown: "Shutting down RAG service"
+  vector:
+    embedding_closed: '🔄 Vector embedding engine closed'
+    embedding_dim: '   - Dimension: {0}'
+    embedding_init_success: Embedding engine initialized successfully
+    embedding_model: '   - Model: {0}'
+    fix_check_logs: '   3. Check logs for detailed error information'
+    fix_place_model: '   1. Place model files in src/main/resources/models/ directory'
+    fix_supported_models: '   2. Supported models: bge-m3, paraphrase-multilingual, text2vec-large-chinese'
+    index_init_success: Index engine initialized successfully
+    index_path: 'Index path: {0}'
+    init_embedding: Initializing embedding engine...
+    init_index: Initializing index engine...
+    possible_fixes: '🔧 Possible fixes:'
+    possible_reasons: '💡 Possible reasons:'
+    reason_model_missing: '   1. Model file missing'
+    reason_model_path: '   2. Model path incorrect'
+    reason_onnx: '   3. ONNX Runtime version incompatible'
+    test:
+      start: '🧪 Vector search functionality test'
+      test_failed: '❌ Test failed'
+      test_success: '✅ Test successful! Vector search engine initialized normally'
+    vector_count: '   - Vector count: {0}'
+  file:
+    not_exists: "File does not exist: {0}"
+    not_a_file: "Not a file: {0}"
+    empty: "File content is empty: {0}"
+    index_failed: "Failed to index file: {0}"
+    directory_not_exists: "Directory does not exist: {0}"
+    not_a_directory: "Not a directory: {0}"
+  llm:
+    api_key_missing: ⚠️ LLM API Key not configured
+    api_key_hint: "💡 Hint: Set environment variables:"
+    api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
+    api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
+    fallback_mock: 💡 Will fallback to Mock mode
+    client_created: '🤖 Creating {} LLM client'
+    model: '   - Model: {}'
+    api_url: '   - API: {}'
+    mock_created: 🤖 Creating Mock LLM client (for testing only)
+    mock_warning: ⚠️ Mock mode will return fixed simulated responses
+    mock_hint: "💡 For real LLM, configure:"
+    mock_provider: '      knowledge.qa.llm.provider=openai'
+    mock_apikey: '      and set the corresponding API Key and URL'
+  storage:
+    chunk_storage_init: 'Initializing ChunkStorageService with path: {}'
+    image_storage_init: 'Initializing ImageStorageService with path: {}'
+    ai_image_analyzer_init: 'Initializing AIImageAnalyzer: enabled={}, model={}'
+    document_image_extraction_init: 'Initializing DocumentImageExtractionService: AI analysis={}'

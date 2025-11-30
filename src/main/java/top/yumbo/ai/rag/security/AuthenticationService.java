@@ -10,7 +10,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 认证服务
+ * 认证服务（Authentication service）
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-22
  */
 @Slf4j
 public class AuthenticationService {
@@ -26,7 +29,7 @@ public class AuthenticationService {
      */
     public User register(String username, String password, Set<String> roles) {
         if (users.containsKey(username)) {
-            throw new IllegalArgumentException("User already exists");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.auth.user_exists"));
         }
         
         String passwordHash = hashPassword(password);
@@ -50,12 +53,12 @@ public class AuthenticationService {
     public String login(String username, String password) {
         User user = users.get(username);
         if (user == null || !user.isEnabled()) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.auth.invalid_credentials"));
         }
         
         String passwordHash = hashPassword(password);
         if (!passwordHash.equals(user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid credentials");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.auth.invalid_credentials"));
         }
         
         String token = generateToken();

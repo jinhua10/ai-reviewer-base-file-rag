@@ -14,6 +14,8 @@ import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
  * 审计日志服务 (Audit log service)
+ * This service is responsible for logging audit events, document operations, search operations, and authentication events.
+ * 它负责记录审计事件、文档操作、搜索操作和认证事件。
  */
 @Slf4j
 public class AuditLogService {

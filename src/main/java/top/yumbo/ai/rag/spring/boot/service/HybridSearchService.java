@@ -1,7 +1,6 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -10,14 +9,15 @@ import top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
+import top.yumbo.ai.rag.model.ScoredDocument;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 混合检索服务
- * 结合 Lucene 关键词检索和向量语义检索
+ * 混合检索服务（Hybrid search service）
+ * 结合 Lucene 关键词检索和向量语义检索（Combines Lucene keyword search and vector semantic search）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -35,13 +35,13 @@ public class HybridSearchService {
     }
 
     /**
-     * 混合检索：结合 Lucene 关键词检索和向量语义检索
+     * 混合检索：结合 Lucene 关键词检索和向量语义检索（Hybrid search: combines Lucene keyword search and vector semantic search）
      *
-     * @param question 查询问题
-     * @param rag RAG 实例
-     * @param embeddingEngine 嵌入引擎
-     * @param vectorIndexEngine 向量索引引擎
-     * @return 检索到的文档列表
+     * @param question 查询问题（Query question）
+     * @param rag RAG 实例（RAG instance）
+     * @param embeddingEngine 嵌入引擎（Embedding engine）
+     * @param vectorIndexEngine 向量索引引擎（Vector index engine）
+     * @return 检索到的文档列表（Retrieved document list）
      */
     public List<Document> hybridSearch(String question, LocalFileRAG rag,
                                       LocalEmbeddingEngine embeddingEngine,
@@ -64,7 +64,9 @@ public class HybridSearchService {
             // 显示 Lucene Top-10（带评分）
             if (!luceneResult.getDocuments().isEmpty()) {
                 log.info(LogMessageProvider.getMessage("log.hybrid.lucene_top_header"));
-                List<Document> luceneDocs = luceneResult.getDocuments();
+                List<Document> luceneDocs = luceneResult.getDocuments().stream()
+                    .map(ScoredDocument::getDocument)
+                    .collect(Collectors.toList());
                 for (int i = 0; i < Math.min(10, luceneDocs.size()); i++) {
                     Document doc = luceneDocs.get(i);
                     double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
@@ -96,7 +98,9 @@ public class HybridSearchService {
             Map<String, Double> hybridScores = new HashMap<>();
 
             // Lucene 结果（权重 0.3）
-            List<Document> luceneDocs = luceneResult.getDocuments();
+            List<Document> luceneDocs = luceneResult.getDocuments().stream()
+                .map(ScoredDocument::getDocument)
+                .toList();
             for (int i = 0; i < luceneDocs.size(); i++) {
                 String docId = luceneDocs.get(i).getId();
                 double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
@@ -204,7 +208,7 @@ public class HybridSearchService {
     }
 
     /**
-     * 纯关键词检索（回退模式）
+     * 纯关键词检索（回退模式）（Pure keyword search (fallback mode)）
      */
     public List<Document> keywordSearch(String question, LocalFileRAG rag) {
         String keywords = extractKeywords(question);
@@ -212,27 +216,31 @@ public class HybridSearchService {
 
         SearchResult result = rag.search(Query.builder()
             .queryText(keywords)
-            .limit(properties.getVectorSearch().getTopK())
+            .limit(configService.getHybridTopK())
             .build());
 
         log.info(LogMessageProvider.getMessage("log.hybrid.found_docs", result.getDocuments().size()));
-        return result.getDocuments();
+        return result.getDocuments().stream()
+            .map(ScoredDocument::getDocument)
+            .collect(Collectors.toList());
     }
 
     /**
-     * 回退到关键词检索
+     * 回退到关键词检索（Fallback to keyword search）
      */
     private List<Document> fallbackToKeywordSearch(String question, LocalFileRAG rag) {
         String keywords = extractKeywords(question);
         SearchResult fallbackResult = rag.search(Query.builder()
             .queryText(keywords)
-            .limit(properties.getVectorSearch().getTopK())
+            .limit(configService.getHybridTopK())
             .build());
-        return fallbackResult.getDocuments();
+        return fallbackResult.getDocuments().stream()
+            .map(ScoredDocument::getDocument)
+            .collect(Collectors.toList());
     }
 
     /**
-     * 提取关键词
+     * 提取关键词（Extract keywords）
      */
     private String extractKeywords(String question) {
         // 简单的停用词列表

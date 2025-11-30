@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 高级查询处理器实现
- * 支持缓存、过滤、排序、分页
+ * 高级查询处理器实现（Advanced query processor implementation）
+ * 支持缓存、过滤、排序、分页（Supports caching, filtering, sorting, and pagination）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22

@@ -2,7 +2,23 @@ package top.yumbo.ai.rag.config;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.time.Duration;
+
+/**
+ * 优化缓存配置类 (Optimized cache configuration class)
+ * 提供各种缓存配置的工厂方法 (Provides factory methods for various cache configurations)
+ *
+ * @author AI Reviewer Team
+ * @since 2025-11-21
+ */
 public class OptimizedCacheConfig {
+
+    /**
+     * 创建文档缓存 (Create document cache)
+     *
+     * @param <K> 键类型 (key type)
+     * @param <V> 值类型 (value type)
+     * @return 缓存实例 (cache instance)
+     */
     public static <K, V> Cache<K, V> createDocumentCache() {
         return Caffeine.newBuilder()
             .maximumSize(10_000)
@@ -12,6 +28,14 @@ public class OptimizedCacheConfig {
             .initialCapacity(1000)
             .build();
     }
+
+    /**
+     * 创建查询缓存 (Create query cache)
+     *
+     * @param <K> 键类型 (key type)
+     * @param <V> 值类型 (value type)
+     * @return 缓存实例 (cache instance)
+     */
     public static <K, V> Cache<K, V> createQueryCache() {
         return Caffeine.newBuilder()
             .maximumSize(50_000)
@@ -20,6 +44,14 @@ public class OptimizedCacheConfig {
             .initialCapacity(5000)
             .build();
     }
+
+    /**
+     * 创建热点数据缓存 (Create hot data cache)
+     *
+     * @param <K> 键类型 (key type)
+     * @param <V> 值类型 (value type)
+     * @return 缓存实例 (cache instance)
+     */
     public static <K, V> Cache<K, V> createHotDataCache() {
         return Caffeine.newBuilder()
             .maximumWeight(100_000_000)
@@ -28,6 +60,17 @@ public class OptimizedCacheConfig {
             .recordStats()
             .build();
     }
+
+    /**
+     * 创建自定义缓存 (Create custom cache)
+     *
+     * @param <K> 键类型 (key type)
+     * @param <V> 值类型 (value type)
+     * @param maxSize 最大大小 (maximum size)
+     * @param expireAfterWrite 写入后过期时间 (expire after write)
+     * @param expireAfterAccess 访问后过期时间 (expire after access)
+     * @return 缓存实例 (cache instance)
+     */
     public static <K, V> Cache<K, V> createCustomCache(
             long maxSize, 
             Duration expireAfterWrite, 

@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.List;
 
 /**
- * 知识库问答系统配置
+ * 知识库问答系统配置（Knowledge QA system configuration）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -400,4 +400,3 @@ public class KnowledgeQAProperties {
         private String endpoint = "${VISION_LLM_ENDPOINT:}";
     }
 }
-

@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 缓存统计信息
+ * 缓存统计信息（Cache statistics）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -54,4 +54,3 @@ public class CacheStatistics {
         );
     }
 }
-

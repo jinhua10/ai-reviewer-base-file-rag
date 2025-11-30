@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 文档图片提取和存储服务
- * 负责从文档中提取图片并保存到文件系统
+ * 文档图片提取和存储服务（Document image extraction and storage service）
+ * 负责从文档中提取图片并保存到文件系统（Responsible for extracting images from documents and saving them to the file system）
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -32,7 +32,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 初始化存储目录
+     * 初始化存储目录（Initialize storage directory）
      */
     private void initializeStorage() {
         try {
@@ -48,12 +48,12 @@ public class ImageStorageService {
     }
 
     /**
-     * 保存图片
+     * 保存图片（Save image）
      *
-     * @param documentId 文档ID
-     * @param imageData 图片数据
-     * @param originalFilename 原始文件名
-     * @return 图片存储信息
+     * @param documentId 文档ID（Document ID）
+     * @param imageData 图片数据（Image data）
+     * @param originalFilename 原始文件名（Original filename）
+     * @return 图片存储信息（Image storage information）
      */
     public ImageInfo saveImage(String documentId, byte[] imageData, String originalFilename) throws IOException {
         // 生成唯一文件名
@@ -83,7 +83,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 保存图片从文件
+     * 保存图片从文件（Save image from file）
      */
     public ImageInfo saveImageFromFile(String documentId, Path sourceImagePath) throws IOException {
         String originalFilename = sourceImagePath.getFileName().toString();
@@ -92,7 +92,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 读取图片数据
+     * 读取图片数据（Read image data）
      */
     public byte[] readImage(String documentId, String filename) throws IOException {
         Path imagePath = Paths.get(storageBasePath, IMAGE_DIR, sanitizeFilename(documentId), filename);
@@ -105,7 +105,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 列出文档的所有图片
+     * 列出文档的所有图片（List all images of the document）
      */
     public List<ImageInfo> listImages(String documentId) throws IOException {
         Path docImageDir = Paths.get(storageBasePath, IMAGE_DIR, sanitizeFilename(documentId));
@@ -142,7 +142,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 删除文档的所有图片
+     * 删除文档的所有图片（Delete all images of the document）
      */
     public void deleteImages(String documentId) throws IOException {
         Path docImageDir = Paths.get(storageBasePath, IMAGE_DIR, sanitizeFilename(documentId));
@@ -163,14 +163,14 @@ public class ImageStorageService {
     }
 
     /**
-     * 生成图片访问 URL
+     * 生成图片访问 URL（Generate image access URL）
      */
     public String generateImageUrl(String documentId, String filename) {
         return String.format("/api/images/%s/%s", sanitizeFilename(documentId), filename);
     }
 
     /**
-     * 将文档中的图片引用替换为实际 URL
+     * 将文档中的图片引用替换为实际 URL（Replace image references in the document with actual URLs）
      */
     public String replaceImageReferences(String content, String documentId, List<ImageInfo> images) {
         if (content == null || images == null || images.isEmpty()) {
@@ -180,11 +180,11 @@ public class ImageStorageService {
         String result = content;
 
         for (ImageInfo image : images) {
-            // 替换 Markdown 图片引用
+            // 替换 Markdown 图片引用（Replace Markdown image references）
             // ![alt](filename) -> ![alt](/api/images/docId/filename)
             String imageUrl = generateImageUrl(documentId, image.getFilename());
 
-            // 尝试多种匹配模式
+            // 尝试多种匹配模式（Try multiple matching patterns）
             result = result.replaceAll(
                 "!\\[([^\\]]*)\\]\\(" + image.getOriginalFilename() + "\\)",
                 "![$1](" + imageUrl + ")"
@@ -200,7 +200,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 从 Markdown 内容中提取图片引用
+     * 从 Markdown 内容中提取图片引用（Extract image references from Markdown content）
      */
     public List<String> extractImageReferences(String markdownContent) {
         List<String> imageRefs = new ArrayList<>();
@@ -209,7 +209,7 @@ public class ImageStorageService {
             return imageRefs;
         }
 
-        // 匹配 Markdown 图片语法: ![alt](url)
+        // 匹配 Markdown 图片语法: ![alt](url)（Match Markdown image syntax: ![alt](url)）
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("!\\[[^\\]]*\\]\\(([^)]+)\\)");
         java.util.regex.Matcher matcher = pattern.matcher(markdownContent);
 
@@ -222,7 +222,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 判断是否为支持的图片格式
+     * 判断是否为支持的图片格式（Check if the image format is supported）
      */
     private boolean isSupportedImageFormat(String filename) {
         String extension = getFileExtension(filename);
@@ -230,11 +230,11 @@ public class ImageStorageService {
     }
 
     /**
-     * 获取文件扩展名
+     * 获取文件扩展名（Get file extension）
      */
     private String getFileExtension(String filename) {
         if (filename == null || !filename.contains(".")) {
-            return "jpg"; // 默认
+            return "jpg"; // 默认（Default）
         }
 
         int lastDot = filename.lastIndexOf('.');
@@ -242,7 +242,7 @@ public class ImageStorageService {
     }
 
     /**
-     * 清理文件名
+     * 清理文件名（Sanitize filename）
      */
     private String sanitizeFilename(String filename) {
         if (filename == null) {

@@ -5,7 +5,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Web 配置 - CORS 跨域支持
+ * Web 配置 - CORS 跨域支持（Web configuration - CORS cross-origin support）
  *
  * @author AI Reviewer Team
  * @since 2025-11-23
@@ -22,4 +22,3 @@ public class WebConfig implements WebMvcConfigurer {
             .maxAge(3600);
     }
 }
-

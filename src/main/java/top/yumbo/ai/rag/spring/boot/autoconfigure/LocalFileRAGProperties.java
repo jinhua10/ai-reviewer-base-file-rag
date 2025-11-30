@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * LocalFileRAG 配置属性
+ * LocalFileRAG 配置属性（LocalFileRAG configuration properties）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -66,4 +66,3 @@ public class LocalFileRAGProperties {
         private int maxLimit = 100;
     }
 }
-

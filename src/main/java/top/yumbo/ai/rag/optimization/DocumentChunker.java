@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.optimization;
 
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 
 import java.util.ArrayList;
@@ -9,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 文档分块器
- * 将大文档拆分为多个小块，以降低内存占用并提高检索精度
+ * 文档分块器（Document chunker）
+ * 将大文档拆分为多个小块，以降低内存占用并提高检索精度（Split large documents into smaller chunks to reduce memory usage and improve retrieval accuracy）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -25,16 +26,16 @@ public class DocumentChunker {
     private final int maxChunks;
 
     /**
-     * 默认分块配置
-     * 🔧 优化：增加分块大小以支持大文件处理
+     * 默认分块配置（Default chunking configuration）
+     * 🔧 优化：增加分块大小以支持大文件处理（Optimization: increase chunk size to support large file processing）
      */
-    public static final int DEFAULT_CHUNK_SIZE = 2000;  // 2000字符（从1000增加）
-    public static final int DEFAULT_CHUNK_OVERLAP = 400; // 400字符重叠（从200增加）
-    public static final int DEFAULT_MAX_CONTENT_LENGTH = 100000; // 100000字符（从50000增加）
-    public static final int DEFAULT_MAX_CHUNKS = 50; // 每个文档最大分块数
+    public static final int DEFAULT_CHUNK_SIZE = 2000;  // 2000字符（2000 characters）
+    public static final int DEFAULT_CHUNK_OVERLAP = 400; // 400字符重叠（400 characters overlap）
+    public static final int DEFAULT_MAX_CONTENT_LENGTH = 100000; // 100000字符（100000 characters）
+    public static final int DEFAULT_MAX_CHUNKS = 50; // 每个文档最大分块数（Maximum chunks per document）
 
     /**
-     * 句子结束符
+     * 句子结束符（Sentence endings）
      */
     private static final char[] SENTENCE_ENDINGS = {'.', '。', '!', '！', '?', '？', '\n'};
 
@@ -53,8 +54,8 @@ public class DocumentChunker {
             throw new IllegalArgumentException("Chunk overlap must be less than chunk size");
         }
 
-        log.info("DocumentChunker initialized - chunkSize: {}, overlap: {}, smartSplit: {}, maxContentLength: {}, maxChunks: {}",
-            chunkSize, chunkOverlap, smartSplit, maxContentLength, maxChunks);
+        log.info(LogMessageProvider.getMessage("log.optimization.chunker.initialized",
+            chunkSize, chunkOverlap, smartSplit, maxContentLength, maxChunks));
     }
 
     /**
@@ -121,7 +122,7 @@ public class DocumentChunker {
             }
         }
 
-        log.info("Document {} chunked into {} parts", document.getId(), chunks.size());
+        log.info(LogMessageProvider.getMessage("log.optimization.chunker.chunked", document.getId(), chunks.size()));
         return chunks;
     }
 
@@ -204,8 +205,7 @@ public class DocumentChunker {
             allChunks.addAll(chunks);
         }
 
-        log.info("Batch chunking completed: {} documents -> {} chunks",
-            documents.size(), allChunks.size());
+        log.info(LogMessageProvider.getMessage("log.optimization.chunker.batch_completed", documents.size(), allChunks.size()));
 
         return allChunks;
     }

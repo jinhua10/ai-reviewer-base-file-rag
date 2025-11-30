@@ -8,9 +8,9 @@ import top.yumbo.ai.rag.impl.parser.image.*;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
- * 图片处理配置
+ * 图片处理配置（Image processing configuration）
  * <p>
- * 根据配置创建相应的图片提取器策略
+ * 根据配置创建相应的图片提取器策略（Creates corresponding image extractor strategies based on configuration）
  *
  * @author AI Reviewer Team
  * @since 2025-11-23
@@ -26,7 +26,7 @@ public class ImageProcessingConfiguration {
     }
 
     /**
-     * 创建智能图片提取器
+     * 创建智能图片提取器（Create smart image extractor）
      */
     @Bean
     @ConditionalOnMissingBean
@@ -70,7 +70,7 @@ public class ImageProcessingConfiguration {
     }
 
     /**
-     * 添加 OCR 策略
+     * 添加 OCR 策略（Add OCR strategy）
      */
     private void addOcrStrategy(SmartImageExtractor extractor, KnowledgeQAProperties.ImageProcessingConfig config) {
         if (config.isEnableOcr()) {
@@ -95,7 +95,7 @@ public class ImageProcessingConfiguration {
     }
 
     /**
-     * 添加 Vision LLM 策略
+     * 添加 Vision LLM 策略（Add Vision LLM strategy）
      */
     private void addVisionLlmStrategy(SmartImageExtractor extractor, KnowledgeQAProperties.ImageProcessingConfig config) {
         KnowledgeQAProperties.VisionLlmConfig visionConfig = config.getVisionLlm();
@@ -128,7 +128,7 @@ public class ImageProcessingConfiguration {
     }
 
     /**
-     * 解析环境变量占位符
+     * 解析环境变量占位符（Resolve environment variable placeholders）
      */
     private String resolveEnvVariable(String value) {
         if (value == null || value.isEmpty()) {

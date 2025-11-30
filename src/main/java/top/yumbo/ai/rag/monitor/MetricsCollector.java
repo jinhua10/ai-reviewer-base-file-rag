@@ -1,5 +1,6 @@
 package top.yumbo.ai.rag.monitor;
 import lombok.Data;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import java.util.concurrent.atomic.LongAdder;
 @Data
 public class MetricsCollector {
@@ -19,16 +20,10 @@ public class MetricsCollector {
         }
     }
     public String generateReport() {
-        return String.format(
-            "Metrics:\n" +
-            "  HTTP: %d requests, %d errors\n" +
-            "  Documents: %d created, %d updated, %d deleted\n" +
-            "  Search: %d requests, %d errors\n" +
-            "  Auth: %d attempts, %d failures",
+        return LogMessageProvider.getMessage("log.monitor.metrics.report",
             httpRequests.sum(), httpErrors.sum(),
             documentsCreated.sum(), documentsUpdated.sum(), documentsDeleted.sum(),
             searchRequests.sum(), searchErrors.sum(),
-            loginAttempts.sum(), loginFailures.sum()
-        );
+            loginAttempts.sum(), loginFailures.sum());
     }
 }

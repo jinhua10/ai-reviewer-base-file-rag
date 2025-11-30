@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.spring.boot.autoconfigure;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.model.ScoredDocument;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
 import top.yumbo.ai.rag.model.Document;
@@ -11,12 +12,15 @@ import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import jakarta.annotation.PreDestroy;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * 简易 RAG 服务
- * 提供常用的 RAG 操作
+ * 简易 RAG 服务（Simple RAG service）
+ * 提供常用的 RAG 操作（Provides common RAG operations）
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -83,12 +87,12 @@ public class SimpleRAGService {
             }
 
             // 构建元数据
-            Map<String, Object> metadata = new java.util.HashMap<>();
+            Map<String, Object> metadata = new HashMap<>();
             metadata.put("file_path", file.getAbsolutePath());
             metadata.put("file_name", file.getName());
             metadata.put("file_size", file.length());
             metadata.put("file_type", getFileExtension(file));
-            metadata.put("last_modified", new java.util.Date(file.lastModified()));
+            metadata.put("last_modified", new Date(file.lastModified()));
 
             // 索引文档
             String docId = index(file.getName(), content, metadata);
@@ -132,14 +136,14 @@ public class SimpleRAGService {
      */
     public int indexDirectory(File directory, boolean recursive) {
         if (directory == null || !directory.exists()) {
-            throw new IllegalArgumentException("目录不存在: " + directory);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.directory_not_exists", String.valueOf(directory)));
         }
 
         if (!directory.isDirectory()) {
-            throw new IllegalArgumentException("不是目录: " + directory);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_a_directory", String.valueOf(directory)));
         }
 
-        List<File> files = new java.util.ArrayList<>();
+        List<File> files = new ArrayList<>();
         collectFiles(directory, files, recursive);
 
         log.info(LogMessageProvider.getMessage("log.simple.scanned_files", files.size()));
@@ -200,7 +204,10 @@ public class SimpleRAGService {
 
         log.debug(LogMessageProvider.getMessage("log.simple.search_results", queryText, result.getDocuments().size()));
 
-        return result.getDocuments();
+        // 从ScoredDocument中提取Document
+        return result.getDocuments().stream()
+            .map(ScoredDocument::getDocument)
+            .collect(java.util.stream.Collectors.toList());
     }
 
     /**

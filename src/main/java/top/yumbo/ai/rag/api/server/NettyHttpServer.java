@@ -30,6 +30,12 @@ public class NettyHttpServer {
         this.port = port;
         this.requestHandler = requestHandler;
     }
+
+    /**
+     * 启动服务器 (Start server)
+     *
+     * @throws Exception 启动异常 (start exception)
+     */
     public void start() throws Exception {
         bossGroup = new NioEventLoopGroup(1);
         workerGroup = new NioEventLoopGroup();
@@ -54,6 +60,10 @@ public class NettyHttpServer {
             throw e;
         }
     }
+
+    /**
+     * 关闭服务器 (Shutdown server)
+     */
     public void shutdown() {
         if (channelFuture != null) channelFuture.channel().close();
         if (workerGroup != null) workerGroup.shutdownGracefully();
