@@ -5,6 +5,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
+import top.yumbo.ai.rag.i18n.LogLocaleProperties;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
  * AI Reviewer RAG 系统 - Spring Boot 主入口
@@ -33,7 +35,7 @@ import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
  */
 @Slf4j
 @SpringBootApplication
-@EnableConfigurationProperties(KnowledgeQAProperties.class)
+@EnableConfigurationProperties({KnowledgeQAProperties.class, LogLocaleProperties.class})
 public class Application {
 
     public static void main(String[] args) {
@@ -46,9 +48,9 @@ public class Application {
             app.setWebApplicationType(org.springframework.boot.WebApplicationType.SERVLET);
             app.run(args);
 
-            log.info("✅ 应用启动成功，默认端口：http://localhost:8080");
+            log.info(LogMessageProvider.getMessage("log.app.started", "http://localhost:8080"));
         } catch (Exception e) {
-            log.error("❌ 应用启动失败", e);
+            log.error(LogMessageProvider.getMessage("log.app.start_failed"), e);
             System.exit(1);
         }
     }
@@ -65,11 +67,11 @@ public class Application {
         System.out.println("/ ___ \\ | |  |  _ <  __/\\ V /  __/| |  __/\\ V  V /  __/ |    |  _ <  / ___ \\ |_| | ");
         System.out.println("\\_/ \\_\\|___| |_| \\_\\___| \\_/ \\___|_|\\___| \\_/\\_/ \\___|_|    |_| \\_\\/_/   \\_\\____| ");
         System.out.println();
-        System.out.println("  AI Reviewer - 知识库智能问答系统 (Knowledge QA System)");
-        System.out.println("  版本: 1.0.0");
-        System.out.println("  支持: Excel, Word, PowerPoint, PDF, TXT 等多种格式");
+        // Use message provider for i18n strings in the banner
+        System.out.println(LogMessageProvider.getMessage("banner.title"));
+        System.out.println(LogMessageProvider.getMessage("banner.version", "1.0.0"));
+        System.out.println(LogMessageProvider.getMessage("banner.supports", "Excel, Word, PowerPoint, PDF, TXT"));
         System.out.println("=".repeat(80));
         System.out.println();
     }
 }
-

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.config.FeedbackConfig;
 import top.yumbo.ai.rag.spring.boot.service.QAArchiveService;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,9 +52,9 @@ public class QARecordService {
         // 确保目录存在
         try {
             Files.createDirectories(recordsPath);
-            log.info("QA 记录存储目录: {}", recordsPath.toAbsolutePath());
+            log.info(LogMessageProvider.getMessage("log.qa.records_dir", recordsPath.toAbsolutePath().toString()));
         } catch (IOException e) {
-            log.error("Failed to create QA records directory", e);
+            log.error(LogMessageProvider.getMessage("log.qa.records_dir_failed", e.getMessage()), e);
         }
     }
 
@@ -99,11 +100,11 @@ public class QARecordService {
             objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValue(recordFile.toFile(), record);
 
-            log.info("✅ 保存问答记录: {} - {}", record.getId(), recordFile);
+            log.info(LogMessageProvider.getMessage("log.qa.record_saved", record.getId(), recordFile));
             return record.getId();
 
         } catch (IOException e) {
-            log.error("❌ 保存问答记录失败", e);
+            log.error(LogMessageProvider.getMessage("log.qa.record_save_failed"), e);
             return null;
         }
     }
@@ -121,7 +122,7 @@ public class QARecordService {
                 .findFirst()
                 .map(this::loadRecord);
         } catch (IOException e) {
-            log.error("查找记录失败: {}", id, e);
+            log.error(LogMessageProvider.getMessage("log.qa.find_failed", id), e);
             return Optional.empty();
         }
     }
@@ -141,14 +142,14 @@ public class QARecordService {
             if (existingFile.isPresent()) {
                 objectMapper.writerWithDefaultPrettyPrinter()
                     .writeValue(existingFile.get().toFile(), record);
-                log.info("✅ 更新问答记录: {}", record.getId());
+                log.info(LogMessageProvider.getMessage("log.qa.record_updated", record.getId()));
                 return true;
             } else {
-                log.warn("⚠️ 记录不存在: {}", record.getId());
+                log.warn(LogMessageProvider.getMessage("log.qa.record_notfound", record.getId()));
                 return false;
             }
         } catch (IOException e) {
-            log.error("❌ 更新记录失败: {}", record.getId(), e);
+            log.error(LogMessageProvider.getMessage("log.qa.record_update_failed", record.getId()), e);
             return false;
         }
     }
@@ -166,9 +167,8 @@ public class QARecordService {
         record.setOverallRating(rating);
         record.setOverallFeedback(feedback);
 
-        log.info("📝 用户反馈 [{}]: 评分={}, 内容={}",
-            recordId.substring(0, 8), rating,
-            feedback != null && !feedback.isEmpty() ? feedback : "无");
+        log.info(LogMessageProvider.getMessage("log.qa.user_feedback", recordId.substring(0, 8), rating,
+            feedback != null && !feedback.isEmpty() ? feedback : "无"));
 
         boolean updated = updateRecord(record);
 
@@ -178,11 +178,11 @@ public class QARecordService {
                 if (qaArchiveService.shouldArchive(record)) {
                     String archivePath = qaArchiveService.archiveQA(record);
                     if (archivePath != null) {
-                        log.info("⭐ 高评分问答已归档: rating={}, path={}", rating, archivePath);
+                        log.info(LogMessageProvider.getMessage("log.qa.archived", rating, archivePath));
                     }
                 }
             } catch (Exception e) {
-                log.error("❌ 归档问答失败", e);
+                log.error(LogMessageProvider.getMessage("log.qa.archive_failed"), e);
             }
         }
 
@@ -227,20 +227,19 @@ public class QARecordService {
         }
 
         String emoji = feedbackType == QARecord.FeedbackType.LIKE ? "👍" : "👎";
-        log.info("{} 文档反馈 [{}]: {} - {}",
-            emoji, recordId.substring(0, 8), documentName, feedbackType);
+        log.info(LogMessageProvider.getMessage("log.qa.document_feedback", emoji, recordId.substring(0, 8), documentName, feedbackType));
 
         // 根据配置决定是否自动应用反馈
         if (!feedbackConfig.isRequireApproval() && feedbackConfig.isAutoApply()) {
             // 直接应用反馈到文档权重
             documentWeightService.applyFeedback(documentName, feedbackType);
             record.setAppliedToOptimization(true);
-            log.info("✅ 反馈已自动应用到文档权重: {}", documentName);
+            log.info(LogMessageProvider.getMessage("log.qa.feedback_applied", documentName));
         } else {
             // 设置为待审核
             record.setReviewStatus(QARecord.ReviewStatus.PENDING);
             record.setAppliedToOptimization(false);
-            log.info("⏳ 反馈等待审核: {}", documentName);
+            log.info(LogMessageProvider.getMessage("log.qa.feedback_pending", documentName));
         }
 
         return updateRecord(record);
@@ -319,22 +318,19 @@ public class QARecordService {
         }
 
         String stars = "⭐".repeat(rating);
-        log.info("{} 文档星级评价 [{}]: {} - {}星 (权重调整: {})",
-            stars, recordId.substring(0, 8), documentName, rating,
-            String.format("%+.1f", weightAdjustment));
+        log.info(LogMessageProvider.getMessage("log.qa.rating_submitted", stars, recordId.substring(0, 8), documentName, rating, String.format("%+.1f", weightAdjustment)));
 
         // 根据配置决定是否自动应用反馈
         if (!feedbackConfig.isRequireApproval() && feedbackConfig.isAutoApply()) {
             // 直接应用权重调整
             documentWeightService.applyRatingFeedback(documentName, rating, weightAdjustment);
             record.setAppliedToOptimization(true);
-            log.info("✅ 星级评价已自动应用到文档权重: {} ({}星 → 权重{})",
-                documentName, rating, String.format("%+.1f", weightAdjustment));
+            log.info(LogMessageProvider.getMessage("log.qa.rating_applied", documentName, rating, String.format("%+.1f", weightAdjustment)));
         } else {
             // 设置为待审核
             record.setReviewStatus(QARecord.ReviewStatus.PENDING);
             record.setAppliedToOptimization(false);
-            log.info("⏳ 星级评价等待审核: {} ({}星)", documentName, rating);
+            log.info(LogMessageProvider.getMessage("log.qa.rating_pending", documentName, rating));
         }
 
         return updateRecord(record);
@@ -354,7 +350,7 @@ public class QARecordService {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         } catch (IOException e) {
-            log.error("获取最近记录失败", e);
+            log.error(LogMessageProvider.getMessage("log.qa.recent_failed"), e);
             return Collections.emptyList();
         }
     }
@@ -374,7 +370,7 @@ public class QARecordService {
                            (r.getDocumentFeedbacks() != null && !r.getDocumentFeedbacks().isEmpty()))
                 .collect(Collectors.toList());
         } catch (IOException e) {
-            log.error("获取待审核记录失败", e);
+            log.error(LogMessageProvider.getMessage("log.qa.pending_failed"), e);
             return Collections.emptyList();
         }
     }
@@ -412,7 +408,7 @@ public class QARecordService {
                 .build();
 
         } catch (IOException e) {
-            log.error("获取统计信息失败", e);
+            log.error(LogMessageProvider.getMessage("log.qa.stats_failed"), e);
             return new QAStatistics();
         }
     }
@@ -424,7 +420,7 @@ public class QARecordService {
         try {
             return objectMapper.readValue(path.toFile(), QARecord.class);
         } catch (IOException e) {
-            log.error("加载记录失败: {}", path, e);
+            log.error(LogMessageProvider.getMessage("log.qa.load_failed", path.toString()), e);
             return null;
         }
     }

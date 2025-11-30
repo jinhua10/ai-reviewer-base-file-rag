@@ -7,13 +7,15 @@ import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * AI 语义文档切分器
+ * AI 语义文档切分器 (AI semantic document chunker)
  * 使用 AI 模型进行智能语义切分，效果最好但成本较高
+ * (Uses AI models for semantic chunking; best quality but higher cost)
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -32,7 +34,7 @@ public class AiSemanticChunker implements DocumentChunker {
         config.validate();
 
         if (!config.getAiChunking().isEnabled()) {
-            log.warn("AI chunking is not enabled in config, but AiSemanticChunker is being used");
+            log.warn(LogMessageProvider.getMessage("log.chunk.ai_not_enabled"));
         }
     }
 
@@ -54,7 +56,7 @@ public class AiSemanticChunker implements DocumentChunker {
         }
 
         try {
-            log.info("🤖 Starting AI semantic chunking for {} chars", content.length());
+            log.info(LogMessageProvider.getMessage("log.chunk.ai_start", content.length()));
             long startTime = System.currentTimeMillis();
 
             // 构建 Prompt
@@ -67,20 +69,19 @@ public class AiSemanticChunker implements DocumentChunker {
             List<DocumentChunk> chunks = parseChunkingResponse(response, content);
 
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ AI semantic chunking completed: {} chars -> {} chunks in {}ms",
-                    content.length(), chunks.size(), duration);
+            log.info(LogMessageProvider.getMessage("log.chunk.ai_completed", content.length(), chunks.size(), duration));
 
             return chunks;
 
         } catch (Exception e) {
-            log.error("❌ AI semantic chunking failed, falling back to smart keyword chunking", e);
+            log.error(LogMessageProvider.getMessage("log.chunk.ai_failed"), e);
             // 失败时降级到智能关键词切分
             return new SmartKeywordChunker(config).chunk(content, query);
         }
     }
 
     /**
-     * 构建切分 Prompt
+     * 构建切分 Prompt (Build chunking prompt)
      */
     private String buildChunkingPrompt(String content, String query) {
         String promptTemplate = config.getAiChunking().getPrompt();
@@ -100,8 +101,7 @@ public class AiSemanticChunker implements DocumentChunker {
     }
 
     /**
-     * 如果内容太长，截断到合理长度
-     * AI 切分本身也有上下文限制
+     * 如果内容太长，截断到合理长度 (Truncate content if too long)
      */
     private String truncateIfNeeded(String content) {
         int maxLength = config.getChunkSize() * 10; // 最多处理10倍块大小
@@ -110,13 +110,12 @@ public class AiSemanticChunker implements DocumentChunker {
             return content;
         }
 
-        log.warn("Content too long ({} chars), truncating to {} chars for AI chunking",
-                content.length(), maxLength);
+        log.warn(LogMessageProvider.getMessage("log.chunk.truncate_warning", content.length(), maxLength));
         return content.substring(0, maxLength) + "\n\n[内容过长已截断...]";
     }
 
     /**
-     * 解析 AI 返回的切分结果
+     * 解析 AI 返回的切分结果 (Parse AI chunking response)
      */
     private List<DocumentChunk> parseChunkingResponse(String response, String originalContent) {
         try {
@@ -127,7 +126,7 @@ public class AiSemanticChunker implements DocumentChunker {
             JsonNode root = objectMapper.readTree(jsonContent);
 
             if (!root.isArray()) {
-                throw new IllegalArgumentException("Expected JSON array, got: " + root.getNodeType());
+                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.expected_json_array", root.getNodeType()));
             }
 
             List<DocumentChunk> chunks = new ArrayList<>();
@@ -162,20 +161,19 @@ public class AiSemanticChunker implements DocumentChunker {
             }
 
             if (chunks.isEmpty()) {
-                throw new IllegalArgumentException("No valid chunks found in AI response");
+                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.no_valid_chunks"));
             }
 
             return chunks;
 
         } catch (Exception e) {
-            log.error("Failed to parse AI chunking response: {}", e.getMessage());
-            throw new RuntimeException("Failed to parse AI chunking response", e);
+            log.error(LogMessageProvider.getMessage("log.chunk.ai_parse_failed", e.getMessage()));
+            throw new RuntimeException(LogMessageProvider.getMessage("log.chunk.ai_parse_failed", e.getMessage()), e);
         }
     }
 
     /**
-     * 从响应中提取 JSON
-     * AI 可能返回带有解释文字的响应，需要提取纯 JSON 部分
+     * 从响应中提取 JSON (Extract JSON from response)
      */
     private String extractJson(String response) {
         // 尝试找到 JSON 数组的开始和结束
@@ -188,7 +186,7 @@ public class AiSemanticChunker implements DocumentChunker {
             end = response.lastIndexOf('}');
 
             if (start == -1 || end == -1 || start >= end) {
-                throw new IllegalArgumentException("No valid JSON found in response");
+                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.no_valid_json"));
             }
         }
 
@@ -202,7 +200,6 @@ public class AiSemanticChunker implements DocumentChunker {
 
     @Override
     public String getDescription() {
-        return "使用AI模型智能语义切分，效果最好";
+        return "使用AI模型智能语义切分，效果最好 (Uses AI models for semantic chunking)";
     }
 }
-

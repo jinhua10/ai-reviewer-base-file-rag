@@ -4,13 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 简单文档切分器
+ * 简单文档切分器 (Simple document chunker)
  * 按固定长度切分，性能最好但可能在句子中间切断
+ * (Chunks by fixed length; best performance but may cut sentences)
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -34,8 +36,7 @@ public class SimpleDocumentChunker implements DocumentChunker {
         // 防止处理超大文档导致内存溢出（从配置读取）
         int maxContentLength = config.getMaxContentLength();
         if (content.length() > maxContentLength) {
-            log.warn("Content too large ({} chars), truncating to {} chars to prevent OOM (config: max-chunk-content-length)",
-                    content.length(), maxContentLength);
+            log.warn(LogMessageProvider.getMessage("log.chunk.content_truncate", content.length(), maxContentLength));
             content = content.substring(0, maxContentLength);
         }
 
@@ -78,21 +79,20 @@ public class SimpleDocumentChunker implements DocumentChunker {
         }
 
         if (index >= maxChunks) {
-            log.warn("Reached maximum chunk limit ({}, config: max-chunks-per-document), stopping chunking", maxChunks);
+            log.warn(LogMessageProvider.getMessage("log.chunk.max_chunks_reached", maxChunks));
         }
 
         // 更新总块数
         int totalChunks = chunks.size();
         chunks.forEach(chunk -> chunk.setTotalChunks(totalChunks));
 
-        log.debug("Simple chunking: {} chars -> {} chunks (size={}, overlap={})",
-                content.length(), totalChunks, chunkSize, overlap);
+        log.debug(LogMessageProvider.getMessage("log.chunk.simple_summary", content.length(), totalChunks, chunkSize, overlap));
 
         return chunks;
     }
 
     /**
-     * 调整到句子边界
+     * 调整到句子边界 (Adjust to sentence boundary)
      */
     private int adjustToSentenceBoundary(String text, int position) {
         int searchRange = Math.min(100, position / 10); // 搜索范围：10%或100字符
@@ -110,7 +110,7 @@ public class SimpleDocumentChunker implements DocumentChunker {
     }
 
     /**
-     * 判断是否是句子结束符
+     * 判断是否是句子结束符 (Check sentence ending)
      */
     private boolean isSentenceEnding(char c) {
         return c == '。' || c == '！' || c == '？' ||
@@ -125,7 +125,6 @@ public class SimpleDocumentChunker implements DocumentChunker {
 
     @Override
     public String getDescription() {
-        return "按固定长度切分，性能最好";
+        return "按固定长度切分，性能最好 (Chunks by fixed length)";
     }
 }
-

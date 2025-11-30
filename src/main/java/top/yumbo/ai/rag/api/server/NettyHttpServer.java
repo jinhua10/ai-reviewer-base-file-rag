@@ -9,6 +9,15 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
+
+/**
+ * Netty HTTP 服务器封装 (Netty HTTP server wrapper)
+ *
+ * 这是项目的轻量 HTTP 服务器实现，用于将 HTTP 请求分发到应用的请求处理器。
+ * (This is a lightweight HTTP server implementation used to dispatch HTTP requests
+ *  to the application's request handler.)
+ */
 @Slf4j
 public class NettyHttpServer {
     private final int port;
@@ -16,6 +25,7 @@ public class NettyHttpServer {
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private ChannelFuture channelFuture;
+
     public NettyHttpServer(int port, HttpRequestHandler requestHandler) {
         this.port = port;
         this.requestHandler = requestHandler;
@@ -37,9 +47,9 @@ public class NettyHttpServer {
                     }
                 });
             channelFuture = bootstrap.bind(port).sync();
-            log.info("HTTP Server started on port {}", port);
+            log.info(LogMessageProvider.getMessage("log.http.started", port));
         } catch (Exception e) {
-            log.error("Failed to start HTTP server", e);
+            log.error(LogMessageProvider.getMessage("log.http.start_failed"), e);
             shutdown();
             throw e;
         }
@@ -48,6 +58,6 @@ public class NettyHttpServer {
         if (channelFuture != null) channelFuture.channel().close();
         if (workerGroup != null) workerGroup.shutdownGracefully();
         if (bossGroup != null) bossGroup.shutdownGracefully();
-        log.info("HTTP Server shutdown");
+        log.info(LogMessageProvider.getMessage("log.http.shutdown"));
     }
 }

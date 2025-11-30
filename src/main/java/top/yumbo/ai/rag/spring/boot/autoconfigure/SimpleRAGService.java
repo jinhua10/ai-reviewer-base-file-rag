@@ -7,6 +7,7 @@ import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import jakarta.annotation.PreDestroy;
 import java.io.File;
@@ -54,7 +55,7 @@ public class SimpleRAGService {
             .build();
 
         String docId = rag.index(doc);
-        log.debug("索引文档: {} -> {}", title, docId);
+        log.debug(LogMessageProvider.getMessage("log.simple.doc_indexed", title, docId));
 
         return docId;
     }
@@ -64,11 +65,11 @@ public class SimpleRAGService {
      */
     public String indexFile(File file) {
         if (file == null || !file.exists()) {
-            throw new IllegalArgumentException("文件不存在: " + file);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_exists", String.valueOf(file)));
         }
 
         if (!file.isFile()) {
-            throw new IllegalArgumentException("不是文件: " + file);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_a_file", String.valueOf(file)));
         }
 
         try {
@@ -77,8 +78,8 @@ public class SimpleRAGService {
             String content = parser.parse(file);
 
             if (content == null || content.trim().isEmpty()) {
-                log.warn("文件内容为空: {}", file.getName());
-                throw new IllegalArgumentException("文件内容为空: " + file.getName());
+                log.warn(LogMessageProvider.getMessage("log.simple.file_empty", file.getName()));
+                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.empty", file.getName()));
             }
 
             // 构建元数据
@@ -91,13 +92,13 @@ public class SimpleRAGService {
 
             // 索引文档
             String docId = index(file.getName(), content, metadata);
-            log.info("索引文件: {} -> {} ({} 字节)", file.getName(), docId, file.length());
+            log.info(LogMessageProvider.getMessage("log.simple.index_file", file.getName(), docId, file.length()));
 
             return docId;
 
         } catch (Exception e) {
-            log.error("索引文件失败: {}", file.getName(), e);
-            throw new RuntimeException("索引文件失败: " + file.getName(), e);
+            log.error(LogMessageProvider.getMessage("log.simple.index_file_failed", file.getName()), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("error.file.index_failed", file.getName()), e);
         }
     }
 
@@ -117,12 +118,12 @@ public class SimpleRAGService {
                 indexFile(file);
                 successCount++;
             } catch (Exception e) {
-                log.error("索引文件失败: {}", file.getName(), e);
+                log.error(LogMessageProvider.getMessage("log.simple.index_file_failed", file.getName()), e);
                 failCount++;
             }
         }
 
-        log.info("批量索引文件完成: 成功 {}, 失败 {}", successCount, failCount);
+        log.info(LogMessageProvider.getMessage("log.simple.batch_index_files_complete", successCount, failCount));
         return successCount;
     }
 
@@ -141,7 +142,7 @@ public class SimpleRAGService {
         List<File> files = new java.util.ArrayList<>();
         collectFiles(directory, files, recursive);
 
-        log.info("扫描到 {} 个文件", files.size());
+        log.info(LogMessageProvider.getMessage("log.simple.scanned_files", files.size()));
         return indexFiles(files);
     }
 
@@ -177,7 +178,7 @@ public class SimpleRAGService {
      */
     public int indexBatch(List<Document> documents) {
         int count = rag.indexBatch(documents);
-        log.info("批量索引 {} 个文档", count);
+        log.info(LogMessageProvider.getMessage("log.simple.batch_indexed", count));
         return count;
     }
 
@@ -197,7 +198,7 @@ public class SimpleRAGService {
             .limit(Math.min(limit, properties.getSearch().getMaxLimit()))
             .build());
 
-        log.debug("搜索 '{}' 找到 {} 个结果", queryText, result.getDocuments().size());
+        log.debug(LogMessageProvider.getMessage("log.simple.search_results", queryText, result.getDocuments().size()));
 
         return result.getDocuments();
     }
@@ -221,7 +222,7 @@ public class SimpleRAGService {
      */
     public void commit() {
         rag.commit();
-        log.debug("提交索引更改");
+        log.debug(LogMessageProvider.getMessage("log.simple.commit"));
     }
 
     /**
@@ -229,7 +230,7 @@ public class SimpleRAGService {
      */
     public void optimize() {
         rag.optimizeIndex();
-        log.info("索引优化完成");
+        log.info(LogMessageProvider.getMessage("log.simple.optimized"));
     }
 
     /**
@@ -241,8 +242,7 @@ public class SimpleRAGService {
 
     @PreDestroy
     public void cleanup() {
-        log.info("关闭 RAG 服务...");
+        log.info(LogMessageProvider.getMessage("log.simple.shutdown"));
         rag.close();
     }
 }
-

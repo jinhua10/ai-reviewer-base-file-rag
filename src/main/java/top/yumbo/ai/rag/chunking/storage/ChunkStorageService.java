@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.chunking.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,6 +12,8 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 /**
  * 文档块存储服务
@@ -40,10 +43,10 @@ public class ChunkStorageService {
             Path chunkPath = Paths.get(storageBasePath, CHUNK_DIR);
             if (!Files.exists(chunkPath)) {
                 Files.createDirectories(chunkPath);
-                log.info("Created chunk storage directory: {}", chunkPath);
+                log.info(LogMessageProvider.getMessage("log.chunk.storage.created", chunkPath.toString()));
             }
         } catch (IOException e) {
-            log.error("Failed to initialize chunk storage", e);
+            log.error(LogMessageProvider.getMessage("log.chunk.storage.init_failed"), e);
             throw new RuntimeException("Failed to initialize chunk storage", e);
         }
     }
@@ -66,11 +69,11 @@ public class ChunkStorageService {
                 ChunkStorageInfo info = saveChunk(cleanDocId, chunk);
                 storageInfos.add(info);
             } catch (Exception e) {
-                log.error("Failed to save chunk {}/{}", documentId, chunk.getIndex(), e);
+                log.error(LogMessageProvider.getMessage("log.chunk.save_failed", documentId, chunk.getIndex()), e);
             }
         }
 
-        log.info("Saved {} chunks for document: {}", storageInfos.size(), documentId);
+        log.info(LogMessageProvider.getMessage("log.chunk.saved", storageInfos.size(), documentId));
         return storageInfos;
     }
 
@@ -187,7 +190,7 @@ public class ChunkStorageService {
             chunk.getEndPosition(),
             chunk.getLength(),
             escapeJson(chunk.getMetadata() != null ? chunk.getMetadata() : ""),
-            java.time.LocalDateTime.now().toString()
+            java.time.LocalDateTime.now()
         );
     }
 
@@ -216,41 +219,46 @@ public class ChunkStorageService {
 
         List<ChunkStorageInfo> chunks = new ArrayList<>();
 
-        Files.list(docDir)
-            .filter(p -> p.toString().endsWith(METADATA_SUFFIX))
-            .forEach(metaPath -> {
-                try {
-                    String metadata = Files.readString(metaPath, StandardCharsets.UTF_8);
-                    // 简单解析（实际应使用 JSON 库）
-                    ChunkStorageInfo info = parseMetadata(metadata);
-                    chunks.add(info);
-                } catch (Exception e) {
-                    log.warn("Failed to read chunk metadata: {}", metaPath, e);
-                }
-            });
+        try (Stream<Path> stream = Files.list(docDir)) {
+            stream
+                .filter(p -> p.toString().endsWith(METADATA_SUFFIX))
+                .forEach(metaPath -> {
+                    try {
+                        String metadata = Files.readString(metaPath, StandardCharsets.UTF_8);
+                        // 简单解析（实际应使用 JSON 库）
+                        ChunkStorageInfo info = parseMetadata(metadata);
+                        chunks.add(info);
+                    } catch (Exception e) {
+                        log.warn(LogMessageProvider.getMessage("log.chunk.read_meta_failed", metaPath.toString()), e);
+                    }
+                });
+        }
 
-        chunks.sort((a, b) -> Integer.compare(a.getChunkIndex(), b.getChunkIndex()));
+        chunks.sort(Comparator.comparingInt(ChunkStorageInfo::getChunkIndex));
         return chunks;
     }
 
     /**
      * 删除文档的所有块
      */
+    @SuppressWarnings("unused")
     public void deleteChunks(String documentId) throws IOException {
         Path docDir = Paths.get(storageBasePath, CHUNK_DIR, sanitizeFilename(documentId));
 
         if (Files.exists(docDir)) {
-            Files.walk(docDir)
-                .sorted((a, b) -> -a.compareTo(b)) // 反向排序，先删除文件再删除目录
-                .forEach(path -> {
-                    try {
-                        Files.delete(path);
-                    } catch (IOException e) {
-                        log.warn("Failed to delete: {}", path, e);
-                    }
-                });
+            try (Stream<Path> stream = Files.walk(docDir)) {
+                stream
+                    .sorted(Comparator.reverseOrder()) // 反向排序，先删除文件再删除目录
+                    .forEach(path -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException e) {
+                            log.warn(LogMessageProvider.getMessage("log.chunk.delete_failed", path.toString()), e);
+                        }
+                    });
+            }
 
-            log.info("Deleted all chunks for document: {}", documentId);
+            log.info(LogMessageProvider.getMessage("log.chunk.deleted_all", documentId));
         }
     }
 
@@ -317,4 +325,3 @@ public class ChunkStorageService {
         return builder.build();
     }
 }
-

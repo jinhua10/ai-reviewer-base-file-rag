@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.security;
 
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -16,7 +17,10 @@ public class AuthenticationService {
     
     private final Map<String, User> users = new ConcurrentHashMap<>();
     private final Map<String, String> tokens = new ConcurrentHashMap<>();
-    
+
+    public AuthenticationService() {
+    }
+
     /**
      * 注册用户
      */
@@ -36,7 +40,7 @@ public class AuthenticationService {
             .build();
         
         users.put(username, user);
-        log.info("User registered: {}", username);
+        log.info(LogMessageProvider.getMessage("log.auth.registered", username));
         return user;
     }
     
@@ -58,7 +62,7 @@ public class AuthenticationService {
         tokens.put(token, username);
         
         user.setLastLoginAt(System.currentTimeMillis());
-        log.info("User logged in: {}", username);
+        log.info(LogMessageProvider.getMessage("log.auth.logged_in", username));
         return token;
     }
     
@@ -79,7 +83,7 @@ public class AuthenticationService {
     public void logout(String token) {
         String username = tokens.remove(token);
         if (username != null) {
-            log.info("User logged out: {}", username);
+            log.info(LogMessageProvider.getMessage("log.auth.logged_out", username));
         }
     }
     

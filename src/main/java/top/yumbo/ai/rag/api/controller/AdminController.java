@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.api.model.ApiResponse;
 import top.yumbo.ai.rag.query.impl.AdvancedQueryProcessor;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class AdminController {
     }
     
     /**
-     * 健康检查
+     * 健康检查 (Health check)
      */
     public ApiResponse<Map<String, Object>> health() {
         Map<String, Object> health = new HashMap<>();
@@ -33,7 +34,7 @@ public class AdminController {
     }
     
     /**
-     * 统计信息
+     * 统计信息 (Statistics)
      */
     public ApiResponse<Map<String, Object>> stats() {
         try {
@@ -48,38 +49,38 @@ public class AdminController {
             return ApiResponse.success(stats);
             
         } catch (Exception e) {
-            log.error("Failed to get stats", e);
-            return ApiResponse.error("Failed to get stats: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.admin.stats_failed"), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.admin.stats_failed_detail", e.getMessage()));
         }
     }
     
     /**
-     * 优化索引
+     * 优化索引 (Optimize index)
      */
     public ApiResponse<String> optimizeIndex() {
         try {
             rag.optimizeIndex();
-            log.info("Index optimized");
-            return ApiResponse.success("Index optimized successfully", "OK");
-            
+            log.info(LogMessageProvider.getMessage("log.admin.index_optimized"));
+            return ApiResponse.success(LogMessageProvider.getMessage("log.admin.index_optimized_success"), "OK");
+
         } catch (Exception e) {
-            log.error("Failed to optimize index", e);
-            return ApiResponse.error("Failed to optimize index: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.admin.index_optimize_failed"), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.admin.index_optimize_failed_detail", e.getMessage()));
         }
     }
     
     /**
-     * 清除缓存
+     * 清除缓存 (Clear cache)
      */
     public ApiResponse<String> clearCache() {
         try {
             queryProcessor.clearCache();
-            log.info("Cache cleared");
-            return ApiResponse.success("Cache cleared successfully", "OK");
-            
+            log.info(LogMessageProvider.getMessage("log.admin.cache_cleared"));
+            return ApiResponse.success(LogMessageProvider.getMessage("log.admin.cache_cleared_success"), "OK");
+
         } catch (Exception e) {
-            log.error("Failed to clear cache", e);
-            return ApiResponse.error("Failed to clear cache: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.admin.clear_cache_failed"), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.admin.clear_cache_failed_detail", e.getMessage()));
         }
     }
 }

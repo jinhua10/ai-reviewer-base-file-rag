@@ -4,13 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * 智能关键词文档切分器
+ * 智能关键词文档切分器 (Smart keyword document chunker)
  * 优先提取包含查询关键词的内容，平衡效果和性能
+ * (Extracts keyword-containing portions first to balance quality and performance)
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -20,7 +22,7 @@ public class SmartKeywordChunker implements DocumentChunker {
 
     private final ChunkingConfig config;
 
-    // 停用词列表
+    // 停用词列表 (stop words)
     private static final Set<String> STOP_WORDS = new HashSet<>(Arrays.asList(
             "的", "是", "在", "了", "和", "有", "我", "你", "他", "她", "它",
             "什么", "怎么", "如何", "为什么", "吗", "呢", "啊", "了", "着", "过",
@@ -52,21 +54,20 @@ public class SmartKeywordChunker implements DocumentChunker {
 
         if (positions.isEmpty()) {
             // 没有找到关键词，使用简单切分
-            log.debug("No keywords found, falling back to simple chunking");
+            log.debug(LogMessageProvider.getMessage("log.chunk.no_keywords_fallback"));
             return new SimpleDocumentChunker(config).chunk(content, query);
         }
 
         // 基于关键词位置生成切分块
         List<DocumentChunk> chunks = generateChunksAroundKeywords(content, positions);
 
-        log.debug("Smart keyword chunking: {} chars -> {} chunks with {} keywords",
-                content.length(), chunks.size(), keywords.size());
+        log.debug(LogMessageProvider.getMessage("log.chunk.smart_summary", content.length(), chunks.size(), keywords.size()));
 
         return chunks;
     }
 
     /**
-     * 提取关键词
+     * 提取关键词 (Extract keywords)
      */
     private List<String> extractKeywords(String query) {
         if (query == null || query.isEmpty()) {
@@ -100,14 +101,14 @@ public class SmartKeywordChunker implements DocumentChunker {
                 .collect(Collectors.toList());
 
         if (!result.isEmpty()) {
-            log.debug("Extracted {} keywords from query: {}", result.size(), query);
+            log.debug(LogMessageProvider.getMessage("log.chunk.keywords_extracted", result.size(), query));
         }
 
         return result;
     }
 
     /**
-     * 找到所有关键词位置
+     * 找到所有关键词位置 (Find keyword positions)
      */
     private List<KeywordPosition> findKeywordPositions(String content, List<String> keywords) {
         List<KeywordPosition> positions = new ArrayList<>();
@@ -128,7 +129,7 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 基于关键词位置生成切分块
+     * 基于关键词位置生成切分块 (Generate chunks around keywords)
      */
     private List<DocumentChunk> generateChunksAroundKeywords(String content, List<KeywordPosition> positions) {
         List<DocumentChunk> chunks = new ArrayList<>();
@@ -186,7 +187,7 @@ public class SmartKeywordChunker implements DocumentChunker {
 
         // 如果切分后覆盖不全，补充剩余部分
         if (chunks.isEmpty() || getTotalCoverage(chunks) < content.length() * 0.5) {
-            log.debug("Coverage too low, adding sequential chunks");
+            log.debug(LogMessageProvider.getMessage("log.chunk.coverage_low"));
             chunks.addAll(addSequentialChunks(content, chunks, chunkSize, overlap));
         }
 
@@ -201,7 +202,7 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 添加顺序块以覆盖未覆盖的部分
+     * 添加顺序块以覆盖未覆盖的部分 (Add sequential chunks)
      */
     private List<DocumentChunk> addSequentialChunks(String content, List<DocumentChunk> existingChunks,
                                                      int chunkSize, int overlap) {
@@ -249,7 +250,7 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 计算总覆盖率
+     * 计算总覆盖率 (Compute total coverage)
      */
     private int getTotalCoverage(List<DocumentChunk> chunks) {
         Set<Integer> covered = new HashSet<>();
@@ -262,13 +263,14 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 调整到句子开始位置
+     * 调整到句子开始位置 (Adjust to sentence start)
      */
     private int adjustToSentenceStart(String text, int pos) {
         if (pos <= 0) return 0;
 
         int searchRange = Math.min(100, pos);
-        for (int i = pos - 1; i >= pos - searchRange && i >= 0; i--) {
+        int lowerBound = pos - searchRange;
+        for (int i = pos - 1; i >= lowerBound; i--) {
             if (isSentenceEnding(text.charAt(i))) {
                 return i + 1;
             }
@@ -277,7 +279,7 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 调整到句子结束位置
+     * 调整到句子结束位置 (Adjust to sentence end)
      */
     private int adjustToSentenceEnd(String text, int pos) {
         if (pos >= text.length()) return text.length();
@@ -292,7 +294,7 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 判断是否是句子结束符
+     * 判断是否是句子结束符 (Check sentence ending)
      */
     private boolean isSentenceEnding(char c) {
         return c == '。' || c == '！' || c == '？' ||
@@ -311,7 +313,7 @@ public class SmartKeywordChunker implements DocumentChunker {
     }
 
     /**
-     * 关键词位置
+     * 关键词位置 (Keyword position)
      */
     private static class KeywordPosition {
         int position;

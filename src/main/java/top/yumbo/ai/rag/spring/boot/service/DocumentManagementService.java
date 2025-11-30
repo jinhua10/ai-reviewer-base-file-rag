@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.controller.DocumentManagementController.DocumentInfo;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,33 +55,33 @@ public class DocumentManagementService {
                 var resource = getClass().getClassLoader().getResource(resourcePath);
                 if (resource != null) {
                     Path tempPath = Paths.get(resource.toURI());
-                    log.info("✅ 从 classpath 找到资源: {}", tempPath.toAbsolutePath());
+                    log.info(LogMessageProvider.getMessage("log.docs.classpath_resource_found", tempPath.toAbsolutePath()));
 
                     // 检查是否在 JAR 内
                     if (tempPath.toString().contains(".jar!")) {
-                        log.warn("⚠️  classpath 路径在 JAR 内，不支持写入");
-                        log.warn("💡 上传文档将保存到外部路径: ./data/documents");
+                        log.warn(LogMessageProvider.getMessage("log.docs.classpath_in_jar"));
+                        log.warn(LogMessageProvider.getMessage("log.docs.upload_to_external"));
                         resolvedPath = Paths.get("./data/documents");
                     } else {
                         // 开发环境，使用 classpath 的实际路径
                         resolvedPath = tempPath;
-                        log.info("💡 使用 classpath 实际路径: {}", resolvedPath.toAbsolutePath());
+                        log.info(LogMessageProvider.getMessage("log.docs.classpath_realpath", resolvedPath.toAbsolutePath()));
                     }
                 } else {
                     // 如果 classpath 资源不存在，使用默认路径
-                    log.warn("⚠️  classpath 资源不存在: {}", resourcePath);
-                    log.info("💡 使用默认路径: ./data/documents");
+                    log.warn(LogMessageProvider.getMessage("log.docs.classpath_not_exists", resourcePath));
+                    log.info(LogMessageProvider.getMessage("log.docs.using_default_path"));
                     resolvedPath = Paths.get("./data/documents");
                 }
             } catch (Exception e) {
-                log.warn("⚠️  无法从 classpath 加载资源: {}, 错误: {}", resourcePath, e.getMessage());
-                log.info("💡 使用默认路径: ./data/documents");
+                log.warn(LogMessageProvider.getMessage("log.docs.classpath_load_failed", resourcePath, e.getMessage()));
+                log.info(LogMessageProvider.getMessage("log.docs.using_default_path"));
                 resolvedPath = Paths.get("./data/documents");
             }
         } else {
             // 使用文件系统路径
             resolvedPath = Paths.get(sourcePath);
-            log.info("✅ 使用文件系统路径: {}", resolvedPath.toAbsolutePath());
+            log.info(LogMessageProvider.getMessage("log.docs.using_filesystem", resolvedPath.toAbsolutePath()));
         }
 
         this.documentsPath = resolvedPath;
@@ -88,9 +89,9 @@ public class DocumentManagementService {
         // 确保目录存在
         try {
             Files.createDirectories(this.documentsPath);
-            log.info("✅ 文档目录已就绪: {}", this.documentsPath.toAbsolutePath());
+            log.info(LogMessageProvider.getMessage("log.docs.directory_ready", this.documentsPath.toAbsolutePath()));
         } catch (IOException e) {
-            log.error("❌ 创建文档目录失败: {}", e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.docs.create_failed", e.getMessage()));
             throw new RuntimeException("无法创建文档目录: " + e.getMessage(), e);
         }
     }
@@ -133,7 +134,7 @@ public class DocumentManagementService {
             String nameWithoutExt = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
             String newFilename = nameWithoutExt + "_" + timestamp + "." + extension;
             targetPath = documentsPath.resolve(newFilename);
-            log.info("文件已存在，重命名为: {}", newFilename);
+            log.info(LogMessageProvider.getMessage("log.docs.file_exists_renamed", newFilename));
         }
 
         // 使用 try-with-resources 确保流被正确关闭
@@ -141,7 +142,7 @@ public class DocumentManagementService {
             Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        log.info("✅ 文档已保存: {}", targetPath.getFileName());
+        log.info(LogMessageProvider.getMessage("log.docs.saved", targetPath.getFileName()));
 
         return targetPath.getFileName().toString();
     }
@@ -156,7 +157,7 @@ public class DocumentManagementService {
         Path filePath = documentsPath.resolve(fileName);
 
         if (!Files.exists(filePath)) {
-            log.warn("文档不存在: {}", fileName);
+            log.warn(LogMessageProvider.getMessage("log.docs.not_found", fileName));
             return false;
         }
 
@@ -166,7 +167,7 @@ public class DocumentManagementService {
         }
 
         Files.delete(filePath);
-        log.info("✅ 文档已删除: {}", fileName);
+        log.info(LogMessageProvider.getMessage("log.docs.deleted", fileName));
 
         return true;
     }
@@ -270,4 +271,3 @@ public class DocumentManagementService {
         return fileTypes;
     }
 }
-

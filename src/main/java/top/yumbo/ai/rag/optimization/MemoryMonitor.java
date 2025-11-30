@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.optimization;
 
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
  * 内存监控工具
@@ -16,7 +17,11 @@ public class MemoryMonitor {
     private static final long MB = 1024 * 1024;
 
     public MemoryMonitor() {
-        this.runtime = Runtime.getRuntime();
+        this(Runtime.getRuntime());
+    }
+
+    public MemoryMonitor(Runtime runtime) {
+        this.runtime = runtime;
     }
 
     /**
@@ -37,24 +42,18 @@ public class MemoryMonitor {
 
         double usagePercent = (double) usedMemory / maxMemory * 100;
 
-        log.info("[{}] Memory - Used: {}MB / Max: {}MB ({}%), Free: {}MB, Total: {}MB",
-            phase,
-            usedMB,
-            maxMB,
-            String.format("%.1f", usagePercent),
-            freeMB,
-            totalMB);
+        String message;
+        message = LogMessageProvider.getMessage("log.memory.usage", phase, usedMB, maxMB, String.format("%.1f", usagePercent));
+        log.info(message);
 
         // 内存使用超过80%时发出警告
         if (usagePercent > 80) {
-            log.warn("[{}] ⚠️ Memory usage is high ({}%), consider calling System.gc()",
-                phase, String.format("%.1f", usagePercent));
+            log.warn(LogMessageProvider.getMessage("log.memory.warning", phase, String.format("%.1f", usagePercent)));
         }
 
         // 内存使用超过90%时发出严重警告
         if (usagePercent > 90) {
-            log.error("[{}] 🚨 Critical memory usage ({}%), OOM risk!",
-                phase, String.format("%.1f", usagePercent));
+            log.error(LogMessageProvider.getMessage("log.memory.critical", phase, String.format("%.1f", usagePercent)));
         }
     }
 
@@ -158,4 +157,3 @@ public class MemoryMonitor {
         }
     }
 }
-

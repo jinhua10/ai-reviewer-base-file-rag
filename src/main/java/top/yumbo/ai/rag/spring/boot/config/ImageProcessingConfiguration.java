@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.impl.parser.image.*;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
  * 图片处理配置
@@ -30,12 +31,12 @@ public class ImageProcessingConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SmartImageExtractor smartImageExtractor() {
-        log.info("🖼️  初始化图片处理功能...");
+        log.info(LogMessageProvider.getMessage("log.imageproc.init"));
 
         KnowledgeQAProperties.ImageProcessingConfig config = properties.getImageProcessing();
         String strategy = config.getStrategy();
 
-        log.info("   配置策略: {}", strategy);
+        log.info(LogMessageProvider.getMessage("log.imageproc.strategy", strategy));
 
         SmartImageExtractor extractor = new SmartImageExtractor();
 
@@ -57,14 +58,13 @@ public class ImageProcessingConfiguration {
 
             case "placeholder":
             default:
-                // 使用默认占位符策略
-                log.info("   使用占位符策略（默认）");
+                log.info(LogMessageProvider.getMessage("log.imageproc.placeholder"));
                 break;
         }
 
         // 显示激活的策略
         ImageContentExtractorStrategy activeStrategy = extractor.getActiveStrategy();
-        log.info("✅ 图片处理策略已激活: {}", activeStrategy.getStrategyName());
+        log.info(LogMessageProvider.getMessage("log.imageproc.activated", activeStrategy.getStrategyName()));
 
         return extractor;
     }
@@ -78,18 +78,18 @@ public class ImageProcessingConfiguration {
             String tessdataPath = resolveEnvVariable(ocrConfig.getTessdataPath());
             String language = ocrConfig.getLanguage();
 
-            log.info("   添加 OCR 策略:");
-            log.info("      - Tessdata路径: {}", tessdataPath != null ? tessdataPath : "系统默认");
-            log.info("      - 识别语言: {}", language);
+            log.info(LogMessageProvider.getMessage("log.imageproc.add_ocr"));
+            log.info(LogMessageProvider.getMessage("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : "系统默认"));
+            log.info(LogMessageProvider.getMessage("log.imageproc.language", language));
 
             TesseractOCRStrategy ocrStrategy = new TesseractOCRStrategy(tessdataPath, language);
             extractor.addStrategy(ocrStrategy);
 
             if (ocrStrategy.isAvailable()) {
-                log.info("   ✅ OCR 策略可用");
+                log.info(LogMessageProvider.getMessage("log.imageproc.ocr_available"));
             } else {
-                log.warn("   ⚠️  OCR 策略不可用: 缺少 tess4j 依赖");
-                log.warn("   💡 提示: 添加依赖 net.sourceforge.tess4j:tess4j:5.9.0");
+                log.warn(LogMessageProvider.getMessage("log.imageproc.ocr_unavailable"));
+                log.warn(LogMessageProvider.getMessage("log.imageproc.ocr_hint"));
             }
         }
     }
@@ -106,23 +106,23 @@ public class ImageProcessingConfiguration {
             String endpoint = resolveEnvVariable(visionConfig.getEndpoint());
 
             if (apiKey != null && !apiKey.isEmpty()) {
-                log.info("   添加 Vision LLM 策略:");
-                log.info("      - 模型: {}", model);
+                log.info(LogMessageProvider.getMessage("log.imageproc.add_vision"));
+                log.info(LogMessageProvider.getMessage("log.imageproc.vision_model", model));
                 if (endpoint != null && !endpoint.isEmpty()) {
-                    log.info("      - 端点: {}", endpoint);
+                    log.info(LogMessageProvider.getMessage("log.imageproc.vision_endpoint", endpoint));
                 }
 
                 VisionLLMStrategy visionStrategy = new VisionLLMStrategy(apiKey, model, endpoint);
                 extractor.addStrategy(visionStrategy);
 
                 if (visionStrategy.isAvailable()) {
-                    log.info("   ✅ Vision LLM 策略可用");
+                    log.info(LogMessageProvider.getMessage("log.imageproc.vision_available"));
                 } else {
-                    log.warn("   ⚠️  Vision LLM 策略不可用");
+                    log.warn(LogMessageProvider.getMessage("log.imageproc.vision_unavailable"));
                 }
             } else {
-                log.warn("   ⚠️  Vision LLM 已启用但未配置 API Key");
-                log.warn("   💡 提示: 设置环境变量 VISION_LLM_API_KEY 或配置 knowledge.qa.image-processing.vision-llm.api-key");
+                log.warn(LogMessageProvider.getMessage("log.imageproc.vision_no_apikey"));
+                log.warn(LogMessageProvider.getMessage("log.imageproc.vision_apikey_hint"));
             }
         }
     }
@@ -149,4 +149,3 @@ public class ImageProcessingConfiguration {
         return value;
     }
 }
-

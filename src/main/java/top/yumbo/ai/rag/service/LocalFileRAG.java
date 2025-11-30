@@ -6,6 +6,7 @@ import top.yumbo.ai.rag.config.RAGConfiguration;
 import top.yumbo.ai.rag.core.CacheEngine;
 import top.yumbo.ai.rag.core.IndexEngine;
 import top.yumbo.ai.rag.core.StorageEngine;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.ScoredDocument;
@@ -45,13 +46,14 @@ public class LocalFileRAG implements Closeable {
     private LocalFileRAG(RAGConfiguration configuration,
                          StorageEngine storageEngine,
                          IndexEngine indexEngine,
-                         CacheEngine cacheEngine) {
+                         CacheEngine cacheEngine,
+                         LogMessageProvider unused) {
         this.configuration = configuration;
         this.storageEngine = storageEngine;
         this.indexEngine = indexEngine;
         this.cacheEngine = cacheEngine;
 
-        log.info("Local File RAG initialized with configuration: {}", configuration);
+        log.info(LogMessageProvider.getMessage("log.rag.initialized", configuration.toString()));
     }
 
     /**
@@ -73,7 +75,7 @@ public class LocalFileRAG implements Closeable {
             cacheEngine.putDocument(docId, document);
         }
 
-        log.debug("Document indexed successfully: {}", docId);
+        log.debug(LogMessageProvider.getMessage("log.rag.doc_indexed", docId));
         return docId;
     }
 
@@ -90,7 +92,7 @@ public class LocalFileRAG implements Closeable {
         // 2. 批量索引
         indexEngine.indexBatch(documents);
 
-        log.info("Batch indexed {} documents", count);
+        log.info(LogMessageProvider.getMessage("log.rag.batch_indexed", count));
         return count;
     }
 
@@ -103,48 +105,38 @@ public class LocalFileRAG implements Closeable {
     public SearchResult search(Query query) {
         long startTime = System.currentTimeMillis();
 
-        // 1. 尝试从缓存获取
         String queryKey = generateQueryKey(query);
         if (configuration.getCache().isEnabled()) {
             SearchResult cached = cacheEngine.getQueryResult(queryKey);
             if (cached != null) {
-                log.debug("Query result retrieved from cache: {}", queryKey);
+                log.debug(LogMessageProvider.getMessage("log.rag.cache_hit", queryKey));
                 return cached;
             }
         }
 
-        // 2. 执行搜索（索引中只有元数据）
         SearchResult result = indexEngine.search(query);
 
-        // 3. 为每个文档加载完整内容
-        // 重要：Lucene 索引中只存储了文档元数据，content 需要从 StorageEngine 加载
         for (ScoredDocument scoredDoc : result.getScoredDocuments()) {
             Document doc = scoredDoc.getDocument();
-
-            // 如果文档没有 content（从索引返回的通常没有），从存储加载
             if (doc.getContent() == null || doc.getContent().isEmpty()) {
                 Document fullDoc = storageEngine.retrieve(doc.getId());
                 if (fullDoc != null) {
-                    // 替换为包含完整内容的文档
                     scoredDoc.setDocument(fullDoc);
 
-                    log.trace("Loaded content for document: {}, length: {}",
-                        doc.getId(), fullDoc.getContent() != null ? fullDoc.getContent().length() : 0);
+                    log.trace(LogMessageProvider.getMessage("log.rag.loaded_content", doc.getId(), fullDoc.getContent() != null ? fullDoc.getContent().length() : 0));
                 } else {
-                    log.warn("Failed to load content for document: {}", doc.getId());
+                    log.warn(LogMessageProvider.getMessage("log.rag.load_content_failed", doc.getId()));
                 }
             }
         }
 
         result.setQueryTimeMs(System.currentTimeMillis() - startTime);
 
-        // 4. 缓存结果
         if (configuration.getCache().isEnabled()) {
             cacheEngine.putQueryResult(queryKey, result);
         }
 
-        log.debug("Search completed in {}ms, found {} results",
-                result.getQueryTimeMs(), result.getTotalHits());
+        log.debug(LogMessageProvider.getMessage("log.rag.search_completed", result.getQueryTimeMs(), result.getTotalHits()));
         return result;
     }
 
@@ -194,7 +186,7 @@ public class LocalFileRAG implements Closeable {
                 cacheEngine.invalidateDocument(docId);
             }
 
-            log.debug("Document updated: {}", docId);
+            log.debug(LogMessageProvider.getMessage("log.rag.doc_updated", docId));
         }
 
         return updated;
@@ -219,7 +211,7 @@ public class LocalFileRAG implements Closeable {
                 cacheEngine.invalidateDocument(docId);
             }
 
-            log.debug("Document deleted: {}", docId);
+            log.debug(LogMessageProvider.getMessage("log.rag.doc_deleted", docId));
         }
 
         return deleted;
@@ -229,18 +221,18 @@ public class LocalFileRAG implements Closeable {
      * 删除所有文档
      */
     public void deleteAllDocuments() {
-        log.info("Deleting all documents...");
+        log.info(LogMessageProvider.getMessage("log.rag.deleting_all"));
 
         // 1. 获取所有文档ID
         List<String> allDocIds = storageEngine.getAllDocumentIds();
         int count = allDocIds.size();
 
         if (count == 0) {
-            log.info("No documents to delete");
+            log.info(LogMessageProvider.getMessage("log.rag.no_documents"));
             return;
         }
 
-        log.info("Found {} documents to delete", count);
+        log.info(LogMessageProvider.getMessage("log.rag.found_to_delete", count));
 
         // 2. 删除所有文档
         for (String docId : allDocIds) {
@@ -252,7 +244,7 @@ public class LocalFileRAG implements Closeable {
                     cacheEngine.invalidateDocument(docId);
                 }
             } catch (Exception e) {
-                log.warn("Failed to delete document: {}", docId, e);
+                log.warn(LogMessageProvider.getMessage("log.rag.delete_failed", docId), e);
             }
         }
 
@@ -264,16 +256,16 @@ public class LocalFileRAG implements Closeable {
         // 4. 提交更改
         commit();
 
-        log.info("Deleted {} documents", count);
+        log.info(LogMessageProvider.getMessage("log.rag.deleted_count", count));
     }
 
     /**
      * 优化索引
      */
     public void optimizeIndex() {
-        log.info("Optimizing index...");
+        log.info(LogMessageProvider.getMessage("log.rag.optimizing"));
         indexEngine.optimize();
-        log.info("Index optimization completed");
+        log.info(LogMessageProvider.getMessage("log.rag.optimized"));
     }
 
     /**
@@ -302,14 +294,14 @@ public class LocalFileRAG implements Closeable {
      */
     @Override
     public void close() {
-        log.info("Closing Local File RAG...");
+        log.info(LogMessageProvider.getMessage("log.rag.closing"));
         try {
             indexEngine.commit();
             indexEngine.close();
             cacheEngine.clear();
-            log.info("Local File RAG closed successfully");
+            log.info(LogMessageProvider.getMessage("log.rag.closed"));
         } catch (Exception e) {
-            log.error("Error closing Local File RAG", e);
+            log.error(LogMessageProvider.getMessage("log.rag.close_error"), e);
         }
     }
 
@@ -373,7 +365,6 @@ public class LocalFileRAG implements Closeable {
         }
 
         public LocalFileRAG build() {
-            // 如果未提供自定义引擎，则创建默认实现
             if (storageEngine == null) {
                 storageEngine = top.yumbo.ai.rag.factory.RAGEngineFactory.createStorageEngine(configuration);
             }
@@ -384,7 +375,7 @@ public class LocalFileRAG implements Closeable {
                 cacheEngine = top.yumbo.ai.rag.factory.RAGEngineFactory.createCacheEngine(configuration);
             }
 
-            return new LocalFileRAG(configuration, storageEngine, indexEngine, cacheEngine);
+            return new LocalFileRAG(configuration, storageEngine, indexEngine, cacheEngine, null);
         }
     }
 
@@ -399,4 +390,3 @@ public class LocalFileRAG implements Closeable {
         private CacheEngine.CacheStats cacheStats;
     }
 }
-

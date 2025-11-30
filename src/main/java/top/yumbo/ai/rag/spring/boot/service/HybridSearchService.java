@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -9,6 +10,7 @@ import top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +51,7 @@ public class HybridSearchService {
 
             // 1. Lucene 关键词检索（快速粗筛）
             String keywords = extractKeywords(question);
-            log.info("🔍 提取关键词: {}", keywords);
+            log.info(LogMessageProvider.getMessage("log.hybrid.extract_keywords", keywords));
 
             int luceneLimit = configService.getLuceneTopK();
             SearchResult luceneResult = rag.search(Query.builder()
@@ -57,21 +59,16 @@ public class HybridSearchService {
                 .limit(luceneLimit)
                 .build());
 
-            log.info("📚 Lucene检索找到 {} 个文档 (总命中: {}, 配置limit={})",
-                luceneResult.getDocuments().size(),
-                luceneResult.getTotalHits(),
-                luceneLimit);
+            log.info(LogMessageProvider.getMessage("log.hybrid.lucene_found", luceneResult.getDocuments().size(), luceneResult.getTotalHits(), luceneLimit));
 
             // 显示 Lucene Top-10（带评分）
             if (!luceneResult.getDocuments().isEmpty()) {
-                log.info("   Lucene Top-10 文档（按相关性排序）:");
+                log.info(LogMessageProvider.getMessage("log.hybrid.lucene_top_header"));
                 List<Document> luceneDocs = luceneResult.getDocuments();
                 for (int i = 0; i < Math.min(10, luceneDocs.size()); i++) {
                     Document doc = luceneDocs.get(i);
-                    // 计算归一化评分（第1名=1.0，逐步降低）
                     double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
-                    log.info("      {}. {} - {} 字符 (Lucene 排名分: {:.3f})",
-                            i + 1, doc.getTitle(), doc.getContent().length(), normalizedScore);
+                    log.info(LogMessageProvider.getMessage("log.hybrid.lucene_top_item", i + 1, doc.getTitle(), doc.getContent().length(), normalizedScore));
                 }
             }
 
@@ -83,16 +80,14 @@ public class HybridSearchService {
             List<SimpleVectorIndexEngine.VectorSearchResult> vectorResults =
                 vectorIndexEngine.search(queryVector, vectorLimit, threshold);
 
-            log.info("🎯 向量检索找到 {} 个文档 (配置limit={})", vectorResults.size(), vectorLimit);
+            log.info(LogMessageProvider.getMessage("log.hybrid.vector_found", vectorResults.size(), vectorLimit));
 
-            // 显示向量 Top-10
             if (!vectorResults.isEmpty()) {
-                log.info("   向量 Top-10 文档:");
+                log.info(LogMessageProvider.getMessage("log.hybrid.vector_top_header"));
                 vectorResults.stream().limit(10).forEach(result -> {
                     Document doc = rag.getDocument(result.getDocId());
                     if (doc != null) {
-                        log.info("      - {} (相似度: {:.3f})",
-                            doc.getTitle(), result.getSimilarity());
+                        log.info(LogMessageProvider.getMessage("log.hybrid.vector_top_item", doc.getTitle(), result.getSimilarity()));
                     }
                 });
             }
@@ -104,7 +99,6 @@ public class HybridSearchService {
             List<Document> luceneDocs = luceneResult.getDocuments();
             for (int i = 0; i < luceneDocs.size(); i++) {
                 String docId = luceneDocs.get(i).getId();
-                // 归一化排名分数（第1名=1.0，逐步降低）
                 double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
                 hybridScores.put(docId, 0.3 * normalizedScore);
             }
@@ -120,43 +114,37 @@ public class HybridSearchService {
             int topK = configService.getHybridTopK();
             float minScore = configService.getMinScoreThreshold();
 
-            // 先排序，看看未过滤前的 Top 文档
             List<Map.Entry<String, Double>> allSortedScores = hybridScores.entrySet().stream()
                 .sorted((a, b) -> Double.compare(b.getValue(), a.getValue()))
                 .toList();
 
-            // 显示未过滤前的 Top 5
             if (!allSortedScores.isEmpty()) {
-                log.info("📊 混合评分 Top-5 (过滤前，阈值={}, 配置topK={}):", minScore, topK);
+                log.info(LogMessageProvider.getMessage("log.hybrid.top5_header", minScore, topK));
                 for (int i = 0; i < Math.min(5, allSortedScores.size()); i++) {
                     var entry = allSortedScores.get(i);
                     Document doc = rag.getDocument(entry.getKey());
                     if (doc != null) {
                         String status = entry.getValue() >= minScore ? "✅" : "❌";
-                        log.info("      {} {}. {} (评分: {:.3f})",
-                            status, i + 1, doc.getTitle(), entry.getValue());
+                        log.info(LogMessageProvider.getMessage("log.hybrid.top5_item", status, i + 1, doc.getTitle(), entry.getValue()));
                     }
                 }
             }
 
-            // 过滤低分文档
             List<Map.Entry<String, Double>> sortedScores = allSortedScores.stream()
                 .filter(entry -> entry.getValue() >= minScore)
                 .limit(topK)
                 .toList();
 
             if (sortedScores.size() < hybridScores.size()) {
-                log.warn("⚠️ 过滤了 {} 个低分文档（评分 < {}），保留 {} 个文档",
-                        hybridScores.size() - sortedScores.size(), minScore, sortedScores.size());
+                log.warn(LogMessageProvider.getMessage("log.hybrid.filtered", hybridScores.size() - sortedScores.size(), minScore, sortedScores.size()));
             }
 
-            log.info("🎲 混合评分 Top-{} (Lucene权重:0.3 + 向量权重:0.7):", sortedScores.size());
+            log.info(LogMessageProvider.getMessage("log.hybrid.topk_header", sortedScores.size()));
             int displayCount = 0;
             for (int i = 0; i < Math.min(sortedScores.size(), 20); i++) {
                 var entry = sortedScores.get(i);
                 Document doc = rag.getDocument(entry.getKey());
                 if (doc != null) {
-                    // 计算详细评分信息
                     int luceneRank = -1;
                     for (int j = 0; j < luceneDocs.size(); j++) {
                         if (luceneDocs.get(j).getId().equals(entry.getKey())) {
@@ -173,22 +161,16 @@ public class HybridSearchService {
                         }
                     }
 
-                    log.info("   {}. {} (混合分: {} = Lucene排名#{} + 向量:{})",
-                        i + 1, doc.getTitle(), String.format("%.3f", entry.getValue()),
-                        luceneRank > 0 ? luceneRank : "N/A", String.format("%.3f", vectorScore));
+                    log.info(LogMessageProvider.getMessage("log.hybrid.detail_item", i + 1, doc.getTitle(), String.format("%.3f", entry.getValue()), luceneRank > 0 ? luceneRank : "N/A", String.format("%.3f", vectorScore)));
                     displayCount++;
                 } else {
-                    log.warn("   ⚠️ {}. 文档ID={} 无法获取文档对象 (评分: {})",
-                        i + 1, entry.getKey(), String.format("%.3f", entry.getValue()));
+                    log.warn(LogMessageProvider.getMessage("log.hybrid.could_not_get_doc", i + 1, entry.getKey(), String.format("%.3f", entry.getValue())));
                 }
             }
 
             if (displayCount == 0 && !sortedScores.isEmpty()) {
-                log.error("❌ 严重问题：有 {} 个评分文档，但都无法获取文档对象！", sortedScores.size());
-                log.error("   文档ID列表: {}", sortedScores.stream()
-                    .limit(5)
-                    .map(Map.Entry::getKey)
-                    .collect(Collectors.joining(", ")));
+                log.error(LogMessageProvider.getMessage("log.hybrid.severe_no_docs", sortedScores.size()));
+                log.error(LogMessageProvider.getMessage("log.hybrid.doc_id_list", sortedScores.stream().limit(5).map(Map.Entry::getKey).collect(Collectors.joining(", "))));
             }
 
             // 5. 从 RAG 获取完整文档
@@ -201,22 +183,22 @@ public class HybridSearchService {
                 } else {
                     nullCount++;
                     if (nullCount <= 3) { // 只输出前3个null的详细信息
-                        log.warn("⚠️ 无法获取文档: ID={}, 评分={}", entry.getKey(), String.format("%.3f", entry.getValue()));
+                        log.warn(LogMessageProvider.getMessage("log.hybrid.cannot_get_doc", entry.getKey(), String.format("%.3f", entry.getValue())));
                     }
                 }
             }
 
             if (nullCount > 0) {
-                log.warn("⚠️ 总计 {} 个文档无法获取（共 {} 个评分文档）", nullCount, sortedScores.size());
+                log.warn(LogMessageProvider.getMessage("log.hybrid.total_nulls", nullCount, sortedScores.size()));
             }
 
             long elapsed = System.currentTimeMillis() - startTime;
-            log.info("✅ 混合检索完成: 返回 {} 个文档，耗时 {}ms", finalDocs.size(), elapsed);
+            log.info(LogMessageProvider.getMessage("log.hybrid.completed", finalDocs.size(), elapsed));
 
             return finalDocs;
 
         } catch (Exception e) {
-            log.error("混合检索失败，回退到纯关键词检索", e);
+            log.error(LogMessageProvider.getMessage("log.hybrid.failed"), e);
             return fallbackToKeywordSearch(question, rag);
         }
     }
@@ -226,14 +208,14 @@ public class HybridSearchService {
      */
     public List<Document> keywordSearch(String question, LocalFileRAG rag) {
         String keywords = extractKeywords(question);
-        log.info("🔍 关键词检索: {}", keywords);
+        log.info(LogMessageProvider.getMessage("log.hybrid.keyword_search", keywords));
 
         SearchResult result = rag.search(Query.builder()
             .queryText(keywords)
             .limit(properties.getVectorSearch().getTopK())
             .build());
 
-        log.info("📚 找到 {} 个文档", result.getDocuments().size());
+        log.info(LogMessageProvider.getMessage("log.hybrid.found_docs", result.getDocuments().size()));
         return result.getDocuments();
     }
 
@@ -264,4 +246,3 @@ public class HybridSearchService {
             .collect(Collectors.joining(" "));
     }
 }
-

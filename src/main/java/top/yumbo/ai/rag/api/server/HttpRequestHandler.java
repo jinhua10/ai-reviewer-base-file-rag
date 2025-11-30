@@ -10,6 +10,7 @@ import top.yumbo.ai.rag.api.controller.DocumentController;
 import top.yumbo.ai.rag.api.controller.SearchController;
 import top.yumbo.ai.rag.api.controller.AdminController;
 import top.yumbo.ai.rag.api.model.ApiResponse;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.nio.charset.StandardCharsets;
 
@@ -33,39 +34,39 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
         String uri = request.uri();
         HttpMethod method = request.method();
         
-        log.debug("Received {} request: {}", method, uri);
-        
+        log.debug(LogMessageProvider.getMessage("log.http.received_request", method, uri));
+
         try {
             Object response = routeRequest(request, uri, method);
             sendJsonResponse(ctx, HttpResponseStatus.OK, response);
             
         } catch (IllegalArgumentException e) {
-            log.warn("Bad request: {}", e.getMessage());
-            sendJsonResponse(ctx, HttpResponseStatus.BAD_REQUEST, 
+            log.warn(LogMessageProvider.getMessage("log.http.bad_request", e.getMessage()));
+            sendJsonResponse(ctx, HttpResponseStatus.BAD_REQUEST,
                 ApiResponse.error(e.getMessage()));
                 
         } catch (Exception e) {
-            log.error("Error processing request", e);
+            log.error(LogMessageProvider.getMessage("log.http.processing_error"), e);
             sendJsonResponse(ctx, HttpResponseStatus.INTERNAL_SERVER_ERROR,
-                ApiResponse.error("Internal server error"));
+                ApiResponse.error(LogMessageProvider.getMessage("log.http.internal_server_error")));
         }
     }
     
     private Object routeRequest(FullHttpRequest request, String uri, HttpMethod method) {
-        // 文档管理端点
+        // 文档管理端点 (Document management endpoint)
         if (uri.startsWith("/api/documents")) {
             return routeDocumentRequest(request, uri, method);
         }
-        // 搜索端点
+        // 搜索端点 (Search endpoint)
         else if (uri.startsWith("/api/search")) {
             return routeSearchRequest(request, uri, method);
         }
-        // 管理端点
+        // 管理端点 (Admin endpoint)
         else if (uri.startsWith("/api/admin") || uri.startsWith("/api/health") || uri.startsWith("/api/stats")) {
             return routeAdminRequest(request, uri, method);
         }
         else {
-            throw new IllegalArgumentException("Unknown endpoint: " + uri);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.unknown_endpoint", uri));
         }
     }
     
@@ -89,7 +90,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             return documentController.listDocuments();
         }
         else {
-            throw new IllegalArgumentException("Invalid document endpoint");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.invalid_document_endpoint"));
         }
     }
     
@@ -101,7 +102,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             return searchController.advancedSearch(getRequestBody(request));
         }
         else {
-            throw new IllegalArgumentException("Invalid search endpoint");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.invalid_search_endpoint"));
         }
     }
     
@@ -119,7 +120,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
             return adminController.clearCache();
         }
         else {
-            throw new IllegalArgumentException("Invalid admin endpoint");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.invalid_admin_endpoint"));
         }
     }
     
@@ -151,7 +152,7 @@ public class HttpRequestHandler extends SimpleChannelInboundHandler<FullHttpRequ
     
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        log.error("Exception in channel", cause);
+        log.error(LogMessageProvider.getMessage("log.channel.exception"), cause);
         ctx.close();
     }
 }

@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.model.Document;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -47,8 +48,7 @@ public class SearchSessionService {
 
         sessions.put(sessionId, session);
 
-        log.info("📝 创建搜索会话: sessionId={}, 总文档数={}, 每次引用={}",
-            sessionId, allDocuments.size(), documentsPerQuery);
+        log.info(LogMessageProvider.getMessage("log.session.create", sessionId, allDocuments.size(), documentsPerQuery));
 
         // 清理过期会话
         cleanExpiredSessions();
@@ -78,14 +78,14 @@ public class SearchSessionService {
 
         int nextOffset = session.getCurrentOffset() + session.getDocumentsPerQuery();
         if (nextOffset >= session.getAllDocuments().size()) {
-            log.warn("⚠️ 已经是最后一批文档了: sessionId={}", sessionId);
+            log.warn(LogMessageProvider.getMessage("log.session.no_next", sessionId));
             return getDocumentsAtOffset(session, session.getCurrentOffset());
         }
 
         session.setCurrentOffset(nextOffset);
         session.setLastAccessTime(LocalDateTime.now());
 
-        log.info("➡️ 切换到下一批文档: sessionId={}, offset={}", sessionId, nextOffset);
+        log.info(LogMessageProvider.getMessage("log.session.next", sessionId, nextOffset));
 
         return getDocumentsAtOffset(session, nextOffset);
     }
@@ -101,14 +101,14 @@ public class SearchSessionService {
 
         int prevOffset = Math.max(0, session.getCurrentOffset() - session.getDocumentsPerQuery());
         if (prevOffset == session.getCurrentOffset()) {
-            log.warn("⚠️ 已经是第一批文档了: sessionId={}", sessionId);
+            log.warn(LogMessageProvider.getMessage("log.session.no_prev", sessionId));
             return getDocumentsAtOffset(session, session.getCurrentOffset());
         }
 
         session.setCurrentOffset(prevOffset);
         session.setLastAccessTime(LocalDateTime.now());
 
-        log.info("⬅️ 切换到上一批文档: sessionId={}, offset={}", sessionId, prevOffset);
+        log.info(LogMessageProvider.getMessage("log.session.prev", sessionId, prevOffset));
 
         return getDocumentsAtOffset(session, prevOffset);
     }
@@ -137,7 +137,7 @@ public class SearchSessionService {
         session.setCurrentOffset(offset);
         session.setLastAccessTime(LocalDateTime.now());
 
-        log.info("📄 跳转到第{}页: sessionId={}, offset={}", page, sessionId, offset);
+        log.info(LogMessageProvider.getMessage("log.session.goto_page", page, sessionId, offset));
 
         return getDocumentsAtOffset(session, offset);
     }
@@ -169,7 +169,7 @@ public class SearchSessionService {
      */
     public void deleteSession(String sessionId) {
         sessions.remove(sessionId);
-        log.info("🗑️ 删除搜索会话: sessionId={}", sessionId);
+        log.info(LogMessageProvider.getMessage("log.session.deleted", sessionId));
     }
 
     /**
@@ -187,11 +187,11 @@ public class SearchSessionService {
 
         expiredSessions.forEach(id -> {
             sessions.remove(id);
-            log.info("🗑️ 清理过期会话: sessionId={}", id);
+            log.info(LogMessageProvider.getMessage("log.session.cleaned", id));
         });
 
         if (!expiredSessions.isEmpty()) {
-            log.info("🧹 清理了 {} 个过期会话", expiredSessions.size());
+            log.info(LogMessageProvider.getMessage("log.session.cleaned_count", expiredSessions.size()));
         }
     }
 

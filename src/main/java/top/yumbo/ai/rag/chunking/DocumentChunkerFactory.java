@@ -7,6 +7,7 @@ import java.util.List;
 import top.yumbo.ai.rag.chunking.impl.SimpleDocumentChunker;
 import top.yumbo.ai.rag.chunking.impl.SmartKeywordChunker;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
  * 文档切分器工厂
@@ -30,8 +31,7 @@ public class DocumentChunkerFactory {
                                                  ChunkingConfig config,
                                                  LLMClient llmClient) {
 
-        log.info("Creating document chunker: strategy={}, chunkSize={}, overlap={}",
-                strategy, config.getChunkSize(), config.getChunkOverlap());
+        log.info(LogMessageProvider.getMessage("log.chunker.creating", strategy, config.getChunkSize(), config.getChunkOverlap()));
 
         switch (strategy) {
             case NONE:
@@ -45,17 +45,17 @@ public class DocumentChunkerFactory {
 
             case AI_SEMANTIC:
                 if (llmClient == null) {
-                    log.warn("LLM client is null, falling back to SMART_KEYWORD strategy");
+                    log.warn(LogMessageProvider.getMessage("log.chunker.llm_null"));
                     return new SmartKeywordChunker(config);
                 }
                 if (!config.getAiChunking().isEnabled()) {
-                    log.warn("AI chunking is not enabled, falling back to SMART_KEYWORD strategy");
+                    log.warn(LogMessageProvider.getMessage("log.chunker.ai_disabled"));
                     return new SmartKeywordChunker(config);
                 }
                 return new AiSemanticChunker(config, llmClient);
 
             default:
-                log.warn("Unknown chunking strategy: {}, using SMART_KEYWORD", strategy);
+                log.warn(LogMessageProvider.getMessage("log.chunker.unknown_strategy", strategy));
                 return new SmartKeywordChunker(config);
         }
     }
@@ -63,6 +63,7 @@ public class DocumentChunkerFactory {
     /**
      * 创建切分器（从字符串解析策略）
      */
+    @SuppressWarnings("unused")
     public static DocumentChunker createChunker(String strategyName,
                                                  ChunkingConfig config,
                                                  LLMClient llmClient) {
@@ -97,8 +98,7 @@ public class DocumentChunkerFactory {
 
         @Override
         public String getDescription() {
-            return "不切分，直接使用完整内容";
+            return "不切分，直接使用完整内容 (No chunking: use full content)";
         }
     }
 }
-

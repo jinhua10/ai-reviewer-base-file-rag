@@ -4,13 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
- * 文档块存储信息
+ * 文档块存储信息 (Document chunk storage info)
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
  */
+@SuppressWarnings("unused")
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,60 +20,59 @@ import lombok.NoArgsConstructor;
 public class ChunkStorageInfo {
 
     /**
-     * 块ID（唯一标识）
+     * 块ID（唯一标识） (chunk ID - unique)
      */
     private String chunkId;
 
     /**
-     * 文档ID（原始文档名）
+     * 文档ID（原始文档名） (document ID - original name)
      */
     private String documentId;
 
     /**
-     * 块索引
+     * 块索引 (chunk index)
      */
     private int chunkIndex;
 
     /**
-     * 块标题
+     * 块标题 (chunk title)
      */
     private String title;
 
     /**
-     * 内容文件路径
+     * 内容文件路径 (content file path)
      */
     private String contentPath;
 
     /**
-     * 元数据文件路径
+     * 元数据文件路径 (metadata file path)
      */
     private String metadataPath;
 
     /**
-     * 内容长度
+     * 内容长度 (content length)
      */
     private int contentLength;
 
     /**
-     * 创建时间
+     * 创建时间 (created at)
      */
     private String createdAt;
 
     /**
-     * 获取显示名称
+     * 获取显示名称 (Get display name)
      */
     public String getDisplayName() {
         if (title != null && !title.isEmpty()) {
             return String.format("%s (块 %d)", title, chunkIndex + 1);
         }
-        return String.format("文档块 %d", chunkIndex + 1);
+        return LogMessageProvider.getMessage("log.chunk.display_part", chunkIndex + 1, Integer.max(chunkIndex + 1, 1));
     }
 
     /**
-     * 获取下载文件名
+     * 获取下载文件名 (Get download filename)
      */
     public String getDownloadFilename() {
         return chunkId + ".md";
     }
 }
-

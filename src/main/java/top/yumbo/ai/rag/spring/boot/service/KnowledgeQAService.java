@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.spring.boot.service;
 
 import ai.onnxruntime.OrtException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -12,6 +13,7 @@ import top.yumbo.ai.rag.impl.embedding.LocalEmbeddingEngine;
 import top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.optimization.SmartContextBuilder;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -78,9 +80,9 @@ public class KnowledgeQAService {
      */
     @PostConstruct
     public void initialize() {
-        log.info("=".repeat(80));
-        log.info("📚 知识库问答系统初始化中...");
-        log.info("=".repeat(80));
+        log.info(LogMessageProvider.getMessage("log.kqa.sep"));
+        log.info(LogMessageProvider.getMessage("log.kqa.init_start"));
+        log.info(LogMessageProvider.getMessage("log.kqa.sep"));
 
         try {
             // 1. 初始化知识库
@@ -95,12 +97,12 @@ public class KnowledgeQAService {
             // 4. 创建问答系统
             createQASystem();
 
-            log.info("=".repeat(80));
-            log.info("✅ 知识库问答系统初始化完成！");
-            log.info("=".repeat(80));
+            log.info(LogMessageProvider.getMessage("log.kqa.sep"));
+            log.info(LogMessageProvider.getMessage("log.kqa.init_done"));
+            log.info(LogMessageProvider.getMessage("log.kqa.sep"));
 
         } catch (Exception e) {
-            log.error("❌ 知识库问答系统初始化失败", e);
+            log.error(LogMessageProvider.getMessage("log.kqa.init_failed"), e);
             throw new RuntimeException("系统初始化失败", e);
         }
     }
@@ -109,41 +111,22 @@ public class KnowledgeQAService {
      * 初始化知识库
      */
     private void initializeKnowledgeBase() {
-        log.info("\n🔨 步骤1: 初始化知识库");
+        log.info(LogMessageProvider.getMessage("log.kqa.step", 1, "初始化知识库"));
 
         String storagePath = properties.getKnowledgeBase().getStoragePath();
         String sourcePath = properties.getKnowledgeBase().getSourcePath();
         boolean rebuildOnStartup = properties.getKnowledgeBase().isRebuildOnStartup();
 
-        log.info("   - 存储路径: {}", storagePath);
-        log.info("   - 文档路径: {}", sourcePath);
+        log.info(LogMessageProvider.getMessage("log.kqa.storage_path", storagePath));
+        log.info(LogMessageProvider.getMessage("log.kqa.source_path", sourcePath));
 
-        if (rebuildOnStartup) {
-            log.info("   - 索引模式: 完全重建（配置要求）");
-        } else {
-            log.info("   - 索引模式: 增量索引（默认模式）");
-        }
-
-        // 检查源路径类型
-        if (sourcePath.startsWith("classpath:")) {
-            log.info("   - 路径类型: classpath 资源");
-        } else {
-            log.info("   - 路径类型: 文件系统路径");
-        }
-
-        // 构建知识库 - 启动时使用增量索引，除非配置要求重建
         BuildResult buildResult;
-
         if (rebuildOnStartup) {
-            log.info("   🚀 开始完全重建知识库...");
-            buildResult = knowledgeBaseService.buildKnowledgeBase(sourcePath, storagePath, true);
+            log.info(LogMessageProvider.getMessage("log.kqa.rebuild_mode"));
+            buildResult = buildKnowledgeBaseWithRebuild(sourcePath, storagePath);
         } else {
-            log.info("   🔄 开始增量索引知识库...");
-            buildResult = knowledgeBaseService.buildKnowledgeBaseWithIncrementalIndex(sourcePath, storagePath);
-        }
-
-        if (buildResult.getError() != null) {
-            throw new RuntimeException("知识库构建失败: " + buildResult.getError());
+            log.info(LogMessageProvider.getMessage("log.kqa.incremental_mode"));
+            buildResult = buildKnowledgeBaseIncremental(sourcePath, storagePath);
         }
 
         log.info("   ✅ 知识库构建完成");
@@ -162,6 +145,55 @@ public class KnowledgeQAService {
         log.info("   ✅ 知识库已就绪");
         log.info("      - 文档数: {}", stats.getDocumentCount());
         log.info("      - 索引数: {}", stats.getIndexedDocumentCount());
+    }
+
+    private BuildResult buildKnowledgeBaseWithRebuild(String sourcePath, String storagePath) {
+        BuildResult buildResult = knowledgeBaseService.buildKnowledgeBase(sourcePath, storagePath, true);
+        if (buildResult.getError() != null) {
+            throw new RuntimeException("知识库构建失败: " + buildResult.getError());
+        }
+
+        log.info("      - 总文件数: {}", buildResult.getTotalFiles());
+        log.info("      - 处理文件: {}", buildResult.getSuccessCount());
+        log.info("      - 失败文件: {}", buildResult.getFailedCount());
+        log.info("      - 总文档数: {}", buildResult.getTotalDocuments());
+
+        rag = LocalFileRAG.builder()
+                .storagePath(storagePath)
+                .enableCache(properties.getKnowledgeBase().isEnableCache())
+                .build();
+
+        var stats = rag.getStatistics();
+        log.info("   ✅ 知识库已就绪");
+        log.info("      - 文档数: {}", stats.getDocumentCount());
+        log.info("      - 索引数: {}", stats.getIndexedDocumentCount());
+
+        return buildResult;
+    }
+
+    private BuildResult buildKnowledgeBaseIncremental(String sourcePath, String storagePath) {
+        BuildResult buildResult = knowledgeBaseService.buildKnowledgeBaseWithIncrementalIndex(sourcePath, storagePath);
+        if (buildResult.getError() != null) {
+            throw new RuntimeException("知识库构建失败: " + buildResult.getError());
+        }
+
+        log.info("   ✅ 知识库构建完成");
+        log.info("      - 总文件数: {}", buildResult.getTotalFiles());
+        log.info("      - 处理文件: {}", buildResult.getSuccessCount());
+        log.info("      - 失败文件: {}", buildResult.getFailedCount());
+        log.info("      - 总文档数: {}", buildResult.getTotalDocuments());
+
+        rag = LocalFileRAG.builder()
+                .storagePath(storagePath)
+                .enableCache(properties.getKnowledgeBase().isEnableCache())
+                .build();
+
+        var stats = rag.getStatistics();
+        log.info("   ✅ 知识库已就绪");
+        log.info("      - 文档数: {}", stats.getDocumentCount());
+        log.info("      - 索引数: {}", stats.getIndexedDocumentCount());
+
+        return buildResult;
     }
 
     /**
@@ -416,9 +448,9 @@ public class KnowledgeQAService {
                 try {
                     chunks = chunkStorageService.listChunks(firstDocTitle);
                     images = imageStorageService.listImages(firstDocTitle);
-                    log.info("📦 Found {} chunks and {} images for document", chunks.size(), images.size());
+                    log.info("📦 找到 {} 个块和 {} 张图片", chunks.size(), images.size());
                 } catch (Exception e) {
-                    log.warn("Failed to load chunks/images info", e);
+                    log.warn("加载块/图片信息失败", e);
                 }
             }
 
@@ -428,9 +460,9 @@ public class KnowledgeQAService {
             log.info("\n💡 回答:");
             log.info(answer);
             log.info("\n📚 数据来源 (共{}个文档):", sources.size());
-            sources.forEach(source -> log.info("   - {}", source));
+             sources.forEach(source -> log.info("   - {}", source));
             log.info("\n⏱️  响应时间: {}ms", totalTime);
-            log.info("=".repeat(80));
+             log.info("=".repeat(80));
 
             // 保存问答记录（用于反馈和优化）
             String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
@@ -592,9 +624,9 @@ public class KnowledgeQAService {
                 try {
                     chunks = chunkStorageService.listChunks(firstDocTitle);
                     images = imageStorageService.listImages(firstDocTitle);
-                    log.info("📦 Found {} chunks and {} images for document", chunks.size(), images.size());
+                    log.info("📦 找到 {} 个块和 {} 张图片", chunks.size(), images.size());
                 } catch (Exception e) {
-                    log.warn("Failed to load chunks/images info", e);
+                    log.warn("加载块/图片信息失败", e);
                 }
             }
 
@@ -604,9 +636,9 @@ public class KnowledgeQAService {
             log.info("\n💡 回答:");
             log.info(answer);
             log.info("\n📚 数据来源 (共{}个文档):", sources.size());
-            sources.forEach(source -> log.info("   - {}", source));
+             sources.forEach(source -> log.info("   - {}", source));
             log.info("\n⏱️  响应时间: {}ms", totalTime);
-            log.info("=".repeat(80));
+             log.info("=".repeat(80));
 
             // 保存问答记录
             String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
@@ -778,7 +810,7 @@ public class KnowledgeQAService {
 
             // 确保目录存在
             if (!Files.exists(documentsPath)) {
-                log.warn("文档目录不存在: {}", documentsPath);
+                log.warn(LogMessageProvider.getMessage("log.kqa.docs_dir_missing", documentsPath.toString()));
                 return 0;
             }
 
@@ -800,12 +832,12 @@ public class KnowledgeQAService {
                     })
                     .count();
 
-                log.debug("📂 扫描文件系统完成，找到 {} 个支持的文档", count);
+                log.debug(LogMessageProvider.getMessage("log.kqa.scanned_files_count", count));
                 return count;
             }
 
         } catch (Exception e) {
-            log.error("扫描文件系统失败", e);
+            log.error(LogMessageProvider.getMessage("log.kqa.scan_failed"), e);
             // 出错时返回基础统计的数量
             return rag.getStatistics().getDocumentCount();
         }

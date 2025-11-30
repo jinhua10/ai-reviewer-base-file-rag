@@ -3,6 +3,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+/**
+ * API 响应封装 (API response wrapper)
+ *
+ * 用于统一后端对外接口的返回格式，包含成功标志、消息、数据和错误信息。
+ * (Used to standardize responses from backend APIs, includes success flag, message, data and error info.)
+ */
 @Data
 @Builder
 @NoArgsConstructor

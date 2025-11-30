@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.image;
 
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -38,10 +39,10 @@ public class ImageStorageService {
             Path imagePath = Paths.get(storageBasePath, IMAGE_DIR);
             if (!Files.exists(imagePath)) {
                 Files.createDirectories(imagePath);
-                log.info("Created image storage directory: {}", imagePath);
+                log.info(LogMessageProvider.getMessage("log.image.storage.created", imagePath.toString()));
             }
         } catch (IOException e) {
-            log.error("Failed to initialize image storage", e);
+            log.error(LogMessageProvider.getMessage("log.image.storage.init_failed"), e);
             throw new RuntimeException("Failed to initialize image storage", e);
         }
     }
@@ -68,7 +69,7 @@ public class ImageStorageService {
         Path imagePath = docImageDir.resolve(filename);
         Files.write(imagePath, imageData);
 
-        log.info("Saved image: {} for document: {}", filename, documentId);
+        log.info(LogMessageProvider.getMessage("log.image.saved", filename, documentId));
 
         return ImageInfo.builder()
                 .imageId(imageId)
@@ -133,7 +134,7 @@ public class ImageStorageService {
 
                     images.add(info);
                 } catch (IOException e) {
-                    log.warn("Failed to read image info: {}", imagePath, e);
+                    log.warn(LogMessageProvider.getMessage("log.image.read_info_failed", imagePath.toString()), e);
                 }
             });
 
@@ -153,11 +154,11 @@ public class ImageStorageService {
                     try {
                         Files.delete(path);
                     } catch (IOException e) {
-                        log.warn("Failed to delete: {}", path, e);
+                        log.warn(LogMessageProvider.getMessage("log.image.delete_failed", path.toString()), e);
                     }
                 });
 
-            log.info("Deleted all images for document: {}", documentId);
+            log.info(LogMessageProvider.getMessage("log.image.deleted_all", documentId));
         }
     }
 
@@ -170,11 +171,6 @@ public class ImageStorageService {
 
     /**
      * 将文档中的图片引用替换为实际 URL
-     *
-     * @param content Markdown 内容
-     * @param documentId 文档ID
-     * @param images 图片信息列表
-     * @return 替换后的内容
      */
     public String replaceImageReferences(String content, String documentId, List<ImageInfo> images) {
         if (content == null || images == null || images.isEmpty()) {
@@ -260,4 +256,3 @@ public class ImageStorageService {
                 .trim();
     }
 }
-

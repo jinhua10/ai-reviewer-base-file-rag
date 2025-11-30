@@ -7,18 +7,19 @@ import top.yumbo.ai.rag.api.model.ApiResponse;
 import top.yumbo.ai.rag.api.model.DocumentRequest;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.util.DocumentUtils;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 @Slf4j
 public class DocumentController {
     
     private final LocalFileRAG rag;
-    
+
     public DocumentController(LocalFileRAG rag) {
         this.rag = rag;
     }
     
     /**
-     * 创建文档
+     * 创建文档 (Create document)
      */
     public ApiResponse<String> createDocument(String requestBody) {
         try {
@@ -35,34 +36,34 @@ public class DocumentController {
             String docId = rag.index(doc);
             rag.commit();
             
-            log.info("Document created: {}", docId);
-            return ApiResponse.success("Document created successfully", docId);
-            
+            log.info(LogMessageProvider.getMessage("log.docs.created", docId));
+            return ApiResponse.success(LogMessageProvider.getMessage("log.docs.created.success"), docId);
+
         } catch (Exception e) {
-            log.error("Failed to create document", e);
-            return ApiResponse.error("Failed to create document: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.docs.create.failed", e.getMessage()), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.docs.create.failed", e.getMessage()));
         }
     }
     
     /**
-     * 获取文档
+     * 获取文档 (Get document)
      */
     public ApiResponse<Document> getDocument(String id) {
         try {
             Document doc = rag.getDocument(id);
             if (doc == null) {
-                return ApiResponse.error("Document not found: " + id);
+                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.notfound", id));
             }
             return ApiResponse.success(doc);
             
         } catch (Exception e) {
-            log.error("Failed to get document: {}", id, e);
-            return ApiResponse.error("Failed to get document: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.docs.get.failed", id), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.docs.get.failed", e.getMessage()));
         }
     }
     
     /**
-     * 更新文档
+     * 更新文档 (Update document)
      */
     public ApiResponse<String> updateDocument(String id, String requestBody) {
         try {
@@ -78,50 +79,50 @@ public class DocumentController {
             
             boolean updated = rag.updateDocument(id, doc);
             if (!updated) {
-                return ApiResponse.error("Document not found: " + id);
+                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.notfound", id));
             }
             
             rag.commit();
-            log.info("Document updated: {}", id);
-            return ApiResponse.success("Document updated successfully", id);
-            
+            log.info(LogMessageProvider.getMessage("log.docs.updated", id));
+            return ApiResponse.success(LogMessageProvider.getMessage("log.docs.updated.success"), id);
+
         } catch (Exception e) {
-            log.error("Failed to update document: {}", id, e);
-            return ApiResponse.error("Failed to update document: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.docs.update.failed", id), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.docs.update.failed", e.getMessage()));
         }
     }
     
     /**
-     * 删除文档
+     * 删除文档 (Delete document)
      */
     public ApiResponse<String> deleteDocument(String id) {
         try {
             boolean deleted = rag.deleteDocument(id);
             if (!deleted) {
-                return ApiResponse.error("Document not found: " + id);
+                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.notfound", id));
             }
             
             rag.commit();
-            log.info("Document deleted: {}", id);
-            return ApiResponse.success("Document deleted successfully", id);
-            
+            log.info(LogMessageProvider.getMessage("log.docs.deleted", id));
+            return ApiResponse.success(LogMessageProvider.getMessage("log.docs.deleted.success"), id);
+
         } catch (Exception e) {
-            log.error("Failed to delete document: {}", id, e);
-            return ApiResponse.error("Failed to delete document: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.docs.delete.failed", id), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.docs.delete.failed", e.getMessage()));
         }
     }
     
     /**
-     * 列出文档
+     * 列出文档 (List documents)
      */
     public ApiResponse<Object> listDocuments() {
         try {
             var stats = rag.getStatistics();
-            return ApiResponse.success("Total documents: " + stats.getDocumentCount(), stats);
-            
+            return ApiResponse.success(LogMessageProvider.getMessage("log.docs.total", stats.getDocumentCount()), stats);
+
         } catch (Exception e) {
-            log.error("Failed to list documents", e);
-            return ApiResponse.error("Failed to list documents: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.docs.list.failed", e.getMessage()), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.docs.list.failed", e.getMessage()));
         }
     }
 }

@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.util;
 
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 
 import java.io.File;
@@ -27,7 +28,7 @@ public class DocumentUtils {
      */
     public static Document fromFile(File file) {
         if (file == null || !file.exists()) {
-            throw new IllegalArgumentException("File does not exist");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_exists", String.valueOf(file)));
         }
 
         try {
@@ -52,8 +53,8 @@ public class DocumentUtils {
                     .build();
 
         } catch (Exception e) {
-            log.error("Failed to create document from file: {}", file.getAbsolutePath(), e);
-            throw new RuntimeException("Failed to create document from file", e);
+            log.error(LogMessageProvider.getMessage("log.docs.create.failed", file.getAbsolutePath()), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("error.docs.create_failed", file.getAbsolutePath()), e);
         }
     }
 
@@ -110,7 +111,7 @@ public class DocumentUtils {
         java.util.List<Document> documents = new java.util.ArrayList<>();
 
         if (directory == null || !directory.exists() || !directory.isDirectory()) {
-            log.warn("Invalid directory: {}", directory);
+            log.warn(LogMessageProvider.getMessage("log.docs.invalid_directory", String.valueOf(directory)));
             return documents;
         }
 
@@ -123,7 +124,7 @@ public class DocumentUtils {
                                 Document doc = fromPath(path);
                                 documents.add(doc);
                             } catch (Exception e) {
-                                log.error("Failed to process file: {}", path, e);
+                                log.error(LogMessageProvider.getMessage("log.docs.process_failed", String.valueOf(path)), e);
                             }
                         });
             } else {
@@ -134,13 +135,13 @@ public class DocumentUtils {
                             Document doc = fromFile(file);
                             documents.add(doc);
                         } catch (Exception e) {
-                            log.error("Failed to process file: {}", file, e);
+                            log.error(LogMessageProvider.getMessage("log.docs.process_failed", file.getAbsolutePath()), e);
                         }
                     }
                 }
             }
         } catch (IOException e) {
-            log.error("Failed to walk directory: {}", directory, e);
+            log.error(LogMessageProvider.getMessage("log.docs.walk_failed", String.valueOf(directory)), e);
         }
 
         return documents;
@@ -169,4 +170,3 @@ public class DocumentUtils {
         return "";
     }
 }
-

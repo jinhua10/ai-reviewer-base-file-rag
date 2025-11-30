@@ -7,18 +7,19 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.service.LocalFileRAG;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 /**
- * LocalFileRAG 自动配置
+ * LocalFileRAG 自动配置 (LocalFileRAG Auto-configuration)
  *
- * 使用方式：
- * 1. 在 application.yml 中配置:
+ * 使用方式： (Usage:)
+ * 1. 在 application.yml 中配置: (Configure in application.yml:)
  *    local-file-rag:
  *      enabled: true
  *      storage-path: ./data/rag
  *
- * 2. 直接注入使用:
- *    @Autowired
+ * 2. 直接注入使用: (Inject and use directly:)
+ *    {@code @Autowired}
  *    private LocalFileRAG rag;
  *
  * @author AI Reviewer Team
@@ -37,15 +38,15 @@ public class LocalFileRAGAutoConfiguration {
     }
 
     /**
-     * 自动配置 LocalFileRAG Bean
+     * 自动配置 LocalFileRAG Bean (Auto-configure LocalFileRAG Bean)
      */
     @Bean
     @ConditionalOnMissingBean
     public LocalFileRAG localFileRAG() {
-        log.info("🚀 初始化 LocalFileRAG...");
-        log.info("   - 存储路径: {}", properties.getStoragePath());
-        log.info("   - 启用缓存: {}", properties.isEnableCache());
-        log.info("   - 启用压缩: {}", properties.isEnableCompression());
+        log.info(LogMessageProvider.getMessage("log.rag.init"));
+        log.info(LogMessageProvider.getMessage("log.rag.storage", properties.getStoragePath()));
+        log.info(LogMessageProvider.getMessage("log.rag.enable_cache", properties.isEnableCache()));
+        log.info(LogMessageProvider.getMessage("log.rag.enable_compression", properties.isEnableCompression()));
 
         LocalFileRAG rag = LocalFileRAG.builder()
             .storagePath(properties.getStoragePath())
@@ -53,24 +54,23 @@ public class LocalFileRAGAutoConfiguration {
             .enableCompression(properties.isEnableCompression())
             .build();
 
-        log.info("✅ LocalFileRAG 初始化完成");
+        log.info(LogMessageProvider.getMessage("log.rag.init_done"));
 
         return rag;
     }
 
     /**
-     * 自动配置 RAG 服务
+     * 自动配置 RAG 服务 (Auto-configure RAG service)
      */
     @Bean
     @ConditionalOnMissingBean
     public SimpleRAGService simpleRAGService(LocalFileRAG rag) {
-        log.info("🤖 初始化简易 RAG 问答服务...");
+        log.info(LogMessageProvider.getMessage("log.rag.simple_init"));
 
         SimpleRAGService service = new SimpleRAGService(rag, properties);
 
-        log.info("✅ RAG 问答服务初始化完成");
+        log.info(LogMessageProvider.getMessage("log.rag.simple_init_done"));
 
         return service;
     }
 }
-

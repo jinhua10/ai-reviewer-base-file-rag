@@ -1,10 +1,12 @@
 package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.List;
 import java.util.Map;
@@ -54,7 +56,7 @@ public class FeedbackController {
             boolean success = qaRecordService.addOverallFeedback(recordId, rating, feedback);
 
             if (success) {
-                log.info("✅ 收到用户整体反馈: recordId={}, rating={}", recordId, rating);
+                log.info(LogMessageProvider.getMessage("log.feedback.overall_received", recordId, rating));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "感谢您的反馈！"
@@ -67,7 +69,7 @@ public class FeedbackController {
             }
 
         } catch (Exception e) {
-            log.error("处理整体反馈失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.overall_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "处理失败: " + e.getMessage()
@@ -107,7 +109,7 @@ public class FeedbackController {
 
             if (success) {
                 String emoji = type == QARecord.FeedbackType.LIKE ? "👍" : "👎";
-                log.info("{} 收到文档反馈: recordId={}, document={}", emoji, recordId, documentName);
+                log.info(LogMessageProvider.getMessage("log.feedback.document_received", emoji, recordId, documentName));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "感谢您的反馈！"
@@ -120,7 +122,7 @@ public class FeedbackController {
             }
 
         } catch (Exception e) {
-            log.error("处理文档反馈失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.document_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "处理失败: " + e.getMessage()
@@ -143,7 +145,7 @@ public class FeedbackController {
             }
 
         } catch (Exception e) {
-            log.error("获取记录失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.get_record_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "获取失败: " + e.getMessage()
@@ -160,7 +162,7 @@ public class FeedbackController {
             List<QARecord> records = qaRecordService.getRecentRecords(limit);
             return ResponseEntity.ok(records);
         } catch (Exception e) {
-            log.error("获取最近记录失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.get_recent_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "获取失败: " + e.getMessage()
@@ -177,7 +179,7 @@ public class FeedbackController {
             List<QARecord> records = qaRecordService.getPendingRecords();
             return ResponseEntity.ok(records);
         } catch (Exception e) {
-            log.error("获取待审核记录失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.get_pending_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "获取失败: " + e.getMessage()
@@ -194,7 +196,7 @@ public class FeedbackController {
             var stats = qaRecordService.getStatistics();
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
-            log.error("获取统计信息失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.get_statistics_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "获取失败: " + e.getMessage()
@@ -236,8 +238,7 @@ public class FeedbackController {
 
             if (success) {
                 String stars = "⭐".repeat(rating);
-                log.info("{} 收到文档星级评价: recordId={}, document={}, rating={}",
-                    stars, recordId, documentName, rating);
+                log.info(LogMessageProvider.getMessage("log.feedback.rating_submitted", stars, recordId, documentName, rating, String.format("%+.1f", 0.0)));
 
                 return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -253,7 +254,7 @@ public class FeedbackController {
             }
 
         } catch (Exception e) {
-            log.error("处理文档星级评价失败", e);
+            log.error(LogMessageProvider.getMessage("log.feedback.rating_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
                 "message", "处理失败: " + e.getMessage()
@@ -281,4 +282,3 @@ public class FeedbackController {
         }
     }
 }
-

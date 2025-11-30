@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -102,12 +103,12 @@ public class SimilarQAService {
                 .limit(limit)
                 .collect(Collectors.toList());
 
-            log.info("🔍 找到 {} 个相似问题（关键词：{}）", results.size(), queryKeywords);
+            log.info(LogMessageProvider.getMessage("log.similar.found", results.size(), queryKeywords));
 
             return results;
 
         } catch (Exception e) {
-            log.error("❌ 查找相似问题失败", e);
+            log.error(LogMessageProvider.getMessage("log.similar.failed"), e);
             return Collections.emptyList();
         }
     }
@@ -217,4 +218,3 @@ public class SimilarQAService {
         private float similarity;
     }
 }
-

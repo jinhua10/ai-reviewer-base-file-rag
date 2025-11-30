@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -10,6 +11,7 @@ import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.optimization.DocumentChunker;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -64,10 +66,9 @@ public class KnowledgeBaseService {
     public BuildResult buildKnowledgeBaseWithIncrementalIndex(
             String sourcePath, String storagePath) {
 
-        log.info("📂 扫描文档: {}", sourcePath);
+        log.info(LogMessageProvider.getMessage("log.kb.scanning", sourcePath));
 
-        BuildResult result =
-            new BuildResult();
+        BuildResult result = new BuildResult();
 
         long startTime = System.currentTimeMillis();
 
@@ -80,15 +81,15 @@ public class KnowledgeBaseService {
             result.setTotalFiles(allFiles.size());
 
             if (allFiles.isEmpty()) {
-                log.warn("⚠️  未找到支持的文档文件");
-                log.info("💡 提示: 请将文档放到 {} 目录", sourcePath);
-                log.info("      支持格式: {}", properties.getDocument().getSupportedFormats());
+                log.warn(LogMessageProvider.getMessage("log.kb.no_documents"));
+                log.info(LogMessageProvider.getMessage("log.kb.hint_put_docs", sourcePath));
+                log.info(LogMessageProvider.getMessage("log.kb.supported_formats", properties.getDocument().getSupportedFormats()));
 
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
                 return result;
             }
 
-            log.info("✅ 找到 {} 个文档文件", allFiles.size());
+            log.info(LogMessageProvider.getMessage("log.kb.found_files", allFiles.size()));
 
             // 3. 打开或创建知识库
             LocalFileRAG rag = LocalFileRAG.builder()
@@ -99,9 +100,9 @@ public class KnowledgeBaseService {
             boolean knowledgeBaseExists = stats.getDocumentCount() > 0;
 
             if (knowledgeBaseExists) {
-                log.info("📚 检测到已有知识库 ({} 个文档)", stats.getDocumentCount());
+                log.info(LogMessageProvider.getMessage("log.kb.exists", stats.getDocumentCount()));
             } else {
-                log.info("📚 首次创建知识库");
+                log.info(LogMessageProvider.getMessage("log.kb.first_create"));
             }
 
             // 4. 筛选需要更新的文件
@@ -112,10 +113,10 @@ public class KnowledgeBaseService {
                 }
             }
 
-            log.info("📝 需要索引的文件: {} 个", filesToUpdate.size());
+            log.info(LogMessageProvider.getMessage("log.kb.files_to_index", filesToUpdate.size()));
 
             if (filesToUpdate.isEmpty()) {
-                log.info("✅ 所有文件都是最新的，无需更新");
+                log.info(LogMessageProvider.getMessage("log.kb.up_to_date"));
                 result.setSuccessCount(0);
                 result.setFailedCount(0);
                 result.setTotalDocuments((int) stats.getDocumentCount());
@@ -136,14 +137,14 @@ public class KnowledgeBaseService {
                         properties.getVectorSearch().getIndexPath(),
                         embeddingEngine.getEmbeddingDim()
                     );
-                    log.info("✅ 向量检索引擎已启用");
+                    log.info(LogMessageProvider.getMessage("log.kb.vector_enabled"));
                 } catch (Exception e) {
-                    log.warn("⚠️  向量检索引擎初始化失败，将只使用关键词索引", e);
+                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
                 }
             }
 
             // 6. 处理需要更新的文档
-            log.info("\n📝 开始处理文档...");
+            log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
 
             // 检查是否启用并行处理
             boolean useParallel = properties.getDocument().isParallelProcessing()
@@ -154,15 +155,15 @@ public class KnowledgeBaseService {
                 if (threads == 0) {
                     threads = Runtime.getRuntime().availableProcessors();
                 }
-                log.info("🚀 使用并行处理模式（{} 个线程）", threads);
+                log.info(LogMessageProvider.getMessage("log.kb.parallel_mode", threads));
             } else {
-                log.info("📝 使用串行处理模式");
+                log.info(LogMessageProvider.getMessage("log.kb.serial_mode"));
             }
 
             int successCount;
             int failedCount;
 
-            optimizer.logMemoryUsage("增量索引开始前");
+            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.gc_before"));
 
             if (useParallel) {
                 // 并行处理
@@ -199,8 +200,7 @@ public class KnowledgeBaseService {
 
                             // 检查是否需要批处理或GC
                             if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                                log.info("📦 批处理: {} 个文档 ({} / {})",
-                                    batchDocuments.size(), i + 1, filesToUpdate.size());
+                                log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
 
                                 rag.commit();
                                 batchDocuments.clear();
@@ -210,20 +210,20 @@ public class KnowledgeBaseService {
                         }
 
                     } catch (Exception e) {
-                        log.error("❌ 处理文件失败: {}", file.getName(), e);
+                        log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
                         failedCount++;
                     }
 
                     // 定期打印进度和内存状态
                     if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
                         optimizer.logMemoryUsage(
-                            String.format("进度 %d/%d", i + 1, filesToUpdate.size()));
+                            String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, filesToUpdate.size()));
                     }
                 }
 
                 // 处理剩余的批次
                 if (!batchDocuments.isEmpty()) {
-                    log.info("📦 处理最后一批: {} 个文档", batchDocuments.size());
+                    log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
                     rag.commit();
                 }
             }
@@ -241,16 +241,13 @@ public class KnowledgeBaseService {
             }
             rag.close();
 
-            log.info("\n✅ 增量索引完成！");
-            log.info("   - 处理文件: {} / {}", successCount, filesToUpdate.size());
-            log.info("   - 失败: {}", failedCount);
-            log.info("   - 总文档: {}", result.getTotalDocuments());
-            log.info("   - 耗时: {} 秒", result.getBuildTimeMs() / 1000.0);
+            log.info(LogMessageProvider.getMessage("log.kb.incremental_done"));
+            log.info(LogMessageProvider.getMessage("log.kb.incremental_stats", successCount, filesToUpdate.size(), failedCount, result.getTotalDocuments(), result.getBuildTimeMs() / 1000.0));
 
             return result;
 
         } catch (Exception e) {
-            log.error("❌ 增量索引失败", e);
+            log.error(LogMessageProvider.getMessage("log.kb.incremental_failed"), e);
             result.setError(e.getMessage());
             return result;
         }

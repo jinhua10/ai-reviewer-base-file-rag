@@ -8,6 +8,7 @@ import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
 import top.yumbo.ai.rag.query.QueryRequest;
 import top.yumbo.ai.rag.query.impl.AdvancedQueryProcessor;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 @Slf4j
 public class SearchController {
@@ -24,38 +25,36 @@ public class SearchController {
     }
     
     /**
-     * 基本搜索
+     * 基本搜索 (Basic search)
      */
     public ApiResponse<SearchResult> search(String requestBody) {
         try {
             Query query = JSON.parseObject(requestBody, Query.class);
             SearchResult result = rag.search(query);
             
-            log.info("Search completed: query='{}', hits={}", 
-                query.getQueryText(), result.getTotalHits());
+            log.info(LogMessageProvider.getMessage("log.search.completed", query.getQueryText(), result.getTotalHits()));
             return ApiResponse.success(result);
             
         } catch (Exception e) {
-            log.error("Search failed", e);
-            return ApiResponse.error("Search failed: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.search.failed"), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.search.failed_detail", e.getMessage()));
         }
     }
     
     /**
-     * 高级搜索
+     * 高级搜索 (Advanced search)
      */
     public ApiResponse<SearchResult> advancedSearch(String requestBody) {
         try {
             QueryRequest request = JSON.parseObject(requestBody, QueryRequest.class);
             SearchResult result = queryProcessor.process(request);
             
-            log.info("Advanced search completed: query='{}', hits={}", 
-                request.getQueryText(), result.getTotalHits());
+            log.info(LogMessageProvider.getMessage("log.search.advanced_completed", request.getQueryText(), result.getTotalHits()));
             return ApiResponse.success(result);
             
         } catch (Exception e) {
-            log.error("Advanced search failed", e);
-            return ApiResponse.error("Advanced search failed: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("log.search.advanced_failed"), e);
+            return ApiResponse.error(LogMessageProvider.getMessage("log.search.advanced_failed_detail", e.getMessage()));
         }
     }
 }
