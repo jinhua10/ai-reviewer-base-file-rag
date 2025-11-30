@@ -44,6 +44,7 @@ public class KnowledgeQAService {
     private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;
     private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
     private final top.yumbo.ai.rag.feedback.QARecordService qaRecordService;
+    private final SimilarQAService similarQAService;  // 新增
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -58,7 +59,8 @@ public class KnowledgeQAService {
                               LLMClient llmClient,
                               top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService,
                               top.yumbo.ai.rag.image.ImageStorageService imageStorageService,
-                              top.yumbo.ai.rag.feedback.QARecordService qaRecordService) {
+                              top.yumbo.ai.rag.feedback.QARecordService qaRecordService,
+                              SimilarQAService similarQAService) {  // 新增
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
@@ -68,6 +70,7 @@ public class KnowledgeQAService {
         this.chunkStorageService = chunkStorageService;
         this.imageStorageService = imageStorageService;
         this.qaRecordService = qaRecordService;
+        this.similarQAService = similarQAService;  // 新增
     }
 
     /**
@@ -273,6 +276,17 @@ public class KnowledgeQAService {
             log.info("❓ 问题: {}", question);
             log.info("=".repeat(80));
 
+            // 步骤0: 搜索相似问题（在检索文档之前）
+            List<SimilarQAService.SimilarQA> similarQuestions = null;
+            try {
+                similarQuestions = similarQAService.findSimilar(question, 30, 3);  // minScore=30, limit=3
+                if (!similarQuestions.isEmpty()) {
+                    log.info("💡 找到 {} 个相似历史问答", similarQuestions.size());
+                }
+            } catch (Exception e) {
+                log.warn("⚠️ 查找相似问题失败: {}", e.getMessage());
+            }
+
             // 步骤1: 检索相关文档
             List<top.yumbo.ai.rag.model.Document> documents;
 
@@ -434,6 +448,11 @@ public class KnowledgeQAService {
 
             // 设置记录ID，方便后续反馈
             aiAnswer.setRecordId(recordId);
+
+            // 设置相似问题推荐
+            if (similarQuestions != null && !similarQuestions.isEmpty()) {
+                aiAnswer.setSimilarQuestions(similarQuestions);
+            };
 
             // 设置会话ID，支持分页引用
             aiAnswer.setSessionId(sessionId);

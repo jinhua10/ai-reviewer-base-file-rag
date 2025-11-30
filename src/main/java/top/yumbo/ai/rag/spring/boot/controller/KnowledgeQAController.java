@@ -59,6 +59,7 @@ public class KnowledgeQAController {
         response.setTotalRetrieved(answer.getTotalRetrieved());
         response.setHasMoreDocuments(answer.isHasMoreDocuments());
         response.setRecordId(answer.getRecordId());
+        response.setSimilarQuestions(answer.getSimilarQuestions());  // 新增：相似问题
 
         return response;
     }
@@ -220,19 +221,19 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 搜索相似问题
-     * 在归档的历史问答中查找相似问题
+     * 搜索相似问题（基于关键词匹配）
+     * 在历史问答记录中查找相似问题
      */
     @GetMapping("/similar")
     public ResponseEntity<?> findSimilarQuestions(
             @RequestParam String question,
-            @RequestParam(defaultValue = "0.85") float threshold,
+            @RequestParam(defaultValue = "30") int minScore,  // 最小相似度分数（0-100）
             @RequestParam(defaultValue = "5") int limit) {
 
-        log.info("🔍 搜索相似问题: {}", question);
+        log.info("🔍 搜索相似问题: {} (minScore={}, limit={})", question, minScore, limit);
 
         List<SimilarQAService.SimilarQA> similar =
-            similarQAService.findSimilar(question, threshold, limit);
+            similarQAService.findSimilar(question, minScore, limit);
 
         return ResponseEntity.ok(Map.of(
             "success", true,
@@ -277,6 +278,7 @@ public class KnowledgeQAController {
         private int totalRetrieved;            // 检索到的总文档数
         private boolean hasMoreDocuments;      // 是否还有更多文档
         private String recordId;               // 记录ID（用于反馈）
+        private List<SimilarQAService.SimilarQA> similarQuestions;  // 相似问题推荐
     }
 
     @Data

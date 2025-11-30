@@ -1,5 +1,7 @@
 package top.yumbo.ai.rag.spring.boot.model;
 
+import top.yumbo.ai.rag.spring.boot.service.SimilarQAService;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -23,6 +25,9 @@ public class AIAnswer {
 
     // 新增：会话ID（用于分页引用）
     private String sessionId;
+
+    // 新增：相似问题推荐
+    private List<SimilarQAService.SimilarQA> similarQuestions;
 
     public AIAnswer(String answer, List<String> sources, long responseTimeMs) {
         this(answer, sources, responseTimeMs, Collections.emptyList(), Collections.emptyList(),
@@ -62,4 +67,6 @@ public class AIAnswer {
     public void setRecordId(String recordId) { this.recordId = recordId; }
     public String getSessionId() { return sessionId; }
     public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+    public List<SimilarQAService.SimilarQA> getSimilarQuestions() { return similarQuestions; }
+    public void setSimilarQuestions(List<SimilarQAService.SimilarQA> similarQuestions) { this.similarQuestions = similarQuestions; }
 }

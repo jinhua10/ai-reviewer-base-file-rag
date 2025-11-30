@@ -13,9 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -150,9 +148,8 @@ public class QAArchiveService {
             String category = detectCategory(record.getQuestion(), record.getAnswer());
             String status = determineStatus(record);
 
-            // 3. 生成文件名（使用北京时间）
-            LocalDateTime beijingTime = LocalDateTime.now(ZoneId.of("Asia/Shanghai"));
-            String timestamp = beijingTime.format(FILENAME_FORMATTER);
+            // 3. 生成文件名（使用系统默认时区）
+            String timestamp = LocalDateTime.now().format(FILENAME_FORMATTER);
             String questionPrefix = sanitizeFileName(
                     record.getQuestion().substring(0, Math.min(30, record.getQuestion().length()))
             );

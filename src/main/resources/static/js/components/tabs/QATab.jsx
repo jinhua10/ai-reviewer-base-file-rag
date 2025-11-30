@@ -33,6 +33,9 @@ function QATab() {
     const [showRatingModal, setShowRatingModal] = useState(false); // 新增：星级评价模态框
     const [currentRatingDoc, setCurrentRatingDoc] = useState(null); // 新增：当前评价的文档
 
+    // 相似问题相关状态
+    const [expandedSimilarQA, setExpandedSimilarQA] = useState(null); // 展开的相似问题答案
+
     // ============================================================================
     // 副作用 / Effects
     // ============================================================================
@@ -196,6 +199,27 @@ function QATab() {
         } finally {
             setLoadingMore(false);
         }
+    };
+
+    // ============================================================================
+    // 相似问题处理函数
+    // ============================================================================
+
+    const handleToggleSimilarAnswer = (recordId) => {
+        setExpandedSimilarQA(prev => prev === recordId ? null : recordId);
+    };
+
+    const handleUseSimilarAnswer = (similarQA) => {
+        // 提示用户这是历史答案
+        showToast(t('qaUsingSimilarAnswer') || '📚 已加载历史答案供您参考', 'info');
+
+        // 滚动到答案区域
+        setTimeout(() => {
+            const answerElement = document.querySelector('.qa-answer-text');
+            if (answerElement) {
+                answerElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
     };
 
     const handleDownload = async (fileName) => {
@@ -577,6 +601,81 @@ function QATab() {
             {/* 答案显示区域 */}
             {answer && !loading && (
                 <div className="qa-answer-section">
+                    {/* 相似问题推荐（如果有） */}
+                    {answer.similarQuestions && answer.similarQuestions.length > 0 && (
+                        <div className="qa-similar-questions-panel">
+                            <div className="qa-similar-header">
+                                <h4 className="qa-similar-title">
+                                    💡 {t('qaSimilarQuestions') || '您可能想问'}
+                                </h4>
+                                <span className="qa-similar-hint">
+                                    {t('qaSimilarHint') || '以下是相似的历史高质量问答'}
+                                </span>
+                            </div>
+                            <div className="qa-similar-list">
+                                {answer.similarQuestions.map((sq, index) => (
+                                    <div key={sq.recordId} className="qa-similar-item">
+                                        <div className="qa-similar-item-header">
+                                            <div className="qa-similar-badges">
+                                                <span className="qa-similar-badge qa-similar-badge-similarity">
+                                                    {t('qaSimilarity') || '相似度'} {(sq.similarity * 100).toFixed(0)}%
+                                                </span>
+                                                <span className="qa-similar-badge qa-similar-badge-rating">
+                                                    {'⭐'.repeat(sq.rating)}
+                                                </span>
+                                            </div>
+                                            <span className="qa-similar-index">#{index + 1}</span>
+                                        </div>
+
+                                        <div className="qa-similar-question">
+                                            <strong>{t('qaQuestion') || '问题'}：</strong>
+                                            {sq.question}
+                                        </div>
+
+                                        {expandedSimilarQA === sq.recordId && (
+                                            <div className="qa-similar-answer">
+                                                <strong>{t('qaAnswer') || '回答'}：</strong>
+                                                <div
+                                                    className="qa-similar-answer-content"
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: typeof marked !== 'undefined'
+                                                            ? marked.parse(sq.answer)
+                                                            : sq.answer
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div className="qa-similar-actions">
+                                            <button
+                                                className="qa-similar-btn qa-similar-btn-toggle"
+                                                onClick={() => handleToggleSimilarAnswer(sq.recordId)}
+                                            >
+                                                {expandedSimilarQA === sq.recordId
+                                                    ? (t('qaCollapseAnswer') || '收起答案 ▲')
+                                                    : (t('qaExpandAnswer') || '查看答案 ▼')
+                                                }
+                                            </button>
+                                            {expandedSimilarQA === sq.recordId && (
+                                                <button
+                                                    className="qa-similar-btn qa-similar-btn-use"
+                                                    onClick={() => handleUseSimilarAnswer(sq)}
+                                                >
+                                                    ✓ {t('qaUseThisAnswer') || '采用此答案'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="qa-similar-footer">
+                                <p className="qa-similar-note">
+                                    ℹ️ {t('qaSimilarNote') || '这些是之前其他用户高评分的问答，供您参考。您也可以继续查看下方AI的新回答。'}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="qa-answer-card answer-card">
                         <div className="qa-answer-header">
                             <h3 className="qa-answer-title">{t('qaAnswer')}</h3>

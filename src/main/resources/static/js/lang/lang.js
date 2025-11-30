@@ -41,6 +41,17 @@ const translations = {
         qaBatchDownloadError: '批量下载失败',
         qaRequestError: '请求失败，请检查服务是否正常运行',
 
+        // 相似问题推荐
+        qaSimilarQuestions: '您可能想问',
+        qaSimilarHint: '以下是相似的历史高质量问答',
+        qaSimilarity: '相似度',
+        qaQuestion: '问题',
+        qaExpandAnswer: '查看答案 ▼',
+        qaCollapseAnswer: '收起答案 ▲',
+        qaUseThisAnswer: '采用此答案',
+        qaSimilarNote: '这些是之前其他用户高评分的问答，供您参考。您也可以继续查看下方AI的新回答。',
+        qaUsingSimilarAnswer: '📚 已加载历史答案供您参考',
+
         // Search Tab
         searchPlaceholder: '请输入搜索关键词',
         searchButton: '🔍 搜索',
@@ -338,6 +349,17 @@ const translations = {
         qaDownloadError: 'Download failed',
         qaBatchDownloadError: 'Batch download failed',
         qaRequestError: 'Request failed, please check if the service is running',
+
+        // Similar Questions Recommendation
+        qaSimilarQuestions: 'You May Also Ask',
+        qaSimilarHint: 'Here are similar high-quality Q&As from history',
+        qaSimilarity: 'Similarity',
+        qaQuestion: 'Question',
+        qaExpandAnswer: 'View Answer ▼',
+        qaCollapseAnswer: 'Collapse ▲',
+        qaUseThisAnswer: 'Use This Answer',
+        qaSimilarNote: 'These are high-rated Q&As from previous users for your reference. You can also continue to view the new AI answer below.',
+        qaUsingSimilarAnswer: '📚 Historical answer loaded for your reference',
 
         // Search Tab
         searchPlaceholder: 'Enter search keywords',
