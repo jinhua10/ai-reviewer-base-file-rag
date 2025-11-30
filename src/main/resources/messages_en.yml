@@ -67,10 +67,12 @@ log:
     classpath_resource_found: "Found resource in classpath: {0}"
     create:
       failed: "Failed to create document: {0}"
+      success: Document created successfully
     create_failed: "Failed to create documents directory: {0}"
     created: "Document created: {0}"
     delete:
       failed: "Failed to delete document: {0}"
+      success: Document deleted successfully
     deleted: "Document deleted: {0}"
     directory_ready: "Documents directory ready: {0}"
     file_exists_renamed: "File exists, renamed to: {0}"
@@ -88,6 +90,7 @@ log:
     total: "Total documents: {0}"
     update:
       failed: "Failed to update document: {0}"
+      success: Document updated successfully
     updated: "Document updated: {0}"
     upload_to_external: "Uploads will be saved to external path: ./data/documents"
     using_default_path: "Using default path: ./data/documents"
@@ -299,4 +302,3 @@ log:
     scanned_files: "Scanned {0} files"
     search_results: "Search '{0}' found {1} results"
     shutdown: "Shutting down RAG service"
-

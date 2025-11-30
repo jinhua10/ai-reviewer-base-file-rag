@@ -15,6 +15,9 @@ log:
     index_optimized_success: 索引优化成功
     stats_failed: 获取统计信息失败
     stats_failed_detail: '获取统计信息失败: {0}'
+  api:
+    started: 'API 服务器已在端口 {0} 上启动'
+    stopped: API 服务器已停止
   audit:
     init_failed: 初始化审计日志失败
     logged: '审计已记录: {0}'
@@ -47,6 +50,11 @@ log:
       created: '已创建文档块存储目录: {0}'
       init_failed: 初始化文档块存储失败
     truncate_warning: '内容过长 ({0} 字符)，截断为 {1} 字符用于 AI 切分'
+  chunker:
+    ai_disabled: AI 切分未启用，回退至 SMART_KEYWORD 策略
+    creating: '创建文档切分器: strategy={0}, chunkSize={1}, overlap={2}'
+    llm_null: LLM 客户端为空，回退至 SMART_KEYWORD 策略
+    unknown_strategy: '未知的切分策略: {0}，使用 SMART_KEYWORD'
   docs:
     classpath_in_jar: classpath 路径在 JAR 内，不支持写入
     classpath_load_failed: '无法从 classpath 加载资源: {0} - {1}'
