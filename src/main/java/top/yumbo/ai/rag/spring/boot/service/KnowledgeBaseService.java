@@ -1,7 +1,6 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -771,14 +770,14 @@ public class KnowledgeBaseService {
 
         } catch (Exception e) {
             log.error(LogMessageProvider.getMessage("log.kb.scan_classpath_failed", resourcePath), e);
-            throw new IOException("扫描 classpath 资源失败", e);
+            throw new IOException(LogMessageProvider.getMessage("kb_service.error.scan_classpath_failed"), e);
         }
 
         return files;
     }
 
     /**
-     * 判断是否支持的文件格式
+     * 判断是否支持的文件格式 / Check if file format is supported
      */
     private boolean isSupportedFile(File file) {
         String fileName = file.getName().toLowerCase();
@@ -938,8 +937,8 @@ public class KnowledgeBaseService {
 
             log.info(LogMessageProvider.getMessage("log.kb.content_extracted", content.length()));
 
-            // 2.5 提取图片并将图片信息文本化添加到内容中（关键优化）（Extract images and add image information to content as text (key optimization)）
-            // 这样图片信息会被索引和向量化，在问答时直接可用，不需要重新处理（This way image information will be indexed and vectorized, directly available at Q&A time without reprocessing）
+            // 2.5 提取图片并将图片信息文本化添加到内容中（关键优化）/ Extract images and add image information to content as text (key optimization)
+            // 这样图片信息会被索引和向量化，在问答时直接可用，不需要重新处理 / This way image information will be indexed and vectorized, directly available at Q&A time without reprocessing
             if (imageExtractionService != null && imageExtractionService.supportsDocument(file.getName())) {
                 try {
                     List<top.yumbo.ai.rag.image.ImageInfo> images =
@@ -948,35 +947,35 @@ public class KnowledgeBaseService {
                     if (!images.isEmpty()) {
                         log.info(LogMessageProvider.getMessage("log.kb.images_extracted", images.size()));
 
-                        // 将图片信息添加到文档内容中，这样就可以被检索到（Add image information to document content so it can be retrieved）
+                        // 将图片信息添加到文档内容中，这样就可以被检索到 / Add image information to document content so it can be retrieved
                         StringBuilder imageText = new StringBuilder();
-                        imageText.append("\n\n=== 文档包含的图片 ===\n");
+                        imageText.append(LogMessageProvider.getMessage("kb_service.image.section_title"));
 
                         for (int i = 0; i < images.size(); i++) {
                             top.yumbo.ai.rag.image.ImageInfo img = images.get(i);
-                            imageText.append(String.format("\n图片 %d:\n", i + 1));
-                            imageText.append(String.format("- 文件名: %s\n", img.getFilename()));
-                            imageText.append(String.format("- URL: %s\n", img.getUrl()));
+                            imageText.append(LogMessageProvider.getMessage("kb_service.image.image_number", i + 1));
+                            imageText.append("\n").append(LogMessageProvider.getMessage("kb_service.image.filename", img.getFilename())).append("\n");
+                            imageText.append(LogMessageProvider.getMessage("kb_service.image.url", img.getUrl())).append("\n");
 
                             if (img.getDescription() != null && !img.getDescription().isEmpty()) {
-                                imageText.append(String.format("- 描述: %s\n", img.getDescription()));
+                                imageText.append(LogMessageProvider.getMessage("kb_service.image.description", img.getDescription())).append("\n");
                             }
 
                             if (img.getOriginalFilename() != null) {
-                                imageText.append(String.format("- 原始文件: %s\n", img.getOriginalFilename()));
+                                imageText.append(LogMessageProvider.getMessage("kb_service.image.original_file", img.getOriginalFilename())).append("\n");
                             }
                         }
 
-                        imageText.append("\n=== 图片列表结束 ===\n");
+                        imageText.append(LogMessageProvider.getMessage("kb_service.image.section_end"));
 
-                        // 将图片信息添加到内容末尾（Add image information to the end of content）
+                        // 将图片信息添加到内容末尾 / Add image information to the end of content
                         content = content + imageText.toString();
 
                         log.info(LogMessageProvider.getMessage("log.kb.images_added"));
                     }
                 } catch (Exception e) {
                     log.warn(LogMessageProvider.getMessage("log.kb.image_extraction_failed", e.getMessage()));
-                    // 不中断文档处理流程（Do not interrupt document processing flow）
+                    // 不中断文档处理流程 / Do not interrupt document processing flow
                 }
             }
 
@@ -1030,7 +1029,7 @@ public class KnowledgeBaseService {
 
         } catch (Exception e) {
             log.error(LogMessageProvider.getMessage("log.kb.processing_failed"), e);
-            throw new RuntimeException("文档处理失败: " + file.getName(), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.process_failed", file.getName()), e);
         }
     }
 

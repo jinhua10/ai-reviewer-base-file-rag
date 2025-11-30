@@ -124,13 +124,12 @@ public class SearchSessionService {
         SearchSession session = getSession(sessionId);
 
         if (page < 1) {
-            throw new IllegalArgumentException("页码必须大于0");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("log.session.invalid_page"));
         }
 
         int offset = (page - 1) * session.getDocumentsPerQuery();
         if (offset >= session.getAllDocuments().size()) {
-            throw new IllegalArgumentException(String.format(
-                "页码超出范围: page=%d, 总页数=%d",
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("log.session.page_out_of_range",
                 page, getTotalPages(session)));
         }
 
@@ -200,7 +199,7 @@ public class SearchSessionService {
     private SearchSession getSession(String sessionId) {
         SearchSession session = sessions.get(sessionId);
         if (session == null) {
-            throw new IllegalArgumentException("会话不存在或已过期: " + sessionId);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("log.session.not_found", sessionId));
         }
         return session;
     }

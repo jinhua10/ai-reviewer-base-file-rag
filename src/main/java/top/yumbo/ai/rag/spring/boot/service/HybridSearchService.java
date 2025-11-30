@@ -66,7 +66,7 @@ public class HybridSearchService {
                 log.info(LogMessageProvider.getMessage("log.hybrid.lucene_top_header"));
                 List<Document> luceneDocs = luceneResult.getDocuments().stream()
                     .map(ScoredDocument::getDocument)
-                    .collect(Collectors.toList());
+                    .toList();
                 for (int i = 0; i < Math.min(10, luceneDocs.size()); i++) {
                     Document doc = luceneDocs.get(i);
                     double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
