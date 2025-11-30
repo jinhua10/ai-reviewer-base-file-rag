@@ -89,8 +89,8 @@ public class SQLiteMetadataManager implements AutoCloseable {
             pstmt.setString(5, document.getMimeType());
             pstmt.setString(6, document.getContentHash());
             pstmt.setString(7, document.getCategory());
-            pstmt.setLong(8, document.getCreatedAt().toEpochMilli());
-            pstmt.setLong(9, document.getUpdatedAt().toEpochMilli());
+            pstmt.setLong(8, document.getCreatedAt() != null ? document.getCreatedAt().toEpochMilli() : System.currentTimeMillis());
+            pstmt.setLong(9, document.getUpdatedAt() != null ? document.getUpdatedAt().toEpochMilli() : System.currentTimeMillis());
             pstmt.setString(10, JSON.toJSONString(document.getMetadata()));
 
             pstmt.executeUpdate();
@@ -271,7 +271,7 @@ public class SQLiteMetadataManager implements AutoCloseable {
     private Document mapResultSetToDocument(ResultSet rs) throws SQLException {
         String metadataJson = rs.getString("metadata");
         Map<String, Object> metadata = metadataJson != null ?
-                JSON.parseObject(metadataJson, Map.class) : new HashMap<>();
+                JSON.parseObject(metadataJson, new com.alibaba.fastjson2.TypeReference<Map<String, Object>>() {}) : new HashMap<>();
 
         return Document.builder()
                 .id(rs.getString("id"))
@@ -299,4 +299,3 @@ public class SQLiteMetadataManager implements AutoCloseable {
         }
     }
 }
-

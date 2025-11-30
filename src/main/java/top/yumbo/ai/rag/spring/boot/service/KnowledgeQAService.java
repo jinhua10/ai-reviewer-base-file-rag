@@ -159,16 +159,7 @@ public class KnowledgeQAService {
         log.info("      - 失败文件: {}", buildResult.getFailedCount());
         log.info("      - 总文档数: {}", buildResult.getTotalDocuments());
 
-        rag = LocalFileRAG.builder()
-                .storagePath(storagePath)
-                .enableCache(properties.getKnowledgeBase().isEnableCache())
-                .build();
-
-        var stats = rag.getStatistics();
-        log.info("   ✅ 知识库已就绪");
-        log.info("      - 文档数: {}", stats.getDocumentCount());
-        log.info("      - 索引数: {}", stats.getIndexedDocumentCount());
-
+        // RAG 实例将在 initializeKnowledgeBase() 方法末尾统一创建
         return buildResult;
     }
 
@@ -184,16 +175,7 @@ public class KnowledgeQAService {
         log.info("      - 失败文件: {}", buildResult.getFailedCount());
         log.info("      - 总文档数: {}", buildResult.getTotalDocuments());
 
-        rag = LocalFileRAG.builder()
-                .storagePath(storagePath)
-                .enableCache(properties.getKnowledgeBase().isEnableCache())
-                .build();
-
-        var stats = rag.getStatistics();
-        log.info("   ✅ 知识库已就绪");
-        log.info("      - 文档数: {}", stats.getDocumentCount());
-        log.info("      - 索引数: {}", stats.getIndexedDocumentCount());
-
+        // RAG 实例将在 initializeKnowledgeBase() 方法末尾统一创建
         return buildResult;
     }
 

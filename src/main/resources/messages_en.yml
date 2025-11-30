@@ -14,7 +14,23 @@ error:
   invalid_document_endpoint: "Invalid document endpoint"
   invalid_search_endpoint: "Invalid search endpoint"
   unknown_endpoint: "Unknown endpoint: {0}"
+  file:
+    not_exists: "File does not exist: {0}"
+    not_a_file: "Not a file: {0}"
+    empty: "File content is empty: {0}"
+    index_failed: "Failed to index file: {0}"
+    directory_not_exists: "Directory does not exist: {0}"
+    not_a_directory: "Not a directory: {0}"
+  docs:
+    create_failed: "Failed to create document: {0}"
+banner:
+  title: "  AI Reviewer - Knowledge QA System"
+  version: "  Version: {0}"
+  supports: "  Supports: {0}"
 log:
+  app:
+    started: 'Application started successfully,address={0}'
+    start_failed: '❌ Application startup failed'
   admin:
     cache_cleared: "Cache cleared"
     cache_cleared_success: "Cache cleared successfully"
@@ -172,6 +188,27 @@ log:
     storage:
       created: "Created image storage directory: {0}"
       init_failed: "Failed to initialize image storage"
+    service:
+      init: 'Initializing image service'
+      start: 'Starting image extraction'
+      using_extractor: 'Using image extractor: {0}'
+      no_images: 'No images found'
+      extracted: 'Extracted {0} images'
+      success: 'Image processing successful'
+      saved: 'Image saved: {0}'
+    excel:
+      processing: 'Processing Excel images'
+      extracted: 'Extracted {0} images from Excel'
+      legacy:
+        processing: 'Processing legacy Excel images'
+        extracted: 'Extracted {0} images from legacy Excel'
+    ppt:
+      processing: 'Processing PPT images'
+      found: 'Found PPT image: {0}'
+      extracted: 'Extracted {0} images from PPT'
+    pdf:
+      processing: 'Processing PDF images'
+      extracted: 'Extracted {0} images from PDF'
   imageproc:
     activated: "Image processing strategy activated: {0}"
     add_ocr: "Adding OCR strategy"
@@ -192,6 +229,7 @@ log:
     vision_unavailable: "Vision LLM strategy unavailable"
   kb:
     batch_processing: "Batch processing: {0} docs ({1} / {2})"
+    batch_commit: 'Batch commit index'
     exists: "Existing knowledge base detected ({0} documents)"
     file_process_failed: "Failed to process file: {0}"
     files_to_index: "Files to index: {0}"
@@ -205,29 +243,55 @@ log:
     no_documents: "No supported documents found"
     parallel_mode: "Using parallel processing mode ({0} threads)"
     processing_start: "Start processing documents..."
+    processing_file: 'Processing file: {0}'
     scanning: "Scanning documents: {0}"
     serial_mode: "Using serial processing mode"
     supported_formats: "Supported formats: {0}"
     up_to_date: "All files are up-to-date, no update needed"
+    source_path: '   - Document path: {0}'
+    gc_before: 'Executing GC to free memory'
+    content_extracted: 'Content extracted: {0}'
+    content_too_large: 'Content too large ({0} characters)'
+    content_truncated: 'Content truncated to {0} characters'
+    indexing_complete: 'Indexing complete: {0}'
+    parallel_progress: 'Parallel progress: {0}%'
+    parallel_memory: 'Memory usage: {0} MB'
+    images_extracted: 'Extracted {0} images'
+    images_added: 'Added {0} images to index'
     vector_enabled: "Vector search enabled"
     vector_init_failed: "Vector search init failed, falling back to keyword search"
+  tika:
+    init: 'Initializing Apache Tika'
+    max_content: 'Max content length: {0}'
+    extract_image_metadata: 'Extract image metadata: {0}'
+    include_image_placeholders: 'Include image placeholders: {0}'
+    active_image_strategy: 'Active image strategy: {0}'
+    ocr_disabled: 'OCR disabled'
+    detected_mime: 'Detected MIME type: {0}'
+    office_xlsx: 'Processing Office XLSX document'
+    office_pptx: 'Processing Office PPTX document'
+    office_done: 'Office document processing complete'
+    parsed_file: 'Parsed file: {0}'
   kqa:
     answer_header: "Answer:"
+    docs_dir_missing: "Documents directory not found: {0}"
     found_chunks_images: "Found {0} chunks and {1} images for document"
     images_in_context: "Context contains {0} images"
     incremental_mode: "Rebuild mode: Incremental indexing"
-    init_done: "Knowledge QA system initialized"
-    init_failed: "Knowledge QA initialization failed"
-    init_start: "Knowledge QA system initializing..."
+    init_done: "✅ Knowledge QA system initialized"
+    init_failed: "❌ Knowledge QA system initialization failed"
+    init_start: "🚀 Knowledge QA system initializing..."
     load_chunks_images_failed: "Failed to load chunks/images info"
     more_docs_available: "{0} more documents are available"
     rebuild_mode: "Rebuild mode: Full rebuild"
     response_time: "Response time: {0}ms"
+    scan_failed: "Failed to scan file system"
+    scanned_files_count: "📂 Scanned file system completed, found {0} supported documents"
     sep: "============================================================"
-    source_path: "Source path: {0}"
-    sources_header: "Sources (total {0} documents):"
-    step: "Step {0}: {1}"
-    storage_path: "Storage path: {0}"
+    source_path: "📁 Source path: {0}"
+    sources_header: "📚 Sources (total {0} documents):"
+    step: "📝 Step {0}: {1}"
+    storage_path: "💾 Storage path: {0}"
     used_docs_count: "Using {0} documents for this answer"
   memory:
     critical: "Phase {0} - Critical memory usage: {1}% - OOM risk!"
@@ -271,6 +335,8 @@ log:
       built: 'Smart context built: {0}chars from {1} documents ({2}% of max)'
       remaining_chars: '\n[... {0} more characters not displayed, content extracted by keyword priority]'
   qa:
+    archive:
+      init: 'Initializing QA archive service'
     archive_failed: "Failed to archive QA record"
     archived: "High rating QA archived: rating={0}, path={1}"
     document_feedback: "Document feedback {0} [{1}]: {2} - {3}"
@@ -381,16 +447,24 @@ log:
     api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
     api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
     fallback_mock: 💡 Will fallback to Mock mode
-    client_created: '🤖 Creating {} LLM client'
-    model: '   - Model: {}'
-    api_url: '   - API: {}'
+    client_created: '🤖 Creating {0} LLM client'
+    model: '   - Model: {0}'
+    api_url: '   - API: {0}'
     mock_created: 🤖 Creating Mock LLM client (for testing only)
     mock_warning: ⚠️ Mock mode will return fixed simulated responses
     mock_hint: "💡 For real LLM, configure:"
     mock_provider: '      knowledge.qa.llm.provider=openai'
     mock_apikey: '      and set the corresponding API Key and URL'
+  model:
+    sep: '===================================================='
+    checking: 'Checking model files...'
+    found: 'Found model: {0}'
+    dir_and_file: 'Model directory and files ready'
+    passed: 'Model check passed'
   storage:
-    chunk_storage_init: 'Initializing ChunkStorageService with path: {}'
-    image_storage_init: 'Initializing ImageStorageService with path: {}'
-    ai_image_analyzer_init: 'Initializing AIImageAnalyzer: enabled={}, model={}'
-    document_image_extraction_init: 'Initializing DocumentImageExtractionService: AI analysis={}'
+    chunk_storage_init: 'Initializing ChunkStorageService with path: {0}'
+    image_storage_init: 'Initializing ImageStorageService with path: {0}'
+    ai_image_analyzer_init: 'Initializing AIImageAnalyzer: enabled={0}, model={1}'
+    document_image_extraction_init: 'Initializing DocumentImageExtractionService: AI analysis={0}'
+  session:
+    create: 'Session created: {0}'

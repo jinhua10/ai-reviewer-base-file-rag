@@ -62,7 +62,7 @@ class ComprehensiveIntegrationTest {
                 .build();
         SearchResult result = rag.search(query);
         assertTrue(result.getTotalHits() > 0);
-        assertTrue(result.getDocuments().get(0).getTitle().contains("Java"));
+        assertTrue(result.getDocuments().get(0).getDocument().getTitle().contains("Java"));
     }
 
     @Test
@@ -74,7 +74,7 @@ class ComprehensiveIntegrationTest {
                 .build();
         SearchResult result = rag.search(query);
         if (result.getTotalHits() > 0) {
-            String docId = result.getDocuments().get(0).getId();
+            String docId = result.getDocuments().get(0).getDocument().getId();
             Document doc = rag.getDocument(docId);
             assertNotNull(doc);
             assertEquals("Python Guide", doc.getTitle());
@@ -90,7 +90,7 @@ class ComprehensiveIntegrationTest {
                 .build();
         SearchResult result = rag.search(query);
         if (result.getTotalHits() > 0) {
-            String docId = result.getDocuments().get(0).getId();
+            String docId = result.getDocuments().get(0).getDocument().getId();
             Document updatedDoc = DocumentUtils.fromText("JS Advanced", "Advanced JavaScript");
             updatedDoc.setId(docId);
             boolean updated = rag.updateDocument(docId, updatedDoc);
@@ -110,7 +110,7 @@ class ComprehensiveIntegrationTest {
                 .build();
         SearchResult result = rag.search(query);
         if (result.getTotalHits() > 0) {
-            String docId = result.getDocuments().get(0).getId();
+            String docId = result.getDocuments().get(0).getDocument().getId();
             boolean deleted = rag.deleteDocument(docId);
             assertTrue(deleted);
             rag.commit();

@@ -57,19 +57,20 @@ public class LuceneIndexEngine implements IndexEngine {
             String indexPath = Paths.get(basePath, "index", "lucene-index").toString();
             Path indexDir = Paths.get(indexPath);
 
-            // 清理旧的锁文件（如果存在）
+            // 强制删除锁文件（在打开目录前）
             Path lockFile = indexDir.resolve("write.lock");
             if (Files.exists(lockFile)) {
                 try {
                     Files.delete(lockFile);
-                    log.info("Removed stale lock file: {}", lockFile);
+                    log.warn("Removed stale lock file: {}", lockFile);
                 } catch (IOException e) {
-                    log.warn("Failed to remove stale lock file: {}", lockFile, e);
+                    log.warn("Failed to remove stale lock file: {}", lockFile);
                 }
             }
 
             // Use FSDirectory.open to let Lucene choose the best implementation for the platform
             this.directory = FSDirectory.open(indexDir);
+
 
             // 初始化分析器
             this.analyzer = new StandardAnalyzer();
@@ -182,7 +183,7 @@ public class LuceneIndexEngine implements IndexEngine {
 
             for (int i = start; i < end; i++) {
                 ScoreDoc scoreDoc = topDocs.scoreDocs[i];
-                org.apache.lucene.document.Document luceneDoc = searcher.doc(scoreDoc.doc);
+                org.apache.lucene.document.Document luceneDoc = searcher.storedFields().document(scoreDoc.doc);
 
                 // 转换为我们的Document模型（仅包含元数据，不包含content）
                 top.yumbo.ai.rag.model.Document doc = convertFromLuceneDocument(luceneDoc);

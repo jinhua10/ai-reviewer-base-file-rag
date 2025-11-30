@@ -200,7 +200,7 @@ class LocalFileRAGTest {
         Query query = Query.builder()
                 .queryText("文章")
                 .build();
-        query.withFilter("category", "技术");
+        query.addFilter("category", "技术");
 
         SearchResult result = rag.search(query);
 
@@ -209,7 +209,7 @@ class LocalFileRAGTest {
 
         // 验证结果都是技术分类
         result.getDocuments().forEach(doc -> {
-            assertEquals("技术", doc.getCategory());
+            assertEquals("技术", doc.getDocument().getCategory());
         });
     }
 
@@ -234,4 +234,3 @@ class LocalFileRAGTest {
         assertEquals(5, stats.getIndexedDocumentCount());
     }
 }
-

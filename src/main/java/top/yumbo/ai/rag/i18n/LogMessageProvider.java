@@ -1,11 +1,13 @@
 package top.yumbo.ai.rag.i18n;
 
 import lombok.extern.slf4j.Slf4j;
+import org.yaml.snakeyaml.Yaml;
 
+import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import java.util.Map;
 
 /**
  * 提供后端日志国际化支持（静态工具类）
@@ -16,53 +18,93 @@ import java.util.ResourceBundle;
  *
  * <p>编码说明 (Encoding Notes):
  * <ul>
- *   <li>所有 messages*.properties 文件统一使用 UTF-8 编码保存 (All files saved in UTF-8)</li>
- *   <li>ResourceBundle 在 Java 9+ 默认支持 UTF-8 读取 (UTF-8 support by default in Java 9+)</li>
- *   <li>Spring Boot 环境通过 application.yml 的 spring.messages.encoding=UTF-8 确保正确加载</li>
+ *   <li>所有 messages*.yml 文件统一使用 UTF-8 编码保存 (All files saved in UTF-8)</li>
+ *   <li>使用 SnakeYAML 库加载 YAML 格式的国际化文件 (Use SnakeYAML to load YAML i18n files)</li>
+ *   <li>支持嵌套的 YAML 结构，自动展平为点号分隔的 key (Support nested YAML structure)</li>
  * </ul>
  * </p>
  */
 @Slf4j
 public final class LogMessageProvider {
 
-    // 静态加载，便于非 Spring 场景下也能使用 (Static loading for non-Spring scenarios)
-    private static final ResourceBundle staticBundleZh;
-    private static final ResourceBundle staticBundleEn;
+    // 静态加载的消息映射表 (Statically loaded message maps)
+    private static final Map<String, String> messagesZh = new HashMap<>();
+    private static final Map<String, String> messagesEn = new HashMap<>();
 
     static {
-        ResourceBundle bz = null;
-        ResourceBundle be = null;
-        try {
-            bz = ResourceBundle.getBundle("messages", Locale.SIMPLIFIED_CHINESE);
-        } catch (MissingResourceException e) {
-            log.debug("static messages_zh.properties not found");
+        // 加载中文消息 (Load Chinese messages)
+        try (InputStream is = LogMessageProvider.class.getClassLoader()
+                .getResourceAsStream("messages_zh.yml")) {
+            if (is != null) {
+                Yaml yaml = new Yaml();
+                Map<String, Object> data = yaml.load(is);
+                flattenYaml("", data, messagesZh);
+                log.debug("Loaded {} Chinese message keys from messages_zh.yml", messagesZh.size());
+            } else {
+                log.warn("messages_zh.yml not found in classpath");
+            }
+        } catch (Exception e) {
+            log.error("Failed to load messages_zh.yml", e);
         }
-        try {
-            be = ResourceBundle.getBundle("messages", Locale.ENGLISH);
-        } catch (MissingResourceException e) {
-            log.debug("static messages_en.properties not found");
+
+        // 加载英文消息 (Load English messages)
+        try (InputStream is = LogMessageProvider.class.getClassLoader()
+                .getResourceAsStream("messages_en.yml")) {
+            if (is != null) {
+                Yaml yaml = new Yaml();
+                Map<String, Object> data = yaml.load(is);
+                flattenYaml("", data, messagesEn);
+                log.debug("Loaded {} English message keys from messages_en.yml", messagesEn.size());
+            } else {
+                log.warn("messages_en.yml not found in classpath");
+            }
+        } catch (Exception e) {
+            log.error("Failed to load messages_en.yml", e);
         }
-        staticBundleZh = bz;
-        staticBundleEn = be;
+    }
+
+    /**
+     * 将嵌套的 YAML 结构展平为点号分隔的 key
+     * (Flatten nested YAML structure to dot-separated keys)
+     */
+    @SuppressWarnings("unchecked")
+    private static void flattenYaml(String prefix, Map<String, Object> map, Map<String, String> result) {
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+            Object value = entry.getValue();
+
+            if (value instanceof Map) {
+                // 递归处理嵌套的 Map (Recursively process nested maps)
+                flattenYaml(key, (Map<String, Object>) value, result);
+            } else if (value != null) {
+                // 叶子节点，存储值 (Leaf node, store value)
+                result.put(key, value.toString());
+            }
+        }
     }
 
     private LogMessageProvider() {
-        // utility
+        // utility class
     }
 
+    /**
+     * 确定当前语言环境 (Determine current locale)
+     */
     private static Locale determineStaticLocale() {
-        // check system property first
+        // 首先检查系统属性 (Check system property first)
         String cfg = System.getProperty("log.locale");
         if (cfg == null || cfg.isEmpty()) {
             cfg = System.getenv("LOG_LOCALE");
         }
         if (cfg != null) {
-            if ("zh".equalsIgnoreCase(cfg)) {
+            if ("zh".equalsIgnoreCase(cfg) || "zh-CN".equalsIgnoreCase(cfg)) {
                 return Locale.SIMPLIFIED_CHINESE;
-            } else if ("en".equalsIgnoreCase(cfg)) {
+            } else if ("en".equalsIgnoreCase(cfg) || "en-US".equalsIgnoreCase(cfg)) {
                 return Locale.ENGLISH;
             }
         }
+
+        // 使用系统默认语言 (Use system default locale)
         Locale defaultLocale = Locale.getDefault();
         if (defaultLocale != null && "zh".equalsIgnoreCase(defaultLocale.getLanguage())) {
             return Locale.SIMPLIFIED_CHINESE;
@@ -72,26 +114,34 @@ public final class LogMessageProvider {
 
     /**
      * 静态方法：在任何场景下直接调用以获取日志模板
+     * (Static method: get log message template in any scenario)
      */
     public static String getMessage(String key, Object... args) {
         Locale locale = determineStaticLocale();
         String pattern = null;
-        if (Locale.SIMPLIFIED_CHINESE.equals(locale) && staticBundleZh != null) {
-            try {
-                pattern = staticBundleZh.getString(key);
-            } catch (MissingResourceException ignored) {
-            }
+
+        // 根据语言环境选择消息源 (Select message source based on locale)
+        if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
+            pattern = messagesZh.get(key);
         }
-        if (pattern == null && staticBundleEn != null) {
-            try {
-                pattern = staticBundleEn.getString(key);
-            } catch (MissingResourceException ignored) {
-            }
+
+        // 如果中文未找到，尝试英文 (Fallback to English if Chinese not found)
+        if (pattern == null) {
+            pattern = messagesEn.get(key);
         }
+
+        // 如果都未找到，返回 key 本身 (If not found, return key itself)
         if (pattern == null) {
             log.debug("Missing static log key {} in resources", key);
             pattern = "[" + key + "]";
         }
-        return MessageFormat.format(pattern, args == null ? new Object[0] : args);
+
+        // 格式化消息 (Format message)
+        try {
+            return MessageFormat.format(pattern, args == null ? new Object[0] : args);
+        } catch (IllegalArgumentException e) {
+            log.warn("Failed to format message for key: {} with pattern: {}", key, pattern, e);
+            return pattern;
+        }
     }
 }
