@@ -19,6 +19,14 @@ spring:
   application:
     name: knowledge-qa-system
 
+  # 国际化消息源配置 (I18n Message Source Configuration)
+  # 确保所有 messages*.properties 文件以 UTF-8 编码加载
+  messages:
+    basename: messages
+    encoding: UTF-8
+    cache-duration: 3600
+    fallback-to-system-locale: false
+
   # 文件上传配置
   servlet:
     multipart:

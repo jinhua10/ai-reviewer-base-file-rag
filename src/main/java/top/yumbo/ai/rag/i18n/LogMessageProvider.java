@@ -9,13 +9,23 @@ import java.util.ResourceBundle;
 
 /**
  * 提供后端日志国际化支持（静态工具类）
+ * (Provides backend log internationalization support - static utility class)
  *
  * 使用静态方法 `getMessage(key, args...)` 在任何场景下获取日志模板（支持非 Spring 启动）。
+ * (Use static method `getMessage(key, args...)` to get log templates in any scenario)
+ *
+ * <p>编码说明 (Encoding Notes):
+ * <ul>
+ *   <li>所有 messages*.properties 文件统一使用 UTF-8 编码保存 (All files saved in UTF-8)</li>
+ *   <li>ResourceBundle 在 Java 9+ 默认支持 UTF-8 读取 (UTF-8 support by default in Java 9+)</li>
+ *   <li>Spring Boot 环境通过 application.yml 的 spring.messages.encoding=UTF-8 确保正确加载</li>
+ * </ul>
+ * </p>
  */
 @Slf4j
 public final class LogMessageProvider {
 
-    // 静态加载，便于非 Spring 场景下也能使用
+    // 静态加载，便于非 Spring 场景下也能使用 (Static loading for non-Spring scenarios)
     private static final ResourceBundle staticBundleZh;
     private static final ResourceBundle staticBundleEn;
 
