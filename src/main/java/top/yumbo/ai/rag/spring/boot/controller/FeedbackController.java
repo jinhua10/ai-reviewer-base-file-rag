@@ -1,11 +1,11 @@
 package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
+import top.yumbo.ai.rag.i18n.ApiMessageProvider;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.List;
@@ -30,10 +30,12 @@ public class FeedbackController {
     }
 
     /**
-     * 提交整体反馈
+     * 提交整体反馈 / Submit overall feedback
      */
     @PostMapping("/overall")
     public ResponseEntity<?> submitOverallFeedback(@RequestBody Map<String, Object> request) {
+        String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数，默认中文 / Get language parameter, default Chinese
+
         try {
             String recordId = (String) request.get("recordId");
             Integer rating = (Integer) request.get("rating");
@@ -42,14 +44,14 @@ public class FeedbackController {
             if (recordId == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "recordId 和 rating 不能为空"
+                    "message", ApiMessageProvider.getMissingParams(lang, "recordId, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "rating 必须在 1-5 之间"
+                    "message", ApiMessageProvider.getInvalidRating(lang)
                 ));
             }
 
@@ -59,12 +61,12 @@ public class FeedbackController {
                 log.info(LogMessageProvider.getMessage("log.feedback.overall_received", recordId, rating));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "感谢您的反馈！"
+                    "message", ApiMessageProvider.getFeedbackReceived(lang)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "记录不存在"
+                    "message", ApiMessageProvider.getRecordNotFound(lang)
                 ));
             }
 
@@ -72,16 +74,18 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.overall_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "处理失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 提交文档反馈
+     * 提交文档反馈 / Submit document feedback
      */
     @PostMapping("/document")
     public ResponseEntity<?> submitDocumentFeedback(@RequestBody Map<String, Object> request) {
+        String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数，默认中文 / Get language parameter, default Chinese
+
         try {
             String recordId = (String) request.get("recordId");
             String documentName = (String) request.get("documentName");
@@ -91,7 +95,7 @@ public class FeedbackController {
             if (recordId == null || documentName == null || feedbackType == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "recordId, documentName 和 feedbackType 不能为空"
+                    "message", ApiMessageProvider.getMissingParams(lang, "recordId, documentName, feedbackType")
                 ));
             }
 
@@ -101,7 +105,7 @@ public class FeedbackController {
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "feedbackType 必须是 LIKE 或 DISLIKE"
+                    "message", ApiMessageProvider.getInvalidFeedbackType(lang)
                 ));
             }
 
@@ -112,12 +116,12 @@ public class FeedbackController {
                 log.info(LogMessageProvider.getMessage("log.feedback.document_received", emoji, recordId, documentName));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "感谢您的反馈！"
+                    "message", ApiMessageProvider.getFeedbackReceived(lang)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "记录不存在"
+                    "message", ApiMessageProvider.getRecordNotFound(lang)
                 ));
             }
 
@@ -125,16 +129,16 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.document_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "处理失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 获取问答记录
+     * 获取问答记录 / Get QA record
      */
     @GetMapping("/record/{recordId}")
-    public ResponseEntity<?> getRecord(@PathVariable String recordId) {
+    public ResponseEntity<?> getRecord(@PathVariable String recordId, @RequestParam(defaultValue = "zh") String lang) {
         try {
             var record = qaRecordService.getRecord(recordId);
 
@@ -148,16 +152,16 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.get_record_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "获取失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 获取最近的问答记录
+     * 获取最近的问答记录 / Get recent QA records
      */
     @GetMapping("/recent")
-    public ResponseEntity<?> getRecentRecords(@RequestParam(defaultValue = "20") int limit) {
+    public ResponseEntity<?> getRecentRecords(@RequestParam(defaultValue = "20") int limit, @RequestParam(defaultValue = "zh") String lang) {
         try {
             List<QARecord> records = qaRecordService.getRecentRecords(limit);
             return ResponseEntity.ok(records);
@@ -165,16 +169,16 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.get_recent_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "获取失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 获取待审核的记录
+     * 获取待审核的记录 / Get pending records
      */
     @GetMapping("/pending")
-    public ResponseEntity<?> getPendingRecords() {
+    public ResponseEntity<?> getPendingRecords(@RequestParam(defaultValue = "zh") String lang) {
         try {
             List<QARecord> records = qaRecordService.getPendingRecords();
             return ResponseEntity.ok(records);
@@ -182,16 +186,16 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.get_pending_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "获取失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 获取统计信息
+     * 获取统计信息 / Get statistics
      */
     @GetMapping("/statistics")
-    public ResponseEntity<?> getStatistics() {
+    public ResponseEntity<?> getStatistics(@RequestParam(defaultValue = "zh") String lang) {
         try {
             var stats = qaRecordService.getStatistics();
             return ResponseEntity.ok(stats);
@@ -199,41 +203,43 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.get_statistics_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "获取失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 星级评价文档有用性（用户友好的评分接口）
+     * 星级评价文档有用性（用户友好的评分接口）/ Rate document quality (user-friendly rating API)
      *
-     * @param request 包含 recordId, documentName, rating (1-5星)
-     * @return 响应结果
+     * @param request 包含 recordId, documentName, rating (1-5星), lang / Contains recordId, documentName, rating (1-5 stars), lang
+     * @return 响应结果 / Response result
      */
     @PostMapping("/document/rate")
     public ResponseEntity<?> rateDocumentQuality(@RequestBody Map<String, Object> request) {
+        String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数，默认中文 / Get language parameter, default Chinese
+
         try {
             String recordId = (String) request.get("recordId");
             String documentName = (String) request.get("documentName");
             Integer rating = (Integer) request.get("rating");
             String comment = (String) request.get("comment");
 
-            // 参数验证
+            // 参数验证 / Parameter validation
             if (recordId == null || documentName == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "recordId, documentName 和 rating 不能为空"
+                    "message", ApiMessageProvider.getMissingParams(lang, "recordId, documentName, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "评分必须在 1-5 星之间"
+                    "message", ApiMessageProvider.getInvalidRating(lang)
                 ));
             }
 
-            // 调用服务层处理星级评价
+            // 调用服务层处理星级评价 / Call service layer to process rating
             boolean success = qaRecordService.addDocumentRating(recordId, documentName, rating, comment);
 
             if (success) {
@@ -242,14 +248,14 @@ public class FeedbackController {
 
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", "感谢您的评价！",
+                    "message", ApiMessageProvider.getThankYou(lang),
                     "rating", rating,
-                    "impact", getImpactDescription(rating)
+                    "impact", ApiMessageProvider.getDocumentImpact(lang, rating)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", "记录不存在"
+                    "message", ApiMessageProvider.getRecordNotFound(lang)
                 ));
             }
 
@@ -257,28 +263,68 @@ public class FeedbackController {
             log.error(LogMessageProvider.getMessage("log.feedback.rating_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", "处理失败: " + e.getMessage()
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 获取评分影响的用户友好描述
+     * 表情评价整体回答质量（用户友好的评分接口）/ Emoji rating for overall answer quality
+     *
+     * @param request 包含 recordId, rating (1-5), lang / Contains recordId, rating (1-5), lang
+     * @return 响应结果 / Response result
      */
-    private String getImpactDescription(int rating) {
-        switch (rating) {
-            case 5:
-                return "这个文档非常有用！系统会优先推荐它 🚀";
-            case 4:
-                return "这个文档很有帮助，系统会增加推荐权重 📈";
-            case 3:
-                return "这个文档还行，系统会保持当前权重 ➡️";
-            case 2:
-                return "这个文档帮助不大，系统会降低推荐权重 📉";
-            case 1:
-                return "这个文档没有帮助，系统会大幅降低推荐权重 ⚠️";
-            default:
-                return "";
+    @PostMapping("/overall/rate")
+    public ResponseEntity<?> rateOverallQuality(@RequestBody Map<String, Object> request) {
+        String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数，默认中文 / Get language parameter, default Chinese
+
+        try {
+            String recordId = (String) request.get("recordId");
+            Integer rating = (Integer) request.get("rating");
+
+            // 参数验证 / Parameter validation
+            if (recordId == null || rating == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", ApiMessageProvider.getMissingParams(lang, "recordId, rating")
+                ));
+            }
+
+            if (rating < 1 || rating > 5) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", ApiMessageProvider.getInvalidRating(lang)
+                ));
+            }
+
+            // 调用服务层处理整体评价 / Call service layer to process overall rating
+            boolean success = qaRecordService.addOverallRating(recordId, rating);
+
+            if (success) {
+                // 记录日志 / Log the rating
+                String emojiText = ApiMessageProvider.getEmojiDescription(lang, rating);
+                log.info(LogMessageProvider.getMessage("log.feedback.overall_rating_submitted",
+                    emojiText, recordId, rating));
+
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", ApiMessageProvider.getThankYou(lang),
+                    "rating", rating,
+                    "impact", ApiMessageProvider.getOverallImpact(lang, rating)
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", ApiMessageProvider.getRecordNotFound(lang)
+                ));
+            }
+
+        } catch (Exception e) {
+            log.error(LogMessageProvider.getMessage("log.feedback.rating_failed"), e);
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
+            ));
         }
     }
 }

@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import top.yumbo.ai.rag.i18n.ApiMessageProvider;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.service.DocumentManagementService;
 
 import java.io.*;
@@ -18,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -40,46 +43,50 @@ public class DocumentManagementController {
     }
 
     /**
-     * 上传文档
+     * 上传文档 / Upload document
      */
     @PostMapping("/upload")
-    public UploadResponse uploadDocument(@RequestParam("file") MultipartFile file) {
-        log.info("收到文档上传请求: {}", file.getOriginalFilename());
+    public UploadResponse uploadDocument(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        log.info(LogMessageProvider.getMessage("document_management.log.batch_upload", file.getOriginalFilename()));
 
         UploadResponse response = new UploadResponse();
 
         try {
             if (file.isEmpty()) {
                 response.setSuccess(false);
-                response.setMessage("文件为空");
+                response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.file_empty", lang));
                 return response;
             }
 
             String result = documentService.uploadDocument(file);
 
             response.setSuccess(true);
-            response.setMessage("文档上传成功");
+            response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.upload", lang));
             response.setFileName(file.getOriginalFilename());
             response.setFileSize(file.getSize());
             response.setDocumentId(result);
 
-            log.info("文档上传成功: {}", file.getOriginalFilename());
+            log.info(LogMessageProvider.getMessage("document_management.log.upload_success", file.getOriginalFilename()));
             return response;
 
         } catch (Exception e) {
-            log.error("文档上传失败", e);
+            log.error(LogMessageProvider.getMessage("document_management.log.upload_failed"), e);
             response.setSuccess(false);
-            response.setMessage("上传失败: " + e.getMessage());
+            response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.upload_failed", lang, e.getMessage()));
             return response;
         }
     }
 
     /**
-     * 批量上传文档
+     * 批量上传文档 / Batch upload documents
      */
     @PostMapping("/upload-batch")
-    public BatchUploadResponse uploadBatch(@RequestParam("files") MultipartFile[] files) {
-        log.info("收到批量上传请求: {} 个文件", files.length);
+    public BatchUploadResponse uploadBatch(
+            @RequestParam("files") MultipartFile[] files,
+            @RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        log.info(LogMessageProvider.getMessage("document_management.log.batch_upload", files.length));
 
         BatchUploadResponse response = new BatchUploadResponse();
         response.setTotal(files.length);
@@ -95,7 +102,7 @@ public class DocumentManagementController {
                     response.getSuccessFiles().add(file.getOriginalFilename());
                 }
             } catch (Exception e) {
-                log.error("文件上传失败: {}", file.getOriginalFilename(), e);
+                log.error(LogMessageProvider.getMessage("document_management.log.file_upload_failed", file.getOriginalFilename()), e);
                 failureCount++;
                 response.getFailedFiles().add(file.getOriginalFilename());
             }
@@ -103,26 +110,27 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(String.format("成功: %d, 失败: %d", successCount, failureCount));
+        response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
 
     /**
-     * 获取文档列表（支持分页、排序、高级搜索）
+     * 获取文档列表（支持分页、排序、高级搜索）/ Get document list (support pagination, sorting, advanced search)
      *
-     * @param page 页码（从1开始），默认1
-     * @param pageSize 每页数量，默认20，-1表示全部
-     * @param sortBy 排序字段：name, size, date, type，默认date
-     * @param sortOrder 排序方向：asc, desc，默认desc
-     * @param search 搜索关键词（简单搜索），默认空
-     * @param searchMode 搜索模式：contains(包含), exact(精确), regex(正则)，默认contains
-     * @param fileTypes 文件类型过滤，逗号分隔，如 "pdf,docx,xlsx"，空表示全部
-     * @param minSize 最小文件大小（字节），默认0
-     * @param maxSize 最大文件大小（字节），默认Long.MAX_VALUE
-     * @param indexed 是否已索引：true, false, all，默认all
-     * @param startDate 开始日期，格式：yyyy-MM-dd，默认空
-     * @param endDate 结束日期，格式：yyyy-MM-dd，默认空
+     * @param page 页码（从1开始），默认1 / Page number (from 1), default 1
+     * @param pageSize 每页数量，默认20，-1表示全部 / Items per page, default 20, -1 for all
+     * @param sortBy 排序字段：name, size, date, type，默认date / Sort field, default date
+     * @param sortOrder 排序方向：asc, desc，默认desc / Sort direction, default desc
+     * @param search 搜索关键词（简单搜索），默认空 / Search keyword, default empty
+     * @param searchMode 搜索模式：contains(包含), exact(精确), regex(正则)，默认contains / Search mode, default contains
+     * @param fileTypes 文件类型过滤，逗号分隔，如 "pdf,docx,xlsx"，空表示全部 / File type filter
+     * @param minSize 最小文件大小（字节），默认0 / Min file size (bytes), default 0
+     * @param maxSize 最大文件大小（字节），默认Long.MAX_VALUE / Max file size (bytes)
+     * @param indexed 是否已索引：true, false, all，默认all / Indexed status
+     * @param startDate 开始日期，格式：yyyy-MM-dd，默认空 / Start date, format: yyyy-MM-dd
+     * @param endDate 结束日期，格式：yyyy-MM-dd，默认空 / End date, format: yyyy-MM-dd
+     * @param lang 语言参数，默认zh / Language parameter, default zh
      */
     @GetMapping("/list")
     public ListResponse listDocuments(
@@ -137,35 +145,36 @@ public class DocumentManagementController {
             @RequestParam(defaultValue = "9223372036854775807") long maxSize,
             @RequestParam(defaultValue = "all") String indexed,
             @RequestParam(defaultValue = "") String startDate,
-            @RequestParam(defaultValue = "") String endDate) {
+            @RequestParam(defaultValue = "") String endDate,
+            @RequestParam(defaultValue = "zh") String lang) {
 
-        log.info("获取文档列表 - 页码: {}, 每页: {}, 排序: {} {}, 搜索: '{}', 模式: {}, 类型: '{}', 大小: {}-{}, 索引: {}, 日期: {}-{}",
-                page, pageSize, sortBy, sortOrder, search, searchMode, fileTypes, minSize, maxSize, indexed, startDate, endDate);
+        log.info(LogMessageProvider.getMessage("document_management.log.list_documents",
+            page, pageSize, sortBy, sortOrder));
 
         try {
-            // 获取所有文档
+            // 获取所有文档 / Get all documents
             List<DocumentInfo> allDocuments = documentService.listDocuments();
 
-            // 1. 高级过滤
+            // 1. 高级过滤 / Advanced filtering
             List<DocumentInfo> filteredDocuments = advancedFilter(
                     allDocuments, search, searchMode, fileTypes,
                     minSize, maxSize, indexed, startDate, endDate
             );
 
-            // 2. 排序
+            // 2. 排序 / Sorting
             filteredDocuments = sortDocuments(filteredDocuments, sortBy, sortOrder);
 
-            // 3. 分页
+            // 3. 分页 / Pagination
             int totalCount = filteredDocuments.size();
             List<DocumentInfo> paginatedDocuments;
             int totalPages;
 
             if (pageSize == -1) {
-                // 显示全部
+                // 显示全部 / Show all
                 paginatedDocuments = filteredDocuments;
                 totalPages = 1;
             } else {
-                // 计算分页
+                // 计算分页 / Calculate pagination
                 totalPages = (int) Math.ceil((double) totalCount / pageSize);
                 int startIndex = (page - 1) * pageSize;
                 int endIndex = Math.min(startIndex + pageSize, totalCount);
@@ -188,15 +197,16 @@ public class DocumentManagementController {
             response.setPageSize(pageSize);
             response.setTotalPages(totalPages);
 
-            log.info("文档列表获取成功: 返回 {} 个文档，共 {} 个", paginatedDocuments.size(), totalCount);
+            log.info(LogMessageProvider.getMessage("document_management.api.success.list_loaded",
+                paginatedDocuments.size(), totalCount));
             return response;
 
         } catch (Exception e) {
-            log.error("获取文档列表失败", e);
+            log.error(LogMessageProvider.getMessage("document_management.log.list_failed"), e);
 
             ListResponse response = new ListResponse();
             response.setSuccess(false);
-            response.setMessage("获取列表失败: " + e.getMessage());
+            response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.list_failed", lang, e.getMessage()));
 
             return response;
         }
@@ -336,10 +346,12 @@ public class DocumentManagementController {
     }
 
     /**
-     * 删除文档
+     * 删除文档 / Delete document
      */
     @DeleteMapping("/{fileName}")
-    public DeleteResponse deleteDocument(@PathVariable String fileName) {
+    public DeleteResponse deleteDocument(
+            @PathVariable String fileName,
+            @RequestParam(value = "lang", defaultValue = "zh") String lang) {
         log.info("删除文档: {}", fileName);
 
         DeleteResponse response = new DeleteResponse();
@@ -349,28 +361,33 @@ public class DocumentManagementController {
 
             if (deleted) {
                 response.setSuccess(true);
-                response.setMessage("文档删除成功");
+                response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.delete", lang));
                 response.setFileName(fileName);
             } else {
                 response.setSuccess(false);
-                response.setMessage("文档不存在");
+                response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.not_found", lang));
             }
 
             return response;
         } catch (Exception e) {
             log.error("删除文档失败", e);
             response.setSuccess(false);
-            response.setMessage("删除失败: " + e.getMessage());
+            response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.delete_failed", lang, e.getMessage()));
             return response;
         }
     }
 
     /**
-     * 批量删除文档
+     * 批量删除文档 / Batch delete documents
      */
     @DeleteMapping("/batch")
-    public BatchDeleteResponse deleteBatch(@RequestBody List<String> fileNames) {
-        log.info("批量删除文档: {} 个", fileNames.size());
+    public BatchDeleteResponse deleteBatch(
+            @RequestBody Map<String, Object> request) {
+        @SuppressWarnings("unchecked")
+        List<String> fileNames = (List<String>) request.get("fileNames");
+        String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数 / Get language parameter
+
+        log.info(LogMessageProvider.getMessage("document_management.log.batch_upload", fileNames.size()));
 
         BatchDeleteResponse response = new BatchDeleteResponse();
         response.setTotal(fileNames.size());
@@ -388,7 +405,7 @@ public class DocumentManagementController {
                     response.getFailedFiles().add(fileName);
                 }
             } catch (Exception e) {
-                log.error("删除文档失败: {}", fileName, e);
+                log.error(LogMessageProvider.getMessage("document_management.log.file_upload_failed", fileName), e);
                 failureCount++;
                 response.getFailedFiles().add(fileName);
             }
@@ -396,7 +413,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(String.format("成功: %d, 失败: %d", successCount, failureCount));
+        response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }

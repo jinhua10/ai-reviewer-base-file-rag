@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,14 +13,14 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * OpenAI LLM 客户端
+ * OpenAI LLM 客户端 / OpenAI LLM Client
  *
- * 支持的模型:
- * - gpt-4o (最新多模态模型)
+ * 支持的模型 / Supported models:
+ * - gpt-4o (最新多模态模型 / Latest multimodal model)
  * - gpt-4-turbo (GPT-4 Turbo)
  * - gpt-4 (GPT-4)
  * - gpt-3.5-turbo (GPT-3.5)
- * - 未来的 GPT-5 等
+ * - 未来的 GPT-5 等 / Future GPT-5, etc.
  *
  * @author AI Reviewer Team
  * @since 2025-11-23
@@ -33,17 +34,17 @@ public class OpenAILLMClient implements LLMClient {
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
 
-    // 默认 API 端点
+    // 默认 API 端点 / Default API endpoint
     private static final String DEFAULT_API_URL = "https://api.openai.com/v1/chat/completions";
     private static final int DEFAULT_TIMEOUT = 60;
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     /**
-     * 构造函数
+     * 构造函数 / Constructor
      *
      * @param apiKey API Key
-     * @param model 模型名称 (如 "gpt-4o", "gpt-4-turbo")
-     * @param apiUrl API 端点 (null 则使用默认)
+     * @param model 模型名称 (如 "gpt-4o", "gpt-4-turbo") / Model name (e.g. "gpt-4o", "gpt-4-turbo")
+     * @param apiUrl API 端点 (null 则使用默认) / API endpoint (use default if null)
      */
     public OpenAILLMClient(String apiKey, String model, String apiUrl) {
         this.apiKey = apiKey;
@@ -58,13 +59,13 @@ public class OpenAILLMClient implements LLMClient {
 
         this.objectMapper = new ObjectMapper();
 
-        log.info("✅ OpenAI LLM 客户端初始化完成");
-        log.info("   - 模型: {}", this.model);
-        log.info("   - 端点: {}", this.apiUrl);
+        log.info(LogMessageProvider.getMessage("llm.log.openai_init"));
+        log.info("   - Model: {}", this.model);
+        log.info("   - Endpoint: {}", this.apiUrl);
     }
 
     /**
-     * 从环境变量创建
+     * 从环境变量创建 / Create from environment variables
      */
     public static OpenAILLMClient fromEnv() {
         String apiKey = System.getenv("OPENAI_API_KEY");
@@ -100,20 +101,20 @@ public class OpenAILLMClient implements LLMClient {
             requestBody.put("temperature", 0.7);
             requestBody.put("max_tokens", 2000);
 
-            // 发送请求
+            // 发送请求 / Send request
             String response = sendRequest(requestBody);
 
-            // 解析响应
+            // 解析响应 / Parse response
             return parseResponse(response);
 
         } catch (Exception e) {
-            log.error("OpenAI API 调用失败", e);
-            throw new RuntimeException("OpenAI API 调用失败: " + e.getMessage(), e);
+            log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
         }
     }
 
     /**
-     * 构建消息列表
+     * 构建消息列表 / Build message list
      */
     private List<Map<String, String>> buildMessages(String systemPrompt, String userPrompt) {
         List<Map<String, String>> messages = new java.util.ArrayList<>();
@@ -136,13 +137,13 @@ public class OpenAILLMClient implements LLMClient {
     }
 
     /**
-     * 发送 HTTP 请求
+     * 发送 HTTP 请求 / Send HTTP request
      */
     private String sendRequest(Map<String, Object> requestBody) throws IOException {
         String jsonBody = objectMapper.writeValueAsString(requestBody);
 
-        log.debug("发送请求到 OpenAI: {}", model);
-        log.debug("请求体: {}", jsonBody);
+        log.debug(LogMessageProvider.getMessage("llm.log.openai_request", model));
+        log.debug("Request body: {}", jsonBody);
 
         Request request = new Request.Builder()
             .url(apiUrl)
@@ -153,25 +154,25 @@ public class OpenAILLMClient implements LLMClient {
 
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                String errorBody = response.body() != null ? response.body().string() : "无响应体";
-                log.error("OpenAI API 错误: HTTP {}, Body: {}", response.code(), errorBody);
-                throw new IOException("OpenAI API 错误: HTTP " + response.code() + ", " + errorBody);
+                String errorBody = response.body() != null ? response.body().string() : "No response body";
+                log.error(LogMessageProvider.getMessage("llm.log.openai_error", response.code(), errorBody));
+                throw new IOException(LogMessageProvider.getMessage("llm.error.openai_http_error", response.code(), errorBody));
             }
 
             String responseBody = response.body().string();
-            log.debug("收到响应: {}", responseBody);
+            log.debug("Received response: {}", responseBody);
 
             return responseBody;
         }
     }
 
     /**
-     * 解析响应
+     * 解析响应 / Parse response
      */
     private String parseResponse(String responseBody) throws IOException {
         JsonNode root = objectMapper.readTree(responseBody);
 
-        // 提取回复内容
+        // 提取回复内容 / Extract reply content
         JsonNode choices = root.get("choices");
         if (choices != null && choices.isArray() && choices.size() > 0) {
             JsonNode firstChoice = choices.get(0);
@@ -180,13 +181,14 @@ public class OpenAILLMClient implements LLMClient {
                 JsonNode content = message.get("content");
                 if (content != null) {
                     String result = content.asText();
-                    log.debug("OpenAI 响应内容: {}", result.substring(0, Math.min(200, result.length())));
+                    log.debug(LogMessageProvider.getMessage("llm.log.openai_response",
+                        result.substring(0, Math.min(200, result.length()))));
                     return result;
                 }
             }
         }
 
-        throw new IOException("无法解析 OpenAI 响应: " + responseBody);
+        throw new IOException(LogMessageProvider.getMessage("llm.error.parse_failed", responseBody));
     }
 
     public boolean isAvailable() {

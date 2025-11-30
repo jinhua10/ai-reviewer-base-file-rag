@@ -9,12 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * 文档块下载控制器
+ * 文档块下载控制器 / Chunk Download Controller
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -32,7 +33,7 @@ public class ChunkDownloadController {
     }
 
     /**
-     * 列出文档的所有切分块
+     * 列出文档的所有切分块 / List all chunks of a document
      */
     @GetMapping("/list/{documentId}")
     public ResponseEntity<List<ChunkStorageInfo>> listChunks(@PathVariable String documentId) {
@@ -40,13 +41,13 @@ public class ChunkDownloadController {
             List<ChunkStorageInfo> chunks = chunkStorageService.listChunks(documentId);
             return ResponseEntity.ok(chunks);
         } catch (Exception e) {
-            log.error("Failed to list chunks for document: {}", documentId, e);
+            log.error(LogMessageProvider.getMessage("chunk_download.log.list_failed", documentId), e);
             return ResponseEntity.internalServerError().build();
         }
     }
 
     /**
-     * 下载单个文档块
+     * 下载单个文档块 / Download a single chunk
      */
     @GetMapping("/download/{documentId}/{chunkId}")
     public ResponseEntity<Resource> downloadChunk(
@@ -54,14 +55,14 @@ public class ChunkDownloadController {
             @PathVariable String chunkId) {
 
         try {
-            // 读取块内容
+            // 读取块内容 / Read chunk content
             String content = chunkStorageService.readChunkContent(chunkId, documentId);
 
-            // 转换为资源
+            // 转换为资源 / Convert to resource
             byte[] data = content.getBytes(StandardCharsets.UTF_8);
             ByteArrayResource resource = new ByteArrayResource(data);
 
-            // 设置响应头
+            // 设置响应头 / Set response headers
             String filename = chunkId + ".md";
 
             return ResponseEntity.ok()
@@ -72,13 +73,13 @@ public class ChunkDownloadController {
                     .body(resource);
 
         } catch (Exception e) {
-            log.error("Failed to download chunk: {}/{}", documentId, chunkId, e);
+            log.error(LogMessageProvider.getMessage("chunk_download.log.download_failed", documentId, chunkId), e);
             return ResponseEntity.notFound().build();
         }
     }
 
     /**
-     * 获取块内容（不下载，直接显示）
+     * 获取块内容（不下载，直接显示）/ Get chunk content (display without download)
      */
     @GetMapping("/content/{documentId}/{chunkId}")
     public ResponseEntity<String> getChunkContent(
@@ -91,7 +92,7 @@ public class ChunkDownloadController {
                     .contentType(MediaType.TEXT_PLAIN)
                     .body(content);
         } catch (Exception e) {
-            log.error("Failed to get chunk content: {}/{}", documentId, chunkId, e);
+            log.error(LogMessageProvider.getMessage("chunk_download.log.content_failed", documentId, chunkId), e);
             return ResponseEntity.notFound().build();
         }
     }

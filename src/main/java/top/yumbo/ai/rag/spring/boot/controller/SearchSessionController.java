@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.spring.boot.service.SearchSessionService;
 
 /**
- * 搜索会话管理控制器 - 支持分页引用文档
+ * 搜索会话管理控制器 - 支持分页引用文档 / Search Session Management Controller - Support paginated document referencing
  *
  * @author AI Reviewer Team
  * @since 2025-11-29
@@ -23,7 +23,7 @@ public class SearchSessionController {
     }
 
     /**
-     * 获取当前批次文档
+     * 获取当前批次文档 / Get current batch of documents
      */
     @GetMapping("/{sessionId}/current")
     public SearchSessionService.SessionDocuments getCurrentDocuments(
@@ -32,7 +32,7 @@ public class SearchSessionController {
     }
 
     /**
-     * 获取下一批文档
+     * 获取下一批文档 / Get next batch of documents
      */
     @PostMapping("/{sessionId}/next")
     public SearchSessionService.SessionDocuments getNextDocuments(
@@ -41,7 +41,7 @@ public class SearchSessionController {
     }
 
     /**
-     * 获取上一批文档
+     * 获取上一批文档 / Get previous batch of documents
      */
     @PostMapping("/{sessionId}/previous")
     public SearchSessionService.SessionDocuments getPreviousDocuments(
@@ -50,7 +50,7 @@ public class SearchSessionController {
     }
 
     /**
-     * 跳转到指定页
+     * 跳转到指定页 / Jump to specified page
      */
     @GetMapping("/{sessionId}/page/{page}")
     public SearchSessionService.SessionDocuments getPage(
@@ -60,7 +60,7 @@ public class SearchSessionController {
     }
 
     /**
-     * 获取会话信息
+     * 获取会话信息 / Get session information
      */
     @GetMapping("/{sessionId}/info")
     public SearchSessionService.SessionInfo getSessionInfo(
@@ -69,7 +69,7 @@ public class SearchSessionController {
     }
 
     /**
-     * 删除会话
+     * 删除会话 / Delete session
      */
     @DeleteMapping("/{sessionId}")
     public void deleteSession(@PathVariable String sessionId) {

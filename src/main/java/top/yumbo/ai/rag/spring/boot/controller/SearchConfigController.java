@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.spring.boot.service.SearchConfigService;
 
 /**
- * 搜索配置管理控制器
+ * 搜索配置管理控制器 / Search Configuration Management Controller
  *
  * @author AI Reviewer Team
  * @since 2025-11-29
@@ -23,7 +23,7 @@ public class SearchConfigController {
     }
 
     /**
-     * 获取当前配置
+     * 获取当前配置 / Get current configuration
      */
     @GetMapping
     public SearchConfigService.SearchConfigInfo getConfig() {
@@ -31,7 +31,7 @@ public class SearchConfigController {
     }
 
     /**
-     * 更新配置
+     * 更新配置 / Update configuration
      */
     @PutMapping
     public SearchConfigService.SearchConfigInfo updateConfig(
@@ -41,7 +41,7 @@ public class SearchConfigController {
     }
 
     /**
-     * 更新单个配置项
+     * 更新单个配置项 / Update individual configuration item
      */
     @PutMapping("/lucene-top-k")
     public SearchConfigService.SearchConfigInfo updateLuceneTopK(@RequestParam int value) {
@@ -74,7 +74,7 @@ public class SearchConfigController {
     }
 
     /**
-     * 重置为默认配置
+     * 重置为默认配置 / Reset to default configuration
      */
     @PostMapping("/reset")
     public SearchConfigService.SearchConfigInfo resetConfig() {

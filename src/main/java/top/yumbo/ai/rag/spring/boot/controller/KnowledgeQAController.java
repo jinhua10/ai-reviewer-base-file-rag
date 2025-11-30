@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import top.yumbo.ai.rag.i18n.ApiMessageProvider;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
 import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
@@ -17,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * 知识库问答 REST API 控制器
+ * 知识库问答 REST API 控制器 / Knowledge QA REST API Controller
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -41,11 +43,11 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 问答接口
+     * 问答接口 / Question answering endpoint
      */
     @PostMapping("/ask")
     public QuestionResponse ask(@RequestBody QuestionRequest request) {
-        log.info("收到问题: {}", request.getQuestion());
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.received_question", request.getQuestion()));
 
         AIAnswer answer = qaService.ask(request.getQuestion());
 
@@ -59,17 +61,18 @@ public class KnowledgeQAController {
         response.setTotalRetrieved(answer.getTotalRetrieved());
         response.setHasMoreDocuments(answer.isHasMoreDocuments());
         response.setRecordId(answer.getRecordId());
-        response.setSimilarQuestions(answer.getSimilarQuestions());  // 新增：相似问题
+        response.setSimilarQuestions(answer.getSimilarQuestions());  // 新增：相似问题 / New: similar questions
 
         return response;
     }
 
     /**
-     * 使用会话文档进行问答（用于分页引用）
+     * 使用会话文档进行问答（用于分页引用）/ QA with session documents (for pagination)
      */
     @PostMapping("/ask-with-session")
     public QuestionResponse askWithSession(@RequestBody SessionQuestionRequest request) {
-        log.info("使用会话进行问答: 问题={}, sessionId={}", request.getQuestion(), request.getSessionId());
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.session_question",
+            request.getQuestion(), request.getSessionId()));
 
         AIAnswer answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
 
@@ -88,12 +91,12 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 搜索文档接口
+     * 搜索文档接口 / Search documents endpoint
      */
     @GetMapping("/search")
     public SearchResponse search(@RequestParam String query,
                                  @RequestParam(defaultValue = "10") int limit) {
-        log.info("搜索文档: {} (limit={})", query, limit);
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.search_documents", query, limit));
 
         List<Document> documents = qaService.searchDocuments(query, limit);
 
@@ -108,12 +111,12 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 获取知识库统计信息（增强版）
-     * 实时扫描文件系统，返回准确的文档数量
+     * 获取知识库统计信息（增强版）/ Get knowledge base statistics (enhanced)
+     * 实时扫描文件系统，返回准确的文档数量 / Real-time scan filesystem, return accurate document count
      */
     @GetMapping("/statistics")
-    public StatisticsResponse getStatistics() {
-        log.info("📊 获取统计信息（增强版）");
+    public StatisticsResponse getStatistics(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.get_statistics"));
 
         KnowledgeQAService.EnhancedStatistics stats = qaService.getEnhancedStatistics();
 
@@ -123,73 +126,74 @@ public class KnowledgeQAController {
         response.setUnindexedCount(stats.getUnindexedCount());
         response.setIndexProgress(stats.getIndexProgress());
 
-        // 添加提示信息
+        // 添加提示信息 / Add hint message
         if (stats.getUnindexedCount() > 0) {
-            response.setMessage(String.format(
-                "检测到 %d 个未索引的文档。建议执行增量索引以更新知识库。",
-                stats.getUnindexedCount()
-            ));
+            response.setMessage(ApiMessageProvider.getMessage(
+                "knowledge_qa.api.message.needs_indexing", lang, stats.getUnindexedCount()));
             response.setNeedsIndexing(true);
         } else {
-            response.setMessage("所有文档均已索引，知识库状态良好。");
+            response.setMessage(ApiMessageProvider.getMessage(
+                "knowledge_qa.api.message.all_indexed", lang));
             response.setNeedsIndexing(false);
         }
 
-        log.info("📊 统计信息 - 文档总数: {}, 已索引: {}, 未索引: {}, 完成度: {}%",
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.statistics_result",
             stats.getDocumentCount(), stats.getIndexedDocumentCount(),
-            stats.getUnindexedCount(), stats.getIndexProgress());
+            stats.getUnindexedCount(), stats.getIndexProgress()));
 
         return response;
     }
 
     /**
-     * 健康检查
+     * 健康检查 / Health check
      */
     @GetMapping("/health")
-    public HealthResponse health() {
+    public HealthResponse health(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
         HealthResponse response = new HealthResponse();
-        response.setStatus("UP");
-        response.setMessage("知识库问答系统运行正常");
+        response.setStatus(ApiMessageProvider.getMessage("knowledge_qa.api.status.up", lang));
+        response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.system_running", lang));
         return response;
     }
 
     /**
-     * 触发知识库重建（管理接口）
+     * 触发知识库重建（管理接口）/ Trigger knowledge base rebuild (admin endpoint)
      */
     @PostMapping("/rebuild")
-    public RebuildResponse rebuild() {
-        log.info("收到知识库重建请求");
+    public RebuildResponse rebuild(@RequestBody(required = false) Map<String, String> request) {
+        String lang = request != null ? request.getOrDefault("lang", "zh") : "zh"; // 获取语言参数 / Get language parameter
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.rebuild_request"));
 
         try {
             BuildResult result = qaService.rebuildKnowledgeBase();
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(true);
-            response.setMessage("知识库重建完成");
+            response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
             response.setProcessedFiles(result.getSuccessCount());
             response.setTotalDocuments(result.getTotalDocuments());
             response.setDurationMs(result.getBuildTimeMs());
 
             return response;
         } catch (Exception e) {
-            log.error("知识库重建失败", e);
+            log.error(LogMessageProvider.getMessage("knowledge_qa.log.rebuild_failed"), e);
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage("知识库重建失败: " + e.getMessage());
-            response.setSuggestion("请检查日志文件获取详细错误信息");
+            response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
+            response.setSuggestion(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
     }
 
     /**
-     * 触发知识库增量索引（管理接口）
-     * 只处理新增和修改的文档，性能更优
+     * 触发知识库增量索引（管理接口）/ Trigger knowledge base incremental index (admin endpoint)
+     * 只处理新增和修改的文档，性能更优 / Only process new and modified documents, better performance
      */
     @PostMapping("/incremental-index")
-    public RebuildResponse incrementalIndex() {
-        log.info("收到知识库增量索引请求");
+    public RebuildResponse incrementalIndex(@RequestBody(required = false) Map<String, String> request) {
+        String lang = request != null ? request.getOrDefault("lang", "zh") : "zh"; // 获取语言参数 / Get language parameter
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.incremental_request"));
 
         try {
             BuildResult result = qaService.incrementalIndexKnowledgeBase();
@@ -198,9 +202,11 @@ public class KnowledgeQAController {
             response.setSuccess(true);
 
             if (result.getSuccessCount() > 0) {
-                response.setMessage(String.format("增量索引完成，更新了 %d 个文件", result.getSuccessCount()));
+                response.setMessage(ApiMessageProvider.getMessage(
+                    "knowledge_qa.api.message.incremental_complete", lang, result.getSuccessCount()));
             } else {
-                response.setMessage("所有文件都是最新的，无需更新");
+                response.setMessage(ApiMessageProvider.getMessage(
+                    "knowledge_qa.api.message.all_up_to_date", lang));
             }
 
             response.setProcessedFiles(result.getSuccessCount());
@@ -209,28 +215,28 @@ public class KnowledgeQAController {
 
             return response;
         } catch (Exception e) {
-            log.error("增量索引失败", e);
+            log.error(LogMessageProvider.getMessage("knowledge_qa.log.incremental_failed"), e);
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage("增量索引失败: " + e.getMessage());
-            response.setSuggestion("请检查日志文件获取详细错误信息");
+            response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
+            response.setSuggestion(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
     }
 
     /**
-     * 搜索相似问题（基于关键词匹配）
-     * 在历史问答记录中查找相似问题
+     * 搜索相似问题（基于关键词匹配）/ Search similar questions (based on keyword matching)
+     * 在历史问答记录中查找相似问题 / Search similar questions in historical QA records
      */
     @GetMapping("/similar")
     public ResponseEntity<?> findSimilarQuestions(
             @RequestParam String question,
-            @RequestParam(defaultValue = "30") int minScore,  // 最小相似度分数（0-100）
+            @RequestParam(defaultValue = "30") int minScore,  // 最小相似度分数（0-100）/ Min similarity score (0-100)
             @RequestParam(defaultValue = "5") int limit) {
 
-        log.info("🔍 搜索相似问题: {} (minScore={}, limit={})", question, minScore, limit);
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.search_similar", question, minScore, limit));
 
         List<SimilarQAService.SimilarQA> similar =
             similarQAService.findSimilar(question, minScore, limit);
@@ -243,12 +249,12 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 获取归档统计
-     * 返回归档问答的统计信息
+     * 获取归档统计 / Get archive statistics
+     * 返回归档问答的统计信息 / Return statistics of archived QA
      */
     @GetMapping("/archive/statistics")
     public ResponseEntity<?> getArchiveStatistics() {
-        log.info("📊 获取归档统计");
+        log.info(LogMessageProvider.getMessage("knowledge_qa.log.archive_stats"));
 
         var stats = qaArchiveService.getStatistics();
         return ResponseEntity.ok(stats);

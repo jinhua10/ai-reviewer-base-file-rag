@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 文档管理服务
- * 负责文档的上传、删除、列表管理等功能
+ * 文档管理服务 / Document Management Service
+ * 负责文档的上传、删除、列表管理等功能 / Responsible for document upload, delete, list management, etc.
  *
  * @author AI Reviewer Team
  * @since 2025-11-23
@@ -35,7 +35,7 @@ public class DocumentManagementService {
     private final KnowledgeQAProperties properties;
     private final Path documentsPath;
 
-    // 支持的文件格式
+    // 支持的文件格式 / Supported file formats
     private static final List<String> SUPPORTED_EXTENSIONS = Arrays.asList(
             "xlsx", "xls", "docx", "doc", "pptx", "ppt", "pdf", "txt", "md", "html", "xml"
     );
@@ -92,35 +92,36 @@ public class DocumentManagementService {
             log.info(LogMessageProvider.getMessage("log.docs.directory_ready", this.documentsPath.toAbsolutePath()));
         } catch (IOException e) {
             log.error(LogMessageProvider.getMessage("log.docs.create_failed", e.getMessage()));
-            throw new RuntimeException("无法创建文档目录: " + e.getMessage(), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("document_service.error.cannot_create_dir", e.getMessage()), e);
         }
     }
 
     /**
-     * 上传文档
+     * 上传文档 / Upload document
      *
-     * @param file 上传的文件
-     * @return 文档ID
+     * @param file 上传的文件 / File to upload
+     * @return 文档ID / Document ID
      */
     public String uploadDocument(MultipartFile file) throws IOException {
         String originalFilename = file.getOriginalFilename();
 
         if (originalFilename == null || originalFilename.isEmpty()) {
-            throw new IllegalArgumentException("文件名为空");
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("document_service.error.filename_empty"));
         }
 
-        // 验证文件格式
+        // 验证文件格式 / Validate file format
         String extension = getFileExtension(originalFilename);
         if (!SUPPORTED_EXTENSIONS.contains(extension.toLowerCase())) {
-            throw new IllegalArgumentException("不支持的文件格式: " + extension);
+            throw new IllegalArgumentException(LogMessageProvider.getMessage("document_service.error.unsupported_format", extension));
         }
 
-        // 验证文件大小
+        // 验证文件大小 / Validate file size
         long maxSize = properties.getDocument().getMaxFileSizeMb() * 1024 * 1024;
         if (file.getSize() > maxSize) {
+            double fileSizeMB = file.getSize() / 1024.0 / 1024.0;
             throw new IllegalArgumentException(
-                    String.format("文件过大: %.2f MB (最大: %d MB)",
-                            file.getSize() / 1024.0 / 1024.0,
+                    LogMessageProvider.getMessage("document_service.error.file_too_large",
+                            String.format("%.2f", fileSizeMB),
                             properties.getDocument().getMaxFileSizeMb())
             );
         }
@@ -148,10 +149,10 @@ public class DocumentManagementService {
     }
 
     /**
-     * 删除文档
+     * 删除文档 / Delete document
      *
-     * @param fileName 文件名
-     * @return 是否删除成功
+     * @param fileName 文件名 / File name
+     * @return 是否删除成功 / Whether deletion was successful
      */
     public boolean deleteDocument(String fileName) throws IOException {
         Path filePath = documentsPath.resolve(fileName);
@@ -161,9 +162,9 @@ public class DocumentManagementService {
             return false;
         }
 
-        // 安全检查：确保文件在文档目录内
+        // 安全检查：确保文件在文档目录内 / Security check: ensure file is within document directory
         if (!filePath.normalize().startsWith(documentsPath.normalize())) {
-            throw new SecurityException("非法的文件路径");
+            throw new SecurityException(LogMessageProvider.getMessage("document_service.error.illegal_path"));
         }
 
         Files.delete(filePath);
@@ -173,9 +174,9 @@ public class DocumentManagementService {
     }
 
     /**
-     * 获取文档列表
+     * 获取文档列表 / Get document list
      *
-     * @return 文档列表
+     * @return 文档列表 / Document list
      */
     public List<DocumentInfo> listDocuments() throws IOException {
         List<DocumentInfo> documents = new ArrayList<>();
@@ -195,26 +196,26 @@ public class DocumentManagementService {
                 info.setFileSize(Files.size(path));
                 info.setFileType(getFileExtension(path.getFileName().toString()));
 
-                // 获取创建时间
+                // 获取创建时间 / Get creation time
                 BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 info.setUploadTime(sdf.format(new Date(attrs.creationTime().toMillis())));
 
-                // TODO: 检查是否已索引
+                // TODO: 检查是否已索引 / Check if indexed
                 info.setIndexed(true);
 
                 documents.add(info);
             }
         }
 
-        // 按上传时间倒序排列
+        // 按上传时间倒序排列 / Sort by upload time in descending order
         documents.sort((a, b) -> b.getUploadTime().compareTo(a.getUploadTime()));
 
         return documents;
     }
 
     /**
-     * 获取文件扩展名
+     * 获取文件扩展名 / Get file extension
      */
     private String getFileExtension(String filename) {
         int lastDot = filename.lastIndexOf('.');
@@ -225,33 +226,33 @@ public class DocumentManagementService {
     }
 
     /**
-     * 获取文档目录路径
+     * 获取文档目录路径 / Get documents directory path
      */
     public String getDocumentsPath() {
         return documentsPath.toAbsolutePath().toString();
     }
 
     /**
-     * 获取指定文件的完整路径
+     * 获取指定文件的完整路径 / Get full path of specified file
      *
-     * @param fileName 文件名
-     * @return 文件完整路径
+     * @param fileName 文件名 / File name
+     * @return 文件完整路径 / Full file path
      */
     public Path getDocumentPath(String fileName) {
         Path filePath = documentsPath.resolve(fileName);
 
-        // 安全检查：确保文件在文档目录内
+        // 安全检查：确保文件在文档目录内 / Security check: ensure file is within document directory
         if (!filePath.normalize().startsWith(documentsPath.normalize())) {
-            throw new SecurityException("非法的文件路径");
+            throw new SecurityException(LogMessageProvider.getMessage("document_service.error.illegal_path"));
         }
 
         return filePath;
     }
 
     /**
-     * 获取已上传文档的文件类型列表（动态扫描）
+     * 获取已上传文档的文件类型列表（动态扫描）/ Get list of file types from uploaded documents (dynamic scan)
      *
-     * @return 实际已上传的文件扩展名列表（去重且排序）
+     * @return 实际已上传的文件扩展名列表（去重且排序）/ List of uploaded file extensions (deduplicated and sorted)
      */
     public List<String> getSupportedTypes() throws IOException {
         List<String> fileTypes = new ArrayList<>();
@@ -267,7 +268,7 @@ public class DocumentManagementService {
                     .collect(Collectors.toList());
         }
 
-        log.debug("扫描到的文件类型: {}", fileTypes);
+        log.debug(LogMessageProvider.getMessage("document_service.log.scanned_types", fileTypes));
         return fileTypes;
     }
 }

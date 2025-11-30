@@ -332,6 +332,60 @@ public class QARecordService {
     }
 
     /**
+     * 添加整体评价（表情评分）/ Add overall rating (emoji rating)
+     *
+     * @param recordId 记录ID / Record ID
+     * @param rating 评分 (1-5) / Rating (1-5)
+     * @return 是否成功 / Whether successful
+     */
+    public boolean addOverallRating(String recordId, int rating) {
+        Optional<QARecord> recordOpt = getRecord(recordId);
+        if (recordOpt.isEmpty()) {
+            return false;
+        }
+
+        QARecord record = recordOpt.get();
+
+        // 更新整体评分 / Update overall rating
+        record.setOverallRating(rating);
+        record.setOverallFeedback(getEmojiDescription(rating));
+
+        // 记录日志 / Log the rating
+        String emojiText = getEmojiDescription(rating);
+        log.info(LogMessageProvider.getMessage("log.qa.overall_rating_submitted",
+            emojiText, recordId.substring(0, Math.min(8, recordId.length())), rating));
+
+        // 如果评分较高（4-5星），可以将此问答记录标记为优质内容
+        // If rating is high (4-5 stars), mark this QA as high-quality content
+        if (rating >= 4) {
+            record.setReviewStatus(QARecord.ReviewStatus.APPROVED);
+            log.info(LogMessageProvider.getMessage("log.qa.marked_as_quality", recordId.substring(0, Math.min(8, recordId.length()))));
+        }
+
+        return updateRecord(record);
+    }
+
+    /**
+     * 获取表情描述 / Get emoji description
+     */
+    private String getEmojiDescription(int rating) {
+        switch (rating) {
+            case 5:
+                return "🤩 非常有用";
+            case 4:
+                return "😊 很有用";
+            case 3:
+                return "😐 一般般";
+            case 2:
+                return "🙁 帮助不大";
+            case 1:
+                return "😞 完全没用";
+            default:
+                return "";
+        }
+    }
+
+    /**
      * 获取最近的记录（Get recent records）
      */
     public List<QARecord> getRecentRecords(int limit) {

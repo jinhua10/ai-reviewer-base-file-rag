@@ -22,16 +22,11 @@ function QATab() {
     const [sessionInfo, setSessionInfo] = useState(null);
     const [loadingMore, setLoadingMore] = useState(false);
 
-    // 反馈相关状态
+    // 反馈相关状态 / Feedback related states
     const [feedbackRating, setFeedbackRating] = useState(0);
     const [feedbackComment, setFeedbackComment] = useState('');
     const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
-    const [documentFeedbacks, setDocumentFeedbacks] = useState({});
-    const [documentRatings, setDocumentRatings] = useState({}); // 新增：文档星级评价
-    const [showReasonModal, setShowReasonModal] = useState(false);
-    const [currentFeedbackDoc, setCurrentFeedbackDoc] = useState(null);
-    const [showRatingModal, setShowRatingModal] = useState(false); // 新增：星级评价模态框
-    const [currentRatingDoc, setCurrentRatingDoc] = useState(null); // 新增：当前评价的文档
+    const [documentRatings, setDocumentRatings] = useState({}); // 文档表情评价 / Document emoji ratings
 
     // 相似问题相关状态
     const [expandedSimilarQA, setExpandedSimilarQA] = useState(null); // 展开的相似问题答案
@@ -89,8 +84,7 @@ function QATab() {
         setFeedbackSubmitted(false);
         setFeedbackRating(0);
         setFeedbackComment('');
-        setDocumentFeedbacks({});
-        setDocumentRatings({}); // 清除文档星级评价
+        setDocumentRatings({}); // 清除文档评价
         setSessionId(null);
         setSessionInfo(null);
 
@@ -358,9 +352,52 @@ function QATab() {
     };
 
     // ============================================================================
-    // 反馈功能函数
+    // 表情评价功能函数 / Emoji Rating Functions
     // ============================================================================
 
+    /**
+     * 处理文档表情评价（直接点击应用，允许更改）
+     * Handle document emoji rating (apply directly on click, allow changes)
+     */
+    const handleDocumentEmojiRate = async (docName, rating) => {
+        try {
+            // 调用API提交评价
+            const result = await window.api.rateDocumentQuality(
+                answer.recordId || Date.now().toString(),
+                docName,
+                rating,
+                null // 无评论
+            );
+
+            if (result.success) {
+                // 更新本地状态
+                setDocumentRatings(prev => ({ ...prev, [docName]: rating }));
+
+                // 显示成功提示
+                const emojiTexts = {
+                    1: t('qaRatingUseless'),
+                    2: t('qaRatingNotHelpful'),
+                    3: t('qaRatingNeutral'),
+                    4: t('qaRatingHelpful'),
+                    5: t('qaRatingVeryHelpful')
+                };
+                const message = `${result.impact || t('feedbackSubmitSuccess')} - ${emojiTexts[rating]}`;
+                showToast(message, 'success');
+            } else {
+                const errorMsg = t('feedbackSubmitError');
+                showToast(errorMsg, 'error');
+            }
+        } catch (err) {
+            console.error(t('logDocumentRatingError'), err);
+            const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
+            showToast(errorMsg, 'error');
+        }
+    };
+
+    /**
+     * 提交整体反馈（保留原有功能）
+     * Submit overall feedback (keep original function)
+     */
     const handleSubmitFeedback = async () => {
         if (feedbackRating === 0) {
             alert(t('feedbackPleaseRate'));
@@ -385,115 +422,39 @@ function QATab() {
         }
     };
 
-    const handleDocumentHelpful = async (docName) => {
-        if (documentFeedbacks[docName]) return;
-
+    /**
+     * 处理整体回答的表情评价（直接点击应用，允许更改）
+     * Handle overall answer emoji rating (apply directly on click, allow changes)
+     */
+    const handleOverallEmojiRate = async (rating) => {
         try {
-            const result = await window.api.submitDocumentFeedback(
+            // 调用API提交整体评价
+            const result = await window.api.rateOverallQuality(
                 answer.recordId || Date.now().toString(),
-                docName,
-                'LIKE',  // 修改为 LIKE
-                null
+                rating
             );
 
             if (result.success) {
-                setDocumentFeedbacks(prev => ({ ...prev, [docName]: 'LIKE' }));
+                // 更新本地状态
+                setFeedbackRating(rating);
+                setFeedbackSubmitted(true);
+
                 // 显示成功提示
-                const message = t('feedbackSubmitSuccess');
-
-                // 使用非阻塞的提示
+                const emojiTexts = {
+                    1: t('qaRatingUseless'),
+                    2: t('qaRatingNotHelpful'),
+                    3: t('qaRatingNeutral'),
+                    4: t('qaRatingHelpful'),
+                    5: t('qaRatingVeryHelpful')
+                };
+                const message = `${t('feedbackSubmitSuccess')} - ${emojiTexts[rating]}`;
                 showToast(message, 'success');
             } else {
                 const errorMsg = t('feedbackSubmitError');
                 showToast(errorMsg, 'error');
             }
         } catch (err) {
-            console.error(t('logDocumentFeedbackError'), err);
-            const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
-            showToast(errorMsg, 'error');
-        }
-    };
-
-    const handleDocumentNotHelpful = (docName) => {
-        if (documentFeedbacks[docName]) return;
-        setCurrentFeedbackDoc(docName);
-        setShowReasonModal(true);
-    };
-
-    const submitDocumentNotHelpfulReason = async (reason) => {
-        if (!currentFeedbackDoc) return;
-
-        try {
-            const result = await window.api.submitDocumentFeedback(
-                answer.recordId || Date.now().toString(),
-                currentFeedbackDoc,
-                'DISLIKE',  // 修改为 DISLIKE
-                reason
-            );
-
-            if (result.success) {
-                setDocumentFeedbacks(prev => ({ ...prev, [currentFeedbackDoc]: 'DISLIKE' }));
-                // 显示成功提示
-                const message = t('feedbackSubmitSuccess');
-                showToast(message, 'success');
-            } else {
-                const errorMsg = t('feedbackSubmitError');
-                showToast(errorMsg, 'error');
-            }
-        } catch (err) {
-            console.error(t('logDocumentFeedbackError'), err);
-            const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
-            showToast(errorMsg, 'error');
-        } finally {
-            setShowReasonModal(false);
-            setCurrentFeedbackDoc(null);
-        }
-    };
-
-    // ============================================================================
-    // 星级评价功能函数
-    // ============================================================================
-
-    const handleDocumentRate = (docName) => {
-        if (documentRatings[docName]) return; // 已经评价过
-        setCurrentRatingDoc(docName);
-        setFeedbackComment(''); // 清空评论
-        setShowRatingModal(true);
-    };
-
-    const [tempRating, setTempRating] = useState(0); // 临时评分
-
-    const submitDocumentRating = async (rating, comment) => {
-        if (!currentRatingDoc || rating === 0) {
-            showToast(t('qaRatingSelectStar'), 'error');
-            return;
-        }
-
-        try {
-            const result = await window.api.rateDocumentQuality(
-                answer.recordId || Date.now().toString(),
-                currentRatingDoc,
-                rating,
-                comment
-            );
-
-            if (result.success) {
-                setDocumentRatings(prev => ({ ...prev, [currentRatingDoc]: rating }));
-
-                // 显示成功提示（包含影响说明）
-                const message = result.impact || t('feedbackSubmitSuccess');
-                showToast(message, 'success');
-
-                setShowRatingModal(false);
-                setCurrentRatingDoc(null);
-                setTempRating(0);
-                setFeedbackComment('');
-            } else {
-                const errorMsg = t('feedbackSubmitError');
-                showToast(errorMsg, 'error');
-            }
-        } catch (err) {
-            console.error(t('logDocumentRatingError'), err);
+            console.error(t('logFeedbackError'), err);
             const errorMsg = t('feedbackSubmitError') + ': ' + (err.message || t('networkError'));
             showToast(errorMsg, 'error');
         }
@@ -574,7 +535,7 @@ function QATab() {
                             setFeedbackRating(0);
                             setFeedbackComment('');
                             setFeedbackSubmitted(false);
-                            setDocumentFeedbacks({});
+                            setDocumentRatings({}); // 清除文档评价
                         }}
                         disabled={loading}
                     >
@@ -786,43 +747,32 @@ function QATab() {
                                                     </button>
                                                 </div>
 
-                                                {/* 反馈按钮行 */}
-                                                <div className="qa-source-feedback-row">
-                                                    {/* 简单反馈按钮 */}
-                                                    <button
-                                                        className={`qa-source-feedback-btn helpful ${documentFeedbacks[source] === 'LIKE' ? 'active submitted' : ''} ${documentFeedbacks[source] ? 'disabled' : ''}`}
-                                                        onClick={() => handleDocumentHelpful(source)}
-                                                        disabled={documentFeedbacks[source] !== undefined}
-                                                        title={documentFeedbacks[source] === 'LIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentHelpful')}
-                                                    >
-                                                        {documentFeedbacks[source] === 'LIKE'
-                                                            ? t('feedbackDocumentSubmitted')
-                                                            : t('feedbackDocumentHelpful')}
-                                                    </button>
-                                                    <button
-                                                        className={`qa-source-feedback-btn not-helpful ${documentFeedbacks[source] === 'DISLIKE' ? 'active submitted' : ''} ${documentFeedbacks[source] ? 'disabled' : ''}`}
-                                                        onClick={() => handleDocumentNotHelpful(source)}
-                                                        disabled={documentFeedbacks[source] !== undefined}
-                                                        title={documentFeedbacks[source] === 'DISLIKE' ? t('feedbackDocumentSubmitted') : t('feedbackDocumentNotHelpful')}
-                                                    >
-                                                        {documentFeedbacks[source] === 'DISLIKE'
-                                                            ? t('feedbackDocumentSubmitted')
-                                                            : t('feedbackDocumentNotHelpful')}
-                                                    </button>
-
-                                                    {/* 星级评价按钮 */}
-                                                    <button
-                                                        className={`qa-source-feedback-btn rate-quality ${documentRatings[source] ? 'rated' : ''}`}
-                                                        onClick={() => handleDocumentRate(source)}
-                                                        disabled={documentRatings[source] !== undefined}
-                                                        title={documentRatings[source] ? t('qaRatedStars').replace('{rating}', documentRatings[source]) : t('qaRateQuality')}
-                                                    >
-                                                        {documentRatings[source] ? (
-                                                            t('qaRatedStars').replace('{rating}', documentRatings[source])
-                                                        ) : (
-                                                            t('qaRateQuality')
-                                                        )}
-                                                    </button>
+                                                {/* 表情评价行 / Emoji Rating Row */}
+                                                <div className="qa-source-emoji-rating">
+                                                    <span className="qa-emoji-rating-label">
+                                                        {documentRatings[source]
+                                                            ? t('qaEmojiRatingYourChoice') || '您的评价：'
+                                                            : t('qaEmojiRatingPrompt') || '这个文档有帮助吗？'}
+                                                    </span>
+                                                    <div className="qa-emoji-rating-buttons">
+                                                        {[
+                                                            { rating: 1, emoji: '😞', text: t('qaRatingUseless') },
+                                                            { rating: 2, emoji: '🙁', text: t('qaRatingNotHelpful') },
+                                                            { rating: 3, emoji: '😐', text: t('qaRatingNeutral') },
+                                                            { rating: 4, emoji: '😊', text: t('qaRatingHelpful') },
+                                                            { rating: 5, emoji: '🤩', text: t('qaRatingVeryHelpful') }
+                                                        ].map(({ rating, emoji, text }) => (
+                                                            <button
+                                                                key={rating}
+                                                                className={`qa-emoji-rating-btn ${documentRatings[source] === rating ? 'selected' : ''}`}
+                                                                onClick={() => handleDocumentEmojiRate(source, rating)}
+                                                                title={text}
+                                                            >
+                                                                <span className="qa-emoji">{emoji}</span>
+                                                                <span className="qa-emoji-text">{text}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -871,39 +821,35 @@ function QATab() {
                             </div>
                         )}
 
-                        {/* 用户反馈区域 */}
+                        {/* 用户反馈区域 - 表情评价 / User Feedback Section - Emoji Rating */}
                         <div className="qa-feedback-section">
-                            {!feedbackSubmitted ? (
-                                <>
-                                    <h4 className="qa-feedback-title">{t('feedbackQuestion')}</h4>
-                                    <div className="qa-rating-stars">
-                                        {[1, 2, 3, 4, 5].map(star => (
-                                            <span
-                                                key={star}
-                                                className={`qa-star ${star <= feedbackRating ? 'filled' : 'empty'}`}
-                                                onClick={() => setFeedbackRating(star)}
-                                            >
-                                                ★
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <textarea
-                                        className="qa-feedback-textarea"
-                                        placeholder={t('feedbackCommentPlaceholder')}
-                                        value={feedbackComment}
-                                        onChange={(e) => setFeedbackComment(e.target.value)}
-                                    />
+                            <h4 className="qa-feedback-title">
+                                {feedbackRating > 0
+                                    ? t('qaEmojiRatingYourChoice') || '您的评价：'
+                                    : t('feedbackQuestion')}
+                            </h4>
+                            <div className="qa-overall-emoji-rating">
+                                {[
+                                    { rating: 1, emoji: '😞', text: t('qaRatingUseless') },
+                                    { rating: 2, emoji: '🙁', text: t('qaRatingNotHelpful') },
+                                    { rating: 3, emoji: '😐', text: t('qaRatingNeutral') },
+                                    { rating: 4, emoji: '😊', text: t('qaRatingHelpful') },
+                                    { rating: 5, emoji: '🤩', text: t('qaRatingVeryHelpful') }
+                                ].map(({ rating, emoji, text }) => (
                                     <button
-                                        className="qa-feedback-submit-btn"
-                                        onClick={handleSubmitFeedback}
-                                        disabled={feedbackRating === 0}
+                                        key={rating}
+                                        className={`qa-overall-emoji-btn ${feedbackRating === rating ? 'selected' : ''}`}
+                                        onClick={() => handleOverallEmojiRate(rating)}
+                                        title={text}
                                     >
-                                        {t('feedbackSubmit')}
+                                        <span className="qa-emoji">{emoji}</span>
+                                        <span className="qa-emoji-text">{text}</span>
                                     </button>
-                                </>
-                            ) : (
+                                ))}
+                            </div>
+                            {feedbackRating > 0 && (
                                 <div className="qa-feedback-success">
-                                    {t('feedbackThankYou')}
+                                    ✅ {t('feedbackThankYou')}
                                 </div>
                             )}
                         </div>
@@ -916,117 +862,6 @@ function QATab() {
                 </div>
             )}
 
-            {/* 文档反馈原因模态框 */}
-            {showReasonModal && (
-                <div
-                    className="qa-modal-overlay"
-                    onClick={() => setShowReasonModal(false)}
-                >
-                    <div
-                        className="qa-modal-content"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h4 className="qa-modal-title">{t('feedbackDocumentReasonPlaceholder')}</h4>
-                        <textarea
-                            id="reasonTextarea"
-                            className="qa-modal-textarea"
-                            placeholder={t('feedbackCommentPlaceholder')}
-                            autoFocus
-                        />
-                        <div className="qa-modal-buttons">
-                            <button
-                                className="qa-modal-btn qa-modal-btn-secondary"
-                                onClick={() => {
-                                    setShowReasonModal(false);
-                                    setCurrentFeedbackDoc(null);
-                                }}
-                            >
-                                {t('qaImageClose')}
-                            </button>
-                            <button
-                                className="qa-modal-btn qa-modal-btn-primary"
-                                onClick={() => {
-                                    const textarea = document.getElementById('reasonTextarea');
-                                    submitDocumentNotHelpfulReason(textarea.value);
-                                }}
-                            >
-                                {t('feedbackSubmit')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* 星级评价模态框 */}
-            {showRatingModal && (
-                <div
-                    className="qa-modal-overlay"
-                    onClick={() => {
-                        setShowRatingModal(false);
-                        setCurrentRatingDoc(null);
-                        setTempRating(0);
-                    }}
-                >
-                    <div
-                        className="qa-modal-content qa-rating-modal"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h4 className="qa-modal-title">{t('qaRatingModalTitle')}</h4>
-                        <p className="qa-modal-subtitle">{t('qaRatingModalSubtitle')}</p>
-
-                        <div className="qa-modal-rating-container">
-                            <div className="qa-rating-stars qa-modal-rating-stars">
-                                {[1, 2, 3, 4, 5].map(star => (
-                                    <span
-                                        key={star}
-                                        className={`qa-star ${star <= tempRating ? 'filled' : 'empty'}`}
-                                        onClick={() => setTempRating(star)}
-                                    >
-                                        ★
-                                    </span>
-                                ))}
-                            </div>
-                            <p className="qa-rating-description">
-                                {tempRating === 0 && t('qaRatingSelectStar')}
-                                {tempRating === 1 && t('qaRatingUseless')}
-                                {tempRating === 2 && t('qaRatingNotHelpful')}
-                                {tempRating === 3 && t('qaRatingNeutral')}
-                                {tempRating === 4 && t('qaRatingHelpful')}
-                                {tempRating === 5 && t('qaRatingVeryHelpful')}
-                            </p>
-                        </div>
-
-                        <textarea
-                            className="qa-modal-textarea"
-                            placeholder={t('qaRatingOptionalComment')}
-                            value={feedbackComment}
-                            onChange={(e) => setFeedbackComment(e.target.value)}
-                            rows={3}
-                        />
-
-                        <div className="qa-modal-buttons">
-                            <button
-                                className="qa-modal-btn qa-modal-btn-secondary"
-                                onClick={() => {
-                                    setShowRatingModal(false);
-                                    setCurrentRatingDoc(null);
-                                    setTempRating(0);
-                                    setFeedbackComment('');
-                                }}
-                            >
-                                {t('qaRatingCancel')}
-                            </button>
-                            <button
-                                className="qa-modal-btn qa-modal-btn-primary"
-                                onClick={() => submitDocumentRating(tempRating, feedbackComment)}
-                                disabled={tempRating === 0}
-                            >
-                                {t('qaRatingSubmit')}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* 空状态 */}
             {!answer && !loading && !error && (

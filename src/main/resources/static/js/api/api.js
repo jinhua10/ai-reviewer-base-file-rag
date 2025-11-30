@@ -10,6 +10,14 @@ const API_BASE_URL = 'http://localhost:8080/api/qa';
 const API_DOCS_URL = 'http://localhost:8080/api/documents';
 const API_FEEDBACK_URL = 'http://localhost:8080/api/feedback';
 
+/**
+ * 获取当前语言设置 / Get current language setting
+ * @returns {string} 语言代码 (zh/en) / Language code (zh/en)
+ */
+const getCurrentLang = () => {
+    return localStorage.getItem('language') || 'zh';
+};
+
 // API 方法
 const api = {
     // ========== 智能问答 ==========
@@ -54,51 +62,60 @@ const api = {
     // ========== 系统状态 ==========
 
     /**
-     * 获取统计信息
-     * @returns {Promise<Object>} 统计数据
+     * 获取统计信息 / Get statistics
+     * @returns {Promise<Object>} 统计数据 / Statistics data
      */
     getStatistics: async () => {
-        const response = await axios.get(`${API_BASE_URL}/statistics`);
+        const response = await axios.get(`${API_BASE_URL}/statistics`, {
+            params: { lang: getCurrentLang() } // 添加语言参数 / Add language parameter
+        });
         return response.data;
     },
 
     /**
-     * 健康检查
-     * @returns {Promise<Object>} 健康状态
+     * 健康检查 / Health check
+     * @returns {Promise<Object>} 健康状态 / Health status
      */
     health: async () => {
-        const response = await axios.get(`${API_BASE_URL}/health`);
+        const response = await axios.get(`${API_BASE_URL}/health`, {
+            params: { lang: getCurrentLang() } // 添加语言参数 / Add language parameter
+        });
         return response.data;
     },
 
     /**
-     * 重建索引
-     * @returns {Promise<Object>} 重建结果
+     * 重建索引 / Rebuild index
+     * @returns {Promise<Object>} 重建结果 / Rebuild result
      */
     rebuild: async () => {
-        const response = await axios.post(`${API_BASE_URL}/rebuild`);
+        const response = await axios.post(`${API_BASE_URL}/rebuild`, {
+            lang: getCurrentLang() // 添加语言参数 / Add language parameter
+        });
         return response.data;
     },
 
     /**
-     * 增量索引
-     * @returns {Promise<Object>} 索引结果
+     * 增量索引 / Incremental index
+     * @returns {Promise<Object>} 索引结果 / Index result
      */
     incrementalIndex: async () => {
-        const response = await axios.post(`${API_BASE_URL}/incremental-index`);
+        const response = await axios.post(`${API_BASE_URL}/incremental-index`, {
+            lang: getCurrentLang() // 添加语言参数 / Add language parameter
+        });
         return response.data;
     },
 
     // ========== 文档管理 ==========
 
     /**
-     * 上传文档
-     * @param {File} file - 文件对象
-     * @returns {Promise<Object>} 上传结果
+     * 上传文档 / Upload document
+     * @param {File} file - 文件对象 / File object
+     * @returns {Promise<Object>} 上传结果 / Upload result
      */
     uploadDocument: async (file) => {
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('lang', getCurrentLang()); // 添加语言参数 / Add language parameter
         const response = await axios.post(`${API_DOCS_URL}/upload`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
@@ -136,12 +153,14 @@ const api = {
     },
 
     /**
-     * 删除文档
-     * @param {string} fileName - 文件名
-     * @returns {Promise<Object>} 删除结果
+     * 删除文档 / Delete document
+     * @param {string} fileName - 文件名 / File name
+     * @returns {Promise<Object>} 删除结果 / Delete result
      */
     deleteDocument: async (fileName) => {
-        const response = await axios.delete(`${API_DOCS_URL}/${encodeURIComponent(fileName)}`);
+        const response = await axios.delete(`${API_DOCS_URL}/${encodeURIComponent(fileName)}`, {
+            params: { lang: getCurrentLang() } // 添加语言参数 / Add language parameter
+        });
         return response.data;
     },
 
@@ -173,53 +192,71 @@ const api = {
     // ========== 反馈系统 ==========
 
     /**
-     * 提交整体反馈
-     * @param {string} recordId - 记录ID
-     * @param {number} rating - 评分(1-5)
-     * @param {string} feedback - 反馈文本
-     * @returns {Promise<Object>} 提交结果
+     * 提交整体反馈 / Submit overall feedback
+     * @param {string} recordId - 记录ID / Record ID
+     * @param {number} rating - 评分(1-5) / Rating (1-5)
+     * @param {string} feedback - 反馈文本 / Feedback text
+     * @returns {Promise<Object>} 提交结果 / Submit result
      */
     submitOverallFeedback: async (recordId, rating, feedback) => {
         const response = await axios.post(`${API_FEEDBACK_URL}/overall`, {
             recordId,
             rating,
-            feedback
+            feedback,
+            lang: getCurrentLang() // 添加语言参数 / Add language parameter
         });
         return response.data;
     },
 
     /**
-     * 提交文档反馈
-     * @param {string} recordId - 记录ID
-     * @param {string} documentName - 文档名
-     * @param {string} feedbackType - 反馈类型: HELPFUL/NOT_HELPFUL
-     * @param {string} reason - 原因说明
-     * @returns {Promise<Object>} 提交结果
+     * 提交文档反馈 / Submit document feedback
+     * @param {string} recordId - 记录ID / Record ID
+     * @param {string} documentName - 文档名 / Document name
+     * @param {string} feedbackType - 反馈类型: HELPFUL/NOT_HELPFUL / Feedback type
+     * @param {string} reason - 原因说明 / Reason
+     * @returns {Promise<Object>} 提交结果 / Submit result
      */
     submitDocumentFeedback: async (recordId, documentName, feedbackType, reason) => {
         const response = await axios.post(`${API_FEEDBACK_URL}/document`, {
             recordId,
             documentName,
             feedbackType,
-            reason
+            reason,
+            lang: getCurrentLang() // 添加语言参数 / Add language parameter
         });
         return response.data;
     },
 
     /**
-     * 星级评价文档质量（用户友好接口）
-     * @param {string} recordId - 记录ID
-     * @param {string} documentName - 文档名
-     * @param {number} rating - 星级评分 (1-5)
-     * @param {string} comment - 可选评论
-     * @returns {Promise<Object>} 提交结果
+     * 星级评价文档质量（用户友好接口）/ Rate document quality (user-friendly)
+     * @param {string} recordId - 记录ID / Record ID
+     * @param {string} documentName - 文档名 / Document name
+     * @param {number} rating - 星级评分 (1-5) / Star rating (1-5)
+     * @param {string} comment - 可选评论 / Optional comment
+     * @returns {Promise<Object>} 提交结果 / Submit result
      */
     rateDocumentQuality: async (recordId, documentName, rating, comment) => {
         const response = await axios.post(`${API_FEEDBACK_URL}/document/rate`, {
             recordId,
             documentName,
             rating,
-            comment: comment || null
+            comment: comment || null,
+            lang: getCurrentLang() // 添加语言参数 / Add language parameter
+        });
+        return response.data;
+    },
+
+    /**
+     * 表情评价整体回答质量（用户友好接口）/ Emoji rating for overall quality
+     * @param {string} recordId - 记录ID / Record ID
+     * @param {number} rating - 表情评分 (1-5) / Emoji rating (1-5)
+     * @returns {Promise<Object>} 提交结果 / Submit result
+     */
+    rateOverallQuality: async (recordId, rating) => {
+        const response = await axios.post(`${API_FEEDBACK_URL}/overall/rate`, {
+            recordId,
+            rating,
+            lang: getCurrentLang() // 添加语言参数 / Add language parameter
         });
         return response.data;
     }

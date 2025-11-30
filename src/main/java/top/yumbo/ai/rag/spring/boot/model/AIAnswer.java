@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * AI答案封装类
+ * AI答案封装类 / AI Answer Wrapper Class
  */
 public class AIAnswer {
     private final String answer;
@@ -15,18 +15,18 @@ public class AIAnswer {
     private final List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks;
     private final List<top.yumbo.ai.rag.image.ImageInfo> images;
 
-    // 新增：文档使用情况
-    private final List<String> usedDocuments;  // 本次实际使用的文档
-    private final int totalRetrieved;          // 检索到的总文档数
-    private final boolean hasMoreDocuments;     // 是否还有更多文档未处理
+    // 新增：文档使用情况 / New: Document usage
+    private final List<String> usedDocuments;  // 本次实际使用的文档 / Documents actually used this time
+    private final int totalRetrieved;          // 检索到的总文档数 / Total number of documents retrieved
+    private final boolean hasMoreDocuments;     // 是否还有更多文档未处理 / Whether there are more unprocessed documents
 
-    // 新增：问答记录ID（用于反馈）
+    // 新增：问答记录ID（用于反馈）/ New: QA record ID (for feedback)
     private String recordId;
 
-    // 新增：会话ID（用于分页引用）
+    // 新增：会话ID（用于分页引用）/ New: Session ID (for paginated referencing)
     private String sessionId;
 
-    // 新增：相似问题推荐
+    // 新增：相似问题推荐 / New: Similar question recommendations
     private List<SimilarQAService.SimilarQA> similarQuestions;
 
     public AIAnswer(String answer, List<String> sources, long responseTimeMs) {

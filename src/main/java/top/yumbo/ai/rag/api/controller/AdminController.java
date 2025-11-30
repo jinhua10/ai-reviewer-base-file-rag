@@ -24,7 +24,7 @@ public class AdminController {
     }
     
     /**
-     * 健康检查 (Health check)
+     * 健康检查 / Health check
      */
     public ApiResponse<Map<String, Object>> health() {
         Map<String, Object> health = new HashMap<>();
@@ -34,7 +34,7 @@ public class AdminController {
     }
     
     /**
-     * 统计信息 (Statistics)
+     * 统计信息 / Statistics
      */
     public ApiResponse<Map<String, Object>> stats() {
         try {

@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.Data;
 import org.springframework.web.bind.annotation.*;
+import top.yumbo.ai.rag.i18n.ApiMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.spring.boot.autoconfigure.SimpleRAGService;
 
@@ -9,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 极简 REST API
+ * 极简 REST API / Simple REST API
  *
- * 只需注入 SimpleRAGService 即可使用所有功能
+ * 只需注入 SimpleRAGService 即可使用所有功能 / Just inject SimpleRAGService to use all functions
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -27,11 +28,13 @@ public class SimpleRAGController {
     }
 
     /**
-     * 索引文档
+     * 索引文档 / Index document
      * POST /api/rag/index
      */
     @PostMapping("/index")
     public IndexResponse index(@RequestBody IndexRequest request) {
+        String lang = request.getLang() != null ? request.getLang() : "zh"; // 获取语言参数 / Get language parameter
+
         String docId = ragService.index(
             request.getTitle(),
             request.getContent(),
@@ -39,11 +42,11 @@ public class SimpleRAGController {
         );
         ragService.commit();
 
-        return new IndexResponse(docId, "索引成功");
+        return new IndexResponse(docId, ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
     }
 
     /**
-     * 搜索文档
+     * 搜索文档 / Search documents
      * GET /api/rag/search?q=关键词&limit=10
      */
     @GetMapping("/search")
@@ -56,7 +59,7 @@ public class SimpleRAGController {
     }
 
     /**
-     * 获取统计
+     * 获取统计 / Get statistics
      * GET /api/rag/stats
      */
     @GetMapping("/stats")
@@ -68,12 +71,13 @@ public class SimpleRAGController {
         );
     }
 
-    // DTO 类
+    // DTO 类 / DTO Classes
     @Data
     public static class IndexRequest {
         private String title;
         private String content;
         private Map<String, Object> metadata;
+        private String lang; // 语言参数 / Language parameter
     }
 
     @Data

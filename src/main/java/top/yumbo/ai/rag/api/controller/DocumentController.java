@@ -19,7 +19,7 @@ public class DocumentController {
     }
     
     /**
-     * 创建文档 (Create document)
+     * 创建文档 / Create document
      */
     public ApiResponse<String> createDocument(String requestBody) {
         try {
@@ -46,7 +46,7 @@ public class DocumentController {
     }
     
     /**
-     * 获取文档 (Get document)
+     * 获取文档 / Get document
      */
     public ApiResponse<Document> getDocument(String id) {
         try {

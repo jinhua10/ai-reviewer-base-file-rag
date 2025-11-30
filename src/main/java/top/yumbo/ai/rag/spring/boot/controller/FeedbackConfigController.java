@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.config.FeedbackConfig;
 import top.yumbo.ai.rag.feedback.DocumentWeightService;
+import top.yumbo.ai.rag.i18n.ApiMessageProvider;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,10 +32,10 @@ public class FeedbackConfigController {
     private DocumentWeightService documentWeightService;
 
     /**
-     * 获取当前配置
+     * 获取当前配置 / Get current configuration
      */
     @GetMapping
-    public ResponseEntity<?> getConfig() {
+    public ResponseEntity<?> getConfig(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
         Map<String, Object> config = new HashMap<>();
         config.put("requireApproval", feedbackConfig.isRequireApproval());
         config.put("autoApply", feedbackConfig.isAutoApply());
@@ -43,75 +45,79 @@ public class FeedbackConfigController {
         config.put("maxWeight", feedbackConfig.getMaxWeight());
         config.put("enableDynamicWeighting", feedbackConfig.isEnableDynamicWeighting());
 
-        log.info("📋 获取反馈配置");
+        log.info(LogMessageProvider.getMessage("feedback_config.log.get_config", lang));
         return ResponseEntity.ok(config);
     }
 
     /**
-     * 更新配置
+     * 更新配置 / Update configuration
      */
     @PostMapping
     public ResponseEntity<?> updateConfig(@RequestBody Map<String, Object> updates) {
+        String lang = (String) updates.getOrDefault("lang", "zh"); // 获取语言参数 / Get language parameter
+
         try {
             if (updates.containsKey("requireApproval")) {
                 boolean requireApproval = (Boolean) updates.get("requireApproval");
                 feedbackConfig.setRequireApproval(requireApproval);
-                log.info("🔧 更新配置: requireApproval = {}", requireApproval);
+                log.info(LogMessageProvider.getMessage("feedback_config.log.update_require_approval", lang, requireApproval));
             }
 
             if (updates.containsKey("autoApply")) {
                 boolean autoApply = (Boolean) updates.get("autoApply");
                 feedbackConfig.setAutoApply(autoApply);
-                log.info("🔧 更新配置: autoApply = {}", autoApply);
+                log.info(LogMessageProvider.getMessage("feedback_config.log.update_auto_apply", lang, autoApply));
             }
 
             if (updates.containsKey("likeWeightIncrement")) {
                 double value = ((Number) updates.get("likeWeightIncrement")).doubleValue();
                 feedbackConfig.setLikeWeightIncrement(value);
-                log.info("🔧 更新配置: likeWeightIncrement = {}", value);
+                log.info(LogMessageProvider.getMessage("feedback_config.log.update_like_weight", lang, value));
             }
 
             if (updates.containsKey("dislikeWeightDecrement")) {
                 double value = ((Number) updates.get("dislikeWeightDecrement")).doubleValue();
                 feedbackConfig.setDislikeWeightDecrement(value);
-                log.info("🔧 更新配置: dislikeWeightDecrement = {}", value);
+                log.info(LogMessageProvider.getMessage("feedback_config.log.update_dislike_weight", lang, value));
             }
 
             if (updates.containsKey("enableDynamicWeighting")) {
                 boolean enable = (Boolean) updates.get("enableDynamicWeighting");
                 feedbackConfig.setEnableDynamicWeighting(enable);
-                log.info("🔧 更新配置: enableDynamicWeighting = {}", enable);
+                log.info(LogMessageProvider.getMessage("feedback_config.log.update_enable_weighting", lang, enable));
             }
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "配置更新成功",
-                "config", getConfig().getBody()
+                "message", ApiMessageProvider.getMessage("feedback_config.api.success.config_updated", lang),
+                "config", getConfig(lang).getBody()
             ));
 
         } catch (Exception e) {
-            log.error("更新配置失败", e);
+            log.error("Configuration update failed", e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", "配置更新失败: " + e.getMessage()
+                "message", ApiMessageProvider.getMessage("feedback_config.api.error.update_failed", lang, e.getMessage())
             ));
         }
     }
 
     /**
-     * 切换审核模式
+     * 切换审核模式 / Toggle approval mode
      */
     @PostMapping("/toggle-approval")
-    public ResponseEntity<?> toggleApproval(@RequestBody Map<String, Boolean> request) {
-        boolean requireApproval = request.getOrDefault("requireApproval", false);
+    public ResponseEntity<?> toggleApproval(@RequestBody Map<String, Object> request) {
+        String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数 / Get language parameter
+        boolean requireApproval = (Boolean) request.getOrDefault("requireApproval", false);
         feedbackConfig.setRequireApproval(requireApproval);
 
-        String mode = requireApproval ? "需要审核" : "自动生效";
-        log.info("🔄 切换审核模式: {}", mode);
+        String modeKey = requireApproval ? "feedback_config.api.mode.require_approval" : "feedback_config.api.mode.auto_apply";
+        String mode = ApiMessageProvider.getMessage(modeKey, lang);
+        log.info(LogMessageProvider.getMessage("feedback_config.log.toggle_mode", lang, mode));
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", "审核模式已切换为: " + mode,
+            "message", ApiMessageProvider.getMessage("feedback_config.api.success.mode_switched", lang, mode),
             "requireApproval", requireApproval
         ));
     }
@@ -136,16 +142,17 @@ public class FeedbackConfigController {
     }
 
     /**
-     * 重置文档权重
+     * 重置文档权重 / Reset document weight
      */
     @PostMapping("/weights/reset")
     public ResponseEntity<?> resetWeight(@RequestBody Map<String, String> request) {
+        String lang = request.getOrDefault("lang", "zh"); // 获取语言参数 / Get language parameter
         String documentName = request.get("documentName");
 
         if (documentName == null || documentName.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", "文档名称不能为空"
+                "message", ApiMessageProvider.getMessage("feedback_config.api.error.document_name_empty", lang)
             ));
         }
 
@@ -153,20 +160,22 @@ public class FeedbackConfigController {
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", "文档权重已重置: " + documentName
+            "message", ApiMessageProvider.getMessage("feedback_config.api.success.weight_reset", lang, documentName)
         ));
     }
 
     /**
-     * 清除所有权重
+     * 清除所有权重 / Clear all weights
      */
     @PostMapping("/weights/clear")
-    public ResponseEntity<?> clearAllWeights() {
+    public ResponseEntity<?> clearAllWeights(@RequestBody(required = false) Map<String, String> request) {
+        String lang = request != null ? request.getOrDefault("lang", "zh") : "zh"; // 获取语言参数 / Get language parameter
+
         documentWeightService.clearAllWeights();
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", "所有文档权重已清除"
+            "message", ApiMessageProvider.getMessage("feedback_config.api.success.weights_cleared", lang)
         ));
     }
 }

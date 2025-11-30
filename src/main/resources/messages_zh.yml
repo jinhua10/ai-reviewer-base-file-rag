@@ -127,6 +127,7 @@ log:
     get_statistics_failed: "获取 QA 统计信息失败"
     overall_failed: "处理整体反馈失败"
     overall_received: "收到整体反馈: recordId={0}, rating={1}"
+    overall_rating_submitted: "已提交整体评价 {0} [{1}]: {2}星"
     rating_failed: "处理评分失败"
     rating_submitted: "已提交评分 {0} [{1}]: {2} - {3}星 (影响: {4})"
     weight_disabled: 动态权重调整已禁用
@@ -139,6 +140,163 @@ log:
     load_failed: 加载文档权重失败
     weights_file_not_exists: 📂 文档权重文件不存在，使用默认权重
     rating_updated: "📊 文档权重更新(星级): {0} -> 权重={1} ({2}星, 调整{3}, 👍{4} 👎{5})"
+    # API响应消息 / API Response Messages
+    api:
+      success:
+        thank_you: "感谢您的评价！"
+        feedback_received: "感谢您的反馈！"
+      error:
+        record_not_found: "记录不存在"
+        processing_failed: "处理失败: {0}"
+        invalid_rating: "评分必须在 1-5 之间"
+        missing_params: "{0} 不能为空"
+        invalid_feedback_type: "feedbackType 必须是 LIKE 或 DISLIKE"
+      impact:
+        document:
+          5: "这个文档非常有用！系统会优先推荐它 🚀"
+          4: "这个文档很有帮助，系统会增加推荐权重 📈"
+          3: "这个文档还行，系统会保持当前权重 ➡️"
+          2: "这个文档帮助不大，系统会降低推荐权重 📉"
+          1: "这个文档没有帮助，系统会大幅降低推荐权重 ⚠️"
+        overall:
+          5: "太好了！这个回答会被推荐给其他用户 🌟"
+          4: "谢谢反馈！这有助于我们改进回答质量 👍"
+          3: "感谢评价！我们会继续优化 💡"
+          2: "感谢反馈！我们会分析并改进 🔧"
+          1: "抱歉没能帮到您！我们会重点改进 🙏"
+      emoji:
+        5: "🤩 非常有用"
+        4: "😊 很有用"
+        3: "😐 一般般"
+        2: "🙁 帮助不大"
+        1: "😞 完全没用"
+  # 文档管理API消息 / Document Management API Messages
+  document_management:
+    api:
+      success:
+        upload: "文档上传成功"
+        delete: "文档删除成功"
+        batch_upload: "批量上传完成"
+        batch_result: "成功: {0}, 失败: {1}"
+        index: "文档索引成功"
+        list_loaded: "文档列表获取成功: 返回 {0} 个文档，共 {1} 个"
+      error:
+        file_empty: "文件为空"
+        upload_failed: "上传失败: {0}"
+        delete_failed: "删除失败: {0}"
+        not_found: "文档未找到"
+        index_failed: "索引失败: {0}"
+        list_failed: "获取列表失败: {0}"
+    log:
+      upload_success: "文档上传成功: {0}"
+      upload_failed: "文档上传失败"
+      batch_upload: "收到批量上传请求: {0} 个文件"
+      file_upload_failed: "文件上传失败: {0}"
+      list_documents: "获取文档列表 - 页码: {0}, 每页: {1}, 排序: {2} {3}"
+      list_failed: "获取文档列表失败"
+  # 文档管理服务消息 / Document Management Service Messages
+  document_service:
+    error:
+      filename_empty: "文件名为空"
+      unsupported_format: "不支持的文件格式: {0}"
+      file_too_large: "文件过大: {0} MB (最大: {1} MB)"
+      illegal_path: "非法的文件路径"
+      cannot_create_dir: "无法创建文档目录: {0}"
+    log:
+      scanned_types: "扫描到的文件类型: {0}"
+  # LLM客户端消息 / LLM Client Messages
+  llm:
+    api_key_missing: ⚠️ 未配置 LLM API Key
+    api_key_hint: "💡 提示: 设置环境变量:"
+    api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
+    api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
+    fallback_mock: 💡 将降级使用 Mock 模式
+    client_created: '🤖 创建 {0} LLM 客户端'
+    model: '   - 模型: {0}'
+    api_url: '   - API: {0}'
+    mock_created: 🤖 创建 Mock LLM 客户端（仅用于测试）
+    mock_warning: ⚠️ Mock 模式将返回固定的模拟回答
+    mock_hint: "💡 如需使用真实 LLM，请配置:"
+    mock_provider: '      knowledge.qa.llm.provider=openai'
+    mock_apikey: '      并设置相应的 API Key 和 URL'
+    log:
+      openai_init: "✅ OpenAI LLM 客户端初始化完成"
+      openai_request: "发送请求到 OpenAI: {0}"
+      openai_response: "OpenAI 响应内容: {0}"
+      openai_failed: "OpenAI API 调用失败"
+      openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
+      mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
+      mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
+      mock_response: "📝 Mock LLM 返回模拟回答"
+    error:
+      openai_failed: "OpenAI API 调用失败: {0}"
+      openai_http_error: "OpenAI API 错误: HTTP {0}, {1}"
+      parse_failed: "无法解析 OpenAI 响应: {0}"
+    mock:
+      population_answer: "根据文档内容，中国总人口约为14亿人。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+      marriage_answer: "根据文档内容，婚配情况统计数据包括未婚、已婚、离婚、丧偶等状态的人数分布。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+      default_answer: "这是一个模拟回答。\n\n根据您提供的上下文，我理解您的问题。然而，作为 Mock LLM，我只能提供模拟响应。\n\n请配置真实的 LLM 服务（如 OpenAI）以获得准确的答案。\n\n（注意：这是 Mock LLM 的模拟回答）"
+  # 反馈配置API消息 / Feedback Config API Messages
+  feedback_config:
+    api:
+      success:
+        config_updated: "配置更新成功"
+        mode_switched: "审核模式已切换为: {0}"
+        weight_reset: "文档权重已重置: {0}"
+        weights_cleared: "所有文档权重已清除"
+      error:
+        update_failed: "配置更新失败: {0}"
+        document_name_empty: "文档名称不能为空"
+      mode:
+        require_approval: "需要审核"
+        auto_apply: "自动生效"
+    log:
+      get_config: "📋 获取反馈配置"
+      update_require_approval: "🔧 更新配置: requireApproval = {0}"
+      update_auto_apply: "🔧 更新配置: autoApply = {0}"
+      update_like_weight: "🔧 更新配置: likeWeightIncrement = {0}"
+      update_dislike_weight: "🔧 更新配置: dislikeWeightDecrement = {0}"
+      update_enable_weighting: "🔧 更新配置: enableDynamicWeighting = {0}"
+      toggle_mode: "🔄 切换审核模式: {0}"
+  # 知识库问答API消息 / Knowledge QA API Messages
+  knowledge_qa:
+    log:
+      received_question: "收到问题: {0}"
+      session_question: "使用会话进行问答: 问题={0}, sessionId={1}"
+      search_documents: "搜索文档: {0} (limit={1})"
+      get_statistics: "📊 获取统计信息（增强版）"
+      statistics_result: "📊 统计信息 - 文档总数: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
+      build_start: "🔧 开始构建知识库索引"
+      build_complete: "✅ 知识库索引构建完成 - 耗时: {0}ms"
+      incremental_index_start: "🔄 开始增量索引"
+      incremental_index_complete: "✅ 增量索引完成 - 新增: {0}, 耗时: {1}ms"
+      rebuild_request: "收到知识库重建请求"
+      rebuild_failed: "知识库重建失败"
+      incremental_request: "收到知识库增量索引请求"
+      incremental_failed: "增量索引失败"
+      search_similar: "🔍 搜索相似问题: {0} (minScore={1}, limit={2})"
+      archive_stats: "📊 获取归档统计"
+    api:
+      message:
+        needs_indexing: "检测到 {0} 个未索引的文档。建议执行增量索引以更新知识库。"
+        all_indexed: "所有文档均已索引，知识库状态良好。"
+        system_running: "知识库问答系统运行正常"
+        rebuild_complete: "知识库重建完成"
+        rebuild_failed: "知识库重建失败: {0}"
+        rebuild_suggestion: "请检查日志文件获取详细错误信息"
+        incremental_complete: "增量索引完成，更新了 {0} 个文件"
+        all_up_to_date: "所有文件都是最新的，无需更新"
+        incremental_failed: "增量索引失败: {0}"
+      status:
+        up: "UP"
+        building: "BUILDING"
+        error: "ERROR"
+  # 文档块下载API消息 / Chunk Download API Messages
+  chunk_download:
+    log:
+      list_failed: "获取文档块列表失败: {0}"
+      download_failed: "下载文档块失败: {0}/{1}"
+      content_failed: "获取文档块内容失败: {0}/{1}"
   filetracking:
     check_failed: '检查文件状态失败: {0}'
     clear_failed: '清空文件追踪信息失败: {0}'
@@ -175,6 +333,10 @@ log:
     vector_top_header: '向量 Top-10 文档:'
     vector_top_item: '- {0} (相似度: {1})'
   image:
+    # 图片API消息 / Image API Messages
+    log:
+      get_failed: "获取图片失败: {0}/{1}"
+      list_failed: "获取文档图片列表失败: {0}"
     delete_failed: '删除文件失败: {0}'
     deleted_all: '已删除文档的所有图片: {0}'
     read_info_failed: '读取图片信息失败: {0}'
@@ -337,6 +499,8 @@ log:
     feedback_pending: '反馈等待审核: {0}'
     find_failed: '查找记录失败: {0}'
     load_failed: '加载问答记录失败: {0}'
+    marked_as_quality: '问答记录已标记为优质内容: [{0}]'
+    overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
     pending_failed: 获取待审核记录失败
     rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
     rating_pending: '星级评价等待审核: {0} ({1}星)'
@@ -427,20 +591,6 @@ log:
       test_failed: '❌ 测试失败'
       test_success: '✅ 测试成功！向量检索引擎初始化正常'
     vector_count: '   - 向量数量: {0}'
-  llm:
-    api_key_missing: ⚠️ 未配置 LLM API Key
-    api_key_hint: "💡 提示: 设置环境变量:"
-    api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
-    api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
-    fallback_mock: 💡 将降级使用 Mock 模式
-    client_created: '🤖 创建 {0} LLM 客户端'
-    model: '   - 模型: {0}'
-    api_url: '   - API: {0}'
-    mock_created: 🤖 创建 Mock LLM 客户端（仅用于测试）
-    mock_warning: ⚠️ Mock 模式将返回固定的模拟回答
-    mock_hint: "💡 如需使用真实 LLM，请配置:"
-    mock_provider: '      knowledge.qa.llm.provider=openai'
-    mock_apikey: '      并设置相应的 API Key 和 URL'
   model:
     sep: '===================================================='
     checking: '🔍 检查模型文件...'
