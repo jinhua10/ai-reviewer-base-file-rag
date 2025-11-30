@@ -122,12 +122,12 @@ log:
     classpath_resource_found: "Found resource in classpath: {0}"
     create:
       failed: "Failed to create document: {0}"
-      success: Document created successfully
+      success: 'Document created successfully'
     create_failed: "Failed to create documents directory: {0}"
     created: "Document created: {0}"
     delete:
       failed: "Failed to delete document: {0}"
-      success: Document deleted successfully
+      success: 'Document deleted successfully'
     deleted: "Document deleted: {0}"
     directory_ready: "Documents directory ready: {0}"
     file_exists_renamed: "File exists, renamed to: {0}"
@@ -145,7 +145,7 @@ log:
     total: "Total documents: {0}"
     update:
       failed: "Failed to update document: {0}"
-      success: Document updated successfully
+      success: 'Document updated successfully'
     updated: "Document updated: {0}"
     upload_to_external: "Uploads will be saved to external path: ./data/documents"
     using_default_path: "Using default path: ./data/documents"
@@ -167,15 +167,15 @@ log:
     overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
     rating_failed: "Failed to process rating"
     rating_submitted: "Rating submitted {0} [{1}]: {2} - {3} stars (impact: {4})"
-    weight_disabled: Dynamic weighting adjustment disabled
+    weight_disabled: 'Dynamic weighting adjustment disabled'
     weight_updated: "📊 Document weight updated: {0} -> weight={1} (👍{2} 👎{3})"
     weight_reset: "🔄 Reset document weight: {0} -> {1}"
-    weights_cleared: 🧹 Cleared all document weights
+    weights_cleared: '🧹 Cleared all document weights'
     weights_saved: "💾 Saved document weights: {0} documents"
-    save_failed: Failed to save document weights
+    save_failed: 'Failed to save document weights'
     weights_loaded: "📂 Loaded document weights: {0} documents"
-    load_failed: Failed to load document weights
-    weights_file_not_exists: Document weights file not exists, using default weights
+    load_failed: 'Failed to load document weights'
+    weights_file_not_exists: 'Document weights file not exists, using default weights'
     rating_updated: "Document weight updated (rating): {0} -> weight={1} ({2}star, adjust{3}, 👍{4} 👎{5})"
     # API Response Messages
     api:
@@ -243,16 +243,16 @@ log:
       scanned_types: "Scanned file types: {0}"
   # LLM Client Messages
   llm:
-    api_key_missing: ⚠️ LLM API Key not configured
+    api_key_missing: '⚠️ LLM API Key not configured'
     api_key_hint: "💡 Hint: Set environment variables:"
     api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
     api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
-    fallback_mock: 💡 Will fallback to Mock mode
+    fallback_mock: '💡 Will fallback to Mock mode'
     client_created: '🤖 Creating {0} LLM client'
     model: '   - Model: {0}'
     api_url: '   - API: {0}'
-    mock_created: 🤖 Creating Mock LLM client (for testing only)
-    mock_warning: ⚠️ Mock mode will return fixed simulated responses
+    mock_created: '🤖 Creating Mock LLM client (for testing only)'
+    mock_warning: '⚠️ Mock mode will return fixed simulated responses'
     mock_hint: "💡 For real LLM, configure:"
     mock_provider: '      knowledge.qa.llm.provider=openai'
     mock_apikey: '      and set the corresponding API Key and URL'
@@ -555,7 +555,8 @@ log:
     images_extracted: 'Extracted {0} images'
     images_added: 'Added {0} images to index'
     vector_enabled: "Vector search enabled"
-    vector_init_failed: "Vector search init failed, falling back to keyword search"
+    vector_init_failed: "❌ Vector search engine initialization failed"
+    vector_closed: "   ✅ Vector embedding engine closed"
   tika:
     init: 'Initializing Apache Tika'
     max_content: 'Max content length: {0}'
@@ -669,10 +670,10 @@ log:
     storage: "Storage path: {0}"
   search:
     advanced_completed: 'Advanced search completed: query=''{0}'', hits={1}'
-    advanced_failed: Advanced search failed
+    advanced_failed: 'Advanced search failed'
     advanced_failed_detail: 'Advanced search failed: {0}'
     completed: 'Search completed: query=''{0}'', hits={1}'
-    failed: Search failed
+    failed: 'Search failed'
     failed_detail: 'Search failed: {0}'
   similar:
     failed: "Failed to find similar QAs"
@@ -692,15 +693,15 @@ log:
   vector:
     embedding_closed: '🔄 Vector embedding engine closed'
     embedding_dim: '   - Dimension: {0}'
-    embedding_init_success: Embedding engine initialized successfully
+    embedding_init_success: 'Embedding engine initialized successfully'
     embedding_model: '   - Model: {0}'
     fix_check_logs: '   3. Check logs for detailed error information'
     fix_place_model: '   1. Place model files in src/main/resources/models/ directory'
     fix_supported_models: '   2. Supported models: bge-m3, paraphrase-multilingual, text2vec-large-chinese'
-    index_init_success: Index engine initialized successfully
+    index_init_success: 'Index engine initialized successfully'
     index_path: 'Index path: {0}'
-    init_embedding: Initializing embedding engine...
-    init_index: Initializing index engine...
+    init_embedding: 'Initializing embedding engine...'
+    init_index: 'Initializing index engine...'
     possible_fixes: '🔧 Possible fixes:'
     possible_reasons: '💡 Possible reasons:'
     reason_model_missing: '   1. Model file missing'

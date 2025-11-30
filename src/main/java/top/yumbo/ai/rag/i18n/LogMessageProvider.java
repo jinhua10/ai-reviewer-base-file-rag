@@ -74,8 +74,28 @@ public final class LogMessageProvider {
             Object value = entry.getValue();
 
             if (value instanceof Map) {
+                // 安全处理嵌套的 Map，可能包含非字符串键 (Safely handle nested maps that may contain non-string keys)
+                flattenYamlSafe(key, (Map<?, ?>) value, result);
+            } else if (value != null) {
+                // 叶子节点，存储值 (Leaf node, store value)
+                result.put(key, value.toString());
+            }
+        }
+    }
+
+    /**
+     * 安全地处理嵌套的 YAML Map，支持非字符串键
+     * (Safely handle nested YAML maps with non-string keys)
+     */
+    @SuppressWarnings("unchecked")
+    private static void flattenYamlSafe(String prefix, Map<?, ?> map, Map<String, String> result) {
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            String key = prefix.isEmpty() ? entry.getKey().toString() : prefix + "." + entry.getKey().toString();
+            Object value = entry.getValue();
+
+            if (value instanceof Map) {
                 // 递归处理嵌套的 Map (Recursively process nested maps)
-                flattenYaml(key, (Map<String, Object>) value, result);
+                flattenYamlSafe(key, (Map<?, ?>) value, result);
             } else if (value != null) {
                 // 叶子节点，存储值 (Leaf node, store value)
                 result.put(key, value.toString());
