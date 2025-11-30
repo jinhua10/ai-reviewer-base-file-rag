@@ -190,23 +190,23 @@ log:
         invalid_feedback_type: "feedbackType must be LIKE or DISLIKE"
       impact:
         document:
-          5: "This document is very useful! System will prioritize it 🚀"
-          4: "This document is helpful, system will increase its weight 📈"
-          3: "This document is okay, system will keep current weight ➡️"
-          2: "This document is not very helpful, system will decrease its weight 📉"
-          1: "This document is not helpful, system will significantly decrease its weight ⚠️"
+          '5': "This document is very useful! System will prioritize it 🚀"
+          '4': "This document is helpful, system will increase its weight 📈"
+          '3': "This document is okay, system will keep current weight ➡️"
+          '2': "This document is not very helpful, system will decrease its weight 📉"
+          '1': "This document is not helpful, system will significantly decrease its weight ⚠️"
         overall:
-          5: "Excellent! This answer will be recommended to others 🌟"
-          4: "Thanks! This helps us improve answer quality 👍"
-          3: "Thank you! We will continue to optimize 💡"
-          2: "Thanks for feedback! We will analyze and improve 🔧"
-          1: "Sorry we couldn't help! We will focus on improvement 🙏"
+          '5': "Excellent! This answer will be recommended to others 🌟"
+          '4': "Thanks! This helps us improve answer quality 👍"
+          '3': "Thank you! We will continue to optimize 💡"
+          '2': "Thanks for feedback! We will analyze and improve 🔧"
+          '1': "Sorry we couldn't help! We will focus on improvement 🙏"
       emoji:
-        5: "🤩 Extremely helpful"
-        4: "😊 Very helpful"
-        3: "😐 Neutral"
-        2: "🙁 Not very helpful"
-        1: "😞 Completely useless"
+        '5': "🤩 Extremely helpful"
+        '4': "😊 Very helpful"
+        '3': "😐 Neutral"
+        '2': "🙁 Not very helpful"
+        '1': "😞 Completely useless"
   # Document Management API Messages
   document_management:
     api:
