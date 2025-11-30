@@ -60,11 +60,11 @@ public class Application {
      */
     private static void printBanner() {
         System.out.println();
-        System.out.println("     _     ___   ____               _                            ____      _      ____  ");
-        System.out.println("    / \\   |_ _| |  _ \\  ___ __   __(_) ___ __      __ ___   ____|  _ \\    / \\    / ___|");
-        System.out.println("   / _ \\   | |  | |_) |/ _ \\\\ \\ / /| |/ _ \\\\ \\ /\\ / // _ \\ | '__| |_) |  / _ \\  | |  _ ");
-        System.out.println("  / ___ \\  | |  |  _ <|  __/ \\ V / | |  __/ \\ V  V /|  __/ | |  |  _ <  / ___ \\ | |_| |");
-        System.out.println(" /_/   \\_\\|___| |_| \\_\\\\___|  \\_/  |_|\\___|  \\_/\\_/  \\___| |_|  |_| \\_\\/_/   \\_\\ \\____|");
+        System.out.println("     _     ___   ____               _                             ____      _      ____  ");
+        System.out.println("    / \\   |_ _| |  _ \\  ___ __   __(_) ___ __      __ ___   ____ |  _ \\    / \\    / ___|");
+        System.out.println("   / _ \\   | |  | |_) |/ _ \\\\ \\ / /| |/ _ \\\\ \\ /\\ / // _ \\ | '__|| |_) |  / _ \\  | |  _ ");
+        System.out.println("  / ___ \\  | |  |  _ <|  __/ \\ V / | |  __/ \\ V  V /|  __/ | |   |  _ <  / ___ \\ | |_| |");
+        System.out.println(" /_/   \\_\\|___| |_| \\_\\\\___|  \\_/  |_|\\___|  \\_/\\_/  \\___| |_|   |_| \\_\\/_/   \\_\\ \\____|");
         System.out.println();
         System.out.println(" :: AI Reviewer RAG ::                                               (v1.0.0)");
         System.out.println();
