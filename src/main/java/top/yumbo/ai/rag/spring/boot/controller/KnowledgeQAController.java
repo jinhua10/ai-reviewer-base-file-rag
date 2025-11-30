@@ -2,14 +2,18 @@ package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
 import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
+import top.yumbo.ai.rag.spring.boot.service.SimilarQAService;
+import top.yumbo.ai.rag.spring.boot.service.QAArchiveService;
 import top.yumbo.ai.rag.model.Document;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -24,9 +28,16 @@ import java.util.stream.Collectors;
 public class KnowledgeQAController {
 
     private final KnowledgeQAService qaService;
+    private final SimilarQAService similarQAService;
+    private final QAArchiveService qaArchiveService;
 
-    public KnowledgeQAController(KnowledgeQAService qaService) {
+    @Autowired
+    public KnowledgeQAController(KnowledgeQAService qaService,
+                                 SimilarQAService similarQAService,
+                                 QAArchiveService qaArchiveService) {
         this.qaService = qaService;
+        this.similarQAService = similarQAService;
+        this.qaArchiveService = qaArchiveService;
     }
 
     /**
@@ -206,6 +217,40 @@ public class KnowledgeQAController {
 
             return response;
         }
+    }
+
+    /**
+     * 搜索相似问题
+     * 在归档的历史问答中查找相似问题
+     */
+    @GetMapping("/similar")
+    public ResponseEntity<?> findSimilarQuestions(
+            @RequestParam String question,
+            @RequestParam(defaultValue = "0.85") float threshold,
+            @RequestParam(defaultValue = "5") int limit) {
+
+        log.info("🔍 搜索相似问题: {}", question);
+
+        List<SimilarQAService.SimilarQA> similar =
+            similarQAService.findSimilar(question, threshold, limit);
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "count", similar.size(),
+            "similarQuestions", similar
+        ));
+    }
+
+    /**
+     * 获取归档统计
+     * 返回归档问答的统计信息
+     */
+    @GetMapping("/archive/statistics")
+    public ResponseEntity<?> getArchiveStatistics() {
+        log.info("📊 获取归档统计");
+
+        var stats = qaArchiveService.getStatistics();
+        return ResponseEntity.ok(stats);
     }
 
     // ========== DTO 类 ==========

@@ -369,6 +369,58 @@ knowledge:
         # 如果使用 OpenAI，设置为：https://api.openai.com/v1/chat/completions
         endpoint: ${VISION_LLM_ENDPOINT:https://api.openai.com/v1/chat/completions}
 
+    # 问答归档配置
+    qa-archive:
+      # 是否启用归档
+      enabled: true
+
+      # 归档策略
+      # - auto: 自动归档所有符合条件的问答
+      # - feedback-based: 基于用户反馈归档（推荐）
+      # - manual: 手动审核后归档
+      strategy: feedback-based
+
+      # 最低评分阈值（feedback-based 模式）
+      min-rating: 4
+
+      # 问题最短长度（字符数）
+      min-question-length: 5
+
+      # 回答最短长度（字符数）
+      min-answer-length: 20
+
+      # 归档路径
+      archive-path: ./data/rag
+
+      # 是否自动索引归档的文档
+      auto-index: true
+
+      # 临时文档过期天数（自动清理）
+      temp-document-expiry-days: 30
+
+  # 反馈系统配置
+  feedback:
+    # 是否需要审核才能生效（默认 false - 直接生效）
+    require-approval: false
+
+    # 是否自动应用反馈到检索优化（默认 true）
+    auto-apply: true
+
+    # 点赞权重增量（默认 0.1）
+    like-weight-increment: 0.1
+
+    # 踩的权重减量（默认 -0.15）
+    dislike-weight-decrement: -0.15
+
+    # 最小权重限制（默认 0.1）
+    min-weight: 0.1
+
+    # 最大权重限制（默认 2.0）
+    max-weight: 2.0
+
+    # 是否启用动态权重调整（默认 true）
+    enable-dynamic-weighting: true
+
 # 日志配置
 logging:
   level:
@@ -385,16 +437,16 @@ spring:
     activate:
       on-profile: dev
 
+logging:
+  level:
+    top.yumbo.ai.rag: DEBUG
+
 knowledge:
   qa:
     knowledge-base:
       rebuild-on-startup: true  # 开发时每次重建
     vector-search:
       enabled: true
-
-logging:
-  level:
-    top.yumbo.ai.rag: DEBUG
 
 ---
 # 生产环境配置
@@ -403,6 +455,10 @@ spring:
     activate:
       on-profile: prod
 
+logging:
+  level:
+    top.yumbo.ai.rag: INFO
+
 knowledge:
   qa:
     knowledge-base:
@@ -410,31 +466,5 @@ knowledge:
     vector-search:
       enabled: true
 
-logging:
-  level:
-    top.yumbo.ai.rag: INFO
 
 # classpath:simpleExcel
-
-# 反馈系统配置
-feedback:
-  # 是否需要审核才能生效（默认 false - 直接生效）
-  require-approval: false
-
-  # 是否自动应用反馈到检索优化（默认 true）
-  auto-apply: true
-
-  # 点赞权重增量（默认 0.1）
-  like-weight-increment: 0.1
-
-  # 踩的权重减量（默认 -0.15）
-  dislike-weight-decrement: -0.15
-
-  # 最小权重限制（默认 0.1）
-  min-weight: 0.1
-
-  # 最大权重限制（默认 2.0）
-  max-weight: 2.0
-
-  # 是否启用动态权重调整（默认 true）
-  enable-dynamic-weighting: true
