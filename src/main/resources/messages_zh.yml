@@ -1,722 +1,723 @@
-﻿error:
-  chunk:
-    expected_json_array: '期望 JSON 数组，但得到: {0}'
-    no_valid_chunks: '在 AI 响应中未找到有效的切分块'
-    no_valid_json: '响应中未找到有效的 JSON'
-  auth:
-    user_exists: '用户已存在'
-    invalid_credentials: '无效凭据'
-    permission_denied: '权限被拒绝: {0}'
-  file:
-    not_exists: '文件不存在: {0}'
-    not_a_file: '不是文件: {0}'
-    empty: '文件内容为空: {0}'
-    index_failed: '索引文件失败: {0}'
-    directory_not_exists: '目录不存在: {0}'
-    not_a_directory: '不是目录: {0}'
-  docs:
-    create_failed: '创建文档失败: {0}'
-banner:
-  title: "  AI Reviewer - 知识库智能问答系统 (Knowledge QA System)"
-  version: "  版本: {0}"
-  supports: "  支持: {0}"
-log:
-  app:
-    started: '✅ 应用程序启动成功，地址: {0}'
-    start_failed: '❌ 应用程序启动失败'
-  kqa:
-    sep: "================================================================================\n"
-    answer_header: '\n💡 回答:'
-    build_failed: "知识库构建失败: {0}"
-    docs_dir_missing: '⚠️ 文档目录不存在: {0}'
-    found_chunks_images: "📦 找到 {0} 个块和 {1} 张图片"
-    images_in_context: '🖼️ 上下文中包含 {0} 张图片信息'
-    incremental_complete: "增量索引完成"
-    incremental_error: "增量索引错误"
-    incremental_failed: "增量索引失败: {0}"
-    incremental_mode: '   🔄 开始增量索引知识库...'
-    init_done: '✅ 知识库问答系统初始化完成！'
-    init_failed: "❌ 知识问答服务初始化失败"
-    init_kb: "初始化知识库"
-    init_start: "🚀 初始化知识问答服务"
-    kb_not_initialized: "知识库未初始化"
-    load_chunks_images_failed: '加载块/图片信息失败'
-    more_docs_available: 'ℹ️ 还有 {0} 个相关文档未包含在本次回答中'
-    rebuild_complete: "知识库重建完成"
-    rebuild_error: "知识库重建错误"
-    rebuild_failed: "知识库重建失败: {0}"
-    rebuild_mode: '   🚀 开始完全重建知识库...'
-    recover_failed: "知识库恢复失败"
-    recover_kb: "恢复知识库"
-    reinit_complete: "知识库重新初始化完成"
-    reinit_kb: "重新初始化知识库"
-    response_time: '\n⏱️  响应时间: {0}ms'
-    scanned_files_count: '📂 扫描文件系统完成，找到 {0} 个支持的文档'
-    scan_failed: '❌ 扫描文件系统失败'
-    source_path: "   - 源路径: {0}"
-    sources_header: '\n📚 数据来源 (共{0}个文档):'
-    step: "\n🚀 步骤 {0}: {1}"
-    storage_path: "   - 存储路径: {0}"
-    system_not_initialized: "知识问答系统未初始化"
-    used_docs_count: '📚 本次使用 {0} 个文档生成回答'
-  session:
-    create: '创建会话: {0}'
-  admin:
-    cache_cleared: '缓存已清除'
-    cache_cleared_success: '缓存清除成功'
-    clear_cache_failed: '清除缓存失败'
-    clear_cache_failed_detail: '清除缓存失败: {0}'
-    index_optimize_failed: '优化索引失败'
-    index_optimize_failed_detail: '优化索引失败: {0}'
-    index_optimized: '索引已优化'
-    index_optimized_success: '索引优化成功'
-    stats_failed: '获取统计信息失败'
-    stats_failed_detail: '获取统计信息失败: {0}'
-  api:
-    started: 'API 服务器已在端口 {0} 上启动'
-    stopped: 'API 服务器已停止'
-  audit:
-    init_failed: '初始化审计日志失败'
-    logged: '审计已记录: {0}'
-    write_failed: '写入审计日志失败'
-  auth:
-    logged_in: '用户已登录: {0}'
-    logged_out: '用户已登出: {0}'
-    registered: '用户已注册: {0}'
-  batch:
-    failed: '批量处理失败'
-  chunk:
-    ai_completed: 'AI 语义切分完成: {0} 字符 -> {1} 块，耗时 {2}ms'
-    ai_failed: 'AI 语义切分失败，回退至智能关键词切分'
-    ai_not_enabled: '配置中未启用 AI 切分'
-    ai_parse_failed: '解析 AI 语义切分响应失败: {0}'
-    ai_start: '开始 AI 语义切分，内容长度: {0} 字符'
-    content_truncate: '内容过大 ({0} 字符)，截断为 {1} 字符以防止内存溢出'
-    coverage_low: '覆盖率较低，添加顺序切分'
-    delete_failed: '删除文件失败: {0}'
-    deleted_all: '已删除文档的所有分块: {0}'
-    keywords_extracted: '从查询中提取到 {0} 个关键词: {1}'
-    max_chunks_reached: '达到最大块数限制 ({0})，停止切分'
-    no_keywords_fallback: '未找到关键词，回退至简单切分'
-    read_meta_failed: '读取分块元数据失败: {0}'
-    save_failed: '保存文档块失败: {0} (索引: {1})'
-    saved: '已保存 {0} 个文档块到文档: {1}'
-    simple_summary: '简单切分: {0} 字符 -> {1} 块 (size={2}, overlap={3})'
-    smart_summary: '智能关键词切分: {0} 字符 -> {1} 块，关键词 {2} 个'
-    storage:
-      created: '已创建文档块存储目录: {0}'
-      init_failed: '初始化文档块存储失败'
-    truncate_warning: '内容过长 ({0} 字符)，截断为 {1} 字符用于 AI 切分'
-  chunker:
-    ai_disabled: 'AI 切分未启用，回退至 SMART_KEYWORD 策略'
-    creating: '创建文档切分器: strategy={0}, chunkSize={1}, overlap={2}'
-    llm_null: 'LLM 客户端为空，回退至 SMART_KEYWORD 策略'
-    unknown_strategy: '未知的切分策略: {0}，使用 SMART_KEYWORD'
-  docs:
-    classpath_in_jar: 'classpath 路径在 JAR 内，不支持写入'
-    classpath_load_failed: '无法从 classpath 加载资源: {0} - {1}'
-    classpath_not_exists: 'classpath 资源不存在: {0}'
-    classpath_realpath: '使用 classpath 实际路径: {0}'
-    classpath_resource_found: '✅ 从 classpath 找到资源: {0}'
-    create:
-      failed: '创建文档失败: {0}'
-      success: '文档创建成功'
-    create_failed: '创建文档目录失败: {0}'
-    created: '文档已创建: {0}'
-    delete:
-      failed: '删除文档失败: {0}'
-      success: '文档删除成功'
-    deleted: '文档已删除: {0}'
-    directory_ready: '文档目录已就绪: {0}'
-    file_exists_renamed: '文件已存在，重命名为: {0}'
-    get:
-      failed: '获取文档失败: {0}'
-    invalid_directory: '无效目录: {0}'
-    list:
-      exception: '列出文档异常: {0}'
-      failed: '列出文档失败: {0}'
-    not_found: '文档未找到: {0}'
-    notfound: '未找到文档: {0}'
-    process_failed: '处理文件失败: {0}'
-    saved: '文档已保存: {0}'
-    scanned_types: '扫描到的文件类型: {0}'
-    total: '总文档数: {0}'
-    update:
-      failed: '更新文档失败: {0}'
-      success: '文档更新成功'
-    updated: '文档已更新: {0}'
-    upload_to_external: '上传文档将保存到外部路径: ./data/documents'
-    using_default_path: '使用默认路径: ./data/documents'
-    using_filesystem: '使用文件系统路径: {0}'
-    walk_failed: '遍历目录失败: {0}'
-  factory:
-    create_caffeine: '创建 Caffeine 缓存引擎'
-    create_filesystem: '创建文件系统存储引擎'
-    create_lucene: '创建 Lucene 索引引擎'
-  feedback:
-    document_failed: "处理文档反馈失败"
-    document_received: "收到文档反馈 {0}: recordId={1}, document={2}"
-    get_pending_failed: "获取待处理的 QA 记录失败"
-    get_recent_failed: "获取最近的 QA 记录失败"
-    get_record_failed: "获取 QA 记录失败"
-    get_statistics_failed: "获取 QA 统计信息失败"
-    overall_failed: "处理整体反馈失败"
-    overall_received: "收到整体反馈: recordId={0}, rating={1}"
-    overall_rating_submitted: "已提交整体评价 {0} [{1}]: {2}星"
-    rating_failed: "处理评分失败"
-    rating_submitted: "已提交评分 {0} [{1}]: {2} - {3}星 (影响: {4})"
-    weight_disabled: '动态权重调整已禁用'
-    weight_updated: "📊 文档权重更新: {0} -> 权重={1} (👍{2} 👎{3})"
-    weight_reset: "🔄 重置文档权重: {0} -> {1}"
-    weights_cleared: '🧹 清除所有文档权重'
-    weights_saved: "💾 保存文档权重: {0} 个文档"
-    save_failed: '保存文档权重失败'
-    weights_loaded: "📂 加载文档权重: {0} 个文档"
-    load_failed: '加载文档权重失败'
-    weights_file_not_exists: '📂 文档权重文件不存在，使用默认权重'
-    rating_updated: "📊 文档权重更新(星级): {0} -> 权重={1} ({2}星, 调整{3}, 👍{4} 👎{5})"
-    # API响应消息 / API Response Messages
-    api:
-      success:
-        thank_you: "感谢您的评价！"
-        feedback_received: "感谢您的反馈！"
-      error:
-        record_not_found: "记录不存在"
-        processing_failed: "处理失败: {0}"
-        invalid_rating: "评分必须在 1-5 之间"
-        missing_params: "{0} 不能为空"
-        invalid_feedback_type: "feedbackType 必须是 LIKE 或 DISLIKE"
-      impact:
-        document:
-          '5': "这个文档非常有用！系统会优先推荐它 🚀"
-          '4': "这个文档很有帮助，系统会增加推荐权重 📈"
-          '3': "这个文档还行，系统会保持当前权重 ➡️"
-          '2': "这个文档帮助不大，系统会降低推荐权重 📉"
-          '1': "这个文档没有帮助，系统会大幅降低推荐权重 ⚠️"
-        overall:
-          '5': "太好了！这个回答会被推荐给其他用户 🌟"
-          '4': "谢谢反馈！这有助于我们改进回答质量 👍"
-          '3': "感谢评价！我们会继续优化 💡"
-          '2': "感谢反馈！我们会分析并改进 🔧"
-          '1': "抱歉没能帮到您！我们会重点改进 🙏"
-      emoji:
-        '5': "🤩 非常有用"
-        '4': "😊 很有用"
-        '3': "😐 一般般"
-        '2': "🙁 帮助不大"
-        '1': "😞 完全没用"
-  # 文档管理API消息 / Document Management API Messages
-  document_management:
-    api:
-      success:
-        upload: "文档上传成功"
-        delete: "文档删除成功"
-        batch_upload: "批量上传完成"
-        batch_result: "成功: {0}, 失败: {1}"
-        index: "文档索引成功"
-        list_loaded: "文档列表获取成功: 返回 {0} 个文档，共 {1} 个"
-      error:
-        file_empty: "文件为空"
-        upload_failed: "上传失败: {0}"
-        delete_failed: "删除失败: {0}"
-        not_found: "文档未找到"
-        index_failed: "索引失败: {0}"
-        list_failed: "获取列表失败: {0}"
-    log:
-      upload_success: "文档上传成功: {0}"
-      upload_failed: "文档上传失败"
-      batch_upload: "收到批量上传请求: {0} 个文件"
-      file_upload_failed: "文件上传失败: {0}"
-      list_documents: "获取文档列表 - 页码: {0}, 每页: {1}, 排序: {2} {3}"
-      list_failed: "获取文档列表失败"
-  # 文档管理服务消息 / Document Management Service Messages
-  document_service:
-    error:
-      filename_empty: "文件名为空"
-      unsupported_format: "不支持的文件格式: {0}"
-      file_too_large: "文件过大: {0} MB (最大: {1} MB)"
-      illegal_path: "非法的文件路径"
-      cannot_create_dir: "无法创建文档目录: {0}"
-    log:
-      scanned_types: "扫描到的文件类型: {0}"
-  # LLM客户端消息 / LLM Client Messages
-  llm:
-    api_key_missing: '⚠️ 未配置 LLM API Key'
-    api_key_hint: "💡 提示: 设置环境变量:"
-    api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
-    api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
-    fallback_mock: '💡 将降级使用 Mock 模式'
-    client_created: '🤖 创建 {0} LLM 客户端'
-    model: '   - 模型: {0}'
-    api_url: '   - API: {0}'
-    mock_created: '🤖 创建 Mock LLM 客户端（仅用于测试）'
-    mock_warning: '⚠️ Mock 模式将返回固定的模拟回答'
-    mock_hint: "💡 如需使用真实 LLM，请配置:"
-    mock_provider: '      knowledge.qa.llm.provider=openai'
-    mock_apikey: '      并设置相应的 API Key 和 URL'
-    log:
-      openai_init: "✅ OpenAI LLM 客户端初始化完成"
-      openai_request: "发送请求到 OpenAI: {0}"
-      openai_response: "OpenAI 响应内容: {0}"
-      openai_failed: "OpenAI API 调用失败"
-      openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
-      mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
-      mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
-      mock_response: "📝 Mock LLM 返回模拟回答"
-    error:
-      openai_failed: "OpenAI API 调用失败: {0}"
-      openai_http_error: "OpenAI API 错误: HTTP {0}, {1}"
-      parse_failed: "无法解析 OpenAI 响应: {0}"
-    mock:
-      population_answer: "根据文档内容，中国总人口约为14亿人。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
-      marriage_answer: "根据文档内容，婚配情况统计数据包括未婚、已婚、离婚、丧偶等状态的人数分布。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
-      default_answer: "这是一个模拟回答。\n\n根据您提供的上下文，我理解您的问题。然而，作为 Mock LLM，我只能提供模拟响应。\n\n请配置真实的 LLM 服务（如 OpenAI）以获得准确的答案。\n\n（注意：这是 Mock LLM 的模拟回答）"
-  # 知识库问答服务消息 / Knowledge QA Service Messages
-  knowledge_qa_service:
-    log:
-      build_complete: "   ✅ 知识库构建完成"
-      total_files: "      - 总文件数: {0}"
-      processed_files: "      - 处理文件: {0}"
-      failed_files: "      - 失败文件: {0}"
-      total_documents: "      - 总文档数: {0}"
-      kb_ready: "   ✅ 知识库已就绪"
-      document_count: "      - 文档数: {0}"
-      index_count: "      - 索引数: {0}"
-      vector_disabled: "\n⚠️  向量检索已禁用（配置项: knowledge.qa.vector-search.enabled=false）"
-      init_vector_engine: "\n🚀 步骤2: 初始化向量检索引擎"
-      vector_engine_loaded: "   ✅ 向量嵌入引擎已加载"
-      vector_engine_loading: "   ⏳ 正在加载向量嵌入引擎..."
-      vector_engine_load_time: "   ✅ 向量嵌入引擎加载完成 (耗时: {0}ms)"
-      vector_index_loaded: "   ✅ 向量索引已加载"
-      vector_index_path: "      - 索引路径: {0}"
-      vector_count: "      - 向量数量: {0}"
-      vector_dimension: "      - 向量维度: {0}"
-      vector_model: "      - 向量模型: {0}"
-      hybrid_mode_enabled: "   ✅ 使用混合检索模式（Lucene + 向量）"
-      lucene_only_mode: "   ⚠️  仅使用 Lucene 检索（向量检索不可用）"
-      init_llm: "\n🚀 步骤3: 初始化 LLM 客户端"
-      llm_provider: "   - 提供商: {0}"
-      llm_client_type: "   - 客户端类型: {0}"
-      llm_client_ready: "   ✅ LLM客户端已就绪"
-      llm_loaded: "   ✅ {0} 已加载"
-      llm_unavailable: "   ⚠️  LLM 不可用"
-      create_qa_system: "\n🚀 步骤4: 创建问答系统"
-      smart_context_initialized: "   ✅ 智能上下文构建器已初始化"
-      max_context_chars: "      - 最大上下文: {0} 字符"
-      max_doc_length_chars: "      - 最大文档长度: {0} 字符"
-      chunking_strategy: "      - 切分策略: {0} ({1})"
-      chunk_size_chars: "      - 块大小: {0} 字符"
-      chunk_overlap_chars: "      - 块重叠: {0} 字符"
-      ai_chunking_enabled: "      - AI 切分: 启用 (模型: {0})"
-      using_vector_enhancement: "   ✅ 使用向量检索增强模式"
-      record_saved: "📝 问答记录已保存: {0}"
-      service_init_complete: "\n✅ KnowledgeQAService 初始化完成 (总耗时: {0}ms)"
-      model_download_hint: "💡 提示：请确保模型文件已下载到 resources/models/ 目录"
-      model_doc_hint: "      详细说明请查看: 模型下载说明.md"
-      similar_question_failed: "⚠️ 查找相似问题失败: {0}"
-      too_many_docs_retrieved: "⚠️ 检索到 {0} 个文档，本次处理前 {1} 个（配置: documents-per-query）"
-      load_chunk_failed: "加载块/图片信息失败"
-      close_kb_warning: "⚠️  关闭现有知识库实例时出现警告: {0}"
-      save_qa_failed: "⚠️ 保存问答记录失败"
-      image_not_found: "未找到文档图片: {0}"
-      related_image: "相关图片"
-      error_processing: "抱歉，处理您的问题时出现错误：{0}"
-      available_images: "\n\n【可用图片 - {0}】"
-      image_item: "- 图片 {0}: {1} (引用方式: ![{2}]({3}))"
-      more_images: "  ... 还有 {0} 张图片"
-      important_notice: "\n\n**重要提示**："
-      image_guide_1: "1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。"
-      image_guide_2: "2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。"
-      image_guide_3: "3. 引用格式已在下方提供，直接复制使用即可。"
-      image_guide_4: "4. 请确保引用的图片 URL 完整且正确。"
-      referenced_docs: "\n\n**本次参考的文档**："
-      doc_item: "{0}. {1}"
-      more_docs_notice: "\n\n**提示**：检索到的相关文档较多，本次回答基于前 {0} 个最相关的文档。还有 {1} 个相关文档未包含在本次回答中。如果需要查看更多信息，请告知用户可以继续提问相关问题。"
-      similar_found: "💡 找到 {0} 个相似历史问答"
-      using_hybrid_search: "✅ 使用混合检索（Lucene + Vector）"
-      using_keyword_search: "✅ 使用关键词检索"
-      create_session: "📝 创建会话: sessionId={0}, 总文档数={1}, 本次使用={2}, 剩余={3}"
-      images_in_context: "🖼️ 上下文中包含 {0} 张图片信息"
-      using_docs: "📚 本次使用 {0} 个文档生成回答"
-      remaining_docs: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
-      remaining_docs_unprocessed: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
-      retrieved_all: "✅ Retrieved {0} highly relevant documents, all included in answer"
+﻿lang:
+  error:
+    chunk:
+      expected_json_array: '期望 JSON 数组，但得到: {0}'
+      no_valid_chunks: '在 AI 响应中未找到有效的切分块'
+      no_valid_json: '响应中未找到有效的 JSON'
+    auth:
+      user_exists: '用户已存在'
+      invalid_credentials: '无效凭据'
+      permission_denied: '权限被拒绝: {0}'
+    file:
+      not_exists: '文件不存在: {0}'
+      not_a_file: '不是文件: {0}'
+      empty: '文件内容为空: {0}'
+      index_failed: '索引文件失败: {0}'
+      directory_not_exists: '目录不存在: {0}'
+      not_a_directory: '不是目录: {0}'
+    docs:
+      create_failed: '创建文档失败: {0}'
+  banner:
+    title: "  AI Reviewer - 知识库智能问答系统 (Knowledge QA System)"
+    version: "  版本: {0}"
+    supports: "  支持: {0}"
+  log:
+    app:
+      started: '✅ 应用程序启动成功，地址: {0}'
+      start_failed: '❌ 应用程序启动失败'
+    kqa:
+      sep: "================================================================================\n"
+      answer_header: '\n💡 回答:'
+      build_failed: "知识库构建失败: {0}"
+      docs_dir_missing: '⚠️ 文档目录不存在: {0}'
       found_chunks_images: "📦 找到 {0} 个块和 {1} 张图片"
-      context_stats: "📊 上下文统计: {0}"
-      question_separator: "\n================================================================================\n"
-      question_prompt: "❓ 问题: {0}"
-      separator: "================================================================================"
-      answer_label: "\n💡 回答:"
-      sources_label: "\n📚 数据来源 (共{0}个文档):"
-      response_time: "\n⏱️  响应时间: {0}ms"
-      qa_record_saved: "📝 问答记录已保存: {0}"
-      question_label: "❓ 问题: {0} (使用会话: {1})"
-      using_session_docs: "📝 使用会话文档: 总{0}个, 当前第{1}页/{2}, 本次使用{3}个"
-      debug_enhanced_stats: "📊 增强统计信息 - 文件系统文档: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
-      classpath_prefix: "classpath:"
-      rebuild_start: "🔄 开始重建知识库..."
-      close_existing_kb: "📌 关闭现有知识库实例..."
-      kb_closed: "✅ 现有知识库实例已关闭"
-      incremental_start: "🔄 开始增量索引知识库..."
-      destroy_start: "🔄 关闭知识库问答系统..."
-      vector_closed: "   ✅ 向量嵌入引擎已关闭"
-      kb_closed_safe: "   ✅ 知识库已关闭"
-      system_closed: "✅ 知识库问答系统已安全关闭"
-      using_keyword_mode: "   ✅ 使用关键词检索模式"
-      qa_with_session_failed: "❌ 使用会话进行问答失败"
-  # 知识库构建服务消息 / Knowledge Base Service Messages
-  kb_service:
-    error:
-      scan_classpath_failed: "扫描 classpath 资源失败"
-    image:
-      section_title: "\n\n=== 文档包含的图片 ==="
-      image_number: "\n图片 {0}:"
-      filename: "- 文件名: {0}"
-      url: "- URL: {0}"
-      description: "- 描述: {0}"
-      original_file: "- 原始文件: {0}"
-      section_end: "\n=== 图片列表结束 ==="
-  # 反馈配置API消息 / Feedback Config API Messages
-  feedback_config:
+      images_in_context: '🖼️ 上下文中包含 {0} 张图片信息'
+      incremental_complete: "增量索引完成"
+      incremental_error: "增量索引错误"
+      incremental_failed: "增量索引失败: {0}"
+      incremental_mode: '   🔄 开始增量索引知识库...'
+      init_done: '✅ 知识库问答系统初始化完成！'
+      init_failed: "❌ 知识问答服务初始化失败"
+      init_kb: "初始化知识库"
+      init_start: "🚀 初始化知识问答服务"
+      kb_not_initialized: "知识库未初始化"
+      load_chunks_images_failed: '加载块/图片信息失败'
+      more_docs_available: 'ℹ️ 还有 {0} 个相关文档未包含在本次回答中'
+      rebuild_complete: "知识库重建完成"
+      rebuild_error: "知识库重建错误"
+      rebuild_failed: "知识库重建失败: {0}"
+      rebuild_mode: '   🚀 开始完全重建知识库...'
+      recover_failed: "知识库恢复失败"
+      recover_kb: "恢复知识库"
+      reinit_complete: "知识库重新初始化完成"
+      reinit_kb: "重新初始化知识库"
+      response_time: '\n⏱️  响应时间: {0}ms'
+      scanned_files_count: '📂 扫描文件系统完成，找到 {0} 个支持的文档'
+      scan_failed: '❌ 扫描文件系统失败'
+      source_path: "   - 源路径: {0}"
+      sources_header: '\n📚 数据来源 (共{0}个文档):'
+      step: "\n🚀 步骤 {0}: {1}"
+      storage_path: "   - 存储路径: {0}"
+      system_not_initialized: "知识问答系统未初始化"
+      used_docs_count: '📚 本次使用 {0} 个文档生成回答'
+    session:
+      create: '创建会话: {0}'
+    admin:
+      cache_cleared: '缓存已清除'
+      cache_cleared_success: '缓存清除成功'
+      clear_cache_failed: '清除缓存失败'
+      clear_cache_failed_detail: '清除缓存失败: {0}'
+      index_optimize_failed: '优化索引失败'
+      index_optimize_failed_detail: '优化索引失败: {0}'
+      index_optimized: '索引已优化'
+      index_optimized_success: '索引优化成功'
+      stats_failed: '获取统计信息失败'
+      stats_failed_detail: '获取统计信息失败: {0}'
     api:
-      success:
-        config_updated: "配置更新成功"
-        mode_switched: "审核模式已切换为: {0}"
-        weight_reset: "文档权重已重置: {0}"
-        weights_cleared: "所有文档权重已清除"
-      error:
-        update_failed: "配置更新失败: {0}"
-        document_name_empty: "文档名称不能为空"
-      mode:
-        require_approval: "需要审核"
-        auto_apply: "自动生效"
-    log:
-      get_config: "📋 获取反馈配置"
-      update_require_approval: "🔧 更新配置: requireApproval = {0}"
-      update_auto_apply: "🔧 更新配置: autoApply = {0}"
-      update_like_weight: "🔧 更新配置: likeWeightIncrement = {0}"
-      update_dislike_weight: "🔧 更新配置: dislikeWeightDecrement = {0}"
-      update_enable_weighting: "🔧 更新配置: enableDynamicWeighting = {0}"
-      toggle_mode: "🔄 切换审核模式: {0}"
-  # 知识库问答API消息 / Knowledge QA API Messages
-  knowledge_qa:
-    log:
-      received_question: "收到问题: {0}"
-      session_question: "使用会话进行问答: 问题={0}, sessionId={1}"
-      search_documents: "搜索文档: {0} (limit={1})"
-      get_statistics: "📊 获取统计信息（增强版）"
-      statistics_result: "📊 统计信息 - 文档总数: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
-      build_start: "🔧 开始构建知识库索引"
-      build_complete: "✅ 知识库索引构建完成 - 耗时: {0}ms"
-      incremental_index_start: "🔄 开始增量索引"
-      incremental_index_complete: "✅ 增量索引完成 - 新增: {0}, 耗时: {1}ms"
-      rebuild_request: "收到知识库重建请求"
-      rebuild_failed: "知识库重建失败"
-      incremental_request: "收到知识库增量索引请求"
-      incremental_failed: "增量索引失败"
-      search_similar: "🔍 搜索相似问题: {0} (minScore={1}, limit={2})"
-      archive_stats: "📊 获取归档统计"
-    api:
-      message:
-        needs_indexing: "检测到 {0} 个未索引的文档。建议执行增量索引以更新知识库。"
-        all_indexed: "所有文档均已索引，知识库状态良好。"
-        system_running: "知识库问答系统运行正常"
-        rebuild_complete: "知识库重建完成"
-        rebuild_failed: "知识库重建失败: {0}"
-        rebuild_suggestion: "请检查日志文件获取详细错误信息"
-        incremental_complete: "增量索引完成，更新了 {0} 个文件"
-        all_up_to_date: "所有文件都是最新的，无需更新"
-        incremental_failed: "增量索引失败: {0}"
-      status:
-        up: "UP"
-        building: "BUILDING"
-        error: "ERROR"
-  # 文档块下载API消息 / Chunk Download API Messages
-  chunk_download:
-    log:
-      list_failed: "获取文档块列表失败: {0}"
-      download_failed: "下载文档块失败: {0}/{1}"
-      content_failed: "获取文档块内容失败: {0}/{1}"
-  filetracking:
-    check_failed: '检查文件状态失败: {0}'
-    clear_failed: '清空文件追踪信息失败: {0}'
-    cleared: '已清空文件追踪信息'
-    load_failed: '加载文件追踪信息失败: {0}'
-    loaded: '已加载文件追踪信息: {0} 个文件'
-    mark_failed: '标记文件为已索引失败: {0}'
-    save_failed: '保存文件追踪信息失败: {0}'
-    saved: '已保存文件追踪信息: {0} 个文件'
-  http:
-    shutdown: 'HTTP 服务器已关闭'
-    start_failed: '启动 HTTP 服务器失败'
-    started: 'HTTP 服务器已在端口 {0} 上启动'
-  hybrid:
-    cannot_get_doc: '无法获取文档: id={0}, 评分={1}'
-    completed: '混合检索完成: 返回 {0} 个文档，耗时 {1}ms'
-    could_not_get_doc: '无法获取文档: 条目 #{0} id={1} (评分: {2})'
-    detail_item: '{0}. {1} (混合: {2} = Lucene 排名#{3} + 向量:{4})'
-    doc_id_list: '文档ID列表: {0}'
-    extract_keywords: '提取关键词: {0}'
-    failed: '混合检索失败，回退到关键词检索'
-    filtered: '过滤了 {0} 个低分文档 (评分 < {1})，保留 {2} 个'
-    found_docs: '找到 {0} 个文档'
-    keyword_search: '关键词检索: {0}'
-    lucene_found: 'Lucene 检索到 {0} 个文档 (总命中: {1}, 限制={2})'
-    lucene_top_header: 'Lucene Top-10 文档（按相关性）:'
-    lucene_top_item: '{0}. {1} - {2} 字符 (Lucene 排名分: {3})'
-    severe_no_docs: '严重：{0} 个评分文档，但无法获取到任何文档对象'
-    top5_header: '混合评分 Top-5 (过滤前, 阈值={0}, topK={1}):'
-    top5_item: '{0} {1}. {2} (评分: {3})'
-    topk_header: '混合 Top-{0} (Lucene 权重:0.3 + 向量权重:0.7):'
-    total_nulls: '共 {0} 个文档无法获取（共 {1} 个评分文档）'
-    vector_found: '向量检索到 {0} 个文档 (限制={1})'
-    vector_top_header: '向量 Top-10 文档:'
-    vector_top_item: '- {0} (相似度: {1})'
-  image:
-    # 图片API消息 / Image API Messages
-    log:
-      get_failed: "获取图片失败: {0}/{1}"
-      list_failed: "获取文档图片列表失败: {0}"
-    delete_failed: '删除文件失败: {0}'
-    deleted_all: '已删除文档的所有图片: {0}'
-    read_info_failed: '读取图片信息失败: {0}'
-    saved: '已保存图片: {0} (文档: {1})'
-    storage:
-      created: '已创建图片存储目录: {0}'
-      init_failed: '初始化图片存储失败'
-    service:
-      init: '初始化图片服务'
-      start: '启动图片提取'
-      using_extractor: '使用图片提取器: {0}'
-      no_images: '未找到图片'
-      extracted: '提取到 {0} 张图片'
-      success: '图片处理成功'
-      saved: '图片已保存: {0}'
-    excel:
-      processing: '处理 Excel 图片'
-      extracted: '从 Excel 提取到 {0} 张图片'
-      legacy:
-        processing: '处理旧版 Excel 图片'
-        extracted: '从旧版 Excel 提取到 {0} 张图片'
-    ppt:
-      processing: '处理 PPT 图片'
-      found: '发现 PPT 图片: {0}'
-      extracted: '从 PPT 提取到 {0} 张图片'
-    pdf:
-      processing: '处理 PDF 图片'
-      extracted: '从 PDF 提取到 {0} 张图片'
-  imageproc:
-    activated: '✅ 图片处理策略已激活: {0}'
-    add_ocr: '   添加 OCR 策略:'
-    add_vision: '   添加 Vision LLM 策略:'
-    init: '🖼️  初始化图片处理功能...'
-    language: '      - 识别语言: {0}'
-    ocr_available: '   ✅ OCR 策略可用'
-    ocr_hint: '   💡 提示: 添加依赖 net.sourceforge.tess4j:tess4j:5.9.0'
-    ocr_unavailable: '   ⚠️  OCR 策略不可用: 缺少 tess4j 依赖'
-    placeholder: '   使用占位符策略（默认）'
-    strategy: '   配置策略: {0}'
-    tessdata: '      - Tessdata路径: {0}'
-    vision_apikey_hint: '   💡 提示: 设置环境变量 VISION_LLM_API_KEY 或配置 knowledge.qa.image-processing.vision-llm.api-key'
-    vision_available: '   ✅ Vision LLM 策略可用'
-    vision_endpoint: '      - 端点: {0}'
-    vision_model: '      - 模型: {0}'
-    vision_no_apikey: '   ⚠️  Vision LLM 已启用但未配置 API Key'
-    vision_unavailable: '   ⚠️ Vision LLM 策略不可用'
-  kb:
-    batch_processing: '📦 批处理: {0} 个文档 ({1} / {2})'
-    batch_commit: '📝 批量提交索引'
-    exists: '📚 检测到已有知识库 ({0} 个文档)'
-    file_process_failed: '❌ 处理文件失败: {0}'
-    files_to_index: '📝 需要索引的文件: {0} 个'
-    final_batch: '📦 处理最后一批: {0} 个文档'
-    first_create: '📚 首次创建知识库'
-    found_files: '✅ 找到 {0} 个文档文件'
-    hint_put_docs: '💡 提示: 请将文档放到 {0} 目录'
-    incremental_done: '\n✅ 增量索引完成！'
-    incremental_failed: '❌ 增量索引失败'
-    incremental_stats: '   - 处理文件: {0}/{1}, 失败: {2}, 总文档: {3}, 耗时: {4}s'
-    no_documents: '⚠️  未找到支持的文档文件'
-    parallel_mode: '🚀 使用并行处理模式（{0} 个线程）'
-    processing_start: '\n📝 开始处理文档...'
-    processing_file: '📄 处理文件: {0}'
-    scanning: '📂 扫描文档: {0}'
-    serial_mode: '📝 使用串行处理模式'
-    supported_formats: '      支持格式: {0}'
-    up_to_date: '✅ 所有文件都是最新的，无需更新'
-    source_path: '   - 文档路径: {0}'
-    gc_before: '🗑️  执行GC以释放内存'
-    content_extracted: '✅ 已提取内容: {0}'
-    content_too_large: '⚠️  内容过大 ({0} 字符)'
-    content_truncated: '✂️  内容已截断为 {0} 字符'
-    indexing_complete: '✅ 索引完成: {0}'
-    parallel_progress: '📊 并行进度: {0}%'
-    parallel_memory: '💾 内存使用: {0} MB'
-    images_extracted: '🖼️  提取到 {0} 张图片'
-    images_added: '➕ 已添加 {0} 张图片到索引'
-    vector_enabled: '✅ 向量检索引擎已启用'
-    vector_init_failed: '❌ 向量检索引擎初始化失败'
-  tika:
-    init: '初始化 Apache Tika'
-    max_content: '最大内容长度: {0}'
-    extract_image_metadata: '提取图片元数据: {0}'
-    include_image_placeholders: '包含图片占位符: {0}'
-    active_image_strategy: '激活图片策略: {0}'
-    ocr_disabled: 'OCR 已禁用'
-    detected_mime: '检测到 MIME 类型: {0}'
-    office_xlsx: '处理 Office XLSX 文档'
-    office_pptx: '处理 Office PPTX 文档'
-    office_done: 'Office 文档处理完成'
-    parsed_file: '已解析文件: {0}'
-  memory:
-    critical: '阶段 {0} - 内存使用严重: {1}% - 存在 OOM 风险！'
-    gc_done: '✓ GC完成，内存使用率: {0}% -> {1}%'
-    gc_trigger: '⚠️  内存使用率 {0}% 超过阈值，触发GC...'
-    usage: '阶段 {0} - 已使用内存: {1} MB / 最大: {2} MB ({3}%)'
-    warning: '阶段 {0} - 内存使用较高: {1}%'
-  monitor:
-    health:
-      storage_ok: '存储正常，文档数: {0}'
-      storage_error: '存储错误: {0}'
-      index_ok: '索引正常，已索引: {0}'
-      index_error: '索引错误: {0}'
-      cache_ok: '缓存正常'
-      cache_error: '缓存错误: {0}'
-    metrics:
-      report: '指标:\n  HTTP: {0} 请求, {1} 错误\n  文档: {2} 创建, {3} 更新, {4} 删除\n  搜索: {5} 请求, {6} 错误\n  认证: {7} 尝试, {8} 失败'
-    performance:
-      report: '性能指标:\n  索引: {0} 文档, 平均: {1}ms, 错误: {2}\n  搜索: {3}, 平均: {4}ms, 错误: {5}\n  缓存命中率: {6}%'
-  optimizer:
-    commit: '📝 提交更改...'
-    done: '✅ 提交和优化完成'
-    embedding_closed: '✅ 嵌入引擎已关闭'
-    optimize: '🔧 优化索引...'
-    save_failed: '❌ 保存向量索引失败'
-    saving_vectors: '💾 保存向量索引...'
-    vectors_saved: '✅ 向量索引已保存'
-  optimization:
+      started: 'API 服务器已在端口 {0} 上启动'
+      stopped: 'API 服务器已停止'
+    audit:
+      init_failed: '初始化审计日志失败'
+      logged: '审计已记录: {0}'
+      write_failed: '写入审计日志失败'
+    auth:
+      logged_in: '用户已登录: {0}'
+      logged_out: '用户已登出: {0}'
+      registered: '用户已注册: {0}'
+    batch:
+      failed: '批量处理失败'
+    chunk:
+      ai_completed: 'AI 语义切分完成: {0} 字符 -> {1} 块，耗时 {2}ms'
+      ai_failed: 'AI 语义切分失败，回退至智能关键词切分'
+      ai_not_enabled: '配置中未启用 AI 切分'
+      ai_parse_failed: '解析 AI 语义切分响应失败: {0}'
+      ai_start: '开始 AI 语义切分，内容长度: {0} 字符'
+      content_truncate: '内容过大 ({0} 字符)，截断为 {1} 字符以防止内存溢出'
+      coverage_low: '覆盖率较低，添加顺序切分'
+      delete_failed: '删除文件失败: {0}'
+      deleted_all: '已删除文档的所有分块: {0}'
+      keywords_extracted: '从查询中提取到 {0} 个关键词: {1}'
+      max_chunks_reached: '达到最大块数限制 ({0})，停止切分'
+      no_keywords_fallback: '未找到关键词，回退至简单切分'
+      read_meta_failed: '读取分块元数据失败: {0}'
+      save_failed: '保存文档块失败: {0} (索引: {1})'
+      saved: '已保存 {0} 个文档块到文档: {1}'
+      simple_summary: '简单切分: {0} 字符 -> {1} 块 (size={2}, overlap={3})'
+      smart_summary: '智能关键词切分: {0} 字符 -> {1} 块，关键词 {2} 个'
+      storage:
+        created: '已创建文档块存储目录: {0}'
+        init_failed: '初始化文档块存储失败'
+      truncate_warning: '内容过长 ({0} 字符)，截断为 {1} 字符用于 AI 切分'
     chunker:
-      initialized: 'DocumentChunker 初始化完成 - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
-      chunked: '文档 {0} 已分块为 {1} 部分'
-      batch_completed: '批量分块完成: {0} 个文档 -> {1} 个分块'
+      ai_disabled: 'AI 切分未启用，回退至 SMART_KEYWORD 策略'
+      creating: '创建文档切分器: strategy={0}, chunkSize={1}, overlap={2}'
+      llm_null: 'LLM 客户端为空，回退至 SMART_KEYWORD 策略'
+      unknown_strategy: '未知的切分策略: {0}，使用 SMART_KEYWORD'
+    docs:
+      classpath_in_jar: 'classpath 路径在 JAR 内，不支持写入'
+      classpath_load_failed: '无法从 classpath 加载资源: {0} - {1}'
+      classpath_not_exists: 'classpath 资源不存在: {0}'
+      classpath_realpath: '使用 classpath 实际路径: {0}'
+      classpath_resource_found: '✅ 从 classpath 找到资源: {0}'
+      create:
+        failed: '创建文档失败: {0}'
+        success: '文档创建成功'
+      create_failed: '创建文档目录失败: {0}'
+      created: '文档已创建: {0}'
+      delete:
+        failed: '删除文档失败: {0}'
+        success: '文档删除成功'
+      deleted: '文档已删除: {0}'
+      directory_ready: '文档目录已就绪: {0}'
+      file_exists_renamed: '文件已存在，重命名为: {0}'
+      get:
+        failed: '获取文档失败: {0}'
+      invalid_directory: '无效目录: {0}'
+      list:
+        exception: '列出文档异常: {0}'
+        failed: '列出文档失败: {0}'
+      not_found: '文档未找到: {0}'
+      notfound: '未找到文档: {0}'
+      process_failed: '处理文件失败: {0}'
+      saved: '文档已保存: {0}'
+      scanned_types: '扫描到的文件类型: {0}'
+      total: '总文档数: {0}'
+      update:
+        failed: '更新文档失败: {0}'
+        success: '文档更新成功'
+      updated: '文档已更新: {0}'
+      upload_to_external: '上传文档将保存到外部路径: ./data/documents'
+      using_default_path: '使用默认路径: ./data/documents'
+      using_filesystem: '使用文件系统路径: {0}'
+      walk_failed: '遍历目录失败: {0}'
+    factory:
+      create_caffeine: '创建 Caffeine 缓存引擎'
+      create_filesystem: '创建文件系统存储引擎'
+      create_lucene: '创建 Lucene 索引引擎'
+    feedback:
+      document_failed: "处理文档反馈失败"
+      document_received: "收到文档反馈 {0}: recordId={1}, document={2}"
+      get_pending_failed: "获取待处理的 QA 记录失败"
+      get_recent_failed: "获取最近的 QA 记录失败"
+      get_record_failed: "获取 QA 记录失败"
+      get_statistics_failed: "获取 QA 统计信息失败"
+      overall_failed: "处理整体反馈失败"
+      overall_received: "收到整体反馈: recordId={0}, rating={1}"
+      overall_rating_submitted: "已提交整体评价 {0} [{1}]: {2}星"
+      rating_failed: "处理评分失败"
+      rating_submitted: "已提交评分 {0} [{1}]: {2} - {3}星 (影响: {4})"
+      weight_disabled: '动态权重调整已禁用'
+      weight_updated: "📊 文档权重更新: {0} -> 权重={1} (👍{2} 👎{3})"
+      weight_reset: "🔄 重置文档权重: {0} -> {1}"
+      weights_cleared: '🧹 清除所有文档权重'
+      weights_saved: "💾 保存文档权重: {0} 个文档"
+      save_failed: '保存文档权重失败'
+      weights_loaded: "📂 加载文档权重: {0} 个文档"
+      load_failed: '加载文档权重失败'
+      weights_file_not_exists: '📂 文档权重文件不存在，使用默认权重'
+      rating_updated: "📊 文档权重更新(星级): {0} -> 权重={1} ({2}星, 调整{3}, 👍{4} 👎{5})"
+      # API响应消息 / API Response Messages
+      api:
+        success:
+          thank_you: "感谢您的评价！"
+          feedback_received: "感谢您的反馈！"
+        error:
+          record_not_found: "记录不存在"
+          processing_failed: "处理失败: {0}"
+          invalid_rating: "评分必须在 1-5 之间"
+          missing_params: "{0} 不能为空"
+          invalid_feedback_type: "feedbackType 必须是 LIKE 或 DISLIKE"
+        impact:
+          document:
+            '5': "这个文档非常有用！系统会优先推荐它 🚀"
+            '4': "这个文档很有帮助，系统会增加推荐权重 📈"
+            '3': "这个文档还行，系统会保持当前权重 ➡️"
+            '2': "这个文档帮助不大，系统会降低推荐权重 📉"
+            '1': "这个文档没有帮助，系统会大幅降低推荐权重 ⚠️"
+          overall:
+            '5': "太好了！这个回答会被推荐给其他用户 🌟"
+            '4': "谢谢反馈！这有助于我们改进回答质量 👍"
+            '3': "感谢评价！我们会继续优化 💡"
+            '2': "感谢反馈！我们会分析并改进 🔧"
+            '1': "抱歉没能帮到您！我们会重点改进 🙏"
+        emoji:
+          '5': "🤩 非常有用"
+          '4': "😊 很有用"
+          '3': "😐 一般般"
+          '2': "🙁 帮助不大"
+          '1': "😞 完全没用"
+    # 文档管理API消息 / Document Management API Messages
+    document_management:
+      api:
+        success:
+          upload: "文档上传成功"
+          delete: "文档删除成功"
+          batch_upload: "批量上传完成"
+          batch_result: "成功: {0}, 失败: {1}"
+          index: "文档索引成功"
+          list_loaded: "文档列表获取成功: 返回 {0} 个文档，共 {1} 个"
+        error:
+          file_empty: "文件为空"
+          upload_failed: "上传失败: {0}"
+          delete_failed: "删除失败: {0}"
+          not_found: "文档未找到"
+          index_failed: "索引失败: {0}"
+          list_failed: "获取列表失败: {0}"
+      log:
+        upload_success: "文档上传成功: {0}"
+        upload_failed: "文档上传失败"
+        batch_upload: "收到批量上传请求: {0} 个文件"
+        file_upload_failed: "文件上传失败: {0}"
+        list_documents: "获取文档列表 - 页码: {0}, 每页: {1}, 排序: {2} {3}"
+        list_failed: "获取文档列表失败"
+    # 文档管理服务消息 / Document Management Service Messages
+    document_service:
+      error:
+        filename_empty: "文件名为空"
+        unsupported_format: "不支持的文件格式: {0}"
+        file_too_large: "文件过大: {0} MB (最大: {1} MB)"
+        illegal_path: "非法的文件路径"
+        cannot_create_dir: "无法创建文档目录: {0}"
+      log:
+        scanned_types: "扫描到的文件类型: {0}"
+    # LLM客户端消息 / LLM Client Messages
+    llm:
+      api_key_missing: '⚠️ 未配置 LLM API Key'
+      api_key_hint: "💡 提示: 设置环境变量:"
+      api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
+      api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
+      fallback_mock: '💡 将降级使用 Mock 模式'
+      client_created: '🤖 创建 {0} LLM 客户端'
+      model: '   - 模型: {0}'
+      api_url: '   - API: {0}'
+      mock_created: '🤖 创建 Mock LLM 客户端（仅用于测试）'
+      mock_warning: '⚠️ Mock 模式将返回固定的模拟回答'
+      mock_hint: "💡 如需使用真实 LLM，请配置:"
+      mock_provider: '      knowledge.qa.llm.provider=openai'
+      mock_apikey: '      并设置相应的 API Key 和 URL'
+      log:
+        openai_init: "✅ OpenAI LLM 客户端初始化完成"
+        openai_request: "发送请求到 OpenAI: {0}"
+        openai_response: "OpenAI 响应内容: {0}"
+        openai_failed: "OpenAI API 调用失败"
+        openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
+        mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
+        mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
+        mock_response: "📝 Mock LLM 返回模拟回答"
+      error:
+        openai_failed: "OpenAI API 调用失败: {0}"
+        openai_http_error: "OpenAI API 错误: HTTP {0}, {1}"
+        parse_failed: "无法解析 OpenAI 响应: {0}"
+      mock:
+        population_answer: "根据文档内容，中国总人口约为14亿人。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+        marriage_answer: "根据文档内容，婚配情况统计数据包括未婚、已婚、离婚、丧偶等状态的人数分布。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+        default_answer: "这是一个模拟回答。\n\n根据您提供的上下文，我理解您的问题。然而，作为 Mock LLM，我只能提供模拟响应。\n\n请配置真实的 LLM 服务（如 OpenAI）以获得准确的答案。\n\n（注意：这是 Mock LLM 的模拟回答）"
+    # 知识库问答服务消息 / Knowledge QA Service Messages
+    knowledge_qa_service:
+      log:
+        build_complete: "   ✅ 知识库构建完成"
+        total_files: "      - 总文件数: {0}"
+        processed_files: "      - 处理文件: {0}"
+        failed_files: "      - 失败文件: {0}"
+        total_documents: "      - 总文档数: {0}"
+        kb_ready: "   ✅ 知识库已就绪"
+        document_count: "      - 文档数: {0}"
+        index_count: "      - 索引数: {0}"
+        vector_disabled: "\n⚠️  向量检索已禁用（配置项: knowledge.qa.vector-search.enabled=false）"
+        init_vector_engine: "\n🚀 步骤2: 初始化向量检索引擎"
+        vector_engine_loaded: "   ✅ 向量嵌入引擎已加载"
+        vector_engine_loading: "   ⏳ 正在加载向量嵌入引擎..."
+        vector_engine_load_time: "   ✅ 向量嵌入引擎加载完成 (耗时: {0}ms)"
+        vector_index_loaded: "   ✅ 向量索引已加载"
+        vector_index_path: "      - 索引路径: {0}"
+        vector_count: "      - 向量数量: {0}"
+        vector_dimension: "      - 向量维度: {0}"
+        vector_model: "      - 向量模型: {0}"
+        hybrid_mode_enabled: "   ✅ 使用混合检索模式（Lucene + 向量）"
+        lucene_only_mode: "   ⚠️  仅使用 Lucene 检索（向量检索不可用）"
+        init_llm: "\n🚀 步骤3: 初始化 LLM 客户端"
+        llm_provider: "   - 提供商: {0}"
+        llm_client_type: "   - 客户端类型: {0}"
+        llm_client_ready: "   ✅ LLM客户端已就绪"
+        llm_loaded: "   ✅ {0} 已加载"
+        llm_unavailable: "   ⚠️  LLM 不可用"
+        create_qa_system: "\n🚀 步骤4: 创建问答系统"
+        smart_context_initialized: "   ✅ 智能上下文构建器已初始化"
+        max_context_chars: "      - 最大上下文: {0} 字符"
+        max_doc_length_chars: "      - 最大文档长度: {0} 字符"
+        chunking_strategy: "      - 切分策略: {0} ({1})"
+        chunk_size_chars: "      - 块大小: {0} 字符"
+        chunk_overlap_chars: "      - 块重叠: {0} 字符"
+        ai_chunking_enabled: "      - AI 切分: 启用 (模型: {0})"
+        using_vector_enhancement: "   ✅ 使用向量检索增强模式"
+        record_saved: "📝 问答记录已保存: {0}"
+        service_init_complete: "\n✅ KnowledgeQAService 初始化完成 (总耗时: {0}ms)"
+        model_download_hint: "💡 提示：请确保模型文件已下载到 resources/models/ 目录"
+        model_doc_hint: "      详细说明请查看: 模型下载说明.md"
+        similar_question_failed: "⚠️ 查找相似问题失败: {0}"
+        too_many_docs_retrieved: "⚠️ 检索到 {0} 个文档，本次处理前 {1} 个（配置: documents-per-query）"
+        load_chunk_failed: "加载块/图片信息失败"
+        close_kb_warning: "⚠️  关闭现有知识库实例时出现警告: {0}"
+        save_qa_failed: "⚠️ 保存问答记录失败"
+        image_not_found: "未找到文档图片: {0}"
+        related_image: "相关图片"
+        error_processing: "抱歉，处理您的问题时出现错误：{0}"
+        available_images: "\n\n【可用图片 - {0}】"
+        image_item: "- 图片 {0}: {1} (引用方式: ![{2}]({3}))"
+        more_images: "  ... 还有 {0} 张图片"
+        important_notice: "\n\n**重要提示**："
+        image_guide_1: "1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。"
+        image_guide_2: "2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。"
+        image_guide_3: "3. 引用格式已在下方提供，直接复制使用即可。"
+        image_guide_4: "4. 请确保引用的图片 URL 完整且正确。"
+        referenced_docs: "\n\n**本次参考的文档**："
+        doc_item: "{0}. {1}"
+        more_docs_notice: "\n\n**提示**：检索到的相关文档较多，本次回答基于前 {0} 个最相关的文档。还有 {1} 个相关文档未包含在本次回答中。如果需要查看更多信息，请告知用户可以继续提问相关问题。"
+        similar_found: "💡 找到 {0} 个相似历史问答"
+        using_hybrid_search: "✅ 使用混合检索（Lucene + Vector）"
+        using_keyword_search: "✅ 使用关键词检索"
+        create_session: "📝 创建会话: sessionId={0}, 总文档数={1}, 本次使用={2}, 剩余={3}"
+        images_in_context: "🖼️ 上下文中包含 {0} 张图片信息"
+        using_docs: "📚 本次使用 {0} 个文档生成回答"
+        remaining_docs: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
+        remaining_docs_unprocessed: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
+        retrieved_all: "✅ Retrieved {0} highly relevant documents, all included in answer"
+        found_chunks_images: "📦 找到 {0} 个块和 {1} 张图片"
+        context_stats: "📊 上下文统计: {0}"
+        question_separator: "\n================================================================================\n"
+        question_prompt: "❓ 问题: {0}"
+        separator: "================================================================================"
+        answer_label: "\n💡 回答:"
+        sources_label: "\n📚 数据来源 (共{0}个文档):"
+        response_time: "\n⏱️  响应时间: {0}ms"
+        qa_record_saved: "📝 问答记录已保存: {0}"
+        question_label: "❓ 问题: {0} (使用会话: {1})"
+        using_session_docs: "📝 使用会话文档: 总{0}个, 当前第{1}页/{2}, 本次使用{3}个"
+        debug_enhanced_stats: "📊 增强统计信息 - 文件系统文档: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
+        classpath_prefix: "classpath:"
+        rebuild_start: "🔄 开始重建知识库..."
+        close_existing_kb: "📌 关闭现有知识库实例..."
+        kb_closed: "✅ 现有知识库实例已关闭"
+        incremental_start: "🔄 开始增量索引知识库..."
+        destroy_start: "🔄 关闭知识库问答系统..."
+        vector_closed: "   ✅ 向量嵌入引擎已关闭"
+        kb_closed_safe: "   ✅ 知识库已关闭"
+        system_closed: "✅ 知识库问答系统已安全关闭"
+        using_keyword_mode: "   ✅ 使用关键词检索模式"
+        qa_with_session_failed: "❌ 使用会话进行问答失败"
+    # 知识库构建服务消息 / Knowledge Base Service Messages
+    kb_service:
+      error:
+        scan_classpath_failed: "扫描 classpath 资源失败"
+      image:
+        section_title: "\n\n=== 文档包含的图片 ==="
+        image_number: "\n图片 {0}:"
+        filename: "- 文件名: {0}"
+        url: "- URL: {0}"
+        description: "- 描述: {0}"
+        original_file: "- 原始文件: {0}"
+        section_end: "\n=== 图片列表结束 ==="
+    # 反馈配置API消息 / Feedback Config API Messages
+    feedback_config:
+      api:
+        success:
+          config_updated: "配置更新成功"
+          mode_switched: "审核模式已切换为: {0}"
+          weight_reset: "文档权重已重置: {0}"
+          weights_cleared: "所有文档权重已清除"
+        error:
+          update_failed: "配置更新失败: {0}"
+          document_name_empty: "文档名称不能为空"
+        mode:
+          require_approval: "需要审核"
+          auto_apply: "自动生效"
+      log:
+        get_config: "📋 获取反馈配置"
+        update_require_approval: "🔧 更新配置: requireApproval = {0}"
+        update_auto_apply: "🔧 更新配置: autoApply = {0}"
+        update_like_weight: "🔧 更新配置: likeWeightIncrement = {0}"
+        update_dislike_weight: "🔧 更新配置: dislikeWeightDecrement = {0}"
+        update_enable_weighting: "🔧 更新配置: enableDynamicWeighting = {0}"
+        toggle_mode: "🔄 切换审核模式: {0}"
+    # 知识库问答API消息 / Knowledge QA API Messages
+    knowledge_qa:
+      log:
+        received_question: "收到问题: {0}"
+        session_question: "使用会话进行问答: 问题={0}, sessionId={1}"
+        search_documents: "搜索文档: {0} (limit={1})"
+        get_statistics: "📊 获取统计信息（增强版）"
+        statistics_result: "📊 统计信息 - 文档总数: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
+        build_start: "🔧 开始构建知识库索引"
+        build_complete: "✅ 知识库索引构建完成 - 耗时: {0}ms"
+        incremental_index_start: "🔄 开始增量索引"
+        incremental_index_complete: "✅ 增量索引完成 - 新增: {0}, 耗时: {1}ms"
+        rebuild_request: "收到知识库重建请求"
+        rebuild_failed: "知识库重建失败"
+        incremental_request: "收到知识库增量索引请求"
+        incremental_failed: "增量索引失败"
+        search_similar: "🔍 搜索相似问题: {0} (minScore={1}, limit={2})"
+        archive_stats: "📊 获取归档统计"
+      api:
+        message:
+          needs_indexing: "检测到 {0} 个未索引的文档。建议执行增量索引以更新知识库。"
+          all_indexed: "所有文档均已索引，知识库状态良好。"
+          system_running: "知识库问答系统运行正常"
+          rebuild_complete: "知识库重建完成"
+          rebuild_failed: "知识库重建失败: {0}"
+          rebuild_suggestion: "请检查日志文件获取详细错误信息"
+          incremental_complete: "增量索引完成，更新了 {0} 个文件"
+          all_up_to_date: "所有文件都是最新的，无需更新"
+          incremental_failed: "增量索引失败: {0}"
+        status:
+          up: "UP"
+          building: "BUILDING"
+          error: "ERROR"
+    # 文档块下载API消息 / Chunk Download API Messages
+    chunk_download:
+      log:
+        list_failed: "获取文档块列表失败: {0}"
+        download_failed: "下载文档块失败: {0}/{1}"
+        content_failed: "获取文档块内容失败: {0}/{1}"
+    filetracking:
+      check_failed: '检查文件状态失败: {0}'
+      clear_failed: '清空文件追踪信息失败: {0}'
+      cleared: '已清空文件追踪信息'
+      load_failed: '加载文件追踪信息失败: {0}'
+      loaded: '已加载文件追踪信息: {0} 个文件'
+      mark_failed: '标记文件为已索引失败: {0}'
+      save_failed: '保存文件追踪信息失败: {0}'
+      saved: '已保存文件追踪信息: {0} 个文件'
+    http:
+      shutdown: 'HTTP 服务器已关闭'
+      start_failed: '启动 HTTP 服务器失败'
+      started: 'HTTP 服务器已在端口 {0} 上启动'
+    hybrid:
+      cannot_get_doc: '无法获取文档: id={0}, 评分={1}'
+      completed: '混合检索完成: 返回 {0} 个文档，耗时 {1}ms'
+      could_not_get_doc: '无法获取文档: 条目 #{0} id={1} (评分: {2})'
+      detail_item: '{0}. {1} (混合: {2} = Lucene 排名#{3} + 向量:{4})'
+      doc_id_list: '文档ID列表: {0}'
+      extract_keywords: '提取关键词: {0}'
+      failed: '混合检索失败，回退到关键词检索'
+      filtered: '过滤了 {0} 个低分文档 (评分 < {1})，保留 {2} 个'
+      found_docs: '找到 {0} 个文档'
+      keyword_search: '关键词检索: {0}'
+      lucene_found: 'Lucene 检索到 {0} 个文档 (总命中: {1}, 限制={2})'
+      lucene_top_header: 'Lucene Top-10 文档（按相关性）:'
+      lucene_top_item: '{0}. {1} - {2} 字符 (Lucene 排名分: {3})'
+      severe_no_docs: '严重：{0} 个评分文档，但无法获取到任何文档对象'
+      top5_header: '混合评分 Top-5 (过滤前, 阈值={0}, topK={1}):'
+      top5_item: '{0} {1}. {2} (评分: {3})'
+      topk_header: '混合 Top-{0} (Lucene 权重:0.3 + 向量权重:0.7):'
+      total_nulls: '共 {0} 个文档无法获取（共 {1} 个评分文档）'
+      vector_found: '向量检索到 {0} 个文档 (限制={1})'
+      vector_top_header: '向量 Top-10 文档:'
+      vector_top_item: '- {0} (相似度: {1})'
+    image:
+      # 图片API消息 / Image API Messages
+      log:
+        get_failed: "获取图片失败: {0}/{1}"
+        list_failed: "获取文档图片列表失败: {0}"
+      delete_failed: '删除文件失败: {0}'
+      deleted_all: '已删除文档的所有图片: {0}'
+      read_info_failed: '读取图片信息失败: {0}'
+      saved: '已保存图片: {0} (文档: {1})'
+      storage:
+        created: '已创建图片存储目录: {0}'
+        init_failed: '初始化图片存储失败'
+      service:
+        init: '初始化图片服务'
+        start: '启动图片提取'
+        using_extractor: '使用图片提取器: {0}'
+        no_images: '未找到图片'
+        extracted: '提取到 {0} 张图片'
+        success: '图片处理成功'
+        saved: '图片已保存: {0}'
+      excel:
+        processing: '处理 Excel 图片'
+        extracted: '从 Excel 提取到 {0} 张图片'
+        legacy:
+          processing: '处理旧版 Excel 图片'
+          extracted: '从旧版 Excel 提取到 {0} 张图片'
+      ppt:
+        processing: '处理 PPT 图片'
+        found: '发现 PPT 图片: {0}'
+        extracted: '从 PPT 提取到 {0} 张图片'
+      pdf:
+        processing: '处理 PDF 图片'
+        extracted: '从 PDF 提取到 {0} 张图片'
+    imageproc:
+      activated: '✅ 图片处理策略已激活: {0}'
+      add_ocr: '   添加 OCR 策略:'
+      add_vision: '   添加 Vision LLM 策略:'
+      init: '🖼️  初始化图片处理功能...'
+      language: '      - 识别语言: {0}'
+      ocr_available: '   ✅ OCR 策略可用'
+      ocr_hint: '   💡 提示: 添加依赖 net.sourceforge.tess4j:tess4j:5.9.0'
+      ocr_unavailable: '   ⚠️  OCR 策略不可用: 缺少 tess4j 依赖'
+      placeholder: '   使用占位符策略（默认）'
+      strategy: '   配置策略: {0}'
+      tessdata: '      - Tessdata路径: {0}'
+      vision_apikey_hint: '   💡 提示: 设置环境变量 VISION_LLM_API_KEY 或配置 knowledge.qa.image-processing.vision-llm.api-key'
+      vision_available: '   ✅ Vision LLM 策略可用'
+      vision_endpoint: '      - 端点: {0}'
+      vision_model: '      - 模型: {0}'
+      vision_no_apikey: '   ⚠️  Vision LLM 已启用但未配置 API Key'
+      vision_unavailable: '   ⚠️ Vision LLM 策略不可用'
+    kb:
+      batch_processing: '📦 批处理: {0} 个文档 ({1} / {2})'
+      batch_commit: '📝 批量提交索引'
+      exists: '📚 检测到已有知识库 ({0} 个文档)'
+      file_process_failed: '❌ 处理文件失败: {0}'
+      files_to_index: '📝 需要索引的文件: {0} 个'
+      final_batch: '📦 处理最后一批: {0} 个文档'
+      first_create: '📚 首次创建知识库'
+      found_files: '✅ 找到 {0} 个文档文件'
+      hint_put_docs: '💡 提示: 请将文档放到 {0} 目录'
+      incremental_done: '\n✅ 增量索引完成！'
+      incremental_failed: '❌ 增量索引失败'
+      incremental_stats: '   - 处理文件: {0}/{1}, 失败: {2}, 总文档: {3}, 耗时: {4}s'
+      no_documents: '⚠️  未找到支持的文档文件'
+      parallel_mode: '🚀 使用并行处理模式（{0} 个线程）'
+      processing_start: '\n📝 开始处理文档...'
+      processing_file: '📄 处理文件: {0}'
+      scanning: '📂 扫描文档: {0}'
+      serial_mode: '📝 使用串行处理模式'
+      supported_formats: '      支持格式: {0}'
+      up_to_date: '✅ 所有文件都是最新的，无需更新'
+      source_path: '   - 文档路径: {0}'
+      gc_before: '🗑️  执行GC以释放内存'
+      content_extracted: '✅ 已提取内容: {0}'
+      content_too_large: '⚠️  内容过大 ({0} 字符)'
+      content_truncated: '✂️  内容已截断为 {0} 字符'
+      indexing_complete: '✅ 索引完成: {0}'
+      parallel_progress: '📊 并行进度: {0}%'
+      parallel_memory: '💾 内存使用: {0} MB'
+      images_extracted: '🖼️  提取到 {0} 张图片'
+      images_added: '➕ 已添加 {0} 张图片到索引'
+      vector_enabled: '✅ 向量检索引擎已启用'
+      vector_init_failed: '❌ 向量检索引擎初始化失败'
+    tika:
+      init: '初始化 Apache Tika'
+      max_content: '最大内容长度: {0}'
+      extract_image_metadata: '提取图片元数据: {0}'
+      include_image_placeholders: '包含图片占位符: {0}'
+      active_image_strategy: '激活图片策略: {0}'
+      ocr_disabled: 'OCR 已禁用'
+      detected_mime: '检测到 MIME 类型: {0}'
+      office_xlsx: '处理 Office XLSX 文档'
+      office_pptx: '处理 Office PPTX 文档'
+      office_done: 'Office 文档处理完成'
+      parsed_file: '已解析文件: {0}'
     memory:
-      suggest_gc: '建议执行垃圾回收，当前内存使用: {0}MB'
-      gc_freed: 'GC 完成，释放了大约 {0}MB 内存'
-      gc_no_freed: 'GC 完成，未释放显著内存'
-    context:
-      initialized: 'SmartContextBuilder 初始化: maxContext={0}字符, maxDoc={1}字符, preserveFullContent={2}'
-      initialized_with_chunker: 'SmartContextBuilder 初始化（含切分器）: strategy={0}, maxContext={1}字符, maxDoc={2}字符, storage={3}'
-      built: '智能上下文构建完成: {0}字符 来自 {1} 个文档 ({2}% 最大值)'
-      remaining_chars: '\n[... 还有 {0} 字符未显示，内容已按关键词优先级提取]'
-  qa:
-    archive:
-      init: '初始化问答归档服务'
-    archive_failed: '归档问答失败'
-    archived: '高评分问答已归档: rating={0}, 路径={1}'
-    document_feedback: '文档反馈 {0} [{1}]: {2} - {3}'
-    feedback_applied: '反馈已应用到文档权重: {0}'
-    feedback_pending: '反馈等待审核: {0}'
-    find_failed: '查找记录失败: {0}'
-    load_failed: '加载问答记录失败: {0}'
-    marked_as_quality: '问答记录已标记为优质内容: [{0}]'
-    overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
-    pending_failed: '获取待审核记录失败'
-    rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
-    rating_pending: '星级评价等待审核: {0} ({1}星)'
-    rating_submitted: '已提交星级 {0} [{1}]: {2} - {3}星 (权重调整: {4})'
-    recent_failed: '获取最近记录失败'
-    record_notfound: '记录未找到: {0}'
-    record_save_failed: '保存问答记录失败'
-    record_saved: '已保存问答记录: {0} - {1}'
-    record_update_failed: '更新问答记录失败: {0}'
-    record_updated: '已更新问答记录: {0}'
-    records_dir: 'QA 记录存储目录: {0}'
-    records_dir_failed: '创建 QA 记录目录失败: {0}'
-    stats_failed: '计算问答统计失败'
-    user_feedback: '用户反馈 [{0}]: 评分={1}, 内容={2}'
-  query:
-    cache_cleared: '查询缓存已清除'
-    cache_hit: '查询命中缓存: {0}'
-    processed: '查询已处理: 文本=''{0}'', 命中={1}, 耗时={2}ms'
-    unknown_sort: '未知的排序字段: {0}，使用相关性排序'
-  rag:
-    batch_indexed: '批量索引 {0} 个文档'
-    cache_hit: '查询结果来自缓存: {0}'
-    close_error: '关闭 Local File RAG 时出错'
-    closed: 'Local File RAG 已成功关闭'
-    closing: '正在关闭 Local File RAG...'
-    delete_failed: '删除文档失败: {0}'
-    deleted_count: '已删除 {0} 个文档'
-    deleting_all: '正在删除所有文档...'
-    doc_deleted: '文档已删除: {0}'
-    doc_indexed: '文档索引成功: {0}'
-    doc_updated: '文档已更新: {0}'
-    enable_cache: '启用缓存: {0}'
-    enable_compression: '启用压缩: {0}'
-    found_to_delete: '找到 {0} 个要删除的文档'
-    init: '初始化 Local File RAG...'
-    init_done: 'Local File RAG 初始化完成'
-    initialized: 'Local File RAG 已使用配置初始化: {0}'
-    load_content_failed: '加载文档内容失败: {0}'
-    loaded_content: '已加载文档内容: {0}, 长度: {1}'
-    no_documents: '没有要删除的文档'
-    optimized: '索引优化完成'
-    optimizing: '正在优化索引...'
-    search_completed: '搜索完成，耗时 {0}ms，找到 {1} 个结果'
-    simple_init: '初始化简单 RAG 服务...'
-    simple_init_done: '简单 RAG 服务初始化完成'
-    storage: '存储路径: {0}'
-  search:
-    advanced_completed: '高级搜索完成: query=''{0}'', 命中={1}'
-    advanced_failed: '高级搜索失败'
-    advanced_failed_detail: '高级搜索失败: {0}'
-    completed: '搜索完成: query=''{0}'', 命中={1}'
-    failed: '搜索失败'
-    failed_detail: '搜索失败: {0}'
-  similar:
-    failed: '❌ 查找相似问题失败'
-    found: '🔍 找到 {0} 个相似问题（关键词：{1}）'
-  simple:
-    batch_index_files_complete: '批量索引完成: 成功 {0}, 失败 {1}'
-    batch_indexed: '批量索引 {0} 个文档'
-    commit: '提交索引更改'
-    doc_indexed: '文档已索引: {0} -> {1}'
-    file_empty: '文件内容为空: {0}'
-    index_file: '已索引文件: {0} -> {1} ({2} 字节)'
-    index_file_failed: '索引文件失败: {0}'
-    optimized: '索引优化完成'
-    scanned_files: '扫描到 {0} 个文件'
-    search_results: '搜索 ''{0}'' 找到 {1} 个结果'
-    shutdown: '正在关闭 RAG 服务'
-  vector:
-    embedding_closed: '🔄 向量嵌入引擎已关闭'
-    embedding_dim: '   - 维度: {0}'
-    embedding_init_success: '嵌入引擎初始化成功'
-    embedding_model: '   - 模型: {0}'
-    fix_check_logs: '   3. 检查日志中的详细错误信息'
-    fix_place_model: '   1. 将模型文件放到 src/main/resources/models/ 目录'
-    fix_supported_models: '   2. 支持的模型: bge-m3, paraphrase-multilingual, text2vec-large-chinese'
-    index_init_success: '索引引擎初始化成功'
-    index_path: '索引路径: {0}'
-    init_embedding: '初始化嵌入引擎...'
-    init_index: '初始化索引引擎...'
-    possible_fixes: '🔧 解决方法：'
-    possible_reasons: '💡 可能的原因：'
-    reason_model_missing: '   1. 模型文件缺失'
-    reason_model_path: '   2. 模型路径错误'
-    reason_onnx: '   3. ONNX Runtime 版本不兼容'
-    test:
-      start: '🧪 向量检索功能测试'
-      test_failed: '❌ 测试失败'
-      test_success: '✅ 测试成功！向量检索引擎初始化正常'
-    vector_count: '   - 向量数量: {0}'
-  model:
-    sep: '===================================================='
-    checking: '🔍 检查模型文件...'
-    found: '✅ 找到模型: {0}'
-    dir_and_file: '📂 模型目录和文件已就绪'
-    passed: '✅ 模型检查通过'
-  storage:
+      critical: '阶段 {0} - 内存使用严重: {1}% - 存在 OOM 风险！'
+      gc_done: '✓ GC完成，内存使用率: {0}% -> {1}%'
+      gc_trigger: '⚠️  内存使用率 {0}% 超过阈值，触发GC...'
+      usage: '阶段 {0} - 已使用内存: {1} MB / 最大: {2} MB ({3}%)'
+      warning: '阶段 {0} - 内存使用较高: {1}%'
+    monitor:
+      health:
+        storage_ok: '存储正常，文档数: {0}'
+        storage_error: '存储错误: {0}'
+        index_ok: '索引正常，已索引: {0}'
+        index_error: '索引错误: {0}'
+        cache_ok: '缓存正常'
+        cache_error: '缓存错误: {0}'
+      metrics:
+        report: '指标:\n  HTTP: {0} 请求, {1} 错误\n  文档: {2} 创建, {3} 更新, {4} 删除\n  搜索: {5} 请求, {6} 错误\n  认证: {7} 尝试, {8} 失败'
+      performance:
+        report: '性能指标:\n  索引: {0} 文档, 平均: {1}ms, 错误: {2}\n  搜索: {3}, 平均: {4}ms, 错误: {5}\n  缓存命中率: {6}%'
+    optimizer:
+      commit: '📝 提交更改...'
+      done: '✅ 提交和优化完成'
+      embedding_closed: '✅ 嵌入引擎已关闭'
+      optimize: '🔧 优化索引...'
+      save_failed: '❌ 保存向量索引失败'
+      saving_vectors: '💾 保存向量索引...'
+      vectors_saved: '✅ 向量索引已保存'
+    optimization:
+      chunker:
+        initialized: 'DocumentChunker 初始化完成 - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
+        chunked: '文档 {0} 已分块为 {1} 部分'
+        batch_completed: '批量分块完成: {0} 个文档 -> {1} 个分块'
+      memory:
+        suggest_gc: '建议执行垃圾回收，当前内存使用: {0}MB'
+        gc_freed: 'GC 完成，释放了大约 {0}MB 内存'
+        gc_no_freed: 'GC 完成，未释放显著内存'
+      context:
+        initialized: 'SmartContextBuilder 初始化: maxContext={0}字符, maxDoc={1}字符, preserveFullContent={2}'
+        initialized_with_chunker: 'SmartContextBuilder 初始化（含切分器）: strategy={0}, maxContext={1}字符, maxDoc={2}字符, storage={3}'
+        built: '智能上下文构建完成: {0}字符 来自 {1} 个文档 ({2}% 最大值)'
+        remaining_chars: '\n[... 还有 {0} 字符未显示，内容已按关键词优先级提取]'
+    qa:
+      archive:
+        init: '初始化问答归档服务'
+      archive_failed: '归档问答失败'
+      archived: '高评分问答已归档: rating={0}, 路径={1}'
+      document_feedback: '文档反馈 {0} [{1}]: {2} - {3}'
+      feedback_applied: '反馈已应用到文档权重: {0}'
+      feedback_pending: '反馈等待审核: {0}'
+      find_failed: '查找记录失败: {0}'
+      load_failed: '加载问答记录失败: {0}'
+      marked_as_quality: '问答记录已标记为优质内容: [{0}]'
+      overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
+      pending_failed: '获取待审核记录失败'
+      rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
+      rating_pending: '星级评价等待审核: {0} ({1}星)'
+      rating_submitted: '已提交星级 {0} [{1}]: {2} - {3}星 (权重调整: {4})'
+      recent_failed: '获取最近记录失败'
+      record_notfound: '记录未找到: {0}'
+      record_save_failed: '保存问答记录失败'
+      record_saved: '已保存问答记录: {0} - {1}'
+      record_update_failed: '更新问答记录失败: {0}'
+      record_updated: '已更新问答记录: {0}'
+      records_dir: 'QA 记录存储目录: {0}'
+      records_dir_failed: '创建 QA 记录目录失败: {0}'
+      stats_failed: '计算问答统计失败'
+      user_feedback: '用户反馈 [{0}]: 评分={1}, 内容={2}'
+    query:
+      cache_cleared: '查询缓存已清除'
+      cache_hit: '查询命中缓存: {0}'
+      processed: '查询已处理: 文本=''{0}'', 命中={1}, 耗时={2}ms'
+      unknown_sort: '未知的排序字段: {0}，使用相关性排序'
+    rag:
+      batch_indexed: '批量索引 {0} 个文档'
+      cache_hit: '查询结果来自缓存: {0}'
+      close_error: '关闭 Local File RAG 时出错'
+      closed: 'Local File RAG 已成功关闭'
+      closing: '正在关闭 Local File RAG...'
+      delete_failed: '删除文档失败: {0}'
+      deleted_count: '已删除 {0} 个文档'
+      deleting_all: '正在删除所有文档...'
+      doc_deleted: '文档已删除: {0}'
+      doc_indexed: '文档索引成功: {0}'
+      doc_updated: '文档已更新: {0}'
+      enable_cache: '启用缓存: {0}'
+      enable_compression: '启用压缩: {0}'
+      found_to_delete: '找到 {0} 个要删除的文档'
+      init: '初始化 Local File RAG...'
+      init_done: 'Local File RAG 初始化完成'
+      initialized: 'Local File RAG 已使用配置初始化: {0}'
+      load_content_failed: '加载文档内容失败: {0}'
+      loaded_content: '已加载文档内容: {0}, 长度: {1}'
+      no_documents: '没有要删除的文档'
+      optimized: '索引优化完成'
+      optimizing: '正在优化索引...'
+      search_completed: '搜索完成，耗时 {0}ms，找到 {1} 个结果'
+      simple_init: '初始化简单 RAG 服务...'
+      simple_init_done: '简单 RAG 服务初始化完成'
+      storage: '存储路径: {0}'
+    search:
+      advanced_completed: '高级搜索完成: query=''{0}'', 命中={1}'
+      advanced_failed: '高级搜索失败'
+      advanced_failed_detail: '高级搜索失败: {0}'
+      completed: '搜索完成: query=''{0}'', 命中={1}'
+      failed: '搜索失败'
+      failed_detail: '搜索失败: {0}'
+    similar:
+      failed: '❌ 查找相似问题失败'
+      found: '🔍 找到 {0} 个相似问题（关键词：{1}）'
+    simple:
+      batch_index_files_complete: '批量索引完成: 成功 {0}, 失败 {1}'
+      batch_indexed: '批量索引 {0} 个文档'
+      commit: '提交索引更改'
+      doc_indexed: '文档已索引: {0} -> {1}'
+      file_empty: '文件内容为空: {0}'
+      index_file: '已索引文件: {0} -> {1} ({2} 字节)'
+      index_file_failed: '索引文件失败: {0}'
+      optimized: '索引优化完成'
+      scanned_files: '扫描到 {0} 个文件'
+      search_results: '搜索 ''{0}'' 找到 {1} 个结果'
+      shutdown: '正在关闭 RAG 服务'
+    vector:
+      embedding_closed: '🔄 向量嵌入引擎已关闭'
+      embedding_dim: '   - 维度: {0}'
+      embedding_init_success: '嵌入引擎初始化成功'
+      embedding_model: '   - 模型: {0}'
+      fix_check_logs: '   3. 检查日志中的详细错误信息'
+      fix_place_model: '   1. 将模型文件放到 src/main/resources/models/ 目录'
+      fix_supported_models: '   2. 支持的模型: bge-m3, paraphrase-multilingual, text2vec-large-chinese'
+      index_init_success: '索引引擎初始化成功'
+      index_path: '索引路径: {0}'
+      init_embedding: '初始化嵌入引擎...'
+      init_index: '初始化索引引擎...'
+      possible_fixes: '🔧 解决方法：'
+      possible_reasons: '💡 可能的原因：'
+      reason_model_missing: '   1. 模型文件缺失'
+      reason_model_path: '   2. 模型路径错误'
+      reason_onnx: '   3. ONNX Runtime 版本不兼容'
+      test:
+        start: '🧪 向量检索功能测试'
+        test_failed: '❌ 测试失败'
+        test_success: '✅ 测试成功！向量检索引擎初始化正常'
+      vector_count: '   - 向量数量: {0}'
+    model:
+      sep: '===================================================='
+      checking: '🔍 检查模型文件...'
+      found: '✅ 找到模型: {0}'
+      dir_and_file: '📂 模型目录和文件已就绪'
+      passed: '✅ 模型检查通过'
+    storage:
       chunk_storage_init: '初始化文档块存储服务，路径: {0}'
       image_storage_init: '初始化图片存储服务，路径: {0}'
       ai_image_analyzer_init: '初始化 AI 图片分析器: enabled={0}, model={1}'

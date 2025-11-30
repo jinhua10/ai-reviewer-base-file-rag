@@ -69,8 +69,23 @@ public final class LogMessageProvider {
      */
     @SuppressWarnings("unchecked")
     private static void flattenYaml(String prefix, Map<String, Object> map, Map<String, String> result) {
+        // 保护性校验：空 map 直接返回
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+
+        // 规范化 prefix，避免后续调用 NPE
+        String safePrefix = prefix == null ? "" : prefix;
+
+        // 如果顶层是单个 'lang' 节点（来自非标准挂载），解包它以去掉 'lang.' 前缀
+        // If the top-level map contains only a single 'lang' node, unwrap it so keys are not prefixed with 'lang.'
+        if (safePrefix.isEmpty() && map.size() == 1 && map.containsKey("lang") && map.get("lang") instanceof Map) {
+            flattenYaml("", (Map<String, Object>) map.get("lang"), result);
+            return;
+        }
+
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
+            String key = safePrefix.isEmpty() ? entry.getKey() : safePrefix + "." + entry.getKey();
             Object value = entry.getValue();
 
             if (value instanceof Map) {
@@ -89,8 +104,12 @@ public final class LogMessageProvider {
      */
     @SuppressWarnings("unchecked")
     private static void flattenYamlSafe(String prefix, Map<?, ?> map, Map<String, String> result) {
+        if (map == null || map.isEmpty()) {
+            return;
+        }
+        String safePrefix = prefix == null ? "" : prefix;
         for (Map.Entry<?, ?> entry : map.entrySet()) {
-            String key = prefix.isEmpty() ? entry.getKey().toString() : prefix + "." + entry.getKey().toString();
+            String key = safePrefix.isEmpty() ? entry.getKey().toString() : safePrefix + "." + entry.getKey().toString();
             Object value = entry.getValue();
 
             if (value instanceof Map) {
