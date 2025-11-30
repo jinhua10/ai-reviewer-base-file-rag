@@ -60,18 +60,17 @@ public class Application {
      */
     private static void printBanner() {
         System.out.println();
-        System.out.println("=".repeat(80));
-        System.out.println("   _    ___   ____                _                           ____      _    ____  ");
-        System.out.println("  / \\  |_ _| |  _ \\ _____   _____ (_) _____      _____ _ __  |  _ \\    / \\  / ___| ");
-        System.out.println(" / _ \\  | |  | |_) / _ \\ \\ / / _ \\| |/ _ \\ \\ /\\ / / _ \\ '__| | |_) |  / _ \\| |  _  ");
-        System.out.println("/ ___ \\ | |  |  _ <  __/\\ V /  __/| |  __/\\ V  V /  __/ |    |  _ <  / ___ \\ |_| | ");
-        System.out.println("\\_/ \\_\\|___| |_| \\_\\___| \\_/ \\___|_|\\___| \\_/\\_/ \\___|_|    |_| \\_\\/_/   \\_\\____| ");
+        System.out.println("     _     ___   ____               _                            ____      _      ____  ");
+        System.out.println("    / \\   |_ _| |  _ \\  ___ __   __(_) ___ __      __ ___   ____|  _ \\    / \\    / ___|");
+        System.out.println("   / _ \\   | |  | |_) |/ _ \\\\ \\ / /| |/ _ \\\\ \\ /\\ / // _ \\ | '__| |_) |  / _ \\  | |  _ ");
+        System.out.println("  / ___ \\  | |  |  _ <|  __/ \\ V / | |  __/ \\ V  V /|  __/ | |  |  _ <  / ___ \\ | |_| |");
+        System.out.println(" /_/   \\_\\|___| |_| \\_\\\\___|  \\_/  |_|\\___|  \\_/\\_/  \\___| |_|  |_| \\_\\/_/   \\_\\ \\____|");
         System.out.println();
-        // Use message provider for i18n strings in the banner
+        System.out.println(" :: AI Reviewer RAG ::                                               (v1.0.0)");
+        System.out.println();
         System.out.println(LogMessageProvider.getMessage("banner.title"));
         System.out.println(LogMessageProvider.getMessage("banner.version", "1.0.0"));
         System.out.println(LogMessageProvider.getMessage("banner.supports", "Excel, Word, PowerPoint, PDF, TXT"));
-        System.out.println("=".repeat(80));
         System.out.println();
     }
 }
