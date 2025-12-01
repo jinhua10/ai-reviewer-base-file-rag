@@ -9,7 +9,7 @@ banner:
 batch:
   failed: "批量处理失败"
 context:
-  initialized: "SmartContextBuilder 已初始化：最大上下文={0} 字符，最大文档={1} 字符，保留完整内容={2}"
+  initialized: "SmartContextBuilder 已初始化：maxContext={0} 字符，maxDoc={1} 字符，preserveFullContent={2}"
 document_management:
   api:
     error:
@@ -90,9 +90,6 @@ image:
   saved: "图片已保存：{0}（文档：{1}）"
   service:
     saved: "图片已保存：{0}"
-  ppt:
-    found: "找到 PPT 图片：{0} 张"
-    processing: "正在处理 PPT 图片"
 knowledge_qa_service:
   doc_item: "{0}. {1}"
   found_chunks_images: "📦 找到 {0} 个分片和 {1} 张图片"
@@ -101,8 +98,10 @@ knowledge_qa_service:
   image_guide_3: "3. 引用格式如下，请直接复制使用。"
   image_guide_4: "4. 请确保引用的图片 URL 完整且正确。"
   images_in_context: "🖼️ 上下文包含 {0} 张图片信息"
+  # 新增请求的键
   destroy_start: "正在销毁知识问答服务..."
   kb_closed_safe: "知识库已安全关闭"
+  system_closed: "知识问答系统已关闭"
   log:
     build_complete: "   ✅ 知识库构建完成"
     failed_files: "      - 失败文件：{0}"
@@ -140,6 +139,7 @@ knowledge_qa_service:
   too_many_docs_retrieved: "⚠️ 已获取 {0} 个文档，将处理前 {1} 个（配置项：documents-per-query）"
   using_docs: "📚 使用 {0} 个文档生成此回答"
   using_hybrid_search: "✅ 使用混合搜索（Lucene + 向量）"
+
 kb_service:
   image:
     description: "图片描述：{0}"
@@ -194,7 +194,7 @@ log:
     registered: "用户注册：{0}"
   chunk:
     ai_completed: "AI 语义分片完成：{0} 字符 -> {1} 个分片，耗时：{2}ms"
-    ai_failed: "AI 语义分片失败，fallback 到智能关键词分片"
+    ai_failed: "AI 语义分片失败，降级为智能关键词分片"
     ai_not_enabled: "配置中未启用 AI 分片"
     ai_parse_failed: "解析 AI 语义分片响应失败：{0}"
     ai_start: "正在启动 AI 语义分片，内容长度：{0} 字符"
@@ -204,7 +204,7 @@ log:
     deleted_all: "文档的所有分片已删除：{0}"
     keywords_extracted: "从查询中提取 {0} 个关键词：{1}"
     max_chunks_reached: "已达到最大分片限制（{0}），停止分片"
-    no_keywords_fallback: "未找到关键词，fallback 到简单分片"
+    no_keywords_fallback: "未找到关键词，降级为简单分片"
     read_meta_failed: "读取分片元数据失败：{0}"
     save_failed: "文档分片保存失败：{0}（索引：{1}）"
     saved: "{0} 个文档分片已保存至文档：{1}"
@@ -215,9 +215,9 @@ log:
       init_failed: "文档分片存储初始化失败"
     truncate_warning: "内容过长（{0} 字符），已截断至 {1} 字符用于 AI 分片"
   chunker:
-    ai_disabled: "AI 分片未启用，fallback 到 SMART_KEYWORD 策略"
+    ai_disabled: "AI 分片未启用，降级为 SMART_KEYWORD 策略"
     creating: "正在创建文档分片器：策略={0}，分片大小={1}，重叠={2}"
-    llm_null: "LLM 客户端为空，fallback 到 SMART_KEYWORD 策略"
+    llm_null: "LLM 客户端为空，降级为 SMART_KEYWORD 策略"
     unknown_strategy: "未知分片策略：{0}，使用 SMART_KEYWORD"
   docs:
     classpath_in_jar: "类路径位于 JAR 包内，不支持写入"
@@ -241,9 +241,8 @@ log:
     invalid_directory: "非法目录：{0}"
     list:
       exception: "列出文档时发生异常：{0}"
-    list.failed: "列出文档失败：{0}"
+      failed: "列出文档失败：{0}"
     not_found: "文档不存在：{0}"
-    notfound: "文档不存在：{0}"
     process_failed: "文件处理失败：{0}"
     saved: "文档已保存：{0}"
     scanned_types: "已扫描文件类型：{0}"
@@ -262,14 +261,14 @@ log:
     create_lucene: "正在创建 Lucene 索引引擎"
   feedback:
     document_failed: "文档反馈处理失败"
-    document_received: "收到文档反馈 {0}：记录ID={1}，文档={2}"
+    document_received: "收到文档反馈 {0}：recordId={1}，文档={2}"
     get_pending_failed: "获取待审核问答记录失败"
     get_record_failed: "获取问答记录失败"
     get_recent_failed: "获取近期问答记录失败"
     get_statistics_failed: "获取问答统计数据失败"
     load_failed: "加载文档权重失败"
     overall_failed: "整体反馈处理失败"
-    overall_received: "收到整体反馈：记录ID={0}，评分={1}"
+    overall_received: "收到整体反馈：recordId={0}，评分={1}"
     overall_rating_submitted: "提交整体评分 {0} [{1}]：{2} 星"
     rating_failed: "评分处理失败"
     rating_submitted: "提交评分 {0} [{1}]：{2} - {3} 星（影响：{4}）"
@@ -295,6 +294,8 @@ log:
       extracted: "从 PDF 提取 {0} 张图片"
       processing: "正在处理 PDF 图片"
     ppt:
+      found: "找到 PPT 图片：{0} 张"
+      processing: "正在处理 PPT 图片"
       extracted: "从 PPT 提取 {0} 张图片"
     read_info_failed: "读取图片信息失败：{0}"
     service:
@@ -396,7 +397,7 @@ log:
     api_key_missing: "⚠️ LLM API Key 未配置"
     api_key_openai: "      - OpenAI：export OPENAI_API_KEY=your-openai-key"
     client_created: "🤖 已创建 {0} LLM 客户端"
-    fallback_mock: "💡 Fallback 到 Mock 模式"
+    fallback_mock: "💡 降级为 Mock 模式"
     model: "   - 模型：{0}"
     api_url: "   - API：{0}"
     mock_created: "🤖 已创建 Mock LLM 客户端（仅用于测试）"
@@ -475,6 +476,8 @@ log:
     storage: "存储路径：{0}"
   session:
     create: "正在创建会话：{0}"
+  simple:
+    shutdown: "正在关闭简易文档服务..."
   storage:
     ai_image_analyzer_init: "正在初始化 AI 图片分析器：已启用={0}，模型={1}"
     chunk_storage_init: "正在初始化文档分片存储服务，路径：{0}"

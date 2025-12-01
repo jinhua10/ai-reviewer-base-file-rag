@@ -90,9 +90,6 @@ image:
   saved: "Image saved: {0} (Document: {1})"
   service:
     saved: "Image saved: {0}"
-  ppt:
-    found: "PPT images found: {0}"
-    processing: "Processing PPT images"
 knowledge_qa_service:
   doc_item: "{0}. {1}"
   found_chunks_images: "📦 Found {0} chunks and {1} images"
@@ -244,7 +241,7 @@ log:
     invalid_directory: "Invalid directory: {0}"
     list:
       exception: "Exception while listing documents: {0}"
-    list.failed: "Failed to list documents: {0}"
+      failed: "Failed to list documents: {0}"
     not_found: "Document not found: {0}"
     process_failed: "Failed to process file: {0}"
     saved: "Document saved: {0}"
@@ -297,6 +294,8 @@ log:
       extracted: "Extracted {0} images from PDF"
       processing: "Processing PDF images"
     ppt:
+      found: "PPT images found: {0}"
+      processing: "Processing PPT images"
       extracted: "Extracted {0} images from PPT"
     read_info_failed: "Failed to read image information: {0}"
     service:
@@ -477,6 +476,8 @@ log:
     storage: "Storage path: {0}"
   session:
     create: "Creating session: {0}"
+  simple:
+    shutdown: "Shutting down simple document service..."
   storage:
     ai_image_analyzer_init: "Initializing AI image analyzer: enabled={0}, model={1}"
     chunk_storage_init: "Initializing document chunk storage service, Path: {0}"
