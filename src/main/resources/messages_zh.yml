@@ -238,6 +238,19 @@ log:
     logged_in: "用户登录：{0}"
     logged_out: "用户登出：{0}"
     registered: "用户注册：{0}"
+  session:
+    create: "创建会话：id={0}，文档总数={1}，每页文档={2}"
+    no_next: "会话没有下一页：{0}"
+    next: "会话 {0} 前进到偏移 {1}"
+    no_prev: "会话没有上一页：{0}"
+    prev: "会话 {0} 回到偏移 {1}"
+    invalid_page: "无效的页码"
+    page_out_of_range: "请求的页码 {0} 超出范围（总页数={1}）"
+    goto_page: "跳转到页 {0}（会话 {1}，偏移 {2}）"
+    deleted: "会话已删除：{0}"
+    cleaned: "已清理过期会话：{0}"
+    cleaned_count: "已清理 {0} 个过期会话"
+    not_found: "未找到会话：{0}"
   hybrid:
     found_docs: "混合搜索找到 {0} 个文档"
     keyword_search: "执行混合关键词搜索：{0}"
@@ -559,3 +572,4 @@ log:
     init: "正在初始化 Apache Tika"
     max_content: "最大内容长度：{0}"
     ocr_disabled: "OCR 已禁用"
+
