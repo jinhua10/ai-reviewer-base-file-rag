@@ -53,7 +53,7 @@ public class LocalFileRAG implements Closeable {
         this.indexEngine = indexEngine;
         this.cacheEngine = cacheEngine;
 
-        log.info(LogMessageProvider.getMessage("log.rag.initialized", configuration.toString()));
+        log.info(LogMessageProvider.getMessage("log.rag.init_done", configuration.toString()));
     }
 
     /**
