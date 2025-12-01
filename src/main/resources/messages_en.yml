@@ -246,7 +246,6 @@ log:
       exception: "Exception while listing documents: {0}"
     list.failed: "Failed to list documents: {0}"
     not_found: "Document not found: {0}"
-    notfound: "Document not found: {0}"
     process_failed: "Failed to process file: {0}"
     saved: "Document saved: {0}"
     scanned_types: "Scanned file types: {0}"

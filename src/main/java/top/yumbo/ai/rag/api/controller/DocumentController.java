@@ -52,7 +52,7 @@ public class DocumentController {
         try {
             Document doc = rag.getDocument(id);
             if (doc == null) {
-                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.notfound", id));
+                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.not_found", id));
             }
             return ApiResponse.success(doc);
             
@@ -79,7 +79,7 @@ public class DocumentController {
             
             boolean updated = rag.updateDocument(id, doc);
             if (!updated) {
-                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.notfound", id));
+                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.not_found", id));
             }
             
             rag.commit();
@@ -99,7 +99,7 @@ public class DocumentController {
         try {
             boolean deleted = rag.deleteDocument(id);
             if (!deleted) {
-                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.notfound", id));
+                return ApiResponse.error(LogMessageProvider.getMessage("log.docs.not_found", id));
             }
             
             rag.commit();
