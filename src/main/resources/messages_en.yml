@@ -517,3 +517,24 @@ log:
     simple_init: "Initializing simple RAG service..."
     simple_init_done: "Simple RAG service initialized successfully"
     storage: "Storage path: {0}"
+  filetracking:
+    loaded: "File tracking loaded: {0}"
+    saved: "File tracking saved: {0}"
+  model:
+    checking: "🔍 Checking model files..."
+    dir_and_file: "📂 Model directory and files are ready"
+    found: "✅ Model found: {0}"
+    passed: "✅ Model check passed"
+    sep: "===================================================="
+  storage:
+    ai_image_analyzer_init: "Initializing AI image analyzer: enabled={0}, model={1}"
+    chunk_storage_init: "Initializing document chunk storage service, Path: {0}"
+    document_image_extraction_init: "Initializing document image extraction service: AI analysis={0}"
+    image_storage_init: "Initializing image storage service, Path: {0}"
+  tika:
+    active_image_strategy: "Active image strategy: {0}"
+    extract_image_metadata: "Extracting image metadata: {0}"
+    include_image_placeholders: "Include image placeholders: {0}"
+    init: "Initializing Apache Tika"
+    max_content: "Max content length: {0}"
+    ocr_disabled: "OCR disabled"
