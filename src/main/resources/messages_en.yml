@@ -128,6 +128,13 @@ knowledge_qa_service:
     smart_context_initialized: "Smart context initialized: maxContext={0}, maxDoc={1}"
     using_keyword_mode: "Using keyword mode for context building"
     record_saved: "QA record saved: {0}"
+    using_vector_enhancement: "Using vector enhancement for retrieval"
+    vector_count: "Vector index contains {0} vectors"
+    vector_dimension: "Vector dimension: {0}"
+    vector_engine_loaded: "Vector engine loaded: {0}"
+    vector_index_loaded: "Vector index loaded: {0}"
+    vector_index_path: "Vector index path: {0}"
+    vector_model: "Vector model: {0}"
   model_doc_hint: "Hint: Place model files in {0}"
   model_download_hint: "Hint: Download the model from {0}"
   more_images: "  ... {0} more images"
@@ -168,6 +175,9 @@ knowledge_qa:
     message:
       all_indexed: "All documents indexed"
       incremental_complete: "Incremental indexing completed"
+      system_running: "Knowledge QA system is running"
+    status:
+      up: "UP"
   log:
     received_question: "Received question: {0}"
     get_statistics: "Retrieving knowledge QA statistics"
@@ -231,6 +241,17 @@ log:
   hybrid:
     found_docs: "Hybrid search found {0} documents"
     keyword_search: "Hybrid keyword search executed: {0}"
+    completed: "Hybrid search completed: Time {0}ms"
+    detail_item: "{0}. {1} (score={2})"
+    extract_keywords: "Extracted keywords: {0}"
+    filtered: "Filtered {0} items"
+    lucene_found: "Lucene found {0} documents"
+    lucene_top_header: "Top Lucene results:"
+    lucene_top_item: "{0}. {1} (luceneScore={2})"
+    top5_header: "Top 5 combined results:"
+    top5_item: "{0}. {1} (score={2})"
+    topk_header: "Top K results:"
+    vector_found: "Vector search found {0} documents"
   similar:
     found: "Found {0} similar documents"
   chunk:
