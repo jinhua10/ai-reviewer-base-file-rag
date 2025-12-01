@@ -210,7 +210,7 @@ public class KnowledgeQAService {
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_count", vectorIndexEngine.size()));
 
         } catch (OrtException | IOException e) {
-            log.error(LogMessageProvider.getMessage("kb.vector_init_failed"), e);
+            log.error(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
             log.warn(LogMessageProvider.getMessage("knowledge_qa_service.model_download_hint"));
             log.warn(LogMessageProvider.getMessage("knowledge_qa_service.model_doc_hint"));
             embeddingEngine = null;

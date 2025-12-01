@@ -104,6 +104,7 @@ knowledge_qa_service:
   # Added keys requested
   destroy_start: "Destroying knowledge Q&A service..."
   kb_closed_safe: "Knowledge base closed safely"
+  system_closed: "Knowledge Q&A system closed"
   log:
     build_complete: "   ✅ Knowledge base build completed"
     failed_files: "      - Failed files: {0}"
@@ -500,4 +501,3 @@ log:
     found: "✅ Model found: {0}"
     passed: "✅ Model check passed"
     sep: "===================================================="
-
