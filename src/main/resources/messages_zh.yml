@@ -21,10 +21,65 @@
       not_a_directory: '不是目录: {0}'
     docs:
       create_failed: '创建文档失败: {0}'
+  llm:
+    log:
+      openai_init: "✅ OpenAI LLM 客户端初始化完成"
+      openai_request: "发送请求到 OpenAI: {0}"
+      openai_response: "OpenAI 响应内容: {0}"
+      openai_failed: "OpenAI API 调用失败"
+      openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
+      mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
+      mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
+      mock_response: "📝 Mock LLM 返回模拟回答"
   log:
+    llm:
+      api_key_missing: '⚠️ 未配置 LLM API Key'
+      api_key_hint: "💡 提示: 设置环境变量:"
+      api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
+      api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
+      fallback_mock: '💡 将降级使用 Mock 模式'
+      client_created: '🤖 创建 {0} LLM 客户端'
+      model: '   - 模型: {0}'
+      api_url: '   - API: {0}'
+      mock_created: '🤖 创建 Mock LLM 客户端（仅用于测试）'
+      mock_warning: '⚠️ Mock 模式将返回固定的模拟回答'
+      mock_hint: "💡 如需使用真实 LLM，请配置:"
+      mock_provider: '      knowledge.qa.llm.provider=openai'
+      mock_apikey: '      并设置相应的 API Key 和 URL'
     app:
       started: '✅ 应用程序启动成功，地址: {0}'
       start_failed: '❌ 应用程序启动失败'
+    storage:
+      chunk_storage_init: '初始化文档块存储服务，路径: {0}'
+      image_storage_init: '初始化图片存储服务，路径: {0}'
+      ai_image_analyzer_init: '初始化 AI 图片分析器: enabled={0}, model={1}'
+      document_image_extraction_init: '初始化文档图片提取服务: AI 分析={0}'
+    qa:
+      archive:
+        init: '初始化问答归档服务'
+      records_dir: 'QA 记录存储目录: {0}'
+      archive_failed: '归档问答失败'
+      archived: '高评分问答已归档: rating={0}, 路径={1}'
+      document_feedback: '文档反馈 {0} [{1}]: {2} - {3}'
+      feedback_applied: '反馈已应用到文档权重: {0}'
+      feedback_pending: '反馈等待审核: {0}'
+      find_failed: '查找记录失败: {0}'
+      load_failed: '加载问答记录失败: {0}'
+      marked_as_quality: '问答记录已标记为优质内容: [{0}]'
+      overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
+      pending_failed: '获取待审核记录失败'
+      rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
+      rating_pending: '星级评价等待审核: {0} ({1}星)'
+      rating_submitted: '已提交星级 {0} [{1}]: {2} - {3}星 (权重调整: {4})'
+      recent_failed: '获取最近记录失败'
+      record_notfound: '记录未找到: {0}'
+      record_save_failed: '保存问答记录失败'
+      record_saved: '已保存问答记录: {0} - {1}'
+      record_update_failed: '更新问答记录失败: {0}'
+      record_updated: '已更新问答记录: {0}'
+      records_dir_failed: '创建 QA 记录目录失败: {0}'
+      stats_failed: '计算问答统计失败'
+      user_feedback: '用户反馈 [{0}]: 评分={1}, 内容={2}'
     kqa:
       sep: "================================================================================\n"
       answer_header: '\n💡 回答:'
@@ -206,28 +261,7 @@
           '3': "😐 一般般"
           '2': "🙁 帮助不大"
           '1': "😞 完全没用"
-    llm:
-      api_key_missing: '⚠️ 未配置 LLM API Key'
-      api_key_hint: "💡 提示: 设置环境变量:"
-      api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
-      api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
-      fallback_mock: '💡 将降级使用 Mock 模式'
-      client_created: '🤖 创建 {0} LLM 客户端'
-      model: '   - 模型: {0}'
-      api_url: '   - API: {0}'
-      mock_created: '🤖 创建 Mock LLM 客户端（仅用于测试）'
-      mock_warning: '⚠️ Mock 模式将返回固定的模拟回答'
-      mock_hint: "💡 如需使用真实 LLM，请配置:"
-      mock_provider: '      knowledge.qa.llm.provider=openai'
-      mock_apikey: '      并设置相应的 API Key 和 URL'
     image:
-      section_title: "\n\n=== 文档包含的图片 ==="
-      image_number: "\n图片 {0}:"
-      filename: "- 文件名: {0}"
-      url: "- URL: {0}"
-      description: "- 描述: {0}"
-      original_file: "- 原始文件: {0}"
-      section_end: "\n=== 图片列表结束 ==="
       delete_failed: '删除文件失败: {0}'
       deleted_all: '已删除文档的所有图片: {0}'
       read_info_failed: '读取图片信息失败: {0}'
@@ -405,15 +439,7 @@
       log:
         scanned_types: "扫描到的文件类型: {0}"
     # LLM客户端消息 / LLM Client Messages
-    log:
-      openai_init: "✅ OpenAI LLM 客户端初始化完成"
-      openai_request: "发送请求到 OpenAI: {0}"
-      openai_response: "OpenAI 响应内容: {0}"
-      openai_failed: "OpenAI API 调用失败"
-      openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
-      mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
-      mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
-      mock_response: "📝 Mock LLM 返回模拟回答"
+
     error:
       openai_failed: "OpenAI API 调用失败: {0}"
       openai_http_error: "OpenAI API 错误: HTTP {0}, {1}"
@@ -515,34 +541,17 @@
       system_closed: "✅ 知识库问答系统已安全关闭"
       using_keyword_mode: "   ✅ 使用关键词检索模式"
       qa_with_session_failed: "❌ 使用会话进行问答失败"
-    qa:
-      archive:
-        init: '初始化问答归档服务'
-      archive_failed: '归档问答失败'
-      archived: '高评分问答已归档: rating={0}, 路径={1}'
-      document_feedback: '文档反馈 {0} [{1}]: {2} - {3}'
-      feedback_applied: '反馈已应用到文档权重: {0}'
-      feedback_pending: '反馈等待审核: {0}'
-      find_failed: '查找记录失败: {0}'
-      load_failed: '加载问答记录失败: {0}'
-      marked_as_quality: '问答记录已标记为优质内容: [{0}]'
-      overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
-      pending_failed: '获取待审核记录失败'
-      rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
-      rating_pending: '星级评价等待审核: {0} ({1}星)'
-      rating_submitted: '已提交星级 {0} [{1}]: {2} - {3}星 (权重调整: {4})'
-      recent_failed: '获取最近记录失败'
-      record_notfound: '记录未找到: {0}'
-      record_save_failed: '保存问答记录失败'
-      record_saved: '已保存问答记录: {0} - {1}'
-      record_update_failed: '更新问答记录失败: {0}'
-      record_updated: '已更新问答记录: {0}'
-      records_dir: 'QA 记录存储目录: {0}'
-      records_dir_failed: '创建 QA 记录目录失败: {0}'
-      stats_failed: '计算问答统计失败'
-      user_feedback: '用户反馈 [{0}]: 评分={1}, 内容={2}'
+
     # 知识库构建服务消息 / Knowledge Base Service Messages
   kb_service:
+    image:
+      description: "- 描述: {0}"
+      filename: "- 文件名: {0}"
+      image_number: "\n图片 {0}:"
+      original_file: "- 原始文件: {0}"
+      section_end: "\n=== 图片列表结束 ==="
+      section_title: "\n\n=== 文档包含的图片 ==="
+      url: "- URL: {0}"
     error:
       scan_classpath_failed: "扫描 classpath 资源失败"
     # 反馈配置API消息 / Feedback Config API Messages
@@ -723,8 +732,4 @@
         test_success: '✅ 测试成功！向量检索引擎初始化正常'
       vector_count: '   - 向量数量: {0}'
 
-    storage:
-      chunk_storage_init: '初始化文档块存储服务，路径: {0}'
-      image_storage_init: '初始化图片存储服务，路径: {0}'
-      ai_image_analyzer_init: '初始化 AI 图片分析器: enabled={0}, model={1}'
-      document_image_extraction_init: '初始化文档图片提取服务: AI 分析={0}'
+
