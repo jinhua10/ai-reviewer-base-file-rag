@@ -1,4 +1,8 @@
 ﻿lang:
+  banner:
+    title: "  AI Reviewer - 知识库智能问答系统 (Knowledge QA System)"
+    version: "  版本: {0}"
+    supports: "  支持: {0}"
   error:
     chunk:
       expected_json_array: '期望 JSON 数组，但得到: {0}'
@@ -17,10 +21,6 @@
       not_a_directory: '不是目录: {0}'
     docs:
       create_failed: '创建文档失败: {0}'
-  banner:
-    title: "  AI Reviewer - 知识库智能问答系统 (Knowledge QA System)"
-    version: "  版本: {0}"
-    supports: "  支持: {0}"
   log:
     app:
       started: '✅ 应用程序启动成功，地址: {0}'
@@ -206,16 +206,180 @@
           '3': "😐 一般般"
           '2': "🙁 帮助不大"
           '1': "😞 完全没用"
+    llm:
+      api_key_missing: '⚠️ 未配置 LLM API Key'
+      api_key_hint: "💡 提示: 设置环境变量:"
+      api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
+      api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
+      fallback_mock: '💡 将降级使用 Mock 模式'
+      client_created: '🤖 创建 {0} LLM 客户端'
+      model: '   - 模型: {0}'
+      api_url: '   - API: {0}'
+      mock_created: '🤖 创建 Mock LLM 客户端（仅用于测试）'
+      mock_warning: '⚠️ Mock 模式将返回固定的模拟回答'
+      mock_hint: "💡 如需使用真实 LLM，请配置:"
+      mock_provider: '      knowledge.qa.llm.provider=openai'
+      mock_apikey: '      并设置相应的 API Key 和 URL'
+    image:
+      section_title: "\n\n=== 文档包含的图片 ==="
+      image_number: "\n图片 {0}:"
+      filename: "- 文件名: {0}"
+      url: "- URL: {0}"
+      description: "- 描述: {0}"
+      original_file: "- 原始文件: {0}"
+      section_end: "\n=== 图片列表结束 ==="
+      delete_failed: '删除文件失败: {0}'
+      deleted_all: '已删除文档的所有图片: {0}'
+      read_info_failed: '读取图片信息失败: {0}'
+      saved: '已保存图片: {0} (文档: {1})'
+      # 图片API消息 / Image API Messages
+      log:
+        get_failed: "获取图片失败: {0}/{1}"
+        list_failed: "获取文档图片列表失败: {0}"
+      storage:
+        created: '已创建图片存储目录: {0}'
+        init_failed: '初始化图片存储失败'
+      service:
+        init: '初始化图片服务'
+        start: '启动图片提取'
+        using_extractor: '使用图片提取器: {0}'
+        no_images: '未找到图片'
+        extracted: '提取到 {0} 张图片'
+        success: '图片处理成功'
+        saved: '图片已保存: {0}'
+      excel:
+        processing: '处理 Excel 图片'
+        extracted: '从 Excel 提取到 {0} 张图片'
+        legacy:
+          processing: '处理旧版 Excel 图片'
+          extracted: '从旧版 Excel 提取到 {0} 张图片'
+      ppt:
+        processing: '处理 PPT 图片'
+        found: '发现 PPT 图片: {0}'
+        extracted: '从 PPT 提取到 {0} 张图片'
+      pdf:
+        processing: '处理 PDF 图片'
+        extracted: '从 PDF 提取到 {0} 张图片'
+    imageproc:
+      activated: '✅ 图片处理策略已激活: {0}'
+      add_ocr: '   添加 OCR 策略:'
+      add_vision: '   添加 Vision LLM 策略:'
+      init: '🖼️  初始化图片处理功能...'
+      language: '      - 识别语言: {0}'
+      ocr_available: '   ✅ OCR 策略可用'
+      ocr_hint: '   💡 提示: 添加依赖 net.sourceforge.tess4j:tess4j:5.9.0'
+      ocr_unavailable: '   ⚠️  OCR 策略不可用: 缺少 tess4j 依赖'
+      placeholder: '   使用占位符策略（默认）'
+      strategy: '   配置策略: {0}'
+      tessdata: '      - Tessdata路径: {0}'
+      vision_apikey_hint: '   💡 提示: 设置环境变量 VISION_LLM_API_KEY 或配置 knowledge.qa.image-processing.vision-llm.api-key'
+      vision_available: '   ✅ Vision LLM 策略可用'
+      vision_endpoint: '      - 端点: {0}'
+      vision_model: '      - 模型: {0}'
+      vision_no_apikey: '   ⚠️  Vision LLM 已启用但未配置 API Key'
+      vision_unavailable: '   ⚠️ Vision LLM 策略不可用'
+    kb:
+      batch_processing: '📦 批处理: {0} 个文档 ({1} / {2})'
+      batch_commit: '📝 批量提交索引'
+      exists: '📚 检测到已有知识库 ({0} 个文档)'
+      file_process_failed: '❌ 处理文件失败: {0}'
+      files_to_index: '📝 需要索引的文件: {0} 个'
+      final_batch: '📦 处理最后一批: {0} 个文档'
+      first_create: '📚 首次创建知识库'
+      found_files: '✅ 找到 {0} 个文档文件'
+      hint_put_docs: '💡 提示: 请将文档放到 {0} 目录'
+      incremental_done: '\n✅ 增量索引完成！'
+      incremental_failed: '❌ 增量索引失败'
+      incremental_stats: '   - 处理文件: {0}/{1}, 失败: {2}, 总文档: {3}, 耗时: {4}s'
+      no_documents: '⚠️  未找到支持的文档文件'
+      parallel_mode: '🚀 使用并行处理模式（{0} 个线程）'
+      processing_start: '\n📝 开始处理文档...'
+      processing_file: '📄 处理文件: {0}'
+      scanning: '📂 扫描文档: {0}'
+      serial_mode: '📝 使用串行处理模式'
+      supported_formats: '      支持格式: {0}'
+      up_to_date: '✅ 所有文件都是最新的，无需更新'
+      source_path: '   - 文档路径: {0}'
+      gc_before: '🗑️  执行GC以释放内存'
+      content_extracted: '✅ 已提取内容: {0}'
+      content_too_large: '⚠️  内容过大 ({0} 字符)'
+      content_truncated: '✂️  内容已截断为 {0} 字符'
+      indexing_complete: '✅ 索引完成: {0}'
+      parallel_progress: '📊 并行进度: {0}%'
+      parallel_memory: '💾 内存使用: {0} MB'
+      images_extracted: '🖼️  提取到 {0} 张图片'
+      images_added: '➕ 已添加 {0} 张图片到索引'
+      vector_enabled: '✅ 向量检索引擎已启用'
+      vector_init_failed: '❌ 向量检索引擎初始化失败'
+    optimization:
+      chunker:
+        initialized: 'DocumentChunker 初始化完成 - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
+        chunked: '文档 {0} 已分块为 {1} 部分'
+        batch_completed: '批量分块完成: {0} 个文档 -> {1} 个分块'
+      memory:
+        suggest_gc: '建议执行垃圾回收，当前内存使用: {0}MB'
+        gc_freed: 'GC 完成，释放了大约 {0}MB 内存'
+        gc_no_freed: 'GC 完成，未释放显著内存'
+      context:
+        initialized: 'SmartContextBuilder 初始化: maxContext={0}字符, maxDoc={1}字符, preserveFullContent={2}'
+        initialized_with_chunker: 'SmartContextBuilder 初始化（含切分器）: strategy={0}, maxContext={1}字符, maxDoc={2}字符, storage={3}'
+        built: '智能上下文构建完成: {0}字符 来自 {1} 个文档 ({2}% 最大值)'
+        remaining_chars: '\n[... 还有 {0} 字符未显示，内容已按关键词优先级提取]'
+    rag:
+      batch_indexed: '批量索引 {0} 个文档'
+      cache_hit: '查询结果来自缓存: {0}'
+      close_error: '关闭 Local File RAG 时出错'
+      closed: 'Local File RAG 已成功关闭'
+      closing: '正在关闭 Local File RAG...'
+      delete_failed: '删除文档失败: {0}'
+      deleted_count: '已删除 {0} 个文档'
+      deleting_all: '正在删除所有文档...'
+      doc_deleted: '文档已删除: {0}'
+      doc_indexed: '文档索引成功: {0}'
+      doc_updated: '文档已更新: {0}'
+      enable_cache: '启用缓存: {0}'
+      enable_compression: '启用压缩: {0}'
+      found_to_delete: '找到 {0} 个要删除的文档'
+      init: '初始化 Local File RAG...'
+      init_done: 'Local File RAG 初始化完成'
+      initialized: 'Local File RAG 已使用配置初始化: {0}'
+      load_content_failed: '加载文档内容失败: {0}'
+      loaded_content: '已加载文档内容: {0}, 长度: {1}'
+      no_documents: '没有要删除的文档'
+      optimized: '索引优化完成'
+      optimizing: '正在优化索引...'
+      search_completed: '搜索完成，耗时 {0}ms，找到 {1} 个结果'
+      simple_init: '初始化简单 RAG 服务...'
+      simple_init_done: '简单 RAG 服务初始化完成'
+      storage: '存储路径: {0}'
+    tika:
+      init: '初始化 Apache Tika'
+      max_content: '最大内容长度: {0}'
+      extract_image_metadata: '提取图片元数据: {0}'
+      include_image_placeholders: '包含图片占位符: {0}'
+      active_image_strategy: '激活图片策略: {0}'
+      ocr_disabled: 'OCR 已禁用'
+      detected_mime: '检测到 MIME 类型: {0}'
+      office_xlsx: '处理 Office XLSX 文档'
+      office_pptx: '处理 Office PPTX 文档'
+      office_done: 'Office 文档处理完成'
+      parsed_file: '已解析文件: {0}'
+    model:
+      sep: '===================================================='
+      checking: '🔍 检查模型文件...'
+      found: '✅ 找到模型: {0}'
+      dir_and_file: '📂 模型目录和文件已就绪'
+      passed: '✅ 模型检查通过'
     # 文档管理API消息 / Document Management API Messages
-    document_management:
-      api:
-        success:
-          upload: "文档上传成功"
-          delete: "文档删除成功"
-          batch_upload: "批量上传完成"
-          batch_result: "成功: {0}, 失败: {1}"
-          index: "文档索引成功"
-          list_loaded: "文档列表获取成功: 返回 {0} 个文档，共 {1} 个"
+  document_management:
+    api:
+      success:
+        upload: "文档上传成功"
+        delete: "文档删除成功"
+        batch_upload: "批量上传完成"
+        batch_result: "成功: {0}, 失败: {1}"
+        index: "文档索引成功"
+        list_loaded: "文档列表获取成功: 返回 {0} 个文档，共 {1} 个"
         error:
           file_empty: "文件为空"
           upload_failed: "上传失败: {0}"
@@ -241,142 +405,146 @@
       log:
         scanned_types: "扫描到的文件类型: {0}"
     # LLM客户端消息 / LLM Client Messages
-    llm:
-      api_key_missing: '⚠️ 未配置 LLM API Key'
-      api_key_hint: "💡 提示: 设置环境变量:"
-      api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
-      api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
-      fallback_mock: '💡 将降级使用 Mock 模式'
-      client_created: '🤖 创建 {0} LLM 客户端'
-      model: '   - 模型: {0}'
-      api_url: '   - API: {0}'
-      mock_created: '🤖 创建 Mock LLM 客户端（仅用于测试）'
-      mock_warning: '⚠️ Mock 模式将返回固定的模拟回答'
-      mock_hint: "💡 如需使用真实 LLM，请配置:"
-      mock_provider: '      knowledge.qa.llm.provider=openai'
-      mock_apikey: '      并设置相应的 API Key 和 URL'
-      log:
-        openai_init: "✅ OpenAI LLM 客户端初始化完成"
-        openai_request: "发送请求到 OpenAI: {0}"
-        openai_response: "OpenAI 响应内容: {0}"
-        openai_failed: "OpenAI API 调用失败"
-        openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
-        mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
-        mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
-        mock_response: "📝 Mock LLM 返回模拟回答"
-      error:
-        openai_failed: "OpenAI API 调用失败: {0}"
-        openai_http_error: "OpenAI API 错误: HTTP {0}, {1}"
-        parse_failed: "无法解析 OpenAI 响应: {0}"
-      mock:
-        population_answer: "根据文档内容，中国总人口约为14亿人。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
-        marriage_answer: "根据文档内容，婚配情况统计数据包括未婚、已婚、离婚、丧偶等状态的人数分布。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
-        default_answer: "这是一个模拟回答。\n\n根据您提供的上下文，我理解您的问题。然而，作为 Mock LLM，我只能提供模拟响应。\n\n请配置真实的 LLM 服务（如 OpenAI）以获得准确的答案。\n\n（注意：这是 Mock LLM 的模拟回答）"
+    log:
+      openai_init: "✅ OpenAI LLM 客户端初始化完成"
+      openai_request: "发送请求到 OpenAI: {0}"
+      openai_response: "OpenAI 响应内容: {0}"
+      openai_failed: "OpenAI API 调用失败"
+      openai_error: "OpenAI API 错误: HTTP {0}, Body: {1}"
+      mock_init: "✅ Mock LLM 客户端初始化完成（仅用于测试）"
+      mock_request: "Mock LLM 收到请求，prompt 长度: {0}"
+      mock_response: "📝 Mock LLM 返回模拟回答"
+    error:
+      openai_failed: "OpenAI API 调用失败: {0}"
+      openai_http_error: "OpenAI API 错误: HTTP {0}, {1}"
+      parse_failed: "无法解析 OpenAI 响应: {0}"
+    mock:
+      population_answer: "根据文档内容，中国总人口约为14亿人。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+      marriage_answer: "根据文档内容，婚配情况统计数据包括未婚、已婚、离婚、丧偶等状态的人数分布。\n\n（注意：这是 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+      default_answer: "这是一个模拟回答。\n\n根据您提供的上下文，我理解您的问题。然而，作为 Mock LLM，我只能提供模拟响应。\n\n请配置真实的 LLM 服务（如 OpenAI）以获得准确的答案。\n\n（注意：这是 Mock LLM 的模拟回答）"
     # 知识库问答服务消息 / Knowledge QA Service Messages
-    knowledge_qa_service:
-      log:
-        build_complete: "   ✅ 知识库构建完成"
-        total_files: "      - 总文件数: {0}"
-        processed_files: "      - 处理文件: {0}"
-        failed_files: "      - 失败文件: {0}"
-        total_documents: "      - 总文档数: {0}"
-        kb_ready: "   ✅ 知识库已就绪"
-        document_count: "      - 文档数: {0}"
-        index_count: "      - 索引数: {0}"
-        vector_disabled: "\n⚠️  向量检索已禁用（配置项: knowledge.qa.vector-search.enabled=false）"
-        init_vector_engine: "\n🚀 步骤2: 初始化向量检索引擎"
-        vector_engine_loaded: "   ✅ 向量嵌入引擎已加载"
-        vector_engine_loading: "   ⏳ 正在加载向量嵌入引擎..."
-        vector_engine_load_time: "   ✅ 向量嵌入引擎加载完成 (耗时: {0}ms)"
-        vector_index_loaded: "   ✅ 向量索引已加载"
-        vector_index_path: "      - 索引路径: {0}"
-        vector_count: "      - 向量数量: {0}"
-        vector_dimension: "      - 向量维度: {0}"
-        vector_model: "      - 向量模型: {0}"
-        hybrid_mode_enabled: "   ✅ 使用混合检索模式（Lucene + 向量）"
-        lucene_only_mode: "   ⚠️  仅使用 Lucene 检索（向量检索不可用）"
-        init_llm: "\n🚀 步骤3: 初始化 LLM 客户端"
-        llm_provider: "   - 提供商: {0}"
-        llm_client_type: "   - 客户端类型: {0}"
-        llm_client_ready: "   ✅ LLM客户端已就绪"
-        llm_loaded: "   ✅ {0} 已加载"
-        llm_unavailable: "   ⚠️  LLM 不可用"
-        create_qa_system: "\n🚀 步骤4: 创建问答系统"
-        smart_context_initialized: "   ✅ 智能上下文构建器已初始化"
-        max_context_chars: "      - 最大上下文: {0} 字符"
-        max_doc_length_chars: "      - 最大文档长度: {0} 字符"
-        chunking_strategy: "      - 切分策略: {0} ({1})"
-        chunk_size_chars: "      - 块大小: {0} 字符"
-        chunk_overlap_chars: "      - 块重叠: {0} 字符"
-        ai_chunking_enabled: "      - AI 切分: 启用 (模型: {0})"
-        using_vector_enhancement: "   ✅ 使用向量检索增强模式"
-        record_saved: "📝 问答记录已保存: {0}"
-        service_init_complete: "\n✅ KnowledgeQAService 初始化完成 (总耗时: {0}ms)"
-        model_download_hint: "💡 提示：请确保模型文件已下载到 resources/models/ 目录"
-        model_doc_hint: "      详细说明请查看: 模型下载说明.md"
-        similar_question_failed: "⚠️ 查找相似问题失败: {0}"
-        too_many_docs_retrieved: "⚠️ 检索到 {0} 个文档，本次处理前 {1} 个（配置: documents-per-query）"
-        load_chunk_failed: "加载块/图片信息失败"
-        close_kb_warning: "⚠️  关闭现有知识库实例时出现警告: {0}"
-        save_qa_failed: "⚠️ 保存问答记录失败"
-        image_not_found: "未找到文档图片: {0}"
-        related_image: "相关图片"
-        error_processing: "抱歉，处理您的问题时出现错误：{0}"
-        available_images: "\n\n【可用图片 - {0}】"
-        image_item: "- 图片 {0}: {1} (引用方式: ![{2}]({3}))"
-        more_images: "  ... 还有 {0} 张图片"
-        important_notice: "\n\n**重要提示**："
-        image_guide_1: "1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。"
-        image_guide_2: "2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。"
-        image_guide_3: "3. 引用格式已在下方提供，直接复制使用即可。"
-        image_guide_4: "4. 请确保引用的图片 URL 完整且正确。"
-        referenced_docs: "\n\n**本次参考的文档**："
-        doc_item: "{0}. {1}"
-        more_docs_notice: "\n\n**提示**：检索到的相关文档较多，本次回答基于前 {0} 个最相关的文档。还有 {1} 个相关文档未包含在本次回答中。如果需要查看更多信息，请告知用户可以继续提问相关问题。"
-        similar_found: "💡 找到 {0} 个相似历史问答"
-        using_hybrid_search: "✅ 使用混合检索（Lucene + Vector）"
-        using_keyword_search: "✅ 使用关键词检索"
-        create_session: "📝 创建会话: sessionId={0}, 总文档数={1}, 本次使用={2}, 剩余={3}"
-        images_in_context: "🖼️ 上下文中包含 {0} 张图片信息"
-        using_docs: "📚 本次使用 {0} 个文档生成回答"
-        remaining_docs: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
-        remaining_docs_unprocessed: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
-        retrieved_all: "✅ Retrieved {0} highly relevant documents, all included in answer"
-        found_chunks_images: "📦 找到 {0} 个块和 {1} 张图片"
-        context_stats: "📊 上下文统计: {0}"
-        question_separator: "\n================================================================================\n"
-        question_prompt: "❓ 问题: {0}"
-        separator: "================================================================================"
-        answer_label: "\n💡 回答:"
-        sources_label: "\n📚 数据来源 (共{0}个文档):"
-        response_time: "\n⏱️  响应时间: {0}ms"
-        qa_record_saved: "📝 问答记录已保存: {0}"
-        question_label: "❓ 问题: {0} (使用会话: {1})"
-        using_session_docs: "📝 使用会话文档: 总{0}个, 当前第{1}页/{2}, 本次使用{3}个"
-        debug_enhanced_stats: "📊 增强统计信息 - 文件系统文档: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
-        classpath_prefix: "classpath:"
-        rebuild_start: "🔄 开始重建知识库..."
-        close_existing_kb: "📌 关闭现有知识库实例..."
-        kb_closed: "✅ 现有知识库实例已关闭"
-        incremental_start: "🔄 开始增量索引知识库..."
-        destroy_start: "🔄 关闭知识库问答系统..."
-        vector_closed: "   ✅ 向量嵌入引擎已关闭"
-        kb_closed_safe: "   ✅ 知识库已关闭"
-        system_closed: "✅ 知识库问答系统已安全关闭"
-        using_keyword_mode: "   ✅ 使用关键词检索模式"
-        qa_with_session_failed: "❌ 使用会话进行问答失败"
+  knowledge_qa_service:
+    image_guide_1: "1. 以下是知识库中与问题相关的图片资源，你可以在回答中引用这些图片。"
+    image_guide_2: "2. 如果回答涉及到这些图片的内容（如架构图、流程图、数据图表等），请使用 Markdown 格式引用图片。"
+    image_guide_3: "3. 引用格式已在下方提供，直接复制使用即可。"
+    image_guide_4: "4. 请确保引用的图片 URL 完整且正确。"
+    more_images: "  ... 还有 {0} 张图片"
+    question_prompt: "❓ 问题: {0}"
+    question_separator: "\n================================================================================\n"
+    too_many_docs_retrieved: "⚠️ 检索到 {0} 个文档，本次处理前 {1} 个（配置: documents-per-query）"
+    related_image: "相关图片"
+    referenced_docs: "\n\n**本次参考的文档**："
+    remaining_docs: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
+    remaining_docs_unprocessed: "ℹ️ 还有 {0} 个相关文档未包含在本次回答中"
+    response_time: "\n⏱️  响应时间: {0}ms"
+    separator: "================================================================================"
+    doc_item: "{0}. {1}"
+    using_hybrid_search: "✅ 使用混合检索（Lucene + Vector）"
+    using_docs: "📚 本次使用 {0} 个文档生成回答"
+    sources_label: "\n📚 数据来源 (共{0}个文档):"
+    log:
+      build_complete: "   ✅ 知识库构建完成"
+      total_files: "      - 总文件数: {0}"
+      processed_files: "      - 处理文件: {0}"
+      failed_files: "      - 失败文件: {0}"
+      total_documents: "      - 总文档数: {0}"
+      kb_ready: "   ✅ 知识库已就绪"
+      document_count: "      - 文档数: {0}"
+      index_count: "      - 索引数: {0}"
+      vector_disabled: "\n⚠️  向量检索已禁用（配置项: knowledge.qa.vector-search.enabled=false）"
+      init_vector_engine: "\n🚀 步骤2: 初始化向量检索引擎"
+      vector_engine_loaded: "   ✅ 向量嵌入引擎已加载"
+      vector_engine_loading: "   ⏳ 正在加载向量嵌入引擎..."
+      vector_engine_load_time: "   ✅ 向量嵌入引擎加载完成 (耗时: {0}ms)"
+      vector_index_loaded: "   ✅ 向量索引已加载"
+      vector_index_path: "      - 索引路径: {0}"
+      vector_count: "      - 向量数量: {0}"
+      vector_dimension: "      - 向量维度: {0}"
+      vector_model: "      - 向量模型: {0}"
+      hybrid_mode_enabled: "   ✅ 使用混合检索模式（Lucene + 向量）"
+      lucene_only_mode: "   ⚠️  仅使用 Lucene 检索（向量检索不可用）"
+      init_llm: "\n🚀 步骤3: 初始化 LLM 客户端"
+      llm_provider: "   - 提供商: {0}"
+      llm_client_type: "   - 客户端类型: {0}"
+      llm_client_ready: "   ✅ LLM客户端已就绪"
+      llm_loaded: "   ✅ {0} 已加载"
+      llm_unavailable: "   ⚠️  LLM 不可用"
+      create_qa_system: "\n🚀 步骤4: 创建问答系统"
+      smart_context_initialized: "   ✅ 智能上下文构建器已初始化"
+      max_context_chars: "      - 最大上下文: {0} 字符"
+      max_doc_length_chars: "      - 最大文档长度: {0} 字符"
+      chunking_strategy: "      - 切分策略: {0} ({1})"
+      chunk_size_chars: "      - 块大小: {0} 字符"
+      chunk_overlap_chars: "      - 块重叠: {0} 字符"
+      ai_chunking_enabled: "      - AI 切分: 启用 (模型: {0})"
+      using_vector_enhancement: "   ✅ 使用向量检索增强模式"
+      record_saved: "📝 问答记录已保存: {0}"
+      service_init_complete: "\n✅ KnowledgeQAService 初始化完成 (总耗时: {0}ms)"
+      model_download_hint: "💡 提示：请确保模型文件已下载到 resources/models/ 目录"
+      model_doc_hint: "      详细说明请查看: 模型下载说明.md"
+      similar_question_failed: "⚠️ 查找相似问题失败: {0}"
+      load_chunk_failed: "加载块/图片信息失败"
+      close_kb_warning: "⚠️  关闭现有知识库实例时出现警告: {0}"
+      save_qa_failed: "⚠️ 保存问答记录失败"
+      image_not_found: "未找到文档图片: {0}"
+      error_processing: "抱歉，处理您的问题时出现错误：{0}"
+      available_images: "\n\n【可用图片 - {0}】"
+      image_item: "- 图片 {0}: {1} (引用方式: ![{2}]({3}))"
+      important_notice: "\n\n**重要提示**："
+      more_docs_notice: "\n\n**提示**：检索到的相关文档较多，本次回答基于前 {0} 个最相关的文档。还有 {1} 个相关文档未包含在本次回答中。如果需要查看更多信息，请告知用户可以继续提问相关问题。"
+      similar_found: "💡 找到 {0} 个相似历史问答"
+      using_keyword_search: "✅ 使用关键词检索"
+      create_session: "📝 创建会话: sessionId={0}, 总文档数={1}, 本次使用={2}, 剩余={3}"
+      images_in_context: "🖼️ 上下文中包含 {0} 张图片信息"
+      retrieved_all: "✅ Retrieved {0} highly relevant documents, all included in answer"
+      found_chunks_images: "📦 找到 {0} 个块和 {1} 张图片"
+      context_stats: "📊 上下文统计: {0}"
+      answer_label: "\n💡 回答:"
+      qa_record_saved: "📝 问答记录已保存: {0}"
+      question_label: "❓ 问题: {0} (使用会话: {1})"
+      using_session_docs: "📝 使用会话文档: 总{0}个, 当前第{1}页/{2}, 本次使用{3}个"
+      debug_enhanced_stats: "📊 增强统计信息 - 文件系统文档: {0}, 已索引: {1}, 未索引: {2}, 完成度: {3}%"
+      classpath_prefix: "classpath:"
+      rebuild_start: "🔄 开始重建知识库..."
+      close_existing_kb: "📌 关闭现有知识库实例..."
+      kb_closed: "✅ 现有知识库实例已关闭"
+      incremental_start: "🔄 开始增量索引知识库..."
+      destroy_start: "🔄 关闭知识库问答系统..."
+      vector_closed: "   ✅ 向量嵌入引擎已关闭"
+      kb_closed_safe: "   ✅ 知识库已关闭"
+      system_closed: "✅ 知识库问答系统已安全关闭"
+      using_keyword_mode: "   ✅ 使用关键词检索模式"
+      qa_with_session_failed: "❌ 使用会话进行问答失败"
+    qa:
+      archive:
+        init: '初始化问答归档服务'
+      archive_failed: '归档问答失败'
+      archived: '高评分问答已归档: rating={0}, 路径={1}'
+      document_feedback: '文档反馈 {0} [{1}]: {2} - {3}'
+      feedback_applied: '反馈已应用到文档权重: {0}'
+      feedback_pending: '反馈等待审核: {0}'
+      find_failed: '查找记录失败: {0}'
+      load_failed: '加载问答记录失败: {0}'
+      marked_as_quality: '问答记录已标记为优质内容: [{0}]'
+      overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
+      pending_failed: '获取待审核记录失败'
+      rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
+      rating_pending: '星级评价等待审核: {0} ({1}星)'
+      rating_submitted: '已提交星级 {0} [{1}]: {2} - {3}星 (权重调整: {4})'
+      recent_failed: '获取最近记录失败'
+      record_notfound: '记录未找到: {0}'
+      record_save_failed: '保存问答记录失败'
+      record_saved: '已保存问答记录: {0} - {1}'
+      record_update_failed: '更新问答记录失败: {0}'
+      record_updated: '已更新问答记录: {0}'
+      records_dir: 'QA 记录存储目录: {0}'
+      records_dir_failed: '创建 QA 记录目录失败: {0}'
+      stats_failed: '计算问答统计失败'
+      user_feedback: '用户反馈 [{0}]: 评分={1}, 内容={2}'
     # 知识库构建服务消息 / Knowledge Base Service Messages
-    kb_service:
-      error:
-        scan_classpath_failed: "扫描 classpath 资源失败"
-      image:
-        section_title: "\n\n=== 文档包含的图片 ==="
-        image_number: "\n图片 {0}:"
-        filename: "- 文件名: {0}"
-        url: "- URL: {0}"
-        description: "- 描述: {0}"
-        original_file: "- 原始文件: {0}"
-        section_end: "\n=== 图片列表结束 ==="
+  kb_service:
+    error:
+      scan_classpath_failed: "扫描 classpath 资源失败"
     # 反馈配置API消息 / Feedback Config API Messages
     feedback_config:
       api:
@@ -473,102 +641,9 @@
       vector_found: '向量检索到 {0} 个文档 (限制={1})'
       vector_top_header: '向量 Top-10 文档:'
       vector_top_item: '- {0} (相似度: {1})'
-    image:
-      # 图片API消息 / Image API Messages
-      log:
-        get_failed: "获取图片失败: {0}/{1}"
-        list_failed: "获取文档图片列表失败: {0}"
-      delete_failed: '删除文件失败: {0}'
-      deleted_all: '已删除文档的所有图片: {0}'
-      read_info_failed: '读取图片信息失败: {0}'
-      saved: '已保存图片: {0} (文档: {1})'
-      storage:
-        created: '已创建图片存储目录: {0}'
-        init_failed: '初始化图片存储失败'
-      service:
-        init: '初始化图片服务'
-        start: '启动图片提取'
-        using_extractor: '使用图片提取器: {0}'
-        no_images: '未找到图片'
-        extracted: '提取到 {0} 张图片'
-        success: '图片处理成功'
-        saved: '图片已保存: {0}'
-      excel:
-        processing: '处理 Excel 图片'
-        extracted: '从 Excel 提取到 {0} 张图片'
-        legacy:
-          processing: '处理旧版 Excel 图片'
-          extracted: '从旧版 Excel 提取到 {0} 张图片'
-      ppt:
-        processing: '处理 PPT 图片'
-        found: '发现 PPT 图片: {0}'
-        extracted: '从 PPT 提取到 {0} 张图片'
-      pdf:
-        processing: '处理 PDF 图片'
-        extracted: '从 PDF 提取到 {0} 张图片'
-    imageproc:
-      activated: '✅ 图片处理策略已激活: {0}'
-      add_ocr: '   添加 OCR 策略:'
-      add_vision: '   添加 Vision LLM 策略:'
-      init: '🖼️  初始化图片处理功能...'
-      language: '      - 识别语言: {0}'
-      ocr_available: '   ✅ OCR 策略可用'
-      ocr_hint: '   💡 提示: 添加依赖 net.sourceforge.tess4j:tess4j:5.9.0'
-      ocr_unavailable: '   ⚠️  OCR 策略不可用: 缺少 tess4j 依赖'
-      placeholder: '   使用占位符策略（默认）'
-      strategy: '   配置策略: {0}'
-      tessdata: '      - Tessdata路径: {0}'
-      vision_apikey_hint: '   💡 提示: 设置环境变量 VISION_LLM_API_KEY 或配置 knowledge.qa.image-processing.vision-llm.api-key'
-      vision_available: '   ✅ Vision LLM 策略可用'
-      vision_endpoint: '      - 端点: {0}'
-      vision_model: '      - 模型: {0}'
-      vision_no_apikey: '   ⚠️  Vision LLM 已启用但未配置 API Key'
-      vision_unavailable: '   ⚠️ Vision LLM 策略不可用'
-    kb:
-      batch_processing: '📦 批处理: {0} 个文档 ({1} / {2})'
-      batch_commit: '📝 批量提交索引'
-      exists: '📚 检测到已有知识库 ({0} 个文档)'
-      file_process_failed: '❌ 处理文件失败: {0}'
-      files_to_index: '📝 需要索引的文件: {0} 个'
-      final_batch: '📦 处理最后一批: {0} 个文档'
-      first_create: '📚 首次创建知识库'
-      found_files: '✅ 找到 {0} 个文档文件'
-      hint_put_docs: '💡 提示: 请将文档放到 {0} 目录'
-      incremental_done: '\n✅ 增量索引完成！'
-      incremental_failed: '❌ 增量索引失败'
-      incremental_stats: '   - 处理文件: {0}/{1}, 失败: {2}, 总文档: {3}, 耗时: {4}s'
-      no_documents: '⚠️  未找到支持的文档文件'
-      parallel_mode: '🚀 使用并行处理模式（{0} 个线程）'
-      processing_start: '\n📝 开始处理文档...'
-      processing_file: '📄 处理文件: {0}'
-      scanning: '📂 扫描文档: {0}'
-      serial_mode: '📝 使用串行处理模式'
-      supported_formats: '      支持格式: {0}'
-      up_to_date: '✅ 所有文件都是最新的，无需更新'
-      source_path: '   - 文档路径: {0}'
-      gc_before: '🗑️  执行GC以释放内存'
-      content_extracted: '✅ 已提取内容: {0}'
-      content_too_large: '⚠️  内容过大 ({0} 字符)'
-      content_truncated: '✂️  内容已截断为 {0} 字符'
-      indexing_complete: '✅ 索引完成: {0}'
-      parallel_progress: '📊 并行进度: {0}%'
-      parallel_memory: '💾 内存使用: {0} MB'
-      images_extracted: '🖼️  提取到 {0} 张图片'
-      images_added: '➕ 已添加 {0} 张图片到索引'
-      vector_enabled: '✅ 向量检索引擎已启用'
-      vector_init_failed: '❌ 向量检索引擎初始化失败'
-    tika:
-      init: '初始化 Apache Tika'
-      max_content: '最大内容长度: {0}'
-      extract_image_metadata: '提取图片元数据: {0}'
-      include_image_placeholders: '包含图片占位符: {0}'
-      active_image_strategy: '激活图片策略: {0}'
-      ocr_disabled: 'OCR 已禁用'
-      detected_mime: '检测到 MIME 类型: {0}'
-      office_xlsx: '处理 Office XLSX 文档'
-      office_pptx: '处理 Office PPTX 文档'
-      office_done: 'Office 文档处理完成'
-      parsed_file: '已解析文件: {0}'
+
+
+
     memory:
       critical: '阶段 {0} - 内存使用严重: {1}% - 存在 OOM 风险！'
       gc_done: '✓ GC完成，内存使用率: {0}% -> {1}%'
@@ -595,78 +670,14 @@
       save_failed: '❌ 保存向量索引失败'
       saving_vectors: '💾 保存向量索引...'
       vectors_saved: '✅ 向量索引已保存'
-    optimization:
-      chunker:
-        initialized: 'DocumentChunker 初始化完成 - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
-        chunked: '文档 {0} 已分块为 {1} 部分'
-        batch_completed: '批量分块完成: {0} 个文档 -> {1} 个分块'
-      memory:
-        suggest_gc: '建议执行垃圾回收，当前内存使用: {0}MB'
-        gc_freed: 'GC 完成，释放了大约 {0}MB 内存'
-        gc_no_freed: 'GC 完成，未释放显著内存'
-      context:
-        initialized: 'SmartContextBuilder 初始化: maxContext={0}字符, maxDoc={1}字符, preserveFullContent={2}'
-        initialized_with_chunker: 'SmartContextBuilder 初始化（含切分器）: strategy={0}, maxContext={1}字符, maxDoc={2}字符, storage={3}'
-        built: '智能上下文构建完成: {0}字符 来自 {1} 个文档 ({2}% 最大值)'
-        remaining_chars: '\n[... 还有 {0} 字符未显示，内容已按关键词优先级提取]'
-    qa:
-      archive:
-        init: '初始化问答归档服务'
-      archive_failed: '归档问答失败'
-      archived: '高评分问答已归档: rating={0}, 路径={1}'
-      document_feedback: '文档反馈 {0} [{1}]: {2} - {3}'
-      feedback_applied: '反馈已应用到文档权重: {0}'
-      feedback_pending: '反馈等待审核: {0}'
-      find_failed: '查找记录失败: {0}'
-      load_failed: '加载问答记录失败: {0}'
-      marked_as_quality: '问答记录已标记为优质内容: [{0}]'
-      overall_rating_submitted: '已提交整体评价 {0} [{1}]: {2}星'
-      pending_failed: '获取待审核记录失败'
-      rating_applied: '星级评价已应用到文档权重: {0} ({1}星 -> 调整 {2})'
-      rating_pending: '星级评价等待审核: {0} ({1}星)'
-      rating_submitted: '已提交星级 {0} [{1}]: {2} - {3}星 (权重调整: {4})'
-      recent_failed: '获取最近记录失败'
-      record_notfound: '记录未找到: {0}'
-      record_save_failed: '保存问答记录失败'
-      record_saved: '已保存问答记录: {0} - {1}'
-      record_update_failed: '更新问答记录失败: {0}'
-      record_updated: '已更新问答记录: {0}'
-      records_dir: 'QA 记录存储目录: {0}'
-      records_dir_failed: '创建 QA 记录目录失败: {0}'
-      stats_failed: '计算问答统计失败'
-      user_feedback: '用户反馈 [{0}]: 评分={1}, 内容={2}'
+
+
     query:
       cache_cleared: '查询缓存已清除'
       cache_hit: '查询命中缓存: {0}'
       processed: '查询已处理: 文本=''{0}'', 命中={1}, 耗时={2}ms'
       unknown_sort: '未知的排序字段: {0}，使用相关性排序'
-    rag:
-      batch_indexed: '批量索引 {0} 个文档'
-      cache_hit: '查询结果来自缓存: {0}'
-      close_error: '关闭 Local File RAG 时出错'
-      closed: 'Local File RAG 已成功关闭'
-      closing: '正在关闭 Local File RAG...'
-      delete_failed: '删除文档失败: {0}'
-      deleted_count: '已删除 {0} 个文档'
-      deleting_all: '正在删除所有文档...'
-      doc_deleted: '文档已删除: {0}'
-      doc_indexed: '文档索引成功: {0}'
-      doc_updated: '文档已更新: {0}'
-      enable_cache: '启用缓存: {0}'
-      enable_compression: '启用压缩: {0}'
-      found_to_delete: '找到 {0} 个要删除的文档'
-      init: '初始化 Local File RAG...'
-      init_done: 'Local File RAG 初始化完成'
-      initialized: 'Local File RAG 已使用配置初始化: {0}'
-      load_content_failed: '加载文档内容失败: {0}'
-      loaded_content: '已加载文档内容: {0}, 长度: {1}'
-      no_documents: '没有要删除的文档'
-      optimized: '索引优化完成'
-      optimizing: '正在优化索引...'
-      search_completed: '搜索完成，耗时 {0}ms，找到 {1} 个结果'
-      simple_init: '初始化简单 RAG 服务...'
-      simple_init_done: '简单 RAG 服务初始化完成'
-      storage: '存储路径: {0}'
+
     search:
       advanced_completed: '高级搜索完成: query=''{0}'', 命中={1}'
       advanced_failed: '高级搜索失败'
@@ -711,12 +722,7 @@
         test_failed: '❌ 测试失败'
         test_success: '✅ 测试成功！向量检索引擎初始化正常'
       vector_count: '   - 向量数量: {0}'
-    model:
-      sep: '===================================================='
-      checking: '🔍 检查模型文件...'
-      found: '✅ 找到模型: {0}'
-      dir_and_file: '📂 模型目录和文件已就绪'
-      passed: '✅ 模型检查通过'
+
     storage:
       chunk_storage_init: '初始化文档块存储服务，路径: {0}'
       image_storage_init: '初始化图片存储服务，路径: {0}'
