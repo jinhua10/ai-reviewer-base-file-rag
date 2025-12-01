@@ -410,6 +410,19 @@ log:
     vision_no_apikey: "   ⚠️ Vision LLM enabled but API Key not configured"
     vision_unavailable: "   ⚠️ Vision LLM strategy unavailable"
   kb:
+    build_complete: "Knowledge base build completed"
+    build_failed: "Knowledge base build failed"
+    build_memory: "Knowledge base build memory usage"
+    build_separator: "----------------------------------------"
+    build_success: "Knowledge base build succeeded"
+    build_time: "Knowledge base build time: {0} ms"
+    build_total: "Total items processed: {0}"
+    memory_after: "Memory after build: {0} MB"
+    memory_before: "Memory before build: {0} MB"
+    old_kb_cleared: "Old knowledge base cleared"
+    rebuild_prepare: "Preparing for knowledge base rebuild..."
+    tracking_cleared: "Knowledge base tracking cleared"
+    tracking_saved: "Knowledge base tracking saved: {0}"
     batch_processing: "📦 Batch processing: {0} documents ({1} / {2})"
     batch_commit: "📝 Committing batch index"
     content_extracted: "✅ Content extracted: {0}"
@@ -570,6 +583,7 @@ log:
   filetracking:
     loaded: "File tracking loaded: {0}"
     saved: "File tracking saved: {0}"
+    cleared: "File tracking cleared"
   model:
     checking: "🔍 Checking model files..."
     dir_and_file: "📂 Model directory and files are ready"
