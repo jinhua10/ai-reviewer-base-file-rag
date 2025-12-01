@@ -102,8 +102,11 @@ knowledge_qa_service:
   image_guide_4: "4. Please ensure the referenced image URL is complete and correct."
   images_in_context: "🖼️ Context contains {0} images of information"
   # Added keys requested
+  close_existing_kb: "Closing existing knowledge base..."
   destroy_start: "Destroying knowledge Q&A service..."
+  kb_closed: "Knowledge base closed"
   kb_closed_safe: "Knowledge base closed safely"
+  rebuild_start: "Starting knowledge base rebuild..."
   system_closed: "Knowledge Q&A system closed"
   log:
     build_complete: "   ✅ Knowledge base build completed"
@@ -176,6 +179,8 @@ knowledge_qa:
       all_indexed: "All documents indexed"
       incremental_complete: "Incremental indexing completed"
       system_running: "Knowledge QA system is running"
+      needs_indexing: "Knowledge base needs indexing"
+      rebuild_complete: "Knowledge base rebuild completed"
     status:
       up: "UP"
   log:
@@ -185,6 +190,7 @@ knowledge_qa:
     statistics_result: "Statistics result: {0}"
     search_documents: "Search documents for question: {0} (found {1})"
     session_question: "Session question [{0}]: {1}"
+    rebuild_request: "Rebuild requested: {0}"
 
 kb_service:
   image:

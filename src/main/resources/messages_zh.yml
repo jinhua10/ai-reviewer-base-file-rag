@@ -105,6 +105,9 @@ knowledge_qa_service:
   destroy_start: "正在销毁知识问答服务..."
   kb_closed_safe: "知识库已安全关闭"
   system_closed: "知识问答系统已关闭"
+  close_existing_kb: "正在关闭现有知识库..."
+  kb_closed: "知识库已关闭"
+  rebuild_start: "正在开始知识库重建..."
   log:
     build_complete: "   ✅ 知识库构建完成"
     failed_files: "      - 失败文件：{0}"
@@ -176,6 +179,8 @@ knowledge_qa:
       all_indexed: "所有文档已完成索引"
       incremental_complete: "增量索引完成"
       system_running: "知识问答系统正在运行"
+      needs_indexing: "知识库需要索引"
+      rebuild_complete: "知识库重建完成"
     status:
       up: "运行中"
   log:
@@ -185,6 +190,7 @@ knowledge_qa:
     statistics_result: "统计结果：{0}"
     search_documents: "为问题搜索文档：{0}（找到 {1} 个）"
     session_question: "会话问题 [{0}]：{1}"
+    rebuild_request: "收到重建请求：{0}"
 
 kb_service:
   image:
