@@ -443,7 +443,17 @@ log:
     vector_init_failed: "❌ Vector search engine initialization failed"
   kqa:
     response_time: "\n⏱️  Response time: {0}ms"
+    build_separator: "----------------------------------------"
+    build_success: "Knowledge base build succeeded"
+    build_time: "Knowledge base build time: {0} ms"
+    build_total: "Total items processed: {0}"
+    memory_after: "Memory after build: {0} MB"
+    memory_before: "Memory before build: {0} MB"
+    tracking_saved: "KB tracking saved: {0}"
+    vector_enabled: "Vector indexing enabled: {0}"
     sep: "================================================================================="
+    # Added missing kb/log keys
+    build_complete: "Knowledge base build completed: {0}"
     answer_header: "\n💡 Answer:"
     build_failed: "Knowledge base build failed: {0}"
     docs_dir_missing: "⚠️ Document directory does not exist: {0}"
@@ -571,6 +581,13 @@ log:
     chunk_storage_init: "Initializing document chunk storage service, Path: {0}"
     document_image_extraction_init: "Initializing document image extraction service: AI analysis={0}"
     image_storage_init: "Initializing image storage service, Path: {0}"
+  optimizer:
+    commit: "Optimizer commit: {0}"
+    done: "Optimizer done"
+    embedding_closed: "Embeddings closed"
+    optimize: "Optimizing knowledge base..."
+    saving_vectors: "Saving vectors..."
+    vectors_saved: "Vectors saved: {0}"
   tika:
     active_image_strategy: "Active image strategy: {0}"
     extract_image_metadata: "Extracting image metadata: {0}"
@@ -578,3 +595,6 @@ log:
     init: "Initializing Apache Tika"
     max_content: "Max content length: {0}"
     ocr_disabled: "OCR disabled"
+    # Added missing tika log keys
+    detected_mime: "Detected MIME type: {0}"
+    parsed_file: "Parsed file: {0}"
