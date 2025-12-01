@@ -1,735 +1,471 @@
-lang:
+# Flattened messages converted from messages_en.yml (English)
+# Generated to support I18n.get(key) lookups
+api:
+  started: "API server started on port {0}"
+banner:
+  supports: "Supports: {0}"
+  title: "AI Reviewer - Knowledge Base Intelligent Q&A System"
+  version: "Version: {0}"
+batch:
+  failed: "Batch processing failed"
+context:
+  initialized: "SmartContextBuilder initialized: maxContext={0} chars, maxDoc={1} chars, preserveFullContent={2}"
+document_management:
+  api:
+    error:
+      delete_failed: "Deletion failed: {0}"
+      file_empty: "File is empty"
+      index_failed: "Indexing failed: {0}"
+      list_failed: "Failed to retrieve list: {0}"
+      not_found: "Document not found"
+      upload_failed: "Upload failed: {0}"
+    success:
+      batch_result: "Success: {0}, Failed: {1}"
+      batch_upload: "Batch upload completed"
+      delete: "Document deleted successfully"
+      index: "Document indexed successfully"
+      list_loaded: "Document list retrieved successfully: Returned {0} documents, Total {1}"
+      upload: "Document uploaded successfully"
+document_service:
   error:
-    chunk:
-      chunk_size_positive: "chunk-size must be positive"
-      expected_json_array: "Expected JSON array, got: {0}"
-      no_valid_chunks: "No valid chunks found in AI response"
-      no_valid_json: "No valid JSON found in response"
-      overlap_less_than_size: "chunk-overlap must be less than chunk-size"
-      overlap_non_negative: "chunk-overlap must be non-negative"
-    auth:
-      user_exists: "User already exists"
-      invalid_credentials: "Invalid credentials"
-      permission_denied: "Permission denied: {0}"
-    invalid_admin_endpoint: "Invalid admin endpoint"
-    invalid_document_endpoint: "Invalid document endpoint"
-    invalid_search_endpoint: "Invalid search endpoint"
-    unknown_endpoint: "Unknown endpoint: {0}"
-    file:
-      not_exists: "File does not exist: {0}"
-      not_a_file: "Not a file: {0}"
-      empty: "File content is empty: {0}"
-      index_failed: "Failed to index file: {0}"
-      directory_not_exists: "Directory does not exist: {0}"
-      not_a_directory: "Not a directory: {0}"
-    docs:
-      create_failed: "Failed to create document: {0}"
-  banner:
-    title: "  AI Reviewer - Knowledge QA System"
-    version: "  Version: {0}"
-    supports: "  Supports: {0}"
+    cannot_create_dir: "Failed to create document directory: {0}"
+    filename_empty: "Filename is empty"
+    file_too_large: "File too large: {0} MB (Max: {1} MB)"
+    illegal_path: "Illegal file path"
+    unsupported_format: "Unsupported file format: {0}"
   log:
-    app:
-      started: 'Application started successfully,address={0}'
-      start_failed: '❌ Application startup failed'
-    kqa:
-      sep: "================================================================================\n"
-      answer_header: "\n💡 Answer:"
-      build_failed: "Knowledge base build failed: {0}"
-      docs_dir_missing: "⚠️ Document directory does not exist: {0}"
-      found_chunks_images: "📦 Found {0} chunks and {1} images"
-      images_in_context: "🖼️ Context contains {0} images of information"
-      incremental_complete: "Incremental indexing completed"
-      incremental_error: "Incremental indexing error"
-      incremental_failed: "Incremental indexing failed: {0}"
-      incremental_mode: "   🔄 Starting incremental knowledge base indexing..."
-      init_done: "✅ Knowledge base Q&A system initialization completed!"
-      init_failed: "❌ Knowledge Q&A service initialization failed"
-      init_kb: "Initialize knowledge base"
-      init_start: "🚀 Initializing knowledge Q&A service"
-      kb_not_initialized: "Knowledge base not initialized"
-      load_chunks_images_failed: "Failed to load chunks/images information"
-      more_docs_available: "ℹ️ {0} more related documents not included in this answer"
-      rebuild_complete: "Knowledge base rebuild completed"
-      rebuild_error: "Knowledge base rebuild error"
-      rebuild_failed: "Knowledge base rebuild failed: {0}"
-      rebuild_mode: "   🚀 Starting full knowledge base rebuild..."
-      recover_failed: "Knowledge base recovery failed"
-      recover_kb: "Recover knowledge base"
-      reinit_complete: "Knowledge base reinitialization completed"
-      reinit_kb: "Reinitialize knowledge base"
-      response_time: "\n⏱️  Response time: {0}ms"
-      scanned_files_count: "📂 File system scan completed, found {0} supported documents"
-      scan_failed: "❌ File system scan failed"
-      source_path: "   - Source path: {0}"
-      sources_header: "\n📚 Data sources (Total {0} documents):"
-      step: "\n🚀 Step {0}: {1}"
-      storage_path: "   - Storage path: {0}"
-      system_not_initialized: "Knowledge Q&A system not initialized"
-      used_docs_count: "📚 Used {0} documents to generate this answer"
-    admin:
-      cache_cleared: "Cache cleared"
-      cache_cleared_success: "Cache cleared successfully"
-      clear_cache_failed: "Failed to clear cache"
-      clear_cache_failed_detail: "Failed to clear cache: {0}"
-      index_optimize_failed: "Failed to optimize index"
-      index_optimize_failed_detail: "Failed to optimize index: {0}"
-      index_optimized: "Index optimized"
-      index_optimized_success: "Index optimized successfully"
-      stats_failed: "Failed to get statistics"
-      stats_failed_detail: "Failed to get statistics: {0}"
-    api:
-      started: "API Server started on port {0}"
-      stopped: "API Server stopped"
-    audit:
-      init_failed: "Failed to initialize audit log"
-      logged: "Audit logged: {0}"
-      write_failed: "Failed to write audit log"
-    auth:
-      logged_in: "User logged in: {0}"
-      logged_out: "User logged out: {0}"
-      registered: "User registered: {0}"
-    batch:
-      failed: "Batch processing failed"
-    channel:
-      exception: "Exception in channel"
-    chunk:
-      ai_completed: "AI semantic chunking completed: {0} chars -> {1} chunks in {2}ms"
-      ai_failed: "AI semantic chunking failed, falling back to smart keyword chunking"
-      ai_not_enabled: "AI chunking is not enabled in config"
-      ai_parse_failed: "Failed to parse AI chunking response: {0}"
-      ai_start: "Starting AI semantic chunking for {0} chars"
-      content_truncate: "Content too large ({0} chars), truncating to {1} chars"
-      coverage_low: "Coverage too low, adding sequential chunks"
-      display_part: "Part {0}/{1}"
-      keywords_extracted: "Extracted {0} keywords from query: {1}"
-      max_chunks_reached: "Reached maximum chunk limit ({0}), stopping chunking"
-      no_keywords_fallback: "No keywords found, falling back to simple chunking"
-      simple_summary: "Simple chunking: {0} chars -> {1} chunks (size={2}, overlap={3})"
-      smart_summary: "Smart keyword chunking: {0} chars -> {1} chunks with {2} keywords"
-      truncate_warning: "Content too long ({0} chars), truncating to {1} chars for AI chunking"
-    chunker:
-      ai_disabled: "AI chunking is not enabled, falling back to SMART_KEYWORD strategy"
-      creating: "Creating document chunker: strategy={0}, chunkSize={1}, overlap={2}"
-      llm_null: "LLM client is null, falling back to SMART_KEYWORD strategy"
-      unknown_strategy: "Unknown chunking strategy: {0}, using SMART_KEYWORD"
-    default:
-      missingKey: "Missing log key: {0}"
-    docs:
-      classpath_in_jar: "Classpath path is inside a JAR, write is not supported"
-      classpath_load_failed: "Failed to load resource from classpath: {0} - {1}"
-      classpath_not_exists: "Classpath resource not found: {0}"
-      classpath_realpath: "Using classpath real path: {0}"
-      classpath_resource_found: "Found resource in classpath: {0}"
-      create:
-        failed: "Failed to create document: {0}"
-        success: 'Document created successfully'
-      create_failed: "Failed to create documents directory: {0}"
-      created: "Document created: {0}"
-      delete:
-        failed: "Failed to delete document: {0}"
-        success: 'Document deleted successfully'
-      deleted: "Document deleted: {0}"
-      directory_ready: "Documents directory ready: {0}"
-      file_exists_renamed: "File exists, renamed to: {0}"
-      get:
-        failed: "Failed to get document: {0}"
-      invalid_directory: "Invalid directory: {0}"
-      list:
-        exception: "Exception while listing documents: {0}"
-        failed: "Failed to list documents: {0}"
-      not_found: "Document not found: {0}"
-      notfound: "Document not found: {0}"
-      process_failed: "Failed to process file: {0}"
-      saved: "Document saved: {0}"
-      scanned_types: "Scanned file types: {0}"
-      total: "Total documents: {0}"
-      update:
-        failed: "Failed to update document: {0}"
-        success: 'Document updated successfully'
-      updated: "Document updated: {0}"
-      upload_to_external: "Uploads will be saved to external path: ./data/documents"
-      using_default_path: "Using default path: ./data/documents"
-      using_filesystem: "Using filesystem path: {0}"
-      walk_failed: "Failed to walk directory: {0}"
-    factory:
-      create_caffeine: "Creating CaffeineCacheEngine"
-      create_filesystem: "Creating FileSystemStorageEngine"
-      create_lucene: "Creating LuceneIndexEngine"
-    feedback:
-      document_failed: "Failed to process document feedback"
-      document_received: "Received document feedback {0}: recordId={1}, document={2}"
-      get_pending_failed: "Failed to get pending QA records"
-      get_recent_failed: "Failed to get recent QA records"
-      get_record_failed: "Failed to get QA record"
-      get_statistics_failed: "Failed to get QA statistics"
-      overall_failed: "Failed to process overall feedback"
-      overall_received: "Received overall feedback: recordId={0}, rating={1}"
-      overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
-      rating_failed: "Failed to process rating"
-      rating_submitted: "Rating submitted {0} [{1}]: {2} - {3} stars (impact: {4})"
-      weight_disabled: 'Dynamic weighting adjustment disabled'
-      weight_updated: "📊 Document weight updated: {0} -> weight={1} (👍{2} 👎{3})"
-      weight_reset: "🔄 Reset document weight: {0} -> {1}"
-      weights_cleared: '🧹 Cleared all document weights'
-      weights_saved: "💾 Saved document weights: {0} documents"
-      save_failed: 'Failed to save document weights'
-      weights_loaded: "📂 Loaded document weights: {0} documents"
-      load_failed: 'Failed to load document weights'
-      weights_file_not_exists: 'Document weights file not exists, using default weights'
-      rating_updated: "Document weight updated (rating): {0} -> weight={1} ({2}star, adjust{3}, 👍{4} 👎{5})"
-      # API Response Messages
-      api:
-        success:
-          thank_you: "Thank you for your rating!"
-          feedback_received: "Thank you for your feedback!"
-        error:
-          record_not_found: "Record not found"
-          processing_failed: "Processing failed: {0}"
-          invalid_rating: "Rating must be between 1-5"
-          missing_params: "{0} cannot be empty"
-          invalid_feedback_type: "feedbackType must be LIKE or DISLIKE"
-        impact:
-          document:
-            '5': "This document is very useful! System will prioritize it 🚀"
-            '4': "This document is helpful, system will increase its weight 📈"
-            '3': "This document is okay, system will keep current weight ➡️"
-            '2': "This document is not very helpful, system will decrease its weight 📉"
-            '1': "This document is not helpful, system will significantly decrease its weight ⚠️"
-          overall:
-            '5': "Excellent! This answer will be recommended to others 🌟"
-            '4': "Thanks! This helps us improve answer quality 👍"
-            '3': "Thank you! We will continue to optimize 💡"
-            '2': "Thanks for feedback! We will analyze and improve 🔧"
-            '1': "Sorry we couldn't help! We will focus on improvement 🙏"
-        emoji:
-          '5': "🤩 Extremely helpful"
-          '4': "😊 Very helpful"
-          '3': "😐 Neutral"
-          '2': "🙁 Not very helpful"
-          '1': "😞 Completely useless"
-    # Document Management API Messages
-    document_management:
-      api:
-        success:
-          upload: "Document uploaded successfully"
-          delete: "Document deleted successfully"
-          batch_upload: "Batch upload completed"
-          batch_result: "Success: {0}, Failed: {1}"
-          index: "Document indexed successfully"
-          list_loaded: "Document list loaded successfully: returned {0} documents, total {1}"
-        error:
-          file_empty: "File is empty"
-          upload_failed: "Upload failed: {0}"
-          delete_failed: "Delete failed: {0}"
-          not_found: "Document not found"
-          index_failed: "Index failed: {0}"
-          list_failed: "Failed to get list: {0}"
-      log:
-        upload_success: "Document uploaded successfully: {0}"
-        upload_failed: "Document upload failed"
-        batch_upload: "Received batch upload request: {0} files"
-        file_upload_failed: "File upload failed: {0}"
-        list_documents: "Get document list - page: {0}, pageSize: {1}, sort: {2} {3}"
-        list_failed: "Failed to get document list"
-    # Document Management Service Messages
-    document_service:
-      error:
-        filename_empty: "Filename is empty"
-        unsupported_format: "Unsupported file format: {0}"
-        file_too_large: "File too large: {0} MB (max: {1} MB)"
-        illegal_path: "Illegal file path"
-        cannot_create_dir: "Cannot create document directory: {0}"
-      log:
-        scanned_types: "Scanned file types: {0}"
-    # LLM Client Messages
-    llm:
-      api_key_missing: '⚠️ LLM API Key not configured'
-      api_key_hint: "💡 Hint: Set environment variables:"
-      api_key_deepseek: '      - DeepSeek: export AI_API_KEY=your-deepseek-key'
-      api_key_openai: '      - OpenAI: export OPENAI_API_KEY=your-openai-key'
-      fallback_mock: '💡 Will fallback to Mock mode'
-      client_created: '🤖 Creating {0} LLM client'
-      model: '   - Model: {0}'
-      api_url: '   - API: {0}'
-      mock_created: '🤖 Creating Mock LLM client (for testing only)'
-      mock_warning: '⚠️ Mock mode will return fixed simulated responses'
-      mock_hint: "💡 For real LLM, configure:"
-      mock_provider: '      knowledge.qa.llm.provider=openai'
-      mock_apikey: '      and set the corresponding API Key and URL'
-      log:
-        openai_init: "✅ OpenAI LLM client initialized successfully"
-        openai_request: "Sending request to OpenAI: {0}"
-        openai_response: "OpenAI response content: {0}"
-        openai_failed: "OpenAI API call failed"
-        openai_error: "OpenAI API error: HTTP {0}, Body: {1}"
-        mock_init: "✅ Mock LLM client initialized (for testing only)"
-        mock_request: "Mock LLM received request, prompt length: {0}"
-        mock_response: "📝 Mock LLM returning simulated answer"
-      error:
-        openai_failed: "OpenAI API call failed: {0}"
-        openai_http_error: "OpenAI API error: HTTP {0}, {1}"
-        parse_failed: "Unable to parse OpenAI response: {0}"
-      mock:
-        population_answer: "According to the document, China's total population is approximately 1.4 billion.\n\n(Note: This is a simulated answer from Mock LLM, please refer to the actual document content)"
-        marriage_answer: "According to the document, marriage statistics include the distribution of unmarried, married, divorced, and widowed status.\n\n(Note: This is a simulated answer from Mock LLM, please refer to the actual document content)"
-        default_answer: "This is a simulated answer.\n\nBased on the context you provided, I understand your question. However, as a Mock LLM, I can only provide simulated responses.\n\nPlease configure a real LLM service (such as OpenAI) to get accurate answers.\n\n(Note: This is a simulated answer from Mock LLM)"
-    # Knowledge QA Service Messages
-    knowledge_qa_service:
-      log:
-        build_complete: "   ✅ Knowledge base build completed"
-        total_files: "      - Total files: {0}"
-        processed_files: "      - Processed files: {0}"
-        failed_files: "      - Failed files: {0}"
-        total_documents: "      - Total documents: {0}"
-        kb_ready: "   ✅ Knowledge base ready"
-        document_count: "      - Documents: {0}"
-        index_count: "      - Indexed: {0}"
-        vector_disabled: "\n⚠️  Vector search disabled (config: knowledge.qa.vector-search.enabled=false)"
-        init_vector_engine: "\n🚀 Step 2: Initialize vector search engine"
-        vector_engine_loaded: "   ✅ Vector embedding engine loaded"
-        vector_engine_loading: "   ⏳ Loading vector embedding engine..."
-        vector_engine_load_time: "   ✅ Vector embedding engine loaded (time: {0}ms)"
-        vector_index_loaded: "   ✅ Vector index loaded"
-        vector_index_path: "      - Index path: {0}"
-        vector_count: "      - Vector count: {0}"
-        hybrid_mode_enabled: "   ✅ Using hybrid search mode (Lucene + Vector)"
-        lucene_only_mode: "   ⚠️  Using Lucene search only (vector search unavailable)"
-        init_llm: "\n🚀 Step 3: Initialize LLM client"
-        llm_loaded: "   ✅ {0} loaded"
-        llm_unavailable: "   ⚠️  LLM unavailable"
-        service_init_complete: "\n✅ KnowledgeQAService initialization complete (total time: {0}ms)"
-        model_download_hint: "💡 Hint: Please ensure model files are downloaded to resources/models/ directory"
-        model_doc_hint: "      For details, see: Model Download Instructions.md"
-        similar_question_failed: "⚠️ Failed to find similar questions: {0}"
-        too_many_docs_retrieved: "⚠️ Retrieved {0} documents, processing first {1} (config: documents-per-query)"
-        load_chunk_failed: "Failed to load chunk/image information"
-        close_kb_warning: "⚠️  Warning when closing existing knowledge base instance: {0}"
-        save_qa_failed: "⚠️ Failed to save QA record"
-        image_not_found: "Image not found for document: {0}"
-        related_image: "Related image"
-        error_processing: "Sorry, an error occurred while processing your question: {0}"
-        available_images: "\n\n【Available Images - {0}】"
-        image_item: "- Image {0}: {1} (Reference: ![{2}]({3}))"
-        more_images: "  ... {0} more images"
-        important_notice: "\n\n**Important Notice**:"
-        image_guide_1: "1. The following are image resources related to your question from the knowledge base, which you can reference in your answer."
-        image_guide_2: "2. If the answer involves content from these images (such as architecture diagrams, flowcharts, data charts, etc.), please use Markdown format to reference the images."
-        image_guide_3: "3. Reference formats are provided below, you can copy and use them directly."
-        image_guide_4: "4. Please ensure the image URLs are complete and correct."
-        referenced_docs: "\n\n**Referenced Documents**:"
-        doc_item: "{0}. {1}"
-        more_docs_notice: "\n\n**Note**: Many relevant documents were retrieved. This answer is based on the top {0} most relevant documents. There are {1} more related documents not included in this answer. If you need more information, please let the user know they can continue asking related questions."
-        similar_found: "💡 Found {0} similar historical Q&A"
-        using_hybrid_search: "✅ Using hybrid search (Lucene + Vector)"
-        using_keyword_search: "✅ Using keyword search"
-        create_session: "📝 Create session: sessionId={0}, total docs={1}, current use={2}, remaining={3}"
-        images_in_context: "🖼️ Context contains {0} image(s)"
-        using_docs: "📚 Using {0} document(s) to generate answer"
-        remaining_docs: "ℹ️ {0} more related documents not included in this answer"
-        retrieved_all: "✅ Retrieved {0} highly relevant documents, all included in answer"
-        answer_label: "\n💡 Answer:"
-        sources_label: "\n📚 Data sources ({0} documents):"
-        response_time: "\n⏱️  Response time: {0}ms"
-        qa_record_saved: "📝 QA record saved: {0}"
-        question_label: "❓ Question: {0} (using session: {1})"
-        using_session_docs: "📝 Using session documents: total {0}, current page {1}/{2}, current use {3}"
-        debug_enhanced_stats: "📊 Enhanced statistics - File system docs: {0}, Indexed: {1}, Unindexed: {2}, Progress: {3}%"
-        classpath_prefix: "classpath:"
-        rebuild_start: "🔄 Starting knowledge base rebuild..."
-        close_existing_kb: "📌 Closing existing knowledge base instance..."
-        kb_closed: "✅ Existing knowledge base instance closed"
-        incremental_start: "🔄 Starting incremental knowledge base indexing..."
-        destroy_start: "🔄 Shutting down knowledge QA system..."
-        vector_closed: "   ✅ Vector embedding engine closed"
-        kb_closed_safe: "   ✅ Knowledge base closed"
-        system_closed: "✅ Knowledge QA system safely closed"
-        using_keyword_mode: "   ✅ Using keyword search mode"
-      question_separator: "\n================================================================================\n"
-      question_prompt: "❓ Question: {0}"
-      separator: "================================================================================\n"
-      remaining_docs_unprocessed: "📋 Remaining {0} documents unprocessed, user can continue asking"
-      context_stats: "Context stats: {0}"
-      found_chunks_images: "📦 Found {0} chunks and {1} images"
-      success_files: "   - Success: {0} files"
-      failed_files: "   - Failed: {0} files"
-      total_documents: "   - Total documents: {0}"
-      incremental_index_start: "🔄 Starting incremental knowledge base indexing..."
-      closing_existing_kb: "📌 Closing existing knowledge base instance..."
-      existing_kb_closed: "✅ Existing knowledge base instance closed"
-      destroy_start: "🔄 Shutting down knowledge QA system..."
-      vector_engine_closed: "   ✅ Vector embedding engine closed"
-      kb_closed: "   ✅ Knowledge base closed"
-      system_closed: "✅ Knowledge QA system safely closed"
-    # Knowledge Base Service Messages
-    kb_service:
-      error:
-        scan_classpath_failed: "Failed to scan classpath resources"
-      image:
-        section_title: "\n\n=== Document Images ==="
-        image_number: "\nImage {0}:"
-        filename: "- Filename: {0}"
-        url: "- URL: {0}"
-        description: "- Description: {0}"
-        original_file: "- Original file: {0}"
-        section_end: "\n=== End of Image List ==="
-    # Feedback Config API Messages
-    feedback_config:
-      api:
-        success:
-          config_updated: "Configuration updated successfully"
-          mode_switched: "Review mode switched to: {0}"
-          weight_reset: "Document weight reset: {0}"
-          weights_cleared: "All document weights cleared"
-        error:
-          update_failed: "Configuration update failed: {0}"
-          document_name_empty: "Document name cannot be empty"
-        mode:
-          require_approval: "Require Approval"
-          auto_apply: "Auto Apply"
-      log:
-        get_config: "📋 Get feedback configuration"
-        update_require_approval: "🔧 Update config: requireApproval = {0}"
-        update_auto_apply: "🔧 Update config: autoApply = {0}"
-        update_like_weight: "🔧 Update config: likeWeightIncrement = {0}"
-        update_dislike_weight: "🔧 Update config: dislikeWeightDecrement = {0}"
-        update_enable_weighting: "🔧 Update config: enableDynamicWeighting = {0}"
-        toggle_mode: "🔄 Toggle review mode: {0}"
-    # Knowledge QA API Messages
-    knowledge_qa:
-      log:
-        received_question: "Received question: {0}"
-        session_question: "Session QA: question={0}, sessionId={1}"
-        search_documents: "Search documents: {0} (limit={1})"
-        get_statistics: "📊 Get statistics (enhanced)"
-        statistics_result: "📊 Statistics - Total: {0}, Indexed: {1}, Unindexed: {2}, Progress: {3}%"
-        build_start: "🔧 Start building knowledge base index"
-        build_complete: "✅ Knowledge base index built - Time: {0}ms"
-        incremental_index_start: "🔄 Start incremental indexing"
-        incremental_index_complete: "✅ Incremental indexing complete - New: {0}, Time: {1}ms"
-        rebuild_request: "Received knowledge base rebuild request"
-        rebuild_failed: "Knowledge base rebuild failed"
-        incremental_request: "Received knowledge base incremental index request"
-        incremental_failed: "Incremental index failed"
-        search_similar: "🔍 Search similar questions: {0} (minScore={1}, limit={2})"
-        archive_stats: "📊 Get archive statistics"
-      api:
-        message:
-          needs_indexing: "Detected {0} unindexed documents. Recommend performing incremental indexing to update knowledge base."
-          all_indexed: "All documents are indexed, knowledge base is in good condition."
-          system_running: "Knowledge QA system is running normally"
-          rebuild_complete: "Knowledge base rebuild complete"
-          rebuild_failed: "Knowledge base rebuild failed: {0}"
-          rebuild_suggestion: "Please check log files for detailed error information"
-          incremental_complete: "Incremental indexing complete, updated {0} files"
-          all_up_to_date: "All files are up-to-date, no update needed"
-          incremental_failed: "Incremental index failed: {0}"
-        status:
-          up: "UP"
-          building: "BUILDING"
-          error: "ERROR"
-    # Chunk Download API Messages
-    chunk_download:
-      log:
-        list_failed: "Failed to list chunks for document: {0}"
-        download_failed: "Failed to download chunk: {0}/{1}"
-        content_failed: "Failed to get chunk content: {0}/{1}"
-    filetracking:
-      check_failed: "Failed to check file status: {0}"
-      clear_failed: "Failed to clear file tracking info: {0}"
-      cleared: "Cleared file tracking information"
-      load_failed: "Failed to load file tracking info: {0}"
-      loaded: "Loaded file tracking info: {0} files"
-      mark_failed: "Failed to mark file as indexed: {0}"
-      save_failed: "Failed to save file tracking info: {0}"
-      saved: "Saved file tracking info: {0} files"
-    http:
-      bad_request: "Bad request: {0}"
-      internal_server_error: "Internal server error"
-      processing_error: "Error processing HTTP request"
-      received_request: "Received HTTP request: {0} {1}"
-      shutdown: "HTTP server shutdown"
-      start_failed: "Failed to start HTTP server"
-      started: "HTTP server started on port {0}"
-    hybrid:
-      cannot_get_doc: "Cannot get document: id={0}, score={1}"
-      completed: "Hybrid search completed: returned {0} documents in {1}ms"
-      could_not_get_doc: "Could not get document for entry #{0} id={1} (score: {2})"
-      detail_item: "{0}. {1} (hybrid: {2} = Lucene rank#{3} + vector:{4})"
-      doc_id_list: "Document ID list: {0}"
-      extract_keywords: "Extracted keywords: {0}"
-      failed: "Hybrid search failed, falling back to keyword search"
-      filtered: "Filtered out {0} low-score documents (score < {1}), keeping {2}"
-      found_docs: "Found {0} documents"
-      keyword_search: "Keyword search: {0}"
-      lucene_found: "Lucene found {0} documents (total hits: {1}, limit={2})"
-      lucene_top_header: "Lucene Top-10 documents (by relevance):"
-      lucene_top_item: "{0}. {1} - {2} chars (Lucene rank score: {3,number,#.###})"
-      severe_no_docs: "Severe: {0} scored docs but no document objects could be retrieved"
-      top5_header: "Hybrid score Top-5 (before filtering, threshold={0}, topK={1}):"
-      top5_item: "{0} {1}. {2} (score: {3})"
-      topk_header: "Hybrid Top-{0} (Lucene weight:0.3 + Vector weight:0.7):"
-      total_nulls: "Total {0} documents could not be retrieved (out of {1} scored docs)"
-      vector_found: "Vector search found {0} documents (limit={1})"
-      vector_top_header: "Vector Top-10 documents:"
-      vector_top_item: "- {0} (similarity: {1,number,#.###})"
-    image:
-      # Image API Messages
-      log:
-        get_failed: "Failed to get image: {0}/{1}"
-        list_failed: "Failed to list images for document: {0}"
-      delete_failed: "Failed to delete: {0}"
-      deleted_all: "Deleted all images for document: {0}"
-      read_info_failed: "Failed to read image info: {0}"
-      saved: "Saved image: {0} for document: {1}"
-      storage:
-        created: "Created image storage directory: {0}"
-        init_failed: "Failed to initialize image storage"
-      service:
-        init: 'Initializing image service'
-        start: 'Starting image extraction'
-        using_extractor: 'Using image extractor: {0}'
-        no_images: 'No images found'
-        extracted: 'Extracted {0} images'
-        success: 'Image processing successful'
-        saved: 'Image saved: {0}'
-      excel:
-        processing: 'Processing Excel images'
-        extracted: 'Extracted {0} images from Excel'
-        legacy:
-          processing: 'Processing legacy Excel images'
-          extracted: 'Extracted {0} images from legacy Excel'
-      ppt:
-        processing: 'Processing PPT images'
-        found: 'Found PPT image: {0}'
-        extracted: 'Extracted {0} images from PPT'
-      pdf:
-        processing: 'Processing PDF images'
-        extracted: 'Extracted {0} images from PDF'
-    imageproc:
-      activated: "Image processing strategy activated: {0}"
-      add_ocr: "Adding OCR strategy"
-      add_vision: "Adding Vision LLM strategy"
-      init: "Initializing image processing features..."
-      language: "Recognition language: {0}"
-      ocr_available: "OCR strategy available"
-      ocr_hint: "Hint: add dependency net.sourceforge.tess4j:tess4j:5.9.0"
-      ocr_unavailable: "OCR strategy unavailable: tess4j missing"
-      placeholder: "Using placeholder strategy (default)"
-      strategy: "Image processing strategy: {0}"
-      tessdata: "Tessdata path: {0}"
-      vision_apikey_hint: "Hint: set environment variable VISION_LLM_API_KEY or config knowledge.qa.image-processing.vision-llm.api-key"
-      vision_available: "Vision LLM strategy available"
-      vision_endpoint: "Vision LLM endpoint: {0}"
-      vision_model: "Vision LLM model: {0}"
-      vision_no_apikey: "Vision LLM enabled but API key not configured"
-      vision_unavailable: "Vision LLM strategy unavailable"
-    kb:
-      batch_processing: "Batch processing: {0} docs ({1} / {2})"
-      batch_commit: 'Batch commit index'
-      exists: "Existing knowledge base detected ({0} documents)"
-      file_process_failed: "Failed to process file: {0}"
-      files_to_index: "Files to index: {0}"
-      final_batch: "Processing final batch: {0} docs"
-      first_create: "First-time knowledge base creation"
-      found_files: "Found {0} document files"
-      hint_put_docs: "Hint: please put documents into {0}"
-      incremental_done: "Incremental indexing completed!"
-      incremental_failed: "Incremental indexing failed"
-      incremental_stats: "Processed files: {0}/{1}, failed: {2}, total docs: {3}, time: {4}s"
-      no_documents: "No supported documents found"
-      parallel_mode: "Using parallel processing mode ({0} threads)"
-      processing_start: "Start processing documents..."
-      processing_file: 'Processing file: {0}'
-      scanning: "Scanning documents: {0}"
-      serial_mode: "Using serial processing mode"
-      supported_formats: "Supported formats: {0}"
-      up_to_date: "All files are up-to-date, no update needed"
-      source_path: '   - Document path: {0}'
-      gc_before: 'Executing GC to free memory'
-      content_extracted: 'Content extracted: {0}'
-      content_too_large: 'Content too large ({0} characters)'
-      content_truncated: 'Content truncated to {0} characters'
-      indexing_complete: 'Indexing complete: {0}'
-      parallel_progress: 'Parallel progress: {0}%'
-      parallel_memory: 'Memory usage: {0} MB'
-      images_extracted: 'Extracted {0} images'
-      images_added: 'Added {0} images to index'
-      vector_enabled: "Vector search enabled"
-      vector_init_failed: "❌ Vector search engine initialization failed"
-      vector_closed: "   ✅ Vector embedding engine closed"
-    tika:
-      init: 'Initializing Apache Tika'
-      max_content: 'Max content length: {0}'
-      extract_image_metadata: 'Extract image metadata: {0}'
-      include_image_placeholders: 'Include image placeholders: {0}'
-      active_image_strategy: 'Active image strategy: {0}'
-      ocr_disabled: 'OCR disabled'
-      detected_mime: 'Detected MIME type: {0}'
-      office_xlsx: 'Processing Office XLSX document'
-      office_pptx: 'Processing Office PPTX document'
-      office_done: 'Office document processing complete'
-      parsed_file: 'Parsed file: {0}'
-    memory:
-      critical: "Phase {0} - Critical memory usage: {1}% - OOM risk!"
-      gc_done: "GC completed: before={0}% -> after={1}%"
-      gc_trigger: "Memory usage {0}% exceeds threshold, triggering GC"
-      usage: "Phase {0} - Used memory: {1} MB/ Max: {2} MB ({3}%)"
-      usage_phase: "Phase {0} - Used memory: {1} MB/ Max: {2} MB ({3}%)"
-      warning: "Phase {0} - High memory usage: {1}%"
-    monitor:
-      health:
-        storage_ok: 'Storage OK, docs: {0}'
-        storage_error: 'Storage error: {0}'
-        index_ok: 'Index OK, indexed: {0}'
-        index_error: 'Index error: {0}'
-        cache_ok: Cache OK
-        cache_error: 'Cache error: {0}'
-      metrics:
-        report: 'Metrics:\n  HTTP: {0} requests, {1} errors\n  Documents: {2} created, {3} updated, {4} deleted\n  Search: {5} requests, {6} errors\n  Auth: {7} attempts, {8} failures'
-      performance:
-        report: 'Performance Metrics:\n  Indexed: {0} docs, Avg: {1}ms, Errors: {2}\n  Searches: {3}, Avg: {4}ms, Errors: {5}\n  Cache Hit Rate: {6}%'
-    optimizer:
-      commit: "Committing RAG changes"
-      done: "Commit and optimization completed"
-      embedding_closed: "Embedding engine closed"
-      optimize: "Optimizing index"
-      save_failed: "Failed to save vector index"
-      saving_vectors: "Saving vector index..."
-      vectors_saved: "Vector index saved successfully"
-    optimization:
-      chunker:
-        initialized: 'DocumentChunker initialized - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}'
-        chunked: 'Document {0} chunked into {1} parts'
-        batch_completed: 'Batch chunking completed: {0} documents -> {1} chunks'
-      memory:
-        suggest_gc: 'Suggesting garbage collection, current memory usage: {0}MB'
-        gc_freed: 'GC completed, freed approximately {0}MB of memory'
-        gc_no_freed: 'GC completed, no significant memory freed'
-      context:
-        initialized: 'SmartContextBuilder initialized: maxContext={0}chars, maxDoc={1}chars, preserveFullContent={2}'
-        initialized_with_chunker: 'SmartContextBuilder initialized with chunker: strategy={0}, maxContext={1}chars, maxDoc={2}chars, storage={3}'
-        built: 'Smart context built: {0}chars from {1} documents ({2}% of max)'
-        remaining_chars: '\n[... {0} more characters not displayed, content extracted by keyword priority]'
-    qa:
-      archive:
-        init: 'Initializing QA archive service'
-      archive_failed: "Failed to archive QA record"
-      archived: "High rating QA archived: rating={0}, path={1}"
-      document_feedback: "Document feedback {0} [{1}]: {2} - {3}"
-      feedback_applied: "Feedback applied to document weight: {0}"
-      feedback_pending: "Feedback pending review: {0}"
-      find_failed: "Failed to find record: {0}"
-      load_failed: "Failed to load QA record: {0}"
-      marked_as_quality: "QA record marked as quality content: [{0}]"
-      overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
-      pending_failed: "Failed to get pending records"
-      rating_applied: "Rating applied to document weight: {0} ({1} stars -> adjust {2})"
-      rating_pending: "Rating pending review: {0} ({1} stars)"
-      rating_submitted: "Rating submitted {0} [{1}]: {2} - {3} stars (adjust: {4})"
-      recent_failed: "Failed to get recent records"
-      record_notfound: "Record not found: {0}"
-      record_save_failed: "Failed to save QA record"
-      record_saved: "Saved QA record: {0} - {1}"
-      record_update_failed: "Failed to update QA record: {0}"
-      record_updated: "Updated QA record: {0}"
-      records_dir: "QA records directory: {0}"
-      records_dir_failed: "Failed to create QA records directory: {0}"
-      stats_failed: "Failed to compute QA statistics"
-      user_feedback: "User feedback [{0}]: rating={1}, content={2}"
-    query:
-      cache_cleared: "Query cache cleared"
-      cache_hit: "Cache hit for query: {0}"
-      processed: "Query processed: text='{0}', hits={1}, time={2}ms"
-      unknown_sort: "Unknown sort field: {0}, using relevance"
-    rag:
-      batch_indexed: "Batch indexed {0} documents"
-      cache_hit: "Query result retrieved from cache: {0}"
-      close_error: "Error closing Local File RAG"
-      closed: "Local File RAG closed successfully"
-      closing: "Closing Local File RAG..."
-      delete_failed: "Failed to delete document: {0}"
-      deleted_count: "Deleted {0} documents"
-      deleting_all: "Deleting all documents..."
-      doc_deleted: "Document deleted: {0}"
-      doc_indexed: "Document indexed successfully: {0}"
-      doc_updated: "Document updated: {0}"
-      enable_cache: "Enable cache: {0}"
-      enable_compression: "Enable compression: {0}"
-      found_to_delete: "Found {0} documents to delete"
-      init: "Initializing Local File RAG..."
-      init_done: "Local File RAG initialization completed"
-      initialized: "Local File RAG initialized with configuration: {0}"
-      load_content_failed: "Failed to load content for document: {0}"
-      loaded_content: "Loaded content for document: {0}, length: {1}"
-      no_documents: "No documents to delete"
-      optimized: "Index optimization completed"
-      optimizing: "Optimizing index..."
-      search_completed: "Search completed in {0}ms, found {1} results"
-      simple_init: "Initializing simple RAG service..."
-      simple_init_done: "Simple RAG service initialization completed"
-      storage: "Storage path: {0}"
-    search:
-      advanced_completed: 'Advanced search completed: query=''{0}'', hits={1}'
-      advanced_failed: 'Advanced search failed'
-      advanced_failed_detail: 'Advanced search failed: {0}'
-      completed: 'Search completed: query=''{0}'', hits={1}'
-      failed: 'Search failed'
-      failed_detail: 'Search failed: {0}'
-    similar:
-      failed: "Failed to find similar QAs"
-      found: "Found {0} similar QAs (keywords: {1})"
-    simple:
-      batch_index_files_complete: "Batch indexing completed: success {0}, fail {1}"
-      batch_indexed: "Batch indexed {0} documents"
-      commit: "Commit index changes"
-      doc_indexed: "Document indexed: {0} -> {1}"
-      file_empty: "File content empty: {0}"
-      index_file: "Indexed file: {0} -> {1} ({2} bytes)"
-      index_file_failed: "Failed to index file: {0}"
-      optimized: "Index optimization completed"
-      scanned_files: "Scanned {0} files"
-      search_results: "Search '{0}' found {1} results"
-      shutdown: "Shutting down RAG service"
-    vector:
-      embedding_closed: '🔄 Vector embedding engine closed'
-      embedding_dim: '   - Dimension: {0}'
-      embedding_init_success: 'Embedding engine initialized successfully'
-      embedding_model: '   - Model: {0}'
-      fix_check_logs: '   3. Check logs for detailed error information'
-      fix_place_model: '   1. Place model files in src/main/resources/models/ directory'
-      fix_supported_models: '   2. Supported models: bge-m3, paraphrase-multilingual, text2vec-large-chinese'
-      index_init_success: 'Index engine initialized successfully'
-      index_path: 'Index path: {0}'
-      init_embedding: 'Initializing embedding engine...'
-      init_index: 'Initializing index engine...'
-      possible_fixes: '🔧 Possible fixes:'
-      possible_reasons: '💡 Possible reasons:'
-      reason_model_missing: '   1. Model file missing'
-      reason_model_path: '   2. Model path incorrect'
-      reason_onnx: '   3. ONNX Runtime version incompatible'
-      test:
-        start: '🧪 Vector search functionality test'
-        test_failed: '❌ Test failed'
-        test_success: '✅ Test successful! Vector search engine initialized normally'
-      vector_count: '   - Vector count: {0}'
-    file:
-      not_exists: "File does not exist: {0}"
-      not_a_file: "Not a file: {0}"
-      empty: "File content is empty: {0}"
-      index_failed: "Failed to index file: {0}"
-      directory_not_exists: "Directory does not exist: {0}"
-      not_a_directory: "Not a directory: {0}"
-    model:
-      sep: '===================================================='
-      checking: 'Checking model files...'
-      found: 'Found model: {0}'
-      dir_and_file: 'Model directory and files ready'
-      passed: 'Model check passed'
+    scanned_types: "Scanned file types: {0}"
+error:
+  auth:
+    invalid_credentials: "Invalid credentials"
+    permission_denied: "Permission denied: {0}"
+    user_exists: "User already exists"
+  chunk:
+    expected_json_array: "Expected JSON array, but got: {0}"
+    no_valid_chunks: "No valid chunks found in AI response"
+    no_valid_json: "No valid JSON found in response"
+  docs:
+    create_failed: "Failed to create document: {0}"
+  file:
+    directory_not_exists: "Directory does not exist: {0}"
+    empty: "File content is empty: {0}"
+    index_failed: "File indexing failed: {0}"
+    not_a_directory: "Not a directory: {0}"
+    not_a_file: "Not a file: {0}"
+    not_exists: "File does not exist: {0}"
+feedback:
+  api:
+    emoji:
+      "1": "😞 Completely useless"
+      "2": "🙁 Not helpful"
+      "3": "😐 Average"
+      "4": "😊 Very helpful"
+      "5": "🤩 Extremely useful"
+    error:
+      invalid_feedback_type: "feedbackType must be LIKE or DISLIKE"
+      invalid_rating: "Rating must be between 1-5"
+      missing_params: "{0} cannot be empty"
+      processing_failed: "Processing failed: {0}"
+      record_not_found: "Record not found"
+    impact:
+      document:
+        "1": "This document is not helpful, the system will significantly reduce its recommendation weight ⚠️"
+        "2": "This document is not very helpful, the system will reduce its recommendation weight 📉"
+        "3": "This document is average, the system will keep its current weight ➡️"
+        "4": "This document is very helpful, the system will increase its recommendation weight 📈"
+        "5": "This document is extremely useful! The system will prioritize recommending it 🚀"
+      overall:
+        "1": "Sorry we couldn't help you! We will focus on improvement 🙏"
+        "2": "Thank you for your feedback! We will analyze and improve 🔧"
+        "3": "Thank you for your rating! We will continue to optimize 💡"
+        "4": "Thank you for your feedback! This helps us improve answer quality 👍"
+        "5": "Great! This answer will be recommended to other users 🌟"
+    success:
+      feedback_received: "Thank you for your feedback!"
+      thank_you: "Thank you for your rating!"
+image:
+  log:
+    get_failed: "Failed to retrieve image: {0}/{1}"
+    list_failed: "Failed to retrieve document image list: {0}"
+  saved: "Image saved: {0} (Document: {1})"
+  service:
+    saved: "Image saved: {0}"
+  ppt:
+    found: "PPT images found: {0}"
+    processing: "Processing PPT images"
+kb:
+  vector_init_failed: "❌ Vector search engine initialization failed"
+kqa:
+  more_docs_available: "ℹ️ {0} more related documents not included in this answer"
+  response_time: "\n⏱️  Response time: {0}ms"
+  sep: "================================================================================="
+knowledge_qa_service:
+  doc_item: "{0}. {1}"
+  found_chunks_images: "📦 Found {0} chunks and {1} images"
+  image_guide_1: "1. Below are image resources related to your question from the knowledge base. You can reference these images in your answer."
+  image_guide_2: "2. If your answer involves content from these images (e.g., architecture diagrams, flowcharts, data charts), please reference the images using Markdown format."
+  image_guide_3: "3. The reference format is provided below, please copy and use it directly."
+  image_guide_4: "4. Please ensure the referenced image URL is complete and correct."
+  images_in_context: "🖼️ Context contains {0} images of information"
+  log:
+    build_complete: "   ✅ Knowledge base build completed"
+    failed_files: "      - Failed files: {0}"
+    kb_ready: "   ✅ Knowledge base is ready"
+    processed_files: "      - Processed files: {0}"
+    total_documents: "      - Total documents: {0}"
+    total_files: "      - Total files: {0}"
+  more_images: "  ... {0} more images"
+  question_prompt: "❓ Question: {0}"
+  question_separator: "\n================================================================================\n"
+  referenced_docs: "\n\n**Referenced Documents**:"
+  related_image: "Related Images"
+  remaining_docs: "ℹ️ {0} more related documents not included in this answer"
+  remaining_docs_unprocessed: "ℹ️ {0} more related documents not included in this answer"
+  response_time: "\n⏱️  Response time: {0}ms"
+  separator: "================================================================================="
+  sources_label: "\n📚 Data Sources (Total {0} documents):"
+  too_many_docs_retrieved: "⚠️ Retrieved {0} documents, processing first {1} (Config: documents-per-query)"
+  using_docs: "📚 Used {0} documents to generate this answer"
+  using_hybrid_search: "✅ Using hybrid search (Lucene + Vector)"
+llm:
+  error:
+    openai_failed: "OpenAI API call failed: {0}"
+    openai_http_error: "OpenAI API error: HTTP {0}, {1}"
+    parse_failed: "Failed to parse OpenAI response: {0}"
+  log:
+    mock_init: "✅ Mock LLM client initialized (for testing only)"
+    mock_request: "Mock LLM received request, prompt length: {0}"
+    mock_response: "📝 Mock LLM returned simulated answer"
+    openai_error: "OpenAI API error: HTTP {0}, Body: {1}"
+    openai_failed: "OpenAI API call failed"
+    openai_init: "✅ OpenAI LLM client initialized"
+    openai_request: "Sending request to OpenAI: {0}"
+    openai_response: "OpenAI response content: {0}"
+  mock:
+    default_answer: "This is a simulated answer.\n\nBased on the provided context, I understand your question. However, as a Mock LLM, I can only provide simulated responses.\n\nPlease configure a real LLM service (e.g., OpenAI) to get accurate answers.\n\n(Note: This is a simulated answer from Mock LLM)"
+    marriage_answer: "According to the document content, marriage statistics include the distribution of unmarried, married, divorced, widowed and other statuses.\n\n(Note: This is a simulated answer from Mock LLM, please refer to the document content for actual data)"
+    population_answer: "According to the document content, the total population of China is approximately 1.4 billion.\n\n(Note: This is a simulated answer from Mock LLM, please refer to the document content for actual data)"
+log:
+  admin:
+    cache_cleared: "Cache cleared"
+    cache_cleared_success: "Cache cleared successfully"
+    clear_cache_failed: "Failed to clear cache"
+    clear_cache_failed_detail: "Failed to clear cache: {0}"
+    index_optimize_failed: "Index optimization failed"
+    index_optimize_failed_detail: "Index optimization failed: {0}"
+    index_optimized: "Index optimized"
+    index_optimized_success: "Index optimized successfully"
+    stats_failed: "Failed to retrieve statistics"
+    stats_failed_detail: "Failed to retrieve statistics: {0}"
+  app:
+    started: "✅ Application started successfully, Address: {0}"
+    start_failed: "❌ Application startup failed"
+  api:
+    stopped: "API server stopped"
+  audit:
+    init_failed: "Audit log initialization failed"
+    logged: "Audit logged: {0}"
+    write_failed: "Failed to write audit log"
+  auth:
+    logged_in: "User logged in: {0}"
+    logged_out: "User logged out: {0}"
+    registered: "User registered: {0}"
+  chunk:
+    ai_completed: "AI semantic chunking completed: {0} chars -> {1} chunks, Time taken: {2}ms"
+    ai_failed: "AI semantic chunking failed, falling back to smart keyword chunking"
+    ai_not_enabled: "AI chunking not enabled in configuration"
+    ai_parse_failed: "Failed to parse AI semantic chunking response: {0}"
+    ai_start: "Starting AI semantic chunking, content length: {0} chars"
+    content_truncate: "Content too large ({0} chars), truncated to {1} chars to prevent OOM"
+    coverage_low: "Low coverage, adding sequential chunking"
+    delete_failed: "Failed to delete file: {0}"
+    deleted_all: "All chunks of the document deleted: {0}"
+    keywords_extracted: "Extracted {0} keywords from query: {1}"
+    max_chunks_reached: "Maximum chunk limit ({0}) reached, stopping chunking"
+    no_keywords_fallback: "No keywords found, falling back to simple chunking"
+    read_meta_failed: "Failed to read chunk metadata: {0}"
+    save_failed: "Failed to save document chunk: {0} (Index: {1})"
+    saved: "{0} document chunks saved to document: {1}"
+    simple_summary: "Simple chunking: {0} chars -> {1} chunks (size={2}, overlap={3})"
+    smart_summary: "Smart keyword chunking: {0} chars -> {1} chunks, {2} keywords"
     storage:
-      chunk_storage_init: 'Initializing ChunkStorageService with path: {0}'
-      image_storage_init: 'Initializing ImageStorageService with path: {0}'
-      ai_image_analyzer_init: 'Initializing AIImageAnalyzer: enabled={0}, model={1}'
-      document_image_extraction_init: 'Initializing DocumentImageExtractionService: AI analysis={0}'
-    session:
-      create: 'Session created: {0}'
+      created: "Document chunk storage directory created: {0}"
+      init_failed: "Document chunk storage initialization failed"
+    truncate_warning: "Content too long ({0} chars), truncated to {1} chars for AI chunking"
+  chunker:
+    ai_disabled: "AI chunking not enabled, falling back to SMART_KEYWORD strategy"
+    creating: "Creating document chunker: strategy={0}, chunkSize={1}, overlap={2}"
+    llm_null: "LLM client is null, falling back to SMART_KEYWORD strategy"
+    unknown_strategy: "Unknown chunking strategy: {0}, using SMART_KEYWORD"
+  docs:
+    classpath_in_jar: "Classpath path is inside JAR, writing not supported"
+    classpath_load_failed: "Failed to load resource from classpath: {0} - {1}"
+    classpath_not_exists: "Classpath resource does not exist: {0}"
+    classpath_realpath: "Using classpath real path: {0}"
+    classpath_resource_found: "✅ Resource found from classpath: {0}"
+    create:
+      failed: "Failed to create document: {0}"
+      success: "Document created successfully"
+    create_failed: "Failed to create document directory: {0}"
+    created: "Document created: {0}"
+    delete:
+      failed: "Failed to delete document: {0}"
+      success: "Document deleted successfully"
+    deleted: "Document deleted: {0}"
+    directory_ready: "Document directory is ready: {0}"
+    file_exists_renamed: "File already exists, renamed to: {0}"
+    get:
+      failed: "Failed to retrieve document: {0}"
+    invalid_directory: "Invalid directory: {0}"
+    list:
+      exception: "Exception while listing documents: {0}"
+    list.failed: "Failed to list documents: {0}"
+    not_found: "Document not found: {0}"
+    notfound: "Document not found: {0}"
+    process_failed: "Failed to process file: {0}"
+    saved: "Document saved: {0}"
+    scanned_types: "Scanned file types: {0}"
+    total: "Total documents: {0}"
+    update:
+      failed: "Failed to update document: {0}"
+      success: "Document updated successfully"
+    updated: "Document updated: {0}"
+    upload_to_external: "Uploaded documents will be saved to external path: ./data/documents"
+    using_default_path: "Using default path: ./data/documents"
+    using_filesystem: "Using filesystem path: {0}"
+    walk_failed: "Failed to traverse directory: {0}"
+  factory:
+    create_caffeine: "Creating Caffeine cache engine"
+    create_filesystem: "Creating filesystem storage engine"
+    create_lucene: "Creating Lucene index engine"
+  feedback:
+    document_failed: "Failed to process document feedback"
+    document_received: "Document feedback received {0}: recordId={1}, document={2}"
+    get_pending_failed: "Failed to retrieve pending QA records"
+    get_record_failed: "Failed to retrieve QA record"
+    get_recent_failed: "Failed to retrieve recent QA records"
+    get_statistics_failed: "Failed to retrieve QA statistics"
+    load_failed: "Failed to load document weights"
+    overall_failed: "Failed to process overall feedback"
+    overall_received: "Overall feedback received: recordId={0}, rating={1}"
+    overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
+    rating_failed: "Failed to process rating"
+    rating_submitted: "Rating submitted {0} [{1}]: {2} - {3} stars (Impact: {4})"
+    rating_updated: "📊 Document weight updated (by rating): {0} -> Weight={1} ({2} stars, Adjustment {3}, 👍{4} 👎{5})"
+    save_failed: "Failed to save document weights"
+    weight_disabled: "Dynamic weight adjustment disabled"
+    weight_reset: "🔄 Document weight reset: {0} -> {1}"
+    weight_updated: "📊 Document weight updated: {0} -> Weight={1} (👍{2} 👎{3})"
+    weights_cleared: "🧹 All document weights cleared"
+    weights_loaded: "📂 Document weights loaded: {0} documents"
+    weights_saved: "💾 Document weights saved: {0} documents"
+    weights_file_not_exists: "📂 Document weight file not found, using default weights"
+  image:
+    delete_failed: "Failed to delete file: {0}"
+    deleted_all: "All images of the document deleted: {0}"
+    excel:
+      extracted: "Extracted {0} images from Excel"
+      legacy:
+        extracted: "Extracted {0} images from legacy Excel"
+        processing: "Processing legacy Excel images"
+      processing: "Processing Excel images"
+    pdf:
+      extracted: "Extracted {0} images from PDF"
+      processing: "Processing PDF images"
+    ppt:
+      extracted: "Extracted {0} images from PPT"
+    read_info_failed: "Failed to read image information: {0}"
+    service:
+      extracted: "Extracted {0} images"
+      init: "Image service initialized"
+      no_images: "No images found"
+      start: "Starting image extraction"
+      success: "Image processing completed"
+      using_extractor: "Using image extractor: {0}"
+    storage:
+      created: "Image storage directory created: {0}"
+      init_failed: "Image storage initialization failed"
+  imageproc:
+    activated: "✅ Image processing strategy activated: {0}"
+    add_ocr: "   Adding OCR strategy:"
+    add_vision: "   Adding Vision LLM strategy:"
+    init: "🖼️  Initializing image processing functionality..."
+    language: "      - Recognition language: {0}"
+    ocr_available: "   ✅ OCR strategy available"
+    ocr_hint: "   💡 Hint: Add dependency net.sourceforge.tess4j:tess4j:5.9.0"
+    ocr_unavailable: "   ⚠️ OCR strategy unavailable: Missing tess4j dependency"
+    placeholder: "   Using placeholder strategy (default)"
+    strategy: "   Configured strategy: {0}"
+    tessdata: "      - Tessdata path: {0}"
+    vision_apikey_hint: "   💡 Hint: Set environment variable VISION_LLM_API_KEY or configure knowledge.qa.image-processing.vision-llm.api-key"
+    vision_available: "   ✅ Vision LLM strategy available"
+    vision_endpoint: "      - Endpoint: {0}"
+    vision_model: "      - Model: {0}"
+    vision_no_apikey: "   ⚠️ Vision LLM enabled but API Key not configured"
+    vision_unavailable: "   ⚠️ Vision LLM strategy unavailable"
+  kb:
+    batch_processing: "📦 Batch processing: {0} documents ({1} / {2})"
+    batch_commit: "📝 Committing batch index"
+    content_extracted: "✅ Content extracted: {0}"
+    content_too_large: "⚠️  Content too large ({0} chars)"
+    content_truncated: "✂️  Content truncated to {0} chars"
+    exists: "📚 Existing knowledge base detected ({0} documents)"
+    files_to_index: "📝 Files to index: {0}"
+    final_batch: "📦 Processing final batch: {0} documents"
+    first_create: "📚 Creating knowledge base for the first time"
+    found_files: "✅ Found {0} document files"
+    gc_before: "🗑️  Executing GC to free memory"
+    hint_put_docs: "💡 Hint: Place documents in {0} directory"
+    images_added: "➕ {0} images added to index"
+    images_extracted: "🖼️  Extracted {0} images"
+    incremental_done: "\n✅ Incremental indexing completed!"
+    incremental_failed: "❌ Incremental indexing failed"
+    incremental_stats: "   - Processed files: {0}/{1}, Failed: {2}, Total documents: {3}, Time taken: {4}s"
+    indexation_complete: "✅ Indexing completed: {0}"
+    no_documents: "⚠️  No supported document files found"
+    parallel_mode: "🚀 Using parallel processing mode ({0} threads)"
+    parallel_progress: "📊 Parallel progress: {0}%"
+    parallel_memory: "💾 Memory usage: {0} MB"
+    processing_file: "📄 Processing file: {0}"
+    processing_start: "\n📝 Starting document processing..."
+    scanning: "📂 Scanning documents: {0}"
+    serial_mode: "📝 Using serial processing mode"
+    source_path: "   - Document path: {0}"
+    supported_formats: "      Supported formats: {0}"
+    up_to_date: "✅ All files are up to date, no updates needed"
+  llm:
+    api_key_deepseek: "      - DeepSeek: export AI_API_KEY=your-deepseek-key"
+    api_key_hint: "💡 Hint: Set environment variables:"
+    api_key_missing: "⚠️ LLM API Key not configured"
+    api_key_openai: "      - OpenAI: export OPENAI_API_KEY=your-openai-key"
+    client_created: "🤖 Created {0} LLM client"
+    fallback_mock: "💡 Falling back to Mock mode"
+    model: "   - Model: {0}"
+    api_url: "   - API: {0}"
+    mock_created: "🤖 Created Mock LLM client (for testing only)"
+    mock_hint: "💡 To use real LLM, configure:"
+    mock_provider: "      knowledge.qa.llm.provider=openai"
+    mock_apikey: "      And set corresponding API Key and URL"
+    mock_warning: "⚠️ Mock mode will return fixed simulated answers"
+  memory:
+    usage: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}%)"
+    warning: "Phase {0} - High memory usage: {1}%"
+  optimization:
+    chunker:
+      batch_completed: "Batch chunking completed: {0} documents -> {1} chunks"
+      chunked: "Document {0} chunked into {1} parts"
+      initialized: "DocumentChunker initialized - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}"
+    context:
+      built: "Smart context built: {0} chars from {1} documents ({2}% of max)"
+      initialized_with_chunker: "SmartContextBuilder initialized (with chunker): strategy={0}, maxContext={1} chars, maxDoc={2} chars, storage={3}"
+      remaining_chars: "\n[... {0} more chars not displayed, content extracted by keyword priority]"
+    memory:
+      gc_freed: "GC completed, approximately {0}MB memory freed"
+      gc_no_freed: "GC completed, no significant memory freed"
+      suggest_gc: "Suggest executing garbage collection, current memory usage: {0}MB"
+  qa:
+    archive:
+      init: "Initializing QA archiving service"
+    archive_failed: "QA archiving failed"
+    archived: "High-rated QA archived: rating={0}, Path={1}"
+    document_feedback: "Document feedback {0} [{1}]: {2} - {3}"
+    feedback_applied: "Feedback applied to document weight: {0}"
+    feedback_pending: "Feedback pending review: {0}"
+    find_failed: "Failed to find record: {0}"
+    load_failed: "Failed to load QA records: {0}"
+    marked_as_quality: "QA record marked as high-quality content: [{0}]"
+    overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
+    pending_failed: "Failed to retrieve pending review records"
+    rating_applied: "Star rating applied to document weight: {0} ({1} stars -> Adjustment {2})"
+    rating_pending: "Star rating pending review: {0} ({1} stars)"
+    rating_submitted: "Star rating submitted {0} [{1}]: {2} - {3} stars (Weight adjustment: {4})"
+    recent_failed: "Failed to retrieve recent records"
+    record_notfound: "Record not found: {0}"
+    record_save_failed: "Failed to save QA record"
+    record_saved: "QA record saved: {0} - {1}"
+    record_update_failed: "Failed to update QA record: {0}"
+    record_updated: "QA record updated: {0}"
+    records_dir: "QA records storage directory: {0}"
+    records_dir_failed: "Failed to create QA records directory: {0}"
+    stats_failed: "Failed to calculate QA statistics"
+    user_feedback: "User feedback [{0}]: Rating={1}, Content={2}"
+  kqa:
+    answer_header: "\n💡 Answer:"
+    build_failed: "Knowledge base build failed: {0}"
+    docs_dir_missing: "⚠️ Document directory does not exist: {0}"
+    incremental_complete: "Incremental indexing completed"
+    incremental_error: "Incremental indexing error"
+    incremental_failed: "Incremental indexing failed: {0}"
+    incremental_mode: "   🔄 Starting incremental knowledge base indexing..."
+    init_done: "✅ Knowledge base Q&A system initialized successfully!"
+    init_failed: "❌ Knowledge Q&A service initialization failed"
+    init_kb: "Initializing knowledge base"
+    init_start: "🚀 Initializing knowledge Q&A service"
+    kb_not_initialized: "Knowledge base not initialized"
+    load_chunks_images_failed: "Failed to load chunks/images information"
+    more_docs_available: "ℹ️ {0} more related documents not included in this answer"
+    rebuild_complete: "Knowledge base rebuilt successfully"
+    rebuild_error: "Knowledge base rebuild error"
+    rebuild_failed: "Knowledge base rebuild failed: {0}"
+    rebuild_mode: "   🚀 Starting full knowledge base rebuild..."
+    recover_failed: "Knowledge base recovery failed"
+    recover_kb: "Recovering knowledge base"
+    reinit_complete: "Knowledge base reinitialized successfully"
+    reinit_kb: "Reinitializing knowledge base"
+    scanned_files_count: "📂 Filesystem scan completed, found {0} supported documents"
+    scan_failed: "❌ Filesystem scan failed"
+    source_path: "   - Source path: {0}"
+    sources_header: "\n📚 Data Sources (Total {0} documents):"
+    step: "\n🚀 Step {0}: {1}"
+    storage_path: "   - Storage path: {0}"
+    system_not_initialized: "Knowledge Q&A system not initialized"
+    used_docs_count: "📚 Used {0} documents to generate this answer"
+  rag:
+    batch_indexed: "Batch indexed {0} documents"
+    cache_hit: "Query result from cache: {0}"
+    close_error: "Error while closing Local File RAG"
+    closing: "Closing Local File RAG..."
+    delete_failed: "Failed to delete document: {0}"
+    deleted_count: "{0} documents deleted"
+    deleting_all: "Deleting all documents..."
+    doc_deleted: "Document deleted: {0}"
+    doc_indexed: "Document indexed successfully: {0}"
+    doc_updated: "Document updated: {0}"
+    enable_cache: "Cache enabled: {0}"
+    enable_compression: "Compression enabled: {0}"
+    found_to_delete: "Found {0} documents to delete"
+    init_done: "Local File RAG initialized successfully"
+    load_content_failed: "Failed to load document content: {0}"
+    loaded_content: "Document content loaded: {0}, Length: {1}"
+    no_documents: "No documents to delete"
+    optimized: "Index optimization completed"
+    optimizing: "Optimizing index..."
+    search_completed: "Search completed, Time taken: {0}ms, Found {1} results"
+    simple_init: "Initializing simple RAG service..."
+    simple_init_done: "Simple RAG service initialized successfully"
+    storage: "Storage path: {0}"
+  session:
+    create: "Creating session: {0}"
+  storage:
+    ai_image_analyzer_init: "Initializing AI image analyzer: enabled={0}, model={1}"
+    chunk_storage_init: "Initializing document chunk storage service, Path: {0}"
+    document_image_extraction_init: "Initializing document image extraction service: AI analysis={0}"
+    image_storage_init: "Initializing image storage service, Path: {0}"
+  tika:
+    active_image_strategy: "Active image strategy: {0}"
+    detected_mime: "Detected MIME type: {0}"
+    extract_image_metadata: "Extracting image metadata: {0}"
+    include_image_placeholders: "Include image placeholders: {0}"
+    init: "Initializing Apache Tika"
+    max_content: "Max content length: {0}"
+    ocr_disabled: "OCR disabled"
+    office_done: "Office document processing completed"
+    office_pptx: "Processing Office PPTX document"
+    office_xlsx: "Processing Office XLSX document"
+    parsed_file: "File parsed: {0}"
+model:
+  check: "🔍 Checking model files..."
+  dir_and_file: "📂 Model directory and files are ready"
+  found: "✅ Model found: {0}"
+  passed: "✅ Model check passed"
+  sep: "===================================================="
