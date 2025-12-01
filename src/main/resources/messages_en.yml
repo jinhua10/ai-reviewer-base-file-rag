@@ -26,6 +26,9 @@ document_management:
       index: "Document indexed successfully"
       list_loaded: "Document list retrieved successfully: Returned {0} documents, Total {1}"
       upload: "Document uploaded successfully"
+  log:
+    scanned_types: "Scanned file types: {0}"
+    list_documents: "Listing documents: Returned {0} items"
 document_service:
   error:
     cannot_create_dir: "Failed to create document directory: {0}"
@@ -147,11 +150,29 @@ knowledge_qa_service:
   image_item: "Image {0}: {1} (Source: {2})"
   important_notice: "Important: {0}"
   using_keyword_search: "Using keyword search mode"
+  classpath_prefix: "Classpath: {0}"
+  closing_existing_kb: "Closing existing knowledge base before proceeding..."
+  debug_enhanced_stats: "Debug: Enhanced statistics enabled"
+  existing_kb_closed: "Existing knowledge base closed"
+  failed_files: "      - Failed files: {0}"
+  incremental_index_start: "Starting incremental indexing..."
+  more_docs_notice: "\nℹ️ {0} more related documents not included in this answer"
+  question_label: "❓ Question:"
+  success_files: "      - Successful files: {0}"
+  total_documents: "      - Total documents: {0}"
+  using_session_docs: "Using session-stored documents: {0}"
 
-# Add small knowledge_qa logging block used by some modules
+# Knowledge QA API messages and logs
 knowledge_qa:
+  api:
+    message:
+      all_indexed: "All documents indexed"
+      incremental_complete: "Incremental indexing completed"
   log:
     received_question: "Received question: {0}"
+    get_statistics: "Retrieving knowledge QA statistics"
+    incremental_request: "Incremental indexing requested: {0}"
+    statistics_result: "Statistics result: {0}"
     search_documents: "Search documents for question: {0} (found {1})"
     session_question: "Session question [{0}]: {1}"
 

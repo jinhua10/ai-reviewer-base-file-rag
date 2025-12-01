@@ -26,6 +26,9 @@ document_management:
       index: "文档索引建立成功"
       list_loaded: "文档列表获取成功：返回 {0} 个文档，总计 {1} 个"
       upload: "文档上传成功"
+  log:
+    scanned_types: "已扫描文件类型：{0}"
+    list_documents: "正在列出文档：返回 {0} 条数据"
 document_service:
   error:
     cannot_create_dir: "创建文档目录失败：{0}"
@@ -147,11 +150,29 @@ knowledge_qa_service:
   image_item: "图片 {0}：{1}（来源：{2}）"
   important_notice: "重要提示：{0}"
   using_keyword_search: "使用关键词搜索模式"
+  classpath_prefix: "类路径：{0}"
+  closing_existing_kb: "继续操作前正在关闭现有知识库..."
+  debug_enhanced_stats: "调试：已启用增强统计功能"
+  existing_kb_closed: "现有知识库已关闭"
+  failed_files: "      - 失败文件：{0}"
+  incremental_index_start: "正在启动增量索引..."
+  more_docs_notice: "\nℹ️ 另有 {0} 个相关文档未包含在本次回答中"
+  question_label: "❓ 问题："
+  success_files: "      - 成功文件：{0}"
+  total_documents: "      - 文档总数：{0}"
+  using_session_docs: "使用会话存储的文档：{0}"
 
-# 添加部分模块使用的小型 knowledge_qa 日志块
+# 知识问答 API 消息和日志
 knowledge_qa:
+  api:
+    message:
+      all_indexed: "所有文档已完成索引"
+      incremental_complete: "增量索引完成"
   log:
     received_question: "收到问题：{0}"
+    get_statistics: "正在获取知识问答统计数据"
+    incremental_request: "收到增量索引请求：{0}"
+    statistics_result: "统计结果：{0}"
     search_documents: "为问题搜索文档：{0}（找到 {1} 个）"
     session_question: "会话问题 [{0}]：{1}"
 
