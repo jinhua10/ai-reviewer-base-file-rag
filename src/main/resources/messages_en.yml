@@ -101,6 +101,9 @@ knowledge_qa_service:
   image_guide_3: "3. The reference format is provided below, please copy and use it directly."
   image_guide_4: "4. Please ensure the referenced image URL is complete and correct."
   images_in_context: "🖼️ Context contains {0} images of information"
+  # Added keys requested
+  destroy_start: "Destroying knowledge Q&A service..."
+  kb_closed_safe: "Knowledge base closed safely"
   log:
     build_complete: "   ✅ Knowledge base build completed"
     failed_files: "      - Failed files: {0}"
@@ -108,6 +111,23 @@ knowledge_qa_service:
     processed_files: "      - Processed files: {0}"
     total_documents: "      - Total documents: {0}"
     total_files: "      - Total files: {0}"
+    chunk_overlap_chars: "Chunk overlap: {0} chars"
+    chunk_size_chars: "Chunk size: {0} chars"
+    chunking_strategy: "Chunking strategy: {0}"
+    create_qa_system: "Creating QA system..."
+    document_count: "Documents: {0}"
+    index_count: "Index entries: {0}"
+    init_llm: "Initializing LLM client..."
+    init_vector_engine: "Initializing vector engine: {0}"
+    llm_client_ready: "LLM client ready"
+    llm_client_type: "LLM client type: {0}"
+    llm_provider: "LLM provider: {0}"
+    max_context_chars: "Max context chars: {0}"
+    max_doc_length_chars: "Max document length chars: {0}"
+    smart_context_initialized: "Smart context initialized: maxContext={0}, maxDoc={1}"
+    using_keyword_mode: "Using keyword mode for context building"
+  model_doc_hint: "Hint: Place model files in {0}"
+  model_download_hint: "Hint: Download the model from {0}"
   more_images: "  ... {0} more images"
   question_prompt: "❓ Question: {0}"
   question_separator: "\n================================================================================\n"
@@ -121,6 +141,16 @@ knowledge_qa_service:
   too_many_docs_retrieved: "⚠️ Retrieved {0} documents, processing first {1} (Config: documents-per-query)"
   using_docs: "📚 Used {0} documents to generate this answer"
   using_hybrid_search: "✅ Using hybrid search (Lucene + Vector)"
+
+kb_service:
+  image:
+    description: "Image description: {0}"
+    filename: "Filename: {0}"
+    image_number: "Image {0}/{1}"
+    original_file: "Original file: {0}"
+    section_end: "End of section"
+    section_title: "Section: {0}"
+    url: "URL: {0}"
 llm:
   error:
     openai_failed: "OpenAI API call failed: {0}"
@@ -316,6 +346,7 @@ log:
     incremental_failed: "❌ Incremental indexing failed"
     incremental_stats: "   - Processed files: {0}/{1}, Failed: {2}, Total documents: {3}, Time taken: {4}s"
     indexation_complete: "✅ Indexing completed: {0}"
+    indexing_complete: "✅ Knowledge base indexing complete: {0}"
     no_documents: "⚠️  No supported document files found"
     parallel_mode: "🚀 Using parallel processing mode ({0} threads)"
     parallel_progress: "📊 Parallel progress: {0}%"
@@ -377,6 +408,7 @@ log:
     mock_warning: "⚠️ Mock mode will return fixed simulated answers"
   memory:
     usage: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}%)"
+    usage_phase: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}% )"
     warning: "Phase {0} - High memory usage: {1}%"
   optimization:
     chunker:
@@ -468,3 +500,4 @@ log:
     found: "✅ Model found: {0}"
     passed: "✅ Model check passed"
     sep: "===================================================="
+
