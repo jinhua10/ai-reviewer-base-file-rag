@@ -152,6 +152,8 @@ knowledge_qa_service:
 knowledge_qa:
   log:
     received_question: "Received question: {0}"
+    search_documents: "Search documents for question: {0} (found {1})"
+    session_question: "Session question [{0}]: {1}"
 
 kb_service:
   image:
