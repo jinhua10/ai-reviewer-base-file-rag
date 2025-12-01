@@ -124,6 +124,7 @@ knowledge_qa_service:
     max_doc_length_chars: "Max document length chars: {0}"
     smart_context_initialized: "Smart context initialized: maxContext={0}, maxDoc={1}"
     using_keyword_mode: "Using keyword mode for context building"
+    record_saved: "QA record saved: {0}"
   model_doc_hint: "Hint: Place model files in {0}"
   model_download_hint: "Hint: Download the model from {0}"
   more_images: "  ... {0} more images"
@@ -139,6 +140,18 @@ knowledge_qa_service:
   too_many_docs_retrieved: "⚠️ Retrieved {0} documents, processing first {1} (Config: documents-per-query)"
   using_docs: "📚 Used {0} documents to generate this answer"
   using_hybrid_search: "✅ Using hybrid search (Lucene + Vector)"
+  answer_label: "\n💡 Answer:"
+  available_images: "Available images: {0}"
+  context_stats: "Context: {0} chars from {1} documents"
+  create_session: "Creating QA session: {0}"
+  image_item: "Image {0}: {1} (Source: {2})"
+  important_notice: "Important: {0}"
+  using_keyword_search: "Using keyword search mode"
+
+# Add small knowledge_qa logging block used by some modules
+knowledge_qa:
+  log:
+    received_question: "Received question: {0}"
 
 kb_service:
   image:
@@ -192,6 +205,11 @@ log:
     logged_in: "User logged in: {0}"
     logged_out: "User logged out: {0}"
     registered: "User registered: {0}"
+  hybrid:
+    found_docs: "Hybrid search found {0} documents"
+    keyword_search: "Hybrid keyword search executed: {0}"
+  similar:
+    found: "Found {0} similar documents"
   chunk:
     ai_completed: "AI semantic chunking completed: {0} chars -> {1} chunks, Time taken: {2}ms"
     ai_failed: "AI semantic chunking failed, falling back to smart keyword chunking"
@@ -282,6 +300,7 @@ log:
     weights_saved: "💾 Document weights saved: {0} documents"
     weights_file_not_exists: "📂 Document weight file not found, using default weights"
   image:
+    saved: "Image saved: {0} (Document: {1})"
     delete_failed: "Failed to delete file: {0}"
     deleted_all: "All images of the document deleted: {0}"
     excel:
@@ -299,6 +318,7 @@ log:
       extracted: "Extracted {0} images from PPT"
     read_info_failed: "Failed to read image information: {0}"
     service:
+      saved: "Image saved: {0}"
       extracted: "Extracted {0} images"
       init: "Image service initialized"
       no_images: "No images found"
@@ -474,30 +494,3 @@ log:
     simple_init: "Initializing simple RAG service..."
     simple_init_done: "Simple RAG service initialized successfully"
     storage: "Storage path: {0}"
-  session:
-    create: "Creating session: {0}"
-  simple:
-    shutdown: "Shutting down simple document service..."
-  storage:
-    ai_image_analyzer_init: "Initializing AI image analyzer: enabled={0}, model={1}"
-    chunk_storage_init: "Initializing document chunk storage service, Path: {0}"
-    document_image_extraction_init: "Initializing document image extraction service: AI analysis={0}"
-    image_storage_init: "Initializing image storage service, Path: {0}"
-  tika:
-    active_image_strategy: "Active image strategy: {0}"
-    detected_mime: "Detected MIME type: {0}"
-    extract_image_metadata: "Extracting image metadata: {0}"
-    include_image_placeholders: "Include image placeholders: {0}"
-    init: "Initializing Apache Tika"
-    max_content: "Max content length: {0}"
-    ocr_disabled: "OCR disabled"
-    office_done: "Office document processing completed"
-    office_pptx: "Processing Office PPTX document"
-    office_xlsx: "Processing Office XLSX document"
-    parsed_file: "File parsed: {0}"
-  model:
-    checking: "🔍 Checking model files..."
-    dir_and_file: "📂 Model directory and files are ready"
-    found: "✅ Model found: {0}"
-    passed: "✅ Model check passed"
-    sep: "===================================================="
