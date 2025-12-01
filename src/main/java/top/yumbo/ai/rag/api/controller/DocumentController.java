@@ -84,7 +84,7 @@ public class DocumentController {
             
             rag.commit();
             log.info(LogMessageProvider.getMessage("log.docs.updated", id));
-            return ApiResponse.success(LogMessageProvider.getMessage("log.docs.updated.success"), id);
+            return ApiResponse.success(LogMessageProvider.getMessage("log.docs.update.success"), id);
 
         } catch (Exception e) {
             log.error(LogMessageProvider.getMessage("log.docs.update.failed", id), e);
