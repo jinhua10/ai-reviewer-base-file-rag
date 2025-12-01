@@ -83,7 +83,7 @@ knowledge:
 
         # 模型文件路径（相对于 resources）
         # 系统会自动查找以下目录中的模型文件：
-        path: models/paraphrase-multilingual/model.onnx
+        path: release/models/paraphrase-multilingual/model.onnx
 
         # 模型搜索路径（按优先级排序）
         # 系统会按顺序在这些目录中查找模型文件

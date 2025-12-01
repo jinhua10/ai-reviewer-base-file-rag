@@ -192,7 +192,7 @@ public class KnowledgeQAService {
 
         try {
             // 初始化嵌入引擎 / Initialize embedding engine
-            embeddingEngine = new LocalEmbeddingEngine();
+            embeddingEngine = new LocalEmbeddingEngine(properties.getVectorSearch().getModel().getPath());
 
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_engine_loaded"));
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_model", embeddingEngine.getModelName()));
