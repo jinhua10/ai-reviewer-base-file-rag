@@ -692,4 +692,3 @@ vector_index:
     query_dimension_mismatch: "Query vector dimension mismatch: expected {}, actual {}"
     vector_dimension_mismatch: "Vector dimension mismatch"
     index_dimension_mismatch: "Vector dimension mismatch: index={}, expected={}"
-s
