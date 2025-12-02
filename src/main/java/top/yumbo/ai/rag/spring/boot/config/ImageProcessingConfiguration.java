@@ -1,11 +1,13 @@
 package top.yumbo.ai.rag.spring.boot.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.impl.parser.image.*;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
 /**
  * 图片处理配置（Image processing configuration）
@@ -20,6 +22,9 @@ import top.yumbo.ai.rag.i18n.LogMessageProvider;
 public class ImageProcessingConfiguration {
 
     private final KnowledgeQAProperties properties;
+
+    @Autowired(required = false)
+    private LLMClient llmClient;
 
     public ImageProcessingConfiguration(KnowledgeQAProperties properties) {
         this.properties = properties;
@@ -47,12 +52,27 @@ public class ImageProcessingConfiguration {
                 break;
 
             case "vision-llm":
-                addVisionLlmStrategy(extractor, config);
+                // 优先使用 LLMClient（如果支持图片）
+                if (llmClient != null && llmClient.supportsImageInput()) {
+                    addLLMClientVisionStrategy(extractor);
+                } else {
+                    // 退回到独立的 VisionLLMStrategy
+                    addVisionLlmStrategy(extractor, config);
+                }
+                break;
+
+            case "llm-vision":
+                // 强制使用 LLMClient
+                addLLMClientVisionStrategy(extractor);
                 break;
 
             case "hybrid":
-                // 混合模式：优先 Vision LLM，其次 OCR
-                addVisionLlmStrategy(extractor, config);
+                // 混合模式：优先 LLM Vision / Vision LLM，其次 OCR
+                if (llmClient != null && llmClient.supportsImageInput()) {
+                    addLLMClientVisionStrategy(extractor);
+                } else {
+                    addVisionLlmStrategy(extractor, config);
+                }
                 addOcrStrategy(extractor, config);
                 break;
 
@@ -67,6 +87,35 @@ public class ImageProcessingConfiguration {
         log.info(LogMessageProvider.getMessage("log.imageproc.activated", activeStrategy.getStrategyName()));
 
         return extractor;
+    }
+
+    /**
+     * 添加 LLMClient Vision 策略（Add LLMClient Vision strategy）
+     * 复用主 LLM 客户端进行图片处理
+     */
+    private void addLLMClientVisionStrategy(SmartImageExtractor extractor) {
+        if (llmClient == null) {
+            log.warn("⚠️  无法添加 LLM Vision 策略: LLMClient 未初始化");
+            return;
+        }
+
+        if (!llmClient.supportsImageInput()) {
+            log.warn("⚠️  无法添加 LLM Vision 策略: 模型 {} 不支持图片输入", llmClient.getModelName());
+            return;
+        }
+
+        log.info("✅ 添加 LLM Vision 策略（复用主 LLM 客户端）");
+        log.info("   - 模型: {}", llmClient.getModelName());
+        log.info("   - 客户端类型: {}", llmClient.getClass().getSimpleName());
+
+        LLMClientVisionStrategy llmVisionStrategy = new LLMClientVisionStrategy(llmClient);
+        extractor.addStrategy(llmVisionStrategy);
+
+        if (llmVisionStrategy.isAvailable()) {
+            log.info("✅ LLM Vision 策略可用");
+        } else {
+            log.warn("⚠️  LLM Vision 策略不可用");
+        }
     }
 
     /**

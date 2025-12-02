@@ -333,9 +333,14 @@ knowledge:
       # 图片处理策略:
       #   - placeholder: 占位符（默认，零依赖）
       #   - ocr: OCR 文字识别（需要 Tesseract）
-      #   - vision-llm: Vision LLM 语义理解（需要 API Key）
-      #   - hybrid: 混合模式（OCR + Vision LLM，推荐）
-      strategy: ocr
+      #   - vision-llm: Vision LLM 语义理解（需要 API Key，优先使用主 LLM 客户端）
+      #   - llm-vision: 强制使用主 LLM 客户端的图片识别功能（推荐）
+      #   - hybrid: 混合模式（LLM Vision + OCR，推荐）
+      #
+      # 推荐配置：
+      #   - 如果主 LLM 支持图片（如 gpt-4o、qwen-vl-plus），建议使用 llm-vision 或 hybrid
+      #   - 这样可以复用主 LLM 的配置，避免重复配置 API Key
+      strategy: llm-vision
 
       # 是否启用 OCR
       # 设置为 true 启用 OCR 图片文字识别功能
