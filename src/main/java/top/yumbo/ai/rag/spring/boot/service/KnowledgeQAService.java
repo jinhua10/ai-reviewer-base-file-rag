@@ -372,12 +372,17 @@ public class KnowledgeQAService {
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : LogMessageProvider.getMessage("knowledge_qa_service.related_image");
-                            imageContext.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_item",
-                                i + 1, imgDesc, imgDesc, img.getUrl()));
+                            // 格式：图片 1：描述（来源：URL）![描述](URL)
+                            imageContext.append("\n  ")
+                                       .append(LogMessageProvider.getMessage("knowledge_qa_service.image_item",
+                                           i + 1, imgDesc, img.getUrl()))
+                                       .append(" ")
+                                       .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
                         }
                         if (docImages.size() > 5) {
-                            imageContext.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.more_images", docImages.size() - 5));
+                            imageContext.append("\n  ").append(LogMessageProvider.getMessage("knowledge_qa_service.more_images", docImages.size() - 5));
                         }
+                        imageContext.append("\n");
                     }
                 } catch (Exception e) {
                     log.warn(LogMessageProvider.getMessage("knowledge_qa_service.image_not_found", doc.getTitle()), e);
@@ -546,12 +551,17 @@ public class KnowledgeQAService {
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : LogMessageProvider.getMessage("knowledge_qa_service.related_image");
-                            imageContext.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_item",
-                                i + 1, imgDesc, imgDesc, img.getUrl()));
+                            // 格式：图片 1：描述（来源：URL）![描述](URL)
+                            imageContext.append("\n  ")
+                                       .append(LogMessageProvider.getMessage("knowledge_qa_service.image_item",
+                                           i + 1, imgDesc, img.getUrl()))
+                                       .append(" ")
+                                       .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
                         }
                         if (docImages.size() > 5) {
-                            imageContext.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.more_images", docImages.size() - 5));
+                            imageContext.append("\n  ").append(LogMessageProvider.getMessage("knowledge_qa_service.more_images", docImages.size() - 5));
                         }
+                        imageContext.append("\n");
                     }
                 } catch (Exception e) {
                     log.warn(LogMessageProvider.getMessage("knowledge_qa_service.image_not_found", doc.getTitle()), e);
@@ -680,39 +690,47 @@ public class KnowledgeQAService {
     private String buildEnhancedPrompt(String question, String context, String imageContext,
                                       boolean hasImages, List<String> usedDocuments,
                                       boolean hasMoreDocs, int remainingCount) {
-        // 从配置中获取提示词模板
+        // 从配置中获取提示词模板（From configuration get prompt template）
         String template = properties.getLlm().getPromptTemplate();
 
-        // 构建增强内容
+        // 构建增强内容（Build enhanced content）
         StringBuilder enhancement = new StringBuilder();
 
-        // 添加图片使用指南 / Add image usage guide
+        // 【重要】图片使用指南必须放在最前面，在基础提示词之前（Image guide must be at the very beginning, before base prompt）
+        StringBuilder imageGuide = new StringBuilder();
         if (hasImages && !imageContext.isEmpty()) {
-            enhancement.append(LogMessageProvider.getMessage("knowledge_qa_service.important_notice"));
-            enhancement.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_1"));
-            enhancement.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_2"));
-            enhancement.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_3"));
-            enhancement.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_4"));
-            enhancement.append("\n").append(imageContext);
+            imageGuide.append(LogMessageProvider.getMessage("knowledge_qa_service.important_notice"));
+            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_1"));
+            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_2"));
+            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_3"));
+            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_4"));
+            imageGuide.append("\n\n");
         }
 
-        // 添加文档使用说明 / Add document usage instructions
+        // 添加文档使用说明（Add document usage instructions）
         if (!usedDocuments.isEmpty()) {
-            enhancement.append(LogMessageProvider.getMessage("knowledge_qa_service.referenced_docs"));
+            enhancement.append("\n\n").append(LogMessageProvider.getMessage("knowledge_qa_service.referenced_docs"));
             for (int i = 0; i < usedDocuments.size(); i++) {
                 enhancement.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.doc_item", i + 1, usedDocuments.get(i)));
             }
         }
 
-        // 如果有更多未处理的文档，提示用户 / If there are more unprocessed documents, prompt the user
+        // 如果有更多未处理的文档，提示用户（If there are more unprocessed documents, prompt the user）
         if (hasMoreDocs && remainingCount > 0) {
-            enhancement.append(LogMessageProvider.getMessage("knowledge_qa_service.more_docs_notice",
+            enhancement.append("\n\n").append(LogMessageProvider.getMessage("knowledge_qa_service.more_docs_notice",
                 usedDocuments.size(), remainingCount));
         }
 
-        // 替换占位符 / Replace placeholders
-        return template.replace("{question}", question)
-                       .replace("{context}", context) +
+        // 添加图片信息（在问题和上下文之后）（Add image information after question and context）
+        if (hasImages && !imageContext.isEmpty()) {
+            enhancement.append("\n\n").append(imageContext);
+        }
+
+        // 【关键】构建最终 Prompt：图片指南 → 基础模板 → 文档说明 → 图片列表
+        // (Critical) Build final prompt: Image guide → Base template → Doc instructions → Image list
+        return imageGuide.toString() +
+               template.replace("{question}", question)
+                      .replace("{context}", context) +
                enhancement.toString();
     }
 
@@ -1006,10 +1024,10 @@ public class KnowledgeQAService {
                 .build();
 
             String recordId = qaRecordService.saveRecord(record);
-            log.debug(LogMessageProvider.getMessage("knowledge_qa_service.log.record_saved"), recordId);
+            log.debug(LogMessageProvider.getMessage("knowledge_qa_service.log.record_saved", recordId));
             return recordId;
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("knowledge_qa_service.save_qa_failed"), e);
+            log.warn(LogMessageProvider.getMessage("knowledge_qa_service.save_qa_failed", e));
             return null;
         }
     }
