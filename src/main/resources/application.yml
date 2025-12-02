@@ -335,7 +335,7 @@ knowledge:
       #   - ocr: OCR 文字识别（需要 Tesseract）
       #   - vision-llm: Vision LLM 语义理解（需要 API Key）
       #   - hybrid: 混合模式（OCR + Vision LLM，推荐）
-      strategy: hybrid
+      strategy: ocr
 
       # 是否启用 OCR
       enable-ocr: true
@@ -346,7 +346,7 @@ knowledge:
         # Linux/Mac: export TESSDATA_PREFIX=/path/to/tessdata
         # Windows: set TESSDATA_PREFIX=C:\path\to\tessdata
         # 如果未设置环境变量，将使用项目根目录下的 release/tessdata
-        tessdata-path: ${TESSDATA_PREFIX:D:/Jetbrains/hackathon/ai-reviewer-base-file-rag/release/tessdata}
+        tessdata-path: ${TESSDATA_PREFIX:release/tessdata}
 
         # 识别语言
         # chi_sim: 简体中文

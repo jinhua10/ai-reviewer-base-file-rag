@@ -2,6 +2,7 @@ package top.yumbo.ai.rag;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -45,7 +46,7 @@ public class Application {
             // 创建 SpringApplication 实例并显式设置为 Web 应用 (Create SpringApplication instance and explicitly set as Web application)
             SpringApplication app = new SpringApplication(Application.class);
             // 强制设置为 Servlet Web 应用类型，防止应用启动后立即退出 (Force set as Servlet Web application type to prevent app from exiting immediately after startup)
-            app.setWebApplicationType(org.springframework.boot.WebApplicationType.SERVLET);
+            app.setWebApplicationType(WebApplicationType.SERVLET);
             app.run(args);
 
             log.info(LogMessageProvider.getMessage("log.app.started", "http://localhost:8080"));

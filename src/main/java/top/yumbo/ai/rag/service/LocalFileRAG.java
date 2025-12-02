@@ -6,6 +6,7 @@ import top.yumbo.ai.rag.config.RAGConfiguration;
 import top.yumbo.ai.rag.core.CacheEngine;
 import top.yumbo.ai.rag.core.IndexEngine;
 import top.yumbo.ai.rag.core.StorageEngine;
+import top.yumbo.ai.rag.factory.RAGEngineFactory;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
@@ -366,13 +367,13 @@ public class LocalFileRAG implements Closeable {
 
         public LocalFileRAG build() {
             if (storageEngine == null) {
-                storageEngine = top.yumbo.ai.rag.factory.RAGEngineFactory.createStorageEngine(configuration);
+                storageEngine = RAGEngineFactory.createStorageEngine(configuration);
             }
             if (indexEngine == null) {
-                indexEngine = top.yumbo.ai.rag.factory.RAGEngineFactory.createIndexEngine(configuration);
+                indexEngine = RAGEngineFactory.createIndexEngine(configuration);
             }
             if (cacheEngine == null) {
-                cacheEngine = top.yumbo.ai.rag.factory.RAGEngineFactory.createCacheEngine(configuration);
+                cacheEngine = RAGEngineFactory.createCacheEngine(configuration);
             }
 
             return new LocalFileRAG(configuration, storageEngine, indexEngine, cacheEngine, null);
