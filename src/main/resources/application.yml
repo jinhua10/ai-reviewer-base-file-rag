@@ -338,20 +338,34 @@ knowledge:
       strategy: ocr
 
       # 是否启用 OCR
+      # 设置为 true 启用 OCR 图片文字识别功能
+      # 需要安装 Tesseract OCR 软件
       enable-ocr: true
 
       # OCR 配置
       ocr:
-        # Tesseract 数据路径（从环境变量读取）
-        # Linux/Mac: export TESSDATA_PREFIX=/path/to/tessdata
-        # Windows: set TESSDATA_PREFIX=C:\path\to\tessdata
-        # 如果未设置环境变量，将使用项目根目录下的 release/tessdata
+        # Tesseract 数据路径
+        # 方式1（推荐）：直接指定绝对路径
+        #   Windows 示例: C:/Program Files/Tesseract-OCR/tessdata
+        #   Linux/Mac 示例: /usr/share/tesseract-ocr/4.00/tessdata
+        #
+        # 方式2：使用环境变量（兼容旧版本）
+        #   Linux/Mac: export TESSDATA_PREFIX=/path/to/tessdata
+        #   Windows: set TESSDATA_PREFIX=C:\path\to\tessdata
+        #
+        # 方式3：使用项目内置路径（默认）
+        #   如果未配置，将使用: release/tessdata
+        #
+        # 当前配置: 优先使用环境变量 TESSDATA_PREFIX，如果未设置则使用 release/tessdata
         tessdata-path: ${TESSDATA_PREFIX:release/tessdata}
+
+        # 💡 提示：如果要直接配置路径，替换上面一行为:
+        # tessdata-path: C:/Program Files/Tesseract-OCR/tessdata
 
         # 识别语言
         # chi_sim: 简体中文
         # eng: 英文
-        # chi_sim+eng: 中英文混合
+        # chi_sim+eng: 中英文混合（推荐）
         language: chi_sim+eng
 
       # Vision LLM 配置
@@ -359,11 +373,19 @@ knowledge:
         # 是否启用（混合模式下推荐启用）
         enabled: true
 
-        # API Key（从环境变量读取）
-        # 使用与主 LLM 相同的 API Key
-        # export VISION_LLM_API_KEY=sk-your-api-key
-        # 如果未设置，将使用 AI_API_KEY
+        # API Key
+        # 方式1（推荐）：直接配置 API Key
+        #   api-key: sk-your-actual-api-key
+        #
+        # 方式2：使用环境变量（更安全）
+        #   export VISION_LLM_API_KEY=sk-your-api-key
+        #   或使用主 LLM 的 API Key: export AI_API_KEY=sk-your-api-key
+        #
+        # 当前配置: 优先使用 VISION_LLM_API_KEY，如果未设置则使用 AI_API_KEY
         api-key: ${VISION_LLM_API_KEY:${AI_API_KEY:}}
+
+        # 💡 提示：如果要直接配置 API Key，替换上面一行为:
+        # api-key: sk-your-actual-api-key
 
         # 模型名称
         # DeepSeek 不支持 Vision，建议使用：
@@ -374,8 +396,12 @@ knowledge:
         model: gpt-4o
 
         # API 端点（可选）
-        # 如果使用 OpenAI，设置为：https://api.openai.com/v1/chat/completions
+        # 如果使用 OpenAI，保持默认即可
+        # 如果使用其他兼容服务，修改为对应的端点
         endpoint: ${VISION_LLM_ENDPOINT:https://api.openai.com/v1/chat/completions}
+
+        # 💡 提示：如果要直接配置端点，替换上面一行为:
+        # endpoint: https://api.openai.com/v1/chat/completions
 
     # 问答归档配置
     qa-archive:

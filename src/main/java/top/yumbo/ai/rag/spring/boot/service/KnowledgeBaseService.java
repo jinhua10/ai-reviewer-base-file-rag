@@ -45,12 +45,19 @@ public class KnowledgeBaseService {
     public KnowledgeBaseService(KnowledgeQAProperties properties,
                                 DocumentProcessingOptimizer optimizer,
                                 FileTrackingService fileTrackingService,
-                                top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService) {
+                                top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService,
+                                top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
         this.properties = properties;
         this.optimizer = optimizer;
         this.fileTrackingService = fileTrackingService;
         this.imageExtractionService = imageExtractionService;
-        this.documentParser = new TikaDocumentParser();
+        // 使用注入的 SmartImageExtractor 创建 TikaDocumentParser（Use injected SmartImageExtractor to create TikaDocumentParser）
+        this.documentParser = new TikaDocumentParser(
+            10 * 1024 * 1024,  // 10MB max content
+            true,              // extract image metadata
+            true,              // include image placeholders
+            imageExtractor     // use configured image extractor
+        );
         this.documentChunker = optimizer.createChunker();
     }
 

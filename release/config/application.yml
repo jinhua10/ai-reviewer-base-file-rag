@@ -228,23 +228,72 @@ knowledge:
 
     # 图片处理配置
     image-processing:
-      # 图片处理策略: placeholder, ocr, vision-llm, hybrid
+      # 图片处理策略:
+      #   - placeholder: 占位符（默认，零依赖，显示 [图片: xxx.png]）
+      #   - ocr: OCR 文字识别（需要安装 Tesseract OCR）
+      #   - vision-llm: Vision LLM 语义理解（需要 API Key）
+      #   - hybrid: 混合模式（OCR + Vision LLM，推荐）
       strategy: placeholder
 
       # 是否启用 OCR
-      enable-ocr: true
+      # ⚠️ 启用前请确保已安装 Tesseract OCR
+      # 下载地址:
+      #   Windows: https://github.com/UB-Mannheim/tesseract/wiki
+      #   Linux: sudo apt-get install tesseract-ocr tesseract-ocr-chi-sim
+      #   Mac: brew install tesseract tesseract-lang
+      enable-ocr: false
 
       # OCR 配置
       ocr:
+        # Tesseract 数据路径
+        #
+        # 🔧 配置方法：
+        # 方式1（推荐）：直接指定绝对路径
+        #   Windows 示例: tessdata-path: C:/Program Files/Tesseract-OCR/tessdata
+        #   Linux/Mac 示例: tessdata-path: /usr/share/tesseract-ocr/4.00/tessdata
+        #
+        # 方式2：使用环境变量
+        #   set TESSDATA_PREFIX=C:\path\to\tessdata (Windows)
+        #   export TESSDATA_PREFIX=/path/to/tessdata (Linux/Mac)
+        #
+        # 方式3：使用项目内置路径
+        #   将 tessdata 文件夹放在项目根目录下
+        #
+        # 💡 提示：修改下面的配置，直接指定你的 tessdata 路径
         tessdata-path: ${TESSDATA_PREFIX:./tessdata}
+
+        # 识别语言
+        # chi_sim: 简体中文
+        # eng: 英文
+        # chi_sim+eng: 中英文混合（推荐）
+        # jpn: 日文
+        # kor: 韩文
         language: chi_sim+eng
 
       # Vision LLM 配置
       vision-llm:
+        # 是否启用（混合模式下推荐启用）
         enabled: false
-        api-key: ${VISION_LLM_API_KEY:}
-        model: gpt-4-vision-preview
-        endpoint: ${VISION_LLM_ENDPOINT:}
+
+        # API Key
+        # 💡 配置方法：
+        # 方式1（推荐）：直接配置
+        #   api-key: sk-your-actual-api-key
+        #
+        # 方式2：使用环境变量
+        #   set VISION_LLM_API_KEY=sk-your-api-key
+        #   或使用主 LLM 的 API Key: set AI_API_KEY=sk-your-api-key
+        api-key: ${VISION_LLM_API_KEY:${AI_API_KEY:}}
+
+        # 模型名称
+        # 推荐：gpt-4o (OpenAI, 效果最好)
+        # 备选：gpt-4-vision-preview, claude-3-opus, gemini-pro-vision
+        model: gpt-4o
+
+        # API 端点
+        # OpenAI: https://api.openai.com/v1/chat/completions
+        # 其他兼容服务：配置相应的端点
+        endpoint: ${VISION_LLM_ENDPOINT:https://api.openai.com/v1/chat/completions}
 
 # 日志配置
 logging:

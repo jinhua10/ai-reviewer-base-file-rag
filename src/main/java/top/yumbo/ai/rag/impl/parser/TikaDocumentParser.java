@@ -81,41 +81,43 @@ public class TikaDocumentParser implements DocumentParser {
     }
 
     /**
-     * 带配置的构造函数
+     * 带配置的构造函数（Constructor with configuration）
      *
-     * @param maxContentLength 最大内容长度（字符数）
-     * @param extractImageMetadata 是否提取图片元数据
-     * @param includeImagePlaceholders 是否包含图片占位符
+     * @param maxContentLength 最大内容长度（字符数）（Max content length in characters）
+     * @param extractImageMetadata 是否提取图片元数据（Whether to extract image metadata）
+     * @param includeImagePlaceholders 是否包含图片占位符（Whether to include image placeholders）
+     * @param imageExtractor 智能图片提取器（Smart image extractor）
      */
-    public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata, boolean includeImagePlaceholders) {
+    public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata,
+                             boolean includeImagePlaceholders,
+                             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
         this.tika = new Tika();
         this.parser = new AutoDetectParser();
         this.maxContentLength = maxContentLength;
         this.extractImageMetadata = extractImageMetadata;
         this.includeImagePlaceholders = includeImagePlaceholders;
+        this.imageExtractor = imageExtractor;
 
-        // 初始化智能图片提取器（从环境变量自动配置）
-        this.imageExtractor = top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor.fromEnv();
-
-        // 显示OCR配置详情
-        String enableOCR = System.getenv("ENABLE_OCR");
-        String tessdataPrefix = System.getenv("TESSDATA_PREFIX");
-        String ocrLanguage = System.getenv("OCR_LANGUAGE");
-
+        // 显示解析器配置信息（Display parser configuration）
         log.info(LogMessageProvider.getMessage("log.tika.init"));
         log.info(LogMessageProvider.getMessage("log.tika.max_content", maxContentLength / 1024 / 1024));
         log.info(LogMessageProvider.getMessage("log.tika.extract_image_metadata", extractImageMetadata));
         log.info(LogMessageProvider.getMessage("log.tika.include_image_placeholders", includeImagePlaceholders));
         log.info(LogMessageProvider.getMessage("log.tika.active_image_strategy", imageExtractor.getActiveStrategy().getStrategyName()));
+    }
 
-        if ("true".equalsIgnoreCase(enableOCR)) {
-            log.info(LogMessageProvider.getMessage("log.tika.ocr_config"));
-            log.info(LogMessageProvider.getMessage("log.tika.enable_ocr", enableOCR));
-            log.info(LogMessageProvider.getMessage("log.tika.tessdata", tessdataPrefix != null ? tessdataPrefix : LogMessageProvider.getMessage("log.tika.not_set")));
-            log.info(LogMessageProvider.getMessage("log.tika.ocr_language", ocrLanguage != null ? ocrLanguage : LogMessageProvider.getMessage("log.tika.not_set")));
-        } else {
-            log.info(LogMessageProvider.getMessage("log.tika.ocr_disabled", enableOCR));
-        }
+    /**
+     * 带配置的构造函数（兼容旧版本）（Constructor with configuration - backward compatible）
+     *
+     * @param maxContentLength 最大内容长度（字符数）（Max content length in characters）
+     * @param extractImageMetadata 是否提取图片元数据（Whether to extract image metadata）
+     * @param includeImagePlaceholders 是否包含图片占位符（Whether to include image placeholders）
+     * @deprecated 使用带 imageExtractor 参数的构造函数（Use constructor with imageExtractor parameter）
+     */
+    @Deprecated
+    public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata, boolean includeImagePlaceholders) {
+        this(maxContentLength, extractImageMetadata, includeImagePlaceholders,
+             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor.fromEnv());
     }
 
     @Override
