@@ -382,26 +382,26 @@ knowledge:
         #   或使用主 LLM 的 API Key: export AI_API_KEY=sk-your-api-key
         #
         # 当前配置: 优先使用 VISION_LLM_API_KEY，如果未设置则使用 AI_API_KEY
+        # 本地 Ollama 不需要 API Key
         api-key: ${VISION_LLM_API_KEY:${AI_API_KEY:}}
 
         # 💡 提示：如果要直接配置 API Key，替换上面一行为:
         # api-key: sk-your-actual-api-key
 
         # 模型名称
-        # DeepSeek 不支持 Vision，建议使用：
-        # - gpt-4o (OpenAI, 推荐)
-        # - gpt-4-vision-preview (OpenAI)
-        # - claude-3-opus (Anthropic)
-        # - gemini-pro-vision (Google)
-        model: gpt-4o
+        # OpenAI: gpt-4o, gpt-4-vision-preview
+        # Anthropic: claude-3-opus
+        # Google: gemini-pro-vision
+        # Ollama（本地）: qwen3-vl:8b, llava:7b, minicpm-v
+        model: qwen3-vl:8b
 
         # API 端点（可选）
-        # 如果使用 OpenAI，保持默认即可
-        # 如果使用其他兼容服务，修改为对应的端点
-        endpoint: ${VISION_LLM_ENDPOINT:https://api.openai.com/v1/chat/completions}
+        # OpenAI: https://api.openai.com/v1/chat/completions
+        # Ollama（本地）: http://localhost:11434/api/chat
+        endpoint: ${VISION_LLM_ENDPOINT:http://localhost:11434/api/chat}
 
         # 💡 提示：如果要直接配置端点，替换上面一行为:
-        # endpoint: https://api.openai.com/v1/chat/completions
+        # endpoint: http://localhost:11434/api/chat
 
     # 问答归档配置
     qa-archive:

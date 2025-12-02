@@ -273,7 +273,7 @@ knowledge:
       # Vision LLM 配置
       vision-llm:
         # 是否启用（混合模式下推荐启用）
-        enabled: false
+        enabled: true
 
         # API Key
         # 💡 配置方法：
@@ -283,17 +283,18 @@ knowledge:
         # 方式2：使用环境变量
         #   set VISION_LLM_API_KEY=sk-your-api-key
         #   或使用主 LLM 的 API Key: set AI_API_KEY=sk-your-api-key
+        # 本地 Ollama 不需要 API Key
         api-key: ${VISION_LLM_API_KEY:${AI_API_KEY:}}
 
         # 模型名称
-        # 推荐：gpt-4o (OpenAI, 效果最好)
-        # 备选：gpt-4-vision-preview, claude-3-opus, gemini-pro-vision
-        model: gpt-4o
+        # OpenAI: gpt-4o, gpt-4-vision-preview
+        # Ollama（本地）: qwen3-vl:8b, llava:7b, minicpm-v
+        model: qwen3-vl:8b
 
         # API 端点
         # OpenAI: https://api.openai.com/v1/chat/completions
-        # 其他兼容服务：配置相应的端点
-        endpoint: ${VISION_LLM_ENDPOINT:https://api.openai.com/v1/chat/completions}
+        # Ollama（本地）: http://localhost:11434/api/chat
+        endpoint: ${VISION_LLM_ENDPOINT:http://localhost:11434/api/chat}
 
 # 日志配置
 logging:
