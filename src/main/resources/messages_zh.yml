@@ -196,7 +196,39 @@ knowledge_qa:
     search_documents: "为问题搜索文档：{0}（找到 {1} 个）"
     session_question: "会话问题 [{0}]：{1}"
     rebuild_request: "收到重建请求：{0}"
-
+# Vision LLM 策略消息
+vision_llm:
+  log:
+    api_format_detected: "检测到 {0} API 格式"
+    api_format_default: "使用默认 OpenAI Chat Completions API 格式"
+    processing_image: "使用 Vision LLM 处理图片: {0}"
+    processing_image_file: "使用 Vision LLM 处理图片文件: {0}"
+    content_extracted: "Vision LLM 提取内容 [{0}]: {1} 字符"
+    processing_failed: "Vision LLM 处理失败: {0}"
+    sending_request: "发送 Vision API 请求: {0} (格式: {1})"
+    received_response: "收到 Vision API 响应，耗时: {0}ms"
+    token_usage: "Token 使用 - Prompt: {0}, Completion: {1}, Total: {2}"
+    ollama_complete_chat: "Ollama 处理完成（/api/chat 格式）"
+    ollama_complete_generate: "Ollama 处理完成（/api/generate 格式）"
+    service_available: "✅ Vision LLM 可用"
+    api_format: "   - API 格式: {0}"
+    model: "   - 模型: {0}"
+    endpoint: "   - 端点: {0}"
+    service_unavailable: "⚠️  Vision LLM 服务不可用: {0}"
+    check_service: "💡 提示: 请检查服务是否正常运行"
+    unavailable_no_apikey: "⚠️  Vision LLM 不可用: 未配置 API Key"
+    hint_set_apikey: "💡 提示: 在配置文件中设置 vision-llm.api-key"
+    service_response_error: "服务响应异常: HTTP {0}"
+  error:
+    unavailable: "[图片: {0} - Vision LLM不可用]"
+    processing_failed: "[图片: {0} - Vision LLM处理失败: {1}]"
+    api_error: "Vision API 错误: HTTP {0}"
+    api_error_with_body: "Vision API 错误: HTTP {0}, Body: {1}"
+    no_response_body: "无响应体"
+    parse_openai_failed: "无法解析 OpenAI API 响应: {0}"
+    parse_ollama_failed: "无法解析 Ollama API 响应: {0}"
+  prompt:
+    extract_text: "请识别并提取这张图片中的所有文字内容。如果图片包含表格、图表或其他结构化数据，请详细描述。直接返回识别的内容，不需要额外的解释。"
 kb_service:
   image:
     description: "图片描述：{0}"

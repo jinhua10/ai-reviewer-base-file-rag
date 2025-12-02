@@ -196,7 +196,39 @@ knowledge_qa:
     search_documents: "Search documents for question: {0} (found {1})"
     session_question: "Session question [{0}]: {1}"
     rebuild_request: "Rebuild requested: {0}"
-
+# Vision LLM Strategy Messages
+vision_llm:
+  log:
+    api_format_detected: "Detected {0} API format"
+    api_format_default: "Using default OpenAI Chat Completions API format"
+    processing_image: "Using Vision LLM to process image: {0}"
+    processing_image_file: "Using Vision LLM to process image file: {0}"
+    content_extracted: "Vision LLM extracted content [{0}]: {1} characters"
+    processing_failed: "Vision LLM processing failed: {0}"
+    sending_request: "Sending Vision API request: {0} (format: {1})"
+    received_response: "Received Vision API response, elapsed: {0}ms"
+    token_usage: "Token usage - Prompt: {0}, Completion: {1}, Total: {2}"
+    ollama_complete_chat: "Ollama processing completed (/api/chat format)"
+    ollama_complete_generate: "Ollama processing completed (/api/generate format)"
+    service_available: "✅ Vision LLM available"
+    api_format: "   - API Format: {0}"
+    model: "   - Model: {0}"
+    endpoint: "   - Endpoint: {0}"
+    service_unavailable: "⚠️  Vision LLM service unavailable: {0}"
+    check_service: "💡 Hint: Please check if service is running"
+    unavailable_no_apikey: "⚠️  Vision LLM unavailable: API Key not configured"
+    hint_set_apikey: "💡 Hint: Set vision-llm.api-key in config"
+    service_response_error: "Service response error: HTTP {0}"
+  error:
+    unavailable: "[Image: {0} - Vision LLM unavailable]"
+    processing_failed: "[Image: {0} - Vision LLM processing failed: {1}]"
+    api_error: "Vision API error: HTTP {0}"
+    api_error_with_body: "Vision API error: HTTP {0}, Body: {1}"
+    no_response_body: "No response body"
+    parse_openai_failed: "Failed to parse OpenAI API response: {0}"
+    parse_ollama_failed: "Failed to parse Ollama API response: {0}"
+  prompt:
+    extract_text: "Please identify and extract all text content from this image. If the image contains tables, charts, or other structured data, please describe it in detail. Return the recognized content directly, without additional explanations."
 kb_service:
   image:
     description: "Image description: {0}"
