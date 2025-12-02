@@ -14,21 +14,42 @@ import java.util.Base64;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Vision LLM 策略
+ * Vision LLM 策略（Vision LLM Strategy）
+ * <p>
+ * 通用的多模态视觉语言模型接口，支持任何兼容的 API 格式：
+ * Universal multimodal vision language model interface, supports any compatible API format:
+ * <p>
+ * 支持的 API 格式（Supported API Formats）：
+ * 1. **OpenAI Chat Completions 格式**（标准格式，大多数服务兼容）
+ *    - OpenAI GPT-4o / GPT-4 Vision
+ *    - DeepSeek VL
+ *    - 其他 OpenAI 兼容服务
+ * <p>
+ * 2. **Ollama 格式**（本地部署）
+ *    - Ollama LLaVA
+ *    - Ollama MiniCPM-V
+ *    - Ollama Qwen-VL
+ * <p>
+ * 3. **自定义格式**（通过配置适配）
+ *    - 任何提供 HTTP API 的视觉模型服务
+ * <p>
+ * 配置示例（Configuration Examples）：
+ * <pre>
+ * # OpenAI / DeepSeek (在线)
+ * endpoint: https://api.openai.com/v1/chat/completions
+ * model: gpt-4o
+ * api-key: sk-xxx
  *
- * 使用多模态大语言模型理解图片内容（支持 OCR）
+ * # Ollama (本地)
+ * endpoint: http://localhost:11434/api/generate
+ * model: llava:7b
+ * api-key: "" (可选)
  *
- * 支持的模型:
- * - gpt-4o (推荐，最新多模态)
- * - gpt-4-turbo (GPT-4 Turbo with vision)
- * - gpt-4-vision-preview (GPT-4 Vision)
- * - 未来的 gpt-5 (发布后自动支持)
- *
- * 使用场景:
- * - OCR 文字识别（包括手写）
- * - 理解图表、图形的语义
- * - 提取结构化信息
- * - 描述图片内容
+ * # 自定义服务
+ * endpoint: http://your-server:8080/v1/vision
+ * model: your-model
+ * api-key: your-key
+ * </pre>
  *
  * @author AI Reviewer Team
  * @since 2025-11-23
@@ -41,25 +62,38 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     private final String apiEndpoint;
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
+    private final ApiFormat apiFormat;  // API 格式类型
     private boolean available = false;
 
-    // 默认配置
+    // 默认配置（Default Configuration）
     private static final String DEFAULT_API_ENDPOINT = "https://api.openai.com/v1/chat/completions";
     private static final String DEFAULT_MODEL = "gpt-4o";
-    private static final int DEFAULT_TIMEOUT = 60;
+    private static final int DEFAULT_TIMEOUT = 120;
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     /**
-     * 构造函数
+     * API 格式枚举（API Format Enum）
+     */
+    private enum ApiFormat {
+        OPENAI_CHAT,    // OpenAI Chat Completions 格式（标准格式）
+        OLLAMA,         // Ollama 格式
+        AUTO            // 自动检测
+    }
+
+    /**
+     * 构造函数（Constructor）
      *
-     * @param apiKey API密钥
-     * @param model 模型名称（如 "gpt-4o"）
+     * @param apiKey API密钥（可选，某些本地服务不需要）
+     * @param model 模型名称
      * @param apiEndpoint API端点
      */
     public VisionLLMStrategy(String apiKey, String model, String apiEndpoint) {
         this.apiKey = apiKey;
         this.model = model != null && !model.isEmpty() ? model : DEFAULT_MODEL;
         this.apiEndpoint = apiEndpoint != null && !apiEndpoint.isEmpty() ? apiEndpoint : DEFAULT_API_ENDPOINT;
+
+        // 自动检测 API 格式（Auto-detect API format）
+        this.apiFormat = detectApiFormat(this.apiEndpoint);
 
         this.httpClient = new OkHttpClient.Builder()
             .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
@@ -73,7 +107,30 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     /**
-     * 从环境变量创建
+     * 自动检测 API 格式（Auto-detect API format based on endpoint）
+     */
+    private ApiFormat detectApiFormat(String endpoint) {
+        String lowerEndpoint = endpoint.toLowerCase();
+
+        // 检测 Ollama 格式
+        if (lowerEndpoint.contains("/api/generate") || lowerEndpoint.contains(":11434")) {
+            log.debug("检测到 Ollama API 格式");
+            return ApiFormat.OLLAMA;
+        }
+
+        // 检测 OpenAI Chat Completions 格式
+        if (lowerEndpoint.contains("/chat/completions") || lowerEndpoint.contains("/v1/")) {
+            log.debug("检测到 OpenAI Chat Completions API 格式");
+            return ApiFormat.OPENAI_CHAT;
+        }
+
+        // 默认使用 OpenAI Chat Completions 格式（最通用）
+        log.debug("使用默认 OpenAI Chat Completions API 格式");
+        return ApiFormat.OPENAI_CHAT;
+    }
+
+    /**
+     * 从环境变量创建（Create from environment variables）
      */
     public static VisionLLMStrategy fromEnv() {
         String apiKey = System.getenv("VISION_LLM_API_KEY");
@@ -91,13 +148,57 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     private void checkAvailability() {
-        if (apiKey != null && !apiKey.isEmpty()) {
-            available = true;
-            log.info("✅ Vision LLM 可用 (模型: {})", model);
-        } else {
+        try {
+            // 尝试测试连接（根据 API 格式选择不同的测试方法）
+            if (apiFormat == ApiFormat.OLLAMA) {
+                // Ollama：测试 /api/tags 端点
+                String testUrl = apiEndpoint.replace("/api/generate", "/api/tags");
+                testConnection(testUrl, false);  // Ollama 不需要认证
+            } else {
+                // OpenAI Chat Completions：检查 API Key
+                if (apiKey == null || apiKey.isEmpty()) {
+                    available = false;
+                    log.warn("⚠️  Vision LLM 不可用: 未配置 API Key");
+                    log.warn("💡 提示: 在配置文件中设置 vision-llm.api-key");
+                    return;
+                }
+                // 不实际测试连接（避免额外费用），假定配置正确
+                available = true;
+            }
+
+            if (available) {
+                log.info("✅ Vision LLM 可用");
+                log.info("   - API 格式: {}", apiFormat);
+                log.info("   - 模型: {}", model);
+                log.info("   - 端点: {}", apiEndpoint);
+            }
+
+        } catch (Exception e) {
             available = false;
-            log.warn("⚠️  Vision LLM 不可用: 未配置 API Key");
-            log.warn("💡 提示: 设置环境变量 VISION_LLM_API_KEY 或 OPENAI_API_KEY");
+            log.warn("⚠️  Vision LLM 服务不可用: {}", e.getMessage());
+            log.warn("💡 提示: 请检查服务是否正常运行");
+        }
+    }
+
+    /**
+     * 测试连接（Test connection to the service）
+     */
+    private void testConnection(String url, boolean requireAuth) throws Exception {
+        Request.Builder requestBuilder = new Request.Builder()
+            .url(url)
+            .get();
+
+        if (requireAuth && apiKey != null && !apiKey.isEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer " + apiKey);
+        }
+
+        try (Response response = httpClient.newCall(requestBuilder.build()).execute()) {
+            if (response.isSuccessful() || response.code() == 404) {  // 404 也认为服务可用
+                available = true;
+            } else {
+                available = false;
+                log.warn("服务响应异常: HTTP {}", response.code());
+            }
         }
     }
 
@@ -152,25 +253,28 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     /**
-     * 调用 Vision LLM API
+     * 调用 Vision LLM API（Call Vision LLM API）
      */
     private String callVisionAPI(String base64Image, String imageName) throws Exception {
-        // 构建请求体
+        // 根据 API 格式构建不同的请求体
         String requestBody = buildVisionRequest(base64Image);
 
-        log.debug("发送 Vision API 请求: {}", model);
+        log.debug("发送 Vision API 请求: {} (格式: {})", model, apiFormat);
 
         // 创建 HTTP 请求
-        Request request = new Request.Builder()
+        Request.Builder requestBuilder = new Request.Builder()
             .url(apiEndpoint)
             .post(RequestBody.create(requestBody, JSON))
-            .addHeader("Authorization", "Bearer " + apiKey)
-            .addHeader("Content-Type", "application/json")
-            .build();
+            .addHeader("Content-Type", "application/json");
+
+        // OpenAI 格式需要 Authorization header
+        if (apiFormat == ApiFormat.OPENAI_CHAT && apiKey != null && !apiKey.isEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer " + apiKey);
+        }
 
         // 发送请求
         long startTime = System.currentTimeMillis();
-        try (Response response = httpClient.newCall(request).execute()) {
+        try (Response response = httpClient.newCall(requestBuilder.build()).execute()) {
             long elapsed = System.currentTimeMillis() - startTime;
 
             if (!response.isSuccessful()) {
@@ -182,15 +286,26 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             String responseBody = response.body().string();
             log.debug("收到 Vision API 响应，耗时: {}ms", elapsed);
 
-            // 解析响应
+            // 根据 API 格式解析响应
             return parseVisionResponse(responseBody);
         }
     }
 
     /**
-     * 构建 Vision API 请求体
+     * 构建 Vision API 请求体（Build Vision API request body）
      */
     private String buildVisionRequest(String base64Image) throws Exception {
+        if (apiFormat == ApiFormat.OLLAMA) {
+            return buildOllamaRequest(base64Image);
+        } else {
+            return buildOpenAIRequest(base64Image);
+        }
+    }
+
+    /**
+     * 构建 OpenAI Chat Completions 格式请求（Build OpenAI Chat Completions format request）
+     */
+    private String buildOpenAIRequest(String base64Image) throws Exception {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("model", model);
         root.put("max_tokens", 1000);
@@ -222,9 +337,40 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     /**
-     * 解析 Vision API 响应
+     * 构建 Ollama 格式请求（Build Ollama format request）
+     */
+    private String buildOllamaRequest(String base64Image) throws Exception {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("model", model);
+        root.put("prompt",
+            "请识别并提取这张图片中的所有文字内容。" +
+            "如果图片包含表格、图表或其他结构化数据，请详细描述。" +
+            "直接返回识别的内容，不需要额外的解释。");
+
+        // Ollama 使用 images 数组存放 base64 图片
+        ArrayNode images = root.putArray("images");
+        images.add(base64Image);
+
+        root.put("stream", false);  // 不使用流式输出
+
+        return objectMapper.writeValueAsString(root);
+    }
+
+    /**
+     * 解析 Vision API 响应（Parse Vision API response）
      */
     private String parseVisionResponse(String responseBody) throws Exception {
+        if (apiFormat == ApiFormat.OLLAMA) {
+            return parseOllamaResponse(responseBody);
+        } else {
+            return parseOpenAIResponse(responseBody);
+        }
+    }
+
+    /**
+     * 解析 OpenAI Chat Completions 格式响应（Parse OpenAI Chat Completions format response）
+     */
+    private String parseOpenAIResponse(String responseBody) throws Exception {
         JsonNode root = objectMapper.readTree(responseBody);
 
         // 提取内容
@@ -253,7 +399,30 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             }
         }
 
-        throw new Exception("无法解析 Vision API 响应: " + responseBody);
+        throw new Exception("无法解析 OpenAI API 响应: " + responseBody);
+    }
+
+    /**
+     * 解析 Ollama 格式响应（Parse Ollama format response）
+     */
+    private String parseOllamaResponse(String responseBody) throws Exception {
+        JsonNode root = objectMapper.readTree(responseBody);
+
+        // Ollama 响应格式: { "response": "...", "done": true }
+        JsonNode response = root.get("response");
+        if (response != null) {
+            String result = response.asText();
+
+            // 记录处理时间等信息
+            JsonNode done = root.get("done");
+            if (done != null && done.asBoolean()) {
+                log.debug("Ollama 处理完成");
+            }
+
+            return result;
+        }
+
+        throw new Exception("无法解析 Ollama API 响应: " + responseBody);
     }
 
     @Override
