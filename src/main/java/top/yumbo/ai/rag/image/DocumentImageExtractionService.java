@@ -5,17 +5,19 @@ import top.yumbo.ai.rag.image.analyzer.AIImageAnalyzer;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
 import top.yumbo.ai.rag.image.extractor.impl.*;
+import top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 文档图片提取管理服务（Document image extraction management service）
  * 负责协调各类文档的图片提取和 AI 分析（Responsible for coordinating image extraction and AI analysis for various document types）
+ * <p>
+ * 新增功能：使用 SmartImageExtractor 在索引阶段理解图片含义（OCR + Vision LLM）
+ * New feature: Use SmartImageExtractor to understand image content during indexing (OCR + Vision LLM)
  *
  * @author AI Reviewer Team
  * @since 2025-11-26
@@ -27,13 +29,16 @@ public class DocumentImageExtractionService {
     private final ImageStorageService storageService;
     private final AIImageAnalyzer aiAnalyzer;
     private final boolean aiAnalysisEnabled;
+    private final SmartImageExtractor smartImageExtractor;  // 新增：智能图片提取器
 
     public DocumentImageExtractionService(ImageStorageService storageService,
                                          AIImageAnalyzer aiAnalyzer,
-                                         boolean aiAnalysisEnabled) {
+                                         boolean aiAnalysisEnabled,
+                                         SmartImageExtractor smartImageExtractor) {
         this.storageService = storageService;
         this.aiAnalyzer = aiAnalyzer;
         this.aiAnalysisEnabled = aiAnalysisEnabled;
+        this.smartImageExtractor = smartImageExtractor;
 
         // 初始化所有提取器（Initialize all extractors）
         this.extractors = new ArrayList<>();
@@ -50,6 +55,7 @@ public class DocumentImageExtractionService {
         this.extractors.add(new ExcelLegacyImageExtractor());
 
         log.info(LogMessageProvider.getMessage("log.image.service.init", extractors.size(), aiAnalysisEnabled));
+        log.info("   - SmartImageExtractor 策略: {}", smartImageExtractor.getActiveStrategy().getStrategyName());
     }
 
     /**
@@ -105,7 +111,27 @@ public class DocumentImageExtractionService {
 
             log.info(LogMessageProvider.getMessage("log.image.service.extracted", extractedImages.size()));
 
-            // 3. AI 分析图片（可选）（AI analyze images (optional)）
+            // 3. 使用 SmartImageExtractor 理解图片含义（Use SmartImageExtractor to understand image content）
+            // 这一步会执行 OCR 或 Vision LLM 分析，提取图片中的文字和语义
+            // This step performs OCR or Vision LLM analysis to extract text and semantics from images
+            for (ExtractedImage image : extractedImages) {
+                try {
+                    // 使用 SmartImageExtractor 提取图片内容
+                    ByteArrayInputStream imageStream = new ByteArrayInputStream(image.getData());
+                    String imageContent = smartImageExtractor.extractContent(imageStream, image.getDisplayName());
+
+                    // 将提取的内容设置为图片描述
+                    if (imageContent != null && !imageContent.trim().isEmpty()) {
+                        image.setAiDescription(imageContent);
+                        log.debug("   图片 [{}] 内容理解完成: {} 字符",
+                                 image.getDisplayName(), imageContent.length());
+                    }
+                } catch (Exception e) {
+                    log.warn("   图片内容理解失败 [{}]: {}", image.getDisplayName(), e.getMessage());
+                }
+            }
+
+            // 4. AI 分析图片（可选，如果还需要额外分析）（AI analyze images (optional, if additional analysis needed)）
             if (aiAnalysisEnabled && aiAnalyzer != null) {
                 extractedImages = aiAnalyzer.analyzeImages(extractedImages);
             } else {
@@ -117,7 +143,7 @@ public class DocumentImageExtractionService {
                 }
             }
 
-            // 4. 保存图片到存储（Save images to storage）
+            // 5. 保存图片到存储（Save images to storage）
             for (ExtractedImage extracted : extractedImages) {
                 try {
                     String originalName = extracted.getDisplayName();

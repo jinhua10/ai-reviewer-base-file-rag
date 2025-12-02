@@ -60,6 +60,7 @@ public class StorageConfiguration {
     public DocumentImageExtractionService documentImageExtractionService(
             ImageStorageService imageStorageService,
             AIImageAnalyzer aiImageAnalyzer,
+            top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor smartImageExtractor,
             KnowledgeQAProperties properties) {
 
         boolean aiAnalysisEnabled = properties.getLlm().getChunking().getAiChunking().isEnabled();
@@ -68,7 +69,8 @@ public class StorageConfiguration {
         return new DocumentImageExtractionService(
                 imageStorageService,
                 aiImageAnalyzer,
-                aiAnalysisEnabled
+                aiAnalysisEnabled,
+                smartImageExtractor  // 传入 SmartImageExtractor，用于图片内容理解
         );
     }
 }
