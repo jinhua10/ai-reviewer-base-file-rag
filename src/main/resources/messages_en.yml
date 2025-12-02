@@ -28,7 +28,12 @@ document_management:
       upload: "Document uploaded successfully"
   log:
     scanned_types: "Scanned file types: {0}"
-    list_documents: "Listing documents: Returned {0} items"
+    batch_upload: "Batch upload documents: {}"
+    upload_success: "Document uploaded successfully: {}"
+    upload_failed: "Document upload failed"
+    file_upload_failed: "File upload failed: {}"
+    list_documents: "Get document list: page={}, pageSize={}, sortBy={}, sortOrder={}"
+    list_failed: "Failed to get document list"
 document_service:
   error:
     cannot_create_dir: "Failed to create document directory: {0}"
