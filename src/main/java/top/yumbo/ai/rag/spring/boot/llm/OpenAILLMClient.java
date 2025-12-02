@@ -200,6 +200,7 @@ public class OpenAILLMClient implements LLMClient {
             model.contains("gpt-4o") ||
             model.contains("gpt-4-vision") ||
             model.contains("qwen-vl") ||
+            model.contains("qwen3-vl") ||
             model.contains("claude-3")
         );
     }
