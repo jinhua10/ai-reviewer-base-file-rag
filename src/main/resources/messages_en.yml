@@ -670,4 +670,26 @@ log:
     parsed_bytes: "Byte array parsed, MIME type: {}, content length: {}"
     parse_bytes_failed: "Byte array parsing failed, MIME type: {}"
     detect_failed: "MIME type detection failed: {}"
-
+vector_index:
+  log:
+    init: "✅ Simple vector index engine initialized"
+    index_path: "   - Index path: {}"
+    dimension: "   - Vector dimension: {}"
+    current_count: "   - Current vector count: {}"
+    search_method: "   - Search method: Linear scan (suitable for <100K)"
+    add_vector: "Add vector: docId={}, dim={}"
+    batch_add: "Batch added {} vectors"
+    index_empty: "Index is empty, returning empty result"
+    search_complete: "Vector search completed: scanned={}, filtered={}, found={}, time={}ms"
+    delete_vector: "Delete vector: docId={}"
+    save_start: "Start saving vector index..."
+    save_complete: "✅ Vector index saved: {} vectors, file size: {} KB"
+    load_start: "Start loading vector index..."
+    load_complete: "✅ Vector index loaded: {} vectors"
+    clear_complete: "✅ Vector index cleared"
+  error:
+    dimension_mismatch: "Vector dimension mismatch: expected {}, actual {}"
+    query_dimension_mismatch: "Query vector dimension mismatch: expected {}, actual {}"
+    vector_dimension_mismatch: "Vector dimension mismatch"
+    index_dimension_mismatch: "Vector dimension mismatch: index={}, expected={}"
+s
