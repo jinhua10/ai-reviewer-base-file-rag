@@ -581,9 +581,14 @@ log:
     simple_init_done: "Simple RAG service initialized successfully"
     storage: "Storage path: {0}"
   filetracking:
-    loaded: "File tracking loaded: {0}"
-    saved: "File tracking saved: {0}"
-    cleared: "File tracking cleared"
+    loaded: "File tracking loaded with {0} entries."
+    load_failed: "Failed to load file tracking: {0}"
+    saved: "File tracking saved with {0} entries."
+    save_failed: "Failed to save file tracking: {0}"
+    check_failed: "Failed to check file tracking for {0}"
+    mark_failed: "Failed to mark file as indexed: {0}"
+    clear_failed: "Failed to clear file tracking: {0}"
+    cleared: "File tracking cleared."
   model:
     checking: "🔍 Checking model files..."
     dir_and_file: "📂 Model directory and files are ready"
