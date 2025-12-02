@@ -383,7 +383,7 @@ knowledge:
         #
         # 当前配置: 优先使用 VISION_LLM_API_KEY，如果未设置则使用 AI_API_KEY
         # 本地 Ollama 不需要 API Key
-        api-key: ${VISION_LLM_API_KEY:${AI_API_KEY:}}
+        api-key: ${VISION_LLM_API_KEY:${QW_API_KEY:}}
 
         # 💡 提示：如果要直接配置 API Key，替换上面一行为:
         # api-key: sk-your-actual-api-key
@@ -392,13 +392,14 @@ knowledge:
         # OpenAI: gpt-4o, gpt-4-vision-preview
         # Anthropic: claude-3-opus
         # Google: gemini-pro-vision
+        # Qwen: qwen-vl-plus
         # Ollama（本地）: qwen3-vl:8b, llava:7b, minicpm-v
-        model: qwen3-vl:8b
+        model: qwen-vl-plus
 
         # API 端点（可选）
         # OpenAI: https://api.openai.com/v1/chat/completions
         # Ollama（本地）: http://localhost:11434/api/chat
-        endpoint: ${VISION_LLM_ENDPOINT:http://localhost:11434/api/chat}
+        endpoint: ${VISION_LLM_ENDPOINT:https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions}
 
         # 💡 提示：如果要直接配置端点，替换上面一行为:
         # endpoint: http://localhost:11434/api/chat

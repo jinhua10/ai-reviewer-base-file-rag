@@ -34,10 +34,18 @@ public class OpenAILLMClient implements LLMClient {
     private final OkHttpClient httpClient;
     private final ObjectMapper objectMapper;
 
+    // 可配置参数 / Configurable parameters
+    private final double temperature;
+    private final int maxTokens;
+
     // 默认 API 端点 / Default API endpoint
     private static final String DEFAULT_API_URL = "https://api.openai.com/v1/chat/completions";
     private static final int DEFAULT_TIMEOUT = 60;
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+    // 默认参数 / Default parameters
+    private static final double DEFAULT_TEMPERATURE = 0.7;
+    private static final int DEFAULT_MAX_TOKENS = 2000;
 
     /**
      * 构造函数 / Constructor
@@ -47,9 +55,24 @@ public class OpenAILLMClient implements LLMClient {
      * @param apiUrl API 端点 (null 则使用默认) / API endpoint (use default if null)
      */
     public OpenAILLMClient(String apiKey, String model, String apiUrl) {
+        this(apiKey, model, apiUrl, DEFAULT_TEMPERATURE, DEFAULT_MAX_TOKENS);
+    }
+
+    /**
+     * 完整构造函数 / Full constructor
+     *
+     * @param apiKey API Key
+     * @param model 模型名称 / Model name
+     * @param apiUrl API 端点 / API endpoint
+     * @param temperature 温度参数 (0.0-2.0，越高越随机) / Temperature (0.0-2.0, higher = more random)
+     * @param maxTokens 最大生成令牌数 / Maximum tokens to generate
+     */
+    public OpenAILLMClient(String apiKey, String model, String apiUrl, double temperature, int maxTokens) {
         this.apiKey = apiKey;
         this.model = model != null ? model : "gpt-4o";
         this.apiUrl = apiUrl != null && !apiUrl.isEmpty() ? apiUrl : DEFAULT_API_URL;
+        this.temperature = temperature;
+        this.maxTokens = maxTokens;
 
         this.httpClient = new OkHttpClient.Builder()
             .connectTimeout(DEFAULT_TIMEOUT, TimeUnit.SECONDS)
@@ -62,6 +85,8 @@ public class OpenAILLMClient implements LLMClient {
         log.info(LogMessageProvider.getMessage("llm.log.openai_init"));
         log.info("   - Model: {}", this.model);
         log.info("   - Endpoint: {}", this.apiUrl);
+        log.info("   - Temperature: {}", this.temperature);
+        log.info("   - MaxTokens: {}", this.maxTokens);
     }
 
     /**
@@ -88,6 +113,7 @@ public class OpenAILLMClient implements LLMClient {
         return generate(prompt, null);
     }
 
+    @Override
     public String generate(String prompt, String systemPrompt) {
         try {
             log.info(prompt);
@@ -98,8 +124,8 @@ public class OpenAILLMClient implements LLMClient {
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", model);
             requestBody.put("messages", messages);
-            requestBody.put("temperature", 0.7);
-            requestBody.put("max_tokens", 2000);
+            requestBody.put("temperature", temperature);
+            requestBody.put("max_tokens", maxTokens);
 
             // 发送请求 / Send request
             String response = sendRequest(requestBody);
@@ -111,6 +137,81 @@ public class OpenAILLMClient implements LLMClient {
             log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
             throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
         }
+    }
+
+    @Override
+    public String generateWithImage(String prompt, String imageUrl, String systemPrompt) {
+        try {
+            log.info("Generating with image: {}", prompt);
+
+            // 构建包含图片的消息
+            List<Map<String, Object>> messages = buildMessagesWithImage(systemPrompt, prompt, imageUrl);
+
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", model);
+            requestBody.put("messages", messages);
+            requestBody.put("temperature", temperature);
+            requestBody.put("max_tokens", maxTokens);
+
+            // 发送请求 / Send request
+            String response = sendRequest(requestBody);
+
+            // 解析响应 / Parse response
+            return parseResponse(response);
+
+        } catch (Exception e) {
+            log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
+        }
+    }
+
+    @Override
+    public String generateWithImages(String prompt, List<String> imageUrls, String systemPrompt) {
+        try {
+            log.info("Generating with {} images: {}", imageUrls.size(), prompt);
+
+            // 构建包含多张图片的消息
+            List<Map<String, Object>> messages = buildMessagesWithImages(systemPrompt, prompt, imageUrls);
+
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", model);
+            requestBody.put("messages", messages);
+            requestBody.put("temperature", temperature);
+            requestBody.put("max_tokens", maxTokens);
+
+            // 发送请求 / Send request
+            String response = sendRequest(requestBody);
+
+            // 解析响应 / Parse response
+            return parseResponse(response);
+
+        } catch (Exception e) {
+            log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
+        }
+    }
+
+    @Override
+    public boolean supportsImageInput() {
+        // 支持图片的模型列表 / Models that support images
+        return model != null && (
+            model.contains("gpt-4o") ||
+            model.contains("gpt-4-vision") ||
+            model.contains("qwen-vl") ||
+            model.contains("claude-3")
+        );
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return apiKey != null && !apiKey.isEmpty();
+    }
+
+    @Override
+    public String getModelName() {
+        return model;
     }
 
     /**
@@ -131,6 +232,88 @@ public class OpenAILLMClient implements LLMClient {
         Map<String, String> userMessage = new HashMap<>();
         userMessage.put("role", "user");
         userMessage.put("content", userPrompt);
+        messages.add(userMessage);
+
+        return messages;
+    }
+
+    /**
+     * 构建包含单张图片的消息列表 / Build message list with single image
+     */
+    private List<Map<String, Object>> buildMessagesWithImage(String systemPrompt, String userPrompt, String imageUrl) {
+        List<Map<String, Object>> messages = new java.util.ArrayList<>();
+
+        // 添加系统提示
+        if (systemPrompt != null && !systemPrompt.isEmpty()) {
+            Map<String, Object> systemMessage = new HashMap<>();
+            systemMessage.put("role", "system");
+            systemMessage.put("content", systemPrompt);
+            messages.add(systemMessage);
+        }
+
+        // 添加用户提示（包含文本和图片）
+        Map<String, Object> userMessage = new HashMap<>();
+        userMessage.put("role", "user");
+
+        List<Map<String, Object>> contentParts = new java.util.ArrayList<>();
+
+        // 添加文本部分
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("type", "text");
+        textPart.put("text", userPrompt);
+        contentParts.add(textPart);
+
+        // 添加图片部分
+        Map<String, Object> imagePart = new HashMap<>();
+        imagePart.put("type", "image_url");
+        Map<String, String> imageUrlObj = new HashMap<>();
+        imageUrlObj.put("url", imageUrl);
+        imagePart.put("image_url", imageUrlObj);
+        contentParts.add(imagePart);
+
+        userMessage.put("content", contentParts);
+        messages.add(userMessage);
+
+        return messages;
+    }
+
+    /**
+     * 构建包含多张图片的消息列表 / Build message list with multiple images
+     */
+    private List<Map<String, Object>> buildMessagesWithImages(String systemPrompt, String userPrompt, List<String> imageUrls) {
+        List<Map<String, Object>> messages = new java.util.ArrayList<>();
+
+        // 添加系统提示
+        if (systemPrompt != null && !systemPrompt.isEmpty()) {
+            Map<String, Object> systemMessage = new HashMap<>();
+            systemMessage.put("role", "system");
+            systemMessage.put("content", systemPrompt);
+            messages.add(systemMessage);
+        }
+
+        // 添加用户提示（包含文本和多张图片）
+        Map<String, Object> userMessage = new HashMap<>();
+        userMessage.put("role", "user");
+
+        List<Map<String, Object>> contentParts = new java.util.ArrayList<>();
+
+        // 添加文本部分
+        Map<String, Object> textPart = new HashMap<>();
+        textPart.put("type", "text");
+        textPart.put("text", userPrompt);
+        contentParts.add(textPart);
+
+        // 添加图片部分
+        for (String imageUrl : imageUrls) {
+            Map<String, Object> imagePart = new HashMap<>();
+            imagePart.put("type", "image_url");
+            Map<String, String> imageUrlObj = new HashMap<>();
+            imageUrlObj.put("url", imageUrl);
+            imagePart.put("image_url", imageUrlObj);
+            contentParts.add(imagePart);
+        }
+
+        userMessage.put("content", contentParts);
         messages.add(userMessage);
 
         return messages;
@@ -189,14 +372,6 @@ public class OpenAILLMClient implements LLMClient {
         }
 
         throw new IOException(LogMessageProvider.getMessage("llm.error.parse_failed", responseBody));
-    }
-
-    public boolean isAvailable() {
-        return apiKey != null && !apiKey.isEmpty();
-    }
-
-    public String getModelName() {
-        return model;
     }
 }
 
