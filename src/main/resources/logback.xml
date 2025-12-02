@@ -53,4 +53,8 @@
     <!-- 抑制PDFBox字体加载的警告 - Windows系统损坏的字体文件不影响功能 -->
     <logger name="org.apache.pdfbox.pdmodel.font.FileSystemFontProvider" level="ERROR"/>
     <logger name="org.apache.fontbox" level="ERROR"/>
+
+    <!-- 抑制 Tesseract OCR 的 DPI 警告 - 图片 DPI 信息缺失不影响识别准确性 -->
+    <!-- Warning: Invalid resolution 1 dpi. Using 70 instead. -->
+    <logger name="net.sourceforge.tess4j" level="ERROR"/>
 </configuration>
