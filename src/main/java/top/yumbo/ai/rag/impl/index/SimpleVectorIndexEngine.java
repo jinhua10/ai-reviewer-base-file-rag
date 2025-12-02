@@ -61,9 +61,9 @@ public class SimpleVectorIndexEngine {
         }
 
         log.info(LogMessageProvider.getMessage("vector_index.log.init"));
-        log.info(LogMessageProvider.getMessage("vector_index.log.index_path"), indexPath);
-        log.info(LogMessageProvider.getMessage("vector_index.log.dimension"), dimension);
-        log.info(LogMessageProvider.getMessage("vector_index.log.current_count"), size());
+        log.info(LogMessageProvider.getMessage("vector_index.log.index_path", indexPath));
+        log.info(LogMessageProvider.getMessage("vector_index.log.dimension", dimension));
+        log.info(LogMessageProvider.getMessage("vector_index.log.current_count", size()));
         log.info(LogMessageProvider.getMessage("vector_index.log.search_method"));
     }
 
@@ -267,7 +267,7 @@ public class SimpleVectorIndexEngine {
             }
         }
 
-        log.info(LogMessageProvider.getMessage("vector_index.log.load_complete"), size());
+        log.info(LogMessageProvider.getMessage("vector_index.log.load_complete", size()));
     }
 
     /**

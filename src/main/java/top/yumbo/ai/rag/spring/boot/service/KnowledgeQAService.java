@@ -188,13 +188,13 @@ public class KnowledgeQAService {
             return;
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.init_vector_engine"));
+        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.init_vector_engine", ""));
 
         try {
             // 初始化嵌入引擎 / Initialize embedding engine
             embeddingEngine = new LocalEmbeddingEngine(properties.getVectorSearch().getModel().getPath());
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_engine_loaded"));
+            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_engine_loaded", embeddingEngine.getModelName()));
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_model", embeddingEngine.getModelName()));
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_dimension", embeddingEngine.getEmbeddingDim()));
 
@@ -205,7 +205,7 @@ public class KnowledgeQAService {
                     embeddingEngine.getEmbeddingDim()
             );
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_index_loaded"));
+            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_index_loaded", vectorIndexEngine.size()));
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_index_path", indexPath));
             log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_count", vectorIndexEngine.size()));
 
@@ -253,9 +253,8 @@ public class KnowledgeQAService {
             chunkStorageService  // 传递块存储服务 / Pass chunk storage service
         );
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.smart_context_initialized"));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.max_context_chars", properties.getLlm().getMaxContextLength()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.max_doc_length_chars", properties.getLlm().getMaxDocLength()));
+        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.smart_context_initialized",
+            properties.getLlm().getMaxContextLength(), properties.getLlm().getMaxDocLength()));
         log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.chunking_strategy", strategy, strategy.getDescription()));
         log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.chunk_size_chars", properties.getLlm().getChunking().getChunkSize()));
         log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.chunk_overlap_chars", properties.getLlm().getChunking().getChunkOverlap()));
