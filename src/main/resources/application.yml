@@ -478,6 +478,30 @@ knowledge:
       # 临时文档过期天数（自动清理）
       temp-document-expiry-days: 30
 
+    # 渐进式文档分析配置
+    progressive-analysis:
+      # 是否启用渐进式分析（推荐用于大文档）
+      enabled: true
+
+      # 记忆窗口大小（保留多少个批次/幻灯片的关键信息）
+      # 建议值：3-5
+      # - 太小：上下文不足，可能丢失重要关联
+      # - 太大：信息过载，可能干扰理解
+      memory-window-size: 3
+
+      # 关键点提取策略
+      # - structured: 结构化提取（使用标记）
+      # - smart: 智能提取（AI自动识别）
+      key-point-extraction: structured
+
+      # 是否生成中间总结
+      # true: 每N个批次生成一次中间总结
+      # false: 只在最后生成总结
+      generate-intermediate-summary: false
+
+      # 中间总结间隔（批次数）
+      intermediate-summary-interval: 5
+
   # 反馈系统配置
   feedback:
     # 是否需要审核才能生效（默认 false - 直接生效）

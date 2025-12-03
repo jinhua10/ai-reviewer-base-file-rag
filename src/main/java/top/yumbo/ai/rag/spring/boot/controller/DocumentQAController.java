@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.spring.boot.service.DocumentQAService;
+import top.yumbo.ai.rag.spring.boot.service.PPTProgressiveAnalysisService;
+
+import java.io.File;
 
 /**
  * 完整文档AI问答 API
@@ -18,12 +21,15 @@ import top.yumbo.ai.rag.spring.boot.service.DocumentQAService;
 public class DocumentQAController {
 
     private final DocumentQAService documentQAService;
+    private final PPTProgressiveAnalysisService pptAnalysisService;
     private final String storagePath;
 
     public DocumentQAController(DocumentQAService documentQAService,
+                               PPTProgressiveAnalysisService pptAnalysisService,
                                @org.springframework.beans.factory.annotation.Value("${knowledge.qa.storage-path:./knowledge-base}")
                                String storagePath) {
         this.documentQAService = documentQAService;
+        this.pptAnalysisService = pptAnalysisService;
         this.storagePath = storagePath;
     }
 
@@ -49,6 +55,36 @@ public class DocumentQAController {
             log.error("文档问答失败", e);
 
             DocumentQAService.DocumentQAReport errorReport = new DocumentQAService.DocumentQAReport();
+            errorReport.setSuccess(false);
+            errorReport.setErrorMessage(e.getMessage());
+
+            return ResponseEntity.internalServerError().body(errorReport);
+        }
+    }
+
+    /**
+     * PPT渐进式分析（推荐用于PPT文档）
+     */
+    @PostMapping("/analyze-ppt")
+    public ResponseEntity<PPTProgressiveAnalysisService.PPTAnalysisReport> analyzePPT(
+            @RequestBody DocumentQARequest request) {
+
+        try {
+            log.info("收到PPT渐进式分析请求: 文档={}, 问题={}",
+                request.getDocumentPath(), request.getQuestion());
+
+            File pptFile = new File(request.getDocumentPath());
+
+            PPTProgressiveAnalysisService.PPTAnalysisReport report =
+                pptAnalysisService.analyzeProgressively(pptFile, request.getQuestion());
+
+            return ResponseEntity.ok(report);
+
+        } catch (Exception e) {
+            log.error("PPT分析失败", e);
+
+            PPTProgressiveAnalysisService.PPTAnalysisReport errorReport =
+                new PPTProgressiveAnalysisService.PPTAnalysisReport();
             errorReport.setSuccess(false);
             errorReport.setErrorMessage(e.getMessage());
 

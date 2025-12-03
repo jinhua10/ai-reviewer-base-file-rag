@@ -156,7 +156,12 @@ public class DocumentQAService {
     }
 
     /**
-     * 分批处理文档
+     * 分批处理文档（带记忆的渐进式分析）
+     * 模拟人类阅读方式：
+     * 1. 逐批次分析内容
+     * 2. 提取关键信息到记忆中
+     * 3. 后续批次带上之前的关键记忆
+     * 4. 适当遗忘细节，聚焦重点
      */
     private void processInChunks(File docFile, String question, String sessionId, DocumentQAReport report) {
         try {
@@ -164,10 +169,13 @@ public class DocumentQAService {
             String content = readDocumentContent(docFile);
 
             // 分割成多个批次
-            int maxChunkSize = properties.getDocument().getMaxIndexContentLength() / 2; // 保守估计
+            int maxChunkSize = properties.getDocument().getMaxIndexContentLength() / 2;
             List<String> chunks = splitContent(content, maxChunkSize);
 
             log.info("📦 文档已分割为 {} 个批次", chunks.size());
+
+            // 初始化记忆管理器
+            ProgressiveMemory memory = new ProgressiveMemory(3); // 保留最近3个批次的关键信息
 
             // 逐批处理
             for (int i = 0; i < chunks.size(); i++) {
@@ -176,15 +184,20 @@ public class DocumentQAService {
 
                 log.info("🔄 处理批次 {}/{} (大小: {} 字符)", batchId, chunks.size(), chunk.length());
 
-                // 构建批次特定的问题
-                String batchQuestion = String.format(
-                    "%s\n\n【处理范围】这是文档的第 %d/%d 部分。\n\n【文档片段】\n%s",
-                    question, batchId, chunks.size(), chunk
+                // 构建带记忆的提示词
+                String batchPrompt = buildProgressivePrompt(
+                    question, chunk, batchId, chunks.size(), memory
                 );
 
                 // 调用AI问答
-                AIAnswer aiAnswer = knowledgeQAService.ask(batchQuestion);
+                AIAnswer aiAnswer = knowledgeQAService.ask(batchPrompt);
                 String answer = aiAnswer.getAnswer();
+
+                // 提取本批次的关键信息并加入记忆
+                String keyPoints = extractKeyPoints(aiAnswer, chunk, batchId);
+                memory.addMemory(batchId, keyPoints);
+
+                log.info("💡 批次 {} 关键信息已提取 ({}字符)", batchId, keyPoints.length());
 
                 // 保存批次结果
                 BatchResult batchResult = new BatchResult();
@@ -193,6 +206,7 @@ public class DocumentQAService {
                 batchResult.setQuestion(question);
                 batchResult.setContentChunk(chunk);
                 batchResult.setAnswer(answer);
+                batchResult.setKeyPoints(keyPoints); // 保存关键点
                 batchResult.setTimestamp(System.currentTimeMillis());
 
                 report.getBatchResults().add(batchResult);
@@ -203,9 +217,223 @@ public class DocumentQAService {
                 log.info("✅ 批次 {}/{} 处理完成", batchId, chunks.size());
             }
 
+            // 最后，使用所有关键记忆生成总结
+            generateFinalSummary(report, memory, question);
+
         } catch (Exception e) {
             log.error("分批处理文档失败", e);
             throw new RuntimeException("分批处理失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 构建渐进式提示词（带记忆上下文）
+     */
+    private String buildProgressivePrompt(String question, String currentChunk,
+                                         int batchId, int totalBatches,
+                                         ProgressiveMemory memory) {
+        StringBuilder prompt = new StringBuilder();
+
+        prompt.append("# 文档渐进式分析任务\n\n");
+        prompt.append("你正在帮助用户分析一份文档，需要**像人类一样渐进式理解内容**。\n\n");
+
+        prompt.append("## 用户问题\n");
+        prompt.append(question).append("\n\n");
+
+        prompt.append("## 当前进度\n");
+        prompt.append("- 当前批次: ").append(batchId).append("/").append(totalBatches).append("\n");
+        prompt.append("- 已完成: ").append(String.format("%.1f%%", (batchId - 1) * 100.0 / totalBatches)).append("\n\n");
+
+        // 添加之前的关键记忆
+        if (batchId > 1 && !memory.isEmpty()) {
+            prompt.append("## 📝 之前批次的关键要点\n");
+            prompt.append("*(这些是你分析前面内容时提取的重点，帮助你保持上下文连贯)*\n\n");
+
+            List<String> recentMemories = memory.getRecentMemories();
+            for (int i = 0; i < recentMemories.size(); i++) {
+                prompt.append("**批次 ").append(batchId - recentMemories.size() + i)
+                      .append("的关键点**:\n");
+                prompt.append(recentMemories.get(i)).append("\n\n");
+            }
+        }
+
+        prompt.append("## 📄 当前批次内容\n");
+        prompt.append(currentChunk).append("\n\n");
+
+        prompt.append("## 🎯 分析要求\n");
+        prompt.append("1. **理解当前内容**: 仔细分析当前批次的内容\n");
+        prompt.append("2. **关联前文**: 结合之前的关键要点，理解整体脉络\n");
+        prompt.append("3. **提取重点**: 识别最重要的3-5个关键信息\n");
+        prompt.append("4. **聚焦问题**: 重点关注与用户问题相关的内容\n");
+
+        if (batchId < totalBatches) {
+            prompt.append("5. **保持开放**: 这不是最后一部分，保留进一步分析的空间\n");
+        } else {
+            prompt.append("5. **总结全文**: 这是最后一部分，可以做出完整结论\n");
+        }
+
+        prompt.append("\n## 💡 请提供你的分析\n");
+        prompt.append("请按以下格式输出：\n\n");
+        prompt.append("### 本批次分析\n");
+        prompt.append("[你对当前内容的分析和理解]\n\n");
+        prompt.append("### 关键要点 (KEY_POINTS_START)\n");
+        prompt.append("[提取3-5个最重要的关键信息，每个一行，用 - 开头]\n");
+        prompt.append("(KEY_POINTS_END)\n");
+
+        return prompt.toString();
+    }
+
+    /**
+     * 从AI回答中提取关键点
+     */
+    private String extractKeyPoints(AIAnswer aiAnswer, String chunk, int batchId) {
+        String answer = aiAnswer.getAnswer();
+
+        // 尝试从答案中提取 KEY_POINTS 标记的内容
+        int startIdx = answer.indexOf("KEY_POINTS_START");
+        int endIdx = answer.indexOf("KEY_POINTS_END");
+
+        if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+            String keyPointsSection = answer.substring(startIdx + 16, endIdx).trim();
+            // 清理并格式化
+            String cleaned = keyPointsSection.replaceAll("(?m)^\\s*#+\\s*.*$", "") // 移除标题
+                                           .replaceAll("(?m)^\\s*\\(.*\\)\\s*$", "") // 移除括号注释
+                                           .trim();
+
+            if (!cleaned.isEmpty()) {
+                return cleaned;
+            }
+        }
+
+        // 如果没有找到标记，尝试智能提取（取答案的前500字符作为关键点）
+        String keyPoints = answer.length() > 500 ? answer.substring(0, 500) + "..." : answer;
+
+        // 简单格式化为要点形式
+        return "批次 " + batchId + " 关键内容:\n" + keyPoints;
+    }
+
+    /**
+     * 生成最终总结（基于所有关键记忆）
+     */
+    private void generateFinalSummary(DocumentQAReport report, ProgressiveMemory memory, String question) {
+        try {
+            log.info("📊 开始生成最终总结...");
+
+            // 构建总结提示词
+            StringBuilder summaryPrompt = new StringBuilder();
+
+            summaryPrompt.append("# 文档完整总结任务\n\n");
+            summaryPrompt.append("你已经完成了对一份文档的逐批次分析。现在需要基于所有批次的关键要点，生成一个完整、连贯的总结。\n\n");
+
+            summaryPrompt.append("## 用户问题\n");
+            summaryPrompt.append(question).append("\n\n");
+
+            summaryPrompt.append("## 所有批次的关键要点\n\n");
+
+            List<BatchResult> batchResults = report.getBatchResults();
+            for (BatchResult result : batchResults) {
+                summaryPrompt.append("**批次 ").append(result.getBatchId())
+                            .append("/").append(result.getTotalBatches()).append("**:\n");
+                summaryPrompt.append(result.getKeyPoints()).append("\n\n");
+            }
+
+            summaryPrompt.append("## 总结要求\n");
+            summaryPrompt.append("1. **综合所有要点**: 整合各批次的关键信息\n");
+            summaryPrompt.append("2. **逻辑连贯**: 形成完整的分析思路\n");
+            summaryPrompt.append("3. **突出重点**: 强调最重要的发现\n");
+            summaryPrompt.append("4. **回应问题**: 直接回答用户的问题\n");
+            summaryPrompt.append("5. **结构清晰**: 使用标题、列表等组织内容\n\n");
+
+            summaryPrompt.append("请生成最终总结报告：\n");
+
+            // 调用AI生成总结
+            AIAnswer summaryAnswer = knowledgeQAService.ask(summaryPrompt.toString());
+
+            // 保存到报告
+            report.setFinalReport(summaryAnswer.getAnswer());
+
+            log.info("✅ 最终总结生成完成 ({} 字符)", summaryAnswer.getAnswer().length());
+
+        } catch (Exception e) {
+            log.error("生成最终总结失败", e);
+            // 使用默认合并方式
+            report.setFinalReport(generateDefaultSummary(report));
+        }
+    }
+
+    /**
+     * 生成默认总结（降级方案）
+     */
+    private String generateDefaultSummary(DocumentQAReport report) {
+        StringBuilder summary = new StringBuilder();
+
+        summary.append("# ").append(report.getDocumentName()).append(" - 分析报告\n\n");
+        summary.append("**问题**: ").append(report.getQuestion()).append("\n\n");
+        summary.append("---\n\n");
+
+        summary.append("## 综合分析\n\n");
+        summary.append("文档已分 ").append(report.getBatchResults().size())
+              .append(" 个部分进行渐进式分析，以下是各部分的关键要点：\n\n");
+
+        for (BatchResult batch : report.getBatchResults()) {
+            summary.append("### 第 ").append(batch.getBatchId())
+                  .append("/").append(batch.getTotalBatches())
+                  .append(" 部分\n\n");
+
+            if (batch.getKeyPoints() != null && !batch.getKeyPoints().isEmpty()) {
+                summary.append("**关键要点**:\n");
+                summary.append(batch.getKeyPoints()).append("\n\n");
+            }
+
+            summary.append("**详细分析**:\n");
+            summary.append(batch.getAnswer()).append("\n\n");
+        }
+
+        return summary.toString();
+    }
+
+    /**
+     * 渐进式记忆管理器
+     * 模拟人类的记忆机制：保留重点，遗忘细节
+     */
+    private static class ProgressiveMemory {
+        private final int maxMemorySize; // 最多保留多少批次的记忆
+        private final LinkedHashMap<Integer, String> memories; // 批次ID -> 关键信息
+
+        public ProgressiveMemory(int maxMemorySize) {
+            this.maxMemorySize = maxMemorySize;
+            this.memories = new LinkedHashMap<>();
+        }
+
+        /**
+         * 添加新的记忆
+         */
+        public void addMemory(int batchId, String keyPoints) {
+            memories.put(batchId, keyPoints);
+
+            // 如果超过容量，移除最旧的记忆
+            if (memories.size() > maxMemorySize) {
+                Integer oldestKey = memories.keySet().iterator().next();
+                memories.remove(oldestKey);
+            }
+        }
+
+        /**
+         * 获取最近的记忆
+         */
+        public List<String> getRecentMemories() {
+            return new ArrayList<>(memories.values());
+        }
+
+        /**
+         * 获取所有记忆
+         */
+        public Map<Integer, String> getAllMemories() {
+            return new LinkedHashMap<>(memories);
+        }
+
+        public boolean isEmpty() {
+            return memories.isEmpty();
         }
     }
 
@@ -374,6 +602,7 @@ public class DocumentQAService {
         private String question;
         private String contentChunk;
         private String answer;
+        private String keyPoints;  // 本批次提取的关键点
         private long timestamp;
     }
 }
