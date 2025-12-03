@@ -1,72 +1,126 @@
 /* AI分析面板样式优化 - 适配紫色渐变背景 */
 
-/* 添加按钮hover效果 */
-.ai-analysis-hint-button:hover {
-    background-color: rgba(255, 255, 255, 1) !important;
-    border-color: rgba(255, 255, 255, 0.5) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+/* 总结按钮 - 蓝色主题 */
+.ai-hint-summary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%) !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(66, 165, 245, 0.7) !important;
 }
 
-.ai-analysis-hint-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+.ai-hint-summary:active:not(:disabled) {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 3px 10px rgba(66, 165, 245, 0.5) !important;
 }
 
-/* 分析按钮hover效果 */
+/* 分析按钮 - 橙色主题 */
+.ai-hint-analyze:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FFB74D 0%, #FFA726 100%) !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.7) !important;
+}
+
+.ai-hint-analyze:active:not(:disabled) {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 3px 10px rgba(255, 152, 0, 0.5) !important;
+}
+
+/* 提取按钮 - 绿色主题 */
+.ai-hint-extract:hover:not(:disabled) {
+    background: linear-gradient(135deg, #81C784 0%, #66BB6A 100%) !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(102, 187, 106, 0.7) !important;
+}
+
+.ai-hint-extract:active:not(:disabled) {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 3px 10px rgba(102, 187, 106, 0.5) !important;
+}
+
+/* 通用禁用样式 */
+.ai-analysis-hint-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 分析按钮hover效果 - 粉红色主题 */
 .ai-analysis-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%) !important;
-    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5) !important;
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #FF80AB 0%, #F50057 100%) !important;
+    box-shadow: 0 8px 24px rgba(255, 107, 157, 0.6) !important;
+    transform: translateY(-2px) scale(1.02);
 }
 
 .ai-analysis-button:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4) !important;
+    transform: translateY(0) scale(1);
+    box-shadow: 0 4px 16px rgba(255, 107, 157, 0.4) !important;
+}
+
+.ai-analysis-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
 }
 
 /* 结果卡片hover效果 */
+.ai-result-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .ai-result-item:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
-    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(100, 181, 246, 0.3) !important;
+    transform: translateY(-3px);
+    border-color: rgba(100, 181, 246, 0.5) !important;
 }
 
 /* textarea focus效果 */
 .ai-analysis-textarea:focus {
     outline: none;
-    border-color: rgba(255, 255, 255, 0.6) !important;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0,0,0,0.15) !important;
     background-color: #ffffff !important;
 }
 
 /* 选中文档信息区域优化 */
 .ai-selected-info {
-    background: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s ease;
 }
 
-/* 进度条动画 - 适配深色背景 */
+.ai-selected-info:hover {
+    box-shadow: 0 8px 24px rgba(66, 165, 245, 0.25);
+    border-color: rgba(100, 181, 246, 0.5);
+}
+
+/* 进度条动画 - 流动的绿色光效 */
 @keyframes progress-animation {
     0% {
         background-position: 0 0;
     }
     100% {
-        background-position: 40px 0;
+        background-position: 50px 0;
+    }
+}
+
+@keyframes progress-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.5), 0 0 40px rgba(0, 230, 118, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(0, 230, 118, 0.8), 0 0 60px rgba(0, 230, 118, 0.5);
     }
 }
 
 .ai-progress-fill {
     background-image: linear-gradient(
         45deg,
-        rgba(255, 255, 255, 0.15) 25%,
+        rgba(255, 255, 255, 0.2) 25%,
         transparent 25%,
         transparent 50%,
-        rgba(255, 255, 255, 0.15) 50%,
-        rgba(255, 255, 255, 0.15) 75%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
         transparent 75%,
         transparent
     );
-    background-size: 40px 40px;
-    animation: progress-animation 1s linear infinite;
+    background-size: 50px 50px;
+    animation: progress-animation 1s linear infinite, progress-glow 2s ease-in-out infinite;
 }
 
 /* Markdown内容样式 */

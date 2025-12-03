@@ -137,20 +137,20 @@
                 React.createElement('div', { style: styles.promptHints },
                     React.createElement('button', {
                         onClick: () => setCustomPrompt('请详细总结这份文档的核心内容和关键观点。'),
-                        style: styles.hintButton,
-                        className: 'ai-analysis-hint-button',
+                        style: styles.hintButtonSummary,
+                        className: 'ai-analysis-hint-button ai-hint-summary',
                         disabled: analyzing
                     }, '📋 ' + (t('summary') || '总结')),
                     React.createElement('button', {
                         onClick: () => setCustomPrompt('请分析这份文档的逻辑结构和论证方式。'),
-                        style: styles.hintButton,
-                        className: 'ai-analysis-hint-button',
+                        style: styles.hintButtonAnalyze,
+                        className: 'ai-analysis-hint-button ai-hint-analyze',
                         disabled: analyzing
                     }, '🔍 ' + (t('analyze') || '分析')),
                     React.createElement('button', {
                         onClick: () => setCustomPrompt('请提取文档中的关键数据和重要结论。'),
-                        style: styles.hintButton,
-                        className: 'ai-analysis-hint-button',
+                        style: styles.hintButtonExtract,
+                        className: 'ai-analysis-hint-button ai-hint-extract',
                         disabled: analyzing
                     }, '💡 ' + (t('extract') || '提取'))
                 )
@@ -219,141 +219,196 @@
             padding: '0'
         },
         selectedInfo: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            padding: '18px',
-            borderRadius: '8px',
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 255, 0.95) 100%)',
+            padding: '20px',
+            borderRadius: '12px',
             marginBottom: '20px',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            border: '2px solid rgba(100, 181, 246, 0.3)',
+            boxShadow: '0 6px 20px rgba(66, 165, 245, 0.15)',
+            transition: 'all 0.3s ease'
         },
         docList: {
-            marginTop: '12px',
+            marginTop: '14px',
             fontSize: '14px',
-            color: '#1565c0'
+            color: '#1976d2',
+            maxHeight: '200px',
+            overflowY: 'auto',
+            paddingRight: '8px'
         },
         docItem: {
-            padding: '5px 0',
-            color: '#1976d2'
+            padding: '6px 0',
+            color: '#1565c0',
+            transition: 'all 0.2s',
+            borderLeft: '3px solid transparent',
+            paddingLeft: '8px'
         },
         promptSection: {
             marginBottom: '20px'
         },
         label: {
             display: 'block',
-            marginBottom: '8px',
-            fontWeight: '500',
+            marginBottom: '10px',
+            fontWeight: '600',
             color: '#ffffff',
-            fontSize: '14px',
-            textShadow: '0 1px 3px rgba(0,0,0,0.3)'
+            fontSize: '15px',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            letterSpacing: '0.3px'
         },
         textarea: {
             width: '100%',
-            padding: '12px',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '6px',
+            padding: '14px',
+            border: '2px solid rgba(255, 255, 255, 0.4)',
+            borderRadius: '8px',
             fontSize: '14px',
             boxSizing: 'border-box',
             resize: 'vertical',
             fontFamily: 'inherit',
-            transition: 'all 0.2s',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            color: '#333'
+            transition: 'all 0.3s ease',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+            color: '#333',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            lineHeight: '1.6'
         },
         promptHints: {
-            marginTop: '12px',
+            marginTop: '14px',
             display: 'flex',
-            gap: '10px',
+            gap: '12px',
             flexWrap: 'wrap'
         },
-        hintButton: {
-            padding: '8px 14px',
+        // 总结按钮 - 蓝色
+        hintButtonSummary: {
+            padding: '10px 18px',
             fontSize: '13px',
-            background: 'linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)',
+            background: 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)',
             border: 'none',
-            borderRadius: '6px',
+            borderRadius: '8px',
             cursor: 'pointer',
-            transition: 'all 0.2s',
-            fontWeight: '500',
+            transition: 'all 0.3s ease',
+            fontWeight: '600',
             color: '#ffffff',
-            boxShadow: '0 2px 6px rgba(66, 165, 245, 0.4)',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            boxShadow: '0 4px 12px rgba(66, 165, 245, 0.5)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+        },
+        // 分析按钮 - 橙色
+        hintButtonAnalyze: {
+            padding: '10px 18px',
+            fontSize: '13px',
+            background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: '600',
+            color: '#ffffff',
+            boxShadow: '0 4px 12px rgba(255, 152, 0, 0.5)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+        },
+        // 提取按钮 - 绿色
+        hintButtonExtract: {
+            padding: '10px 18px',
+            fontSize: '13px',
+            background: 'linear-gradient(135deg, #66BB6A 0%, #43A047 100%)',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            fontWeight: '600',
+            color: '#ffffff',
+            boxShadow: '0 4px 12px rgba(102, 187, 106, 0.5)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+            position: 'relative',
+            overflow: 'hidden'
         },
         analyzeButton: {
             width: '100%',
-            padding: '14px',
-            background: 'linear-gradient(135deg, #42a5f5 0%, #2196F3 100%)',
+            padding: '16px',
+            background: 'linear-gradient(135deg, #FF6B9D 0%, #C2185B 100%)',
             color: 'white',
             border: 'none',
-            borderRadius: '6px',
+            borderRadius: '10px',
             cursor: 'pointer',
-            fontSize: '15px',
-            fontWeight: '600',
+            fontSize: '16px',
+            fontWeight: '700',
             marginBottom: '20px',
-            transition: 'all 0.2s',
-            boxShadow: '0 4px 12px rgba(33, 150, 243, 0.4)',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+            transition: 'all 0.3s ease',
+            boxShadow: '0 6px 20px rgba(255, 107, 157, 0.4)',
+            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            letterSpacing: '0.5px',
+            position: 'relative',
+            overflow: 'hidden'
         },
         buttonDisabled: {
-            background: 'rgba(176, 190, 197, 0.8)',
+            background: 'linear-gradient(135deg, rgba(189, 189, 189, 0.5) 0%, rgba(158, 158, 158, 0.5) 100%)',
             cursor: 'not-allowed',
-            boxShadow: 'none'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            color: 'rgba(255, 255, 255, 0.7)',
+            border: '2px solid rgba(255, 255, 255, 0.2)'
         },
         resultsSection: {
             marginTop: '24px'
         },
         progressBar: {
             width: '100%',
-            height: '32px',
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            borderRadius: '6px',
+            height: '36px',
+            backgroundColor: 'rgba(255, 255, 255, 0.25)',
+            borderRadius: '8px',
             position: 'relative',
             marginBottom: '20px',
             overflow: 'hidden',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)'
         },
         progressFill: {
             height: '100%',
-            background: 'linear-gradient(90deg, #42a5f5 0%, #2196F3 100%)',
+            background: 'linear-gradient(90deg, #00E676 0%, #00C853 50%, #00BFA5 100%)',
             transition: 'width 0.3s ease',
-            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: '0 0 20px rgba(0, 230, 118, 0.5)',
+            position: 'relative'
         },
         progressText: {
             position: 'absolute',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            fontSize: '12px',
-            fontWeight: '600',
+            fontSize: '13px',
+            fontWeight: '700',
             color: '#ffffff',
-            textShadow: '0 1px 3px rgba(0,0,0,0.5)'
+            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+            letterSpacing: '0.5px'
         },
         resultItem: {
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            borderRadius: '8px',
-            marginBottom: '16px',
+            border: '2px solid rgba(100, 181, 246, 0.3)',
+            borderRadius: '12px',
+            marginBottom: '18px',
             overflow: 'hidden',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-            transition: 'box-shadow 0.2s',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)'
+            boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
+            transition: 'all 0.3s ease',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)'
         },
         resultHeader: {
-            padding: '14px 16px',
-            background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, #E8EAF6 0%, #C5CAE9 100%)',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            fontWeight: '600',
-            borderBottom: '1px solid rgba(144, 202, 249, 0.5)',
-            color: '#1976d2'
+            gap: '12px',
+            fontWeight: '700',
+            borderBottom: '2px solid rgba(63, 81, 181, 0.2)',
+            color: '#3F51B5',
+            fontSize: '15px'
         },
         resultIcon: {
-            fontSize: '20px'
+            fontSize: '22px'
         },
         resultBody: {
-            padding: '16px',
-            lineHeight: '1.7',
+            padding: '20px',
+            lineHeight: '1.8',
             backgroundColor: '#ffffff',
-            color: '#333'
+            color: '#333',
+            fontSize: '14px'
         }
     };
 
