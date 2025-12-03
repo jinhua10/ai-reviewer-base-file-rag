@@ -4,12 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -38,13 +38,13 @@ public class OfficeImageExtractor {
         try (FileInputStream fis = new FileInputStream(file);
              XMLSlideShow ppt = new XMLSlideShow(fis)) {
             
-            log.info("开始处理PPTX文件: {}, 共{}张幻灯片", file.getName(), ppt.getSlides().size());
-            
+            log.info(LogMessageProvider.getMessage("log.office.pptx_start", file.getName(), ppt.getSlides().size()));
+
             int slideNumber = 0;
             for (XSLFSlide slide : ppt.getSlides()) {
                 slideNumber++;
-                content.append(String.format("\n\n========== 幻灯片 %d ==========\n", slideNumber));
-                
+                content.append(LogMessageProvider.getMessage("log.office.slide_title", slideNumber));
+
                 // 提取文本内容
                 StringBuilder slideText = new StringBuilder();
                 for (XSLFShape shape : slide.getShapes()) {
@@ -58,7 +58,7 @@ public class OfficeImageExtractor {
                 }
                 
                 if (slideText.length() > 0) {
-                    content.append("【文字内容】\n").append(slideText);
+                    content.append(LogMessageProvider.getMessage("log.office.slide_text")).append(slideText);
                 }
                 
                 // 提取图片
@@ -73,31 +73,35 @@ public class OfficeImageExtractor {
                         String imageName = String.format("slide%d_image%d.%s", 
                             slideNumber, imageCount, getPPTExtension(pictureData.getType()));
                         
-                        log.info("📷 提取图片: {} ({}KB)", imageName, imageData.length / 1024);
+                        log.info(LogMessageProvider.getMessage("log.office.extract_image",
+                            imageName, imageData.length / 1024));
 
                         // 使用OCR提取图片文字
                         String extractedText = imageExtractor.extractContent(
                             new ByteArrayInputStream(imageData), imageName);
                         
                         if (extractedText != null && !extractedText.trim().isEmpty()) {
-                            log.info("✅ 图片内容提取成功: {} -> {} 字符", imageName, extractedText.length());
-                            content.append("\n【图片内容】\n").append(extractedText);
+                            log.info(LogMessageProvider.getMessage("log.office.extract_success",
+                                imageName, extractedText.length()));
+                            content.append(LogMessageProvider.getMessage("log.office.image_content"))
+                                   .append(extractedText);
+                            log.debug(extractedText);
                         } else {
-                            log.warn("⚠️  图片内容为空: {}", imageName);
+                            log.warn(LogMessageProvider.getMessage("log.office.extract_empty", imageName));
                         }
                     }
                 }
                 
                 if (imageCount > 0) {
-                    log.info("幻灯片 {} 包含 {} 张图片", slideNumber, imageCount);
+                    log.info(LogMessageProvider.getMessage("log.office.slide_images", slideNumber, imageCount));
                 }
             }
             
-            log.info("✅ PPTX处理完成: {}", file.getName());
-            
+            log.info(LogMessageProvider.getMessage("log.office.pptx_complete", file.getName()));
+
         } catch (Exception e) {
-            log.error("处理PPTX文件失败: {}", file.getName(), e);
-            content.append(String.format("\n[处理失败: %s]\n", e.getMessage()));
+            log.error(LogMessageProvider.getMessage("log.office.pptx_failed", file.getName()), e);
+            content.append(LogMessageProvider.getMessage("log.office.process_failed", e.getMessage()));
         }
         
         return content.toString();
@@ -112,8 +116,8 @@ public class OfficeImageExtractor {
         try (FileInputStream fis = new FileInputStream(file);
              XWPFDocument doc = new XWPFDocument(fis)) {
             
-            log.info("开始处理DOCX文件: {}", file.getName());
-            
+            log.info(LogMessageProvider.getMessage("log.office.docx_start", file.getName()));
+
             // 提取文本
             for (XWPFParagraph paragraph : doc.getParagraphs()) {
                 String text = paragraph.getText();
@@ -125,8 +129,8 @@ public class OfficeImageExtractor {
             // 提取图片
             List<XWPFPictureData> pictures = doc.getAllPictures();
             if (!pictures.isEmpty()) {
-                content.append("\n\n========== 文档图片 ==========\n");
-                
+                content.append(LogMessageProvider.getMessage("log.office.image_section"));
+
                 int imageCount = 0;
                 for (XWPFPictureData picture : pictures) {
                     imageCount++;
@@ -134,25 +138,29 @@ public class OfficeImageExtractor {
                     String imageName = String.format("image%d.%s", 
                         imageCount, getExtension(picture.getPictureType()));
                     
-                    log.info("📷 提取图片: {} ({}KB)", imageName, imageData.length / 1024);
+                    log.info(LogMessageProvider.getMessage("log.office.extract_image",
+                        imageName, imageData.length / 1024));
 
                     String extractedText = imageExtractor.extractContent(
                         new ByteArrayInputStream(imageData), imageName);
                     
                     if (extractedText != null && !extractedText.trim().isEmpty()) {
-                        log.info("✅ 图片内容提取成功: {} -> {} 字符", imageName, extractedText.length());
+                        log.info(LogMessageProvider.getMessage("log.office.extract_success",
+                            imageName, extractedText.length()));
                         content.append(extractedText);
                     } else {
-                        log.warn("⚠️  图片内容为空: {}", imageName);
+                        log.warn(LogMessageProvider.getMessage("log.office.extract_empty", imageName));
                     }
                 }
                 
-                log.info("✅ 从DOCX提取了 {} 张图片", imageCount);
+                log.info(LogMessageProvider.getMessage("log.office.docx_images", imageCount));
             }
-            
+
+            log.info(LogMessageProvider.getMessage("log.office.docx_complete", file.getName()));
+
         } catch (Exception e) {
-            log.error("处理DOCX文件失败: {}", file.getName(), e);
-            content.append(String.format("\n[处理失败: %s]\n", e.getMessage()));
+            log.error(LogMessageProvider.getMessage("log.office.docx_failed", file.getName()), e);
+            content.append(LogMessageProvider.getMessage("log.office.process_failed", e.getMessage()));
         }
         
         return content.toString();
@@ -167,12 +175,13 @@ public class OfficeImageExtractor {
         try (FileInputStream fis = new FileInputStream(file);
              org.apache.poi.ss.usermodel.Workbook workbook = new XSSFWorkbook(fis)) {
             
-            log.info("开始处理XLSX文件: {}, 共{}个工作表", file.getName(), workbook.getNumberOfSheets());
-            
+            log.info(LogMessageProvider.getMessage("log.office.xlsx_start",
+                file.getName(), workbook.getNumberOfSheets()));
+
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(i);
-                content.append(String.format("\n\n========== 工作表: %s ==========\n", sheet.getSheetName()));
-                
+                content.append(LogMessageProvider.getMessage("log.office.sheet_title", sheet.getSheetName()));
+
                 // 提取单元格内容
                 for (org.apache.poi.ss.usermodel.Row row : sheet) {
                     StringBuilder rowText = new StringBuilder();
@@ -193,11 +202,11 @@ public class OfficeImageExtractor {
                 }
             }
             
-            log.info("✅ XLSX处理完成: {}", file.getName());
-            
+            log.info(LogMessageProvider.getMessage("log.office.xlsx_complete", file.getName()));
+
         } catch (Exception e) {
-            log.error("处理XLSX文件失败: {}", file.getName(), e);
-            content.append(String.format("\n[处理失败: %s]\n", e.getMessage()));
+            log.error(LogMessageProvider.getMessage("log.office.xlsx_failed", file.getName()), e);
+            content.append(LogMessageProvider.getMessage("log.office.process_failed", e.getMessage()));
         }
         
         return content.toString();
@@ -225,26 +234,30 @@ public class OfficeImageExtractor {
                         String imageName = String.format("sheet%d_image%d.%s", 
                             sheetIndex + 1, imageCount, getExtension(pictureData.getPictureType()));
                         
-                        log.info("📷 提取图片: {} ({}KB)", imageName, imageData.length / 1024);
+                        log.info(LogMessageProvider.getMessage("log.office.extract_image",
+                            imageName, imageData.length / 1024));
 
                         String extractedText = imageExtractor.extractContent(
                             new ByteArrayInputStream(imageData), imageName);
                         
                         if (extractedText != null && !extractedText.trim().isEmpty()) {
-                            log.info("✅ 图片内容提取成功: {} -> {} 字符", imageName, extractedText.length());
-                            content.append("\n【图片内容】\n").append(extractedText);
+                            log.info(LogMessageProvider.getMessage("log.office.extract_success",
+                                imageName, extractedText.length()));
+                            content.append(LogMessageProvider.getMessage("log.office.image_content"))
+                                   .append(extractedText);
                         } else {
-                            log.warn("⚠️  图片内容为空: {}", imageName);
+                            log.warn(LogMessageProvider.getMessage("log.office.extract_empty", imageName));
                         }
                     }
                 }
                 
                 if (imageCount > 0) {
-                    log.info("工作表 {} 包含 {} 张图片", sheetIndex + 1, imageCount);
+                    log.info(LogMessageProvider.getMessage("log.office.sheet_images",
+                        sheetIndex + 1, imageCount));
                 }
             }
         } catch (Exception e) {
-            log.error("提取XLSX图片失败", e);
+            log.error(LogMessageProvider.getMessage("log.office.xlsx_extract_failed"), e);
         }
     }
 

@@ -95,26 +95,26 @@ public class ImageProcessingConfiguration {
      */
     private void addLLMClientVisionStrategy(SmartImageExtractor extractor) {
         if (llmClient == null) {
-            log.warn("⚠️  无法添加 LLM Vision 策略: LLMClient 未初始化");
+            log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_client"));
             return;
         }
 
         if (!llmClient.supportsImageInput()) {
-            log.warn("⚠️  无法添加 LLM Vision 策略: 模型 {} 不支持图片输入", llmClient.getModelName());
+            log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_image_support", llmClient.getModelName()));
             return;
         }
 
-        log.info("✅ 添加 LLM Vision 策略（复用主 LLM 客户端）");
-        log.info("   - 模型: {}", llmClient.getModelName());
-        log.info("   - 客户端类型: {}", llmClient.getClass().getSimpleName());
+        log.info(LogMessageProvider.getMessage("log.imageproc.add_llm_vision"));
+        log.info(LogMessageProvider.getMessage("log.imageproc.llm_vision_model", llmClient.getModelName()));
+        log.info(LogMessageProvider.getMessage("log.imageproc.llm_vision_client_type", llmClient.getClass().getSimpleName()));
 
         LLMClientVisionStrategy llmVisionStrategy = new LLMClientVisionStrategy(llmClient);
         extractor.addStrategy(llmVisionStrategy);
 
         if (llmVisionStrategy.isAvailable()) {
-            log.info("✅ LLM Vision 策略可用");
+            log.info(LogMessageProvider.getMessage("log.imageproc.llm_vision_available"));
         } else {
-            log.warn("⚠️  LLM Vision 策略不可用");
+            log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_unavailable"));
         }
     }
 

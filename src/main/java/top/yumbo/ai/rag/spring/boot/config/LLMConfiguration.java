@@ -12,17 +12,17 @@ import top.yumbo.ai.rag.spring.boot.llm.OpenAILLMClient;
 
 /**
  * LLM 客户端配置（LLM client configuration）
- *
+ * <p>
  * 支持多种 LLM 提供商：
  * - openai: OpenAI 兼容 API（默认，支持 OpenAI、DeepSeek 等）
  * - mock: Mock 模式（测试用）
- *
+ * <p>
  * OpenAI 兼容 API 说明：
  * OpenAILLMClient 支持所有 OpenAI API 兼容的服务，包括：
  * - OpenAI (GPT-4o, GPT-4, GPT-3.5)
  * - DeepSeek (deepseek-chat)
  * - 其他兼容 OpenAI API 格式的服务
- *
+ * <p>
  * 通过配置不同的 api-url 和 model 即可切换不同的服务
  *
  * @author AI Reviewer Team
@@ -44,10 +44,10 @@ public class LLMConfiguration {
      */
     @Bean
     @ConditionalOnProperty(
-        prefix = "knowledge.qa.llm",
-        name = "provider",
-        havingValue = "openai",
-        matchIfMissing = true  // 默认使用 openai（支持所有兼容 API）
+            prefix = "knowledge.qa.llm",
+            name = "provider",
+            havingValue = "openai",
+            matchIfMissing = true  // 默认使用 openai（支持所有兼容 API）
     )
     @ConditionalOnMissingBean
     public LLMClient openAILLMClient() {
@@ -82,9 +82,9 @@ public class LLMConfiguration {
      */
     @Bean
     @ConditionalOnProperty(
-        prefix = "knowledge.qa.llm",
-        name = "provider",
-        havingValue = "mock"
+            prefix = "knowledge.qa.llm",
+            name = "provider",
+            havingValue = "mock"
     )
     @ConditionalOnMissingBean
     public LLMClient mockLLMClient() {

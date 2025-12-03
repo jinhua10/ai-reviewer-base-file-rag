@@ -111,6 +111,7 @@ public class KnowledgeQAProperties {
 
         /**
          * 检索返回的文档数量上限（已废弃，请使用 hybridTopK）
+         *
          * @deprecated 使用 hybridTopK 替代
          */
         @Deprecated
@@ -139,21 +140,21 @@ public class KnowledgeQAProperties {
          * 支持的模型目录列表（自动查找顺序）
          */
         private List<String> searchPaths = List.of(
-            "bge-m3",
-            "multilingual-e5-large",
-            "bge-large-zh",
-            "paraphrase-multilingual",
-            "text2vec-base-chinese"
+                "bge-m3",
+                "multilingual-e5-large",
+                "bge-large-zh",
+                "paraphrase-multilingual",
+                "text2vec-base-chinese"
         );
 
         /**
          * 模型文件名列表（自动查找顺序）
          */
         private List<String> fileNames = List.of(
-            "model.onnx",
-            "model_O2.onnx",
-            "model_quantized.onnx",
-            "model_quint8_avx2.onnx"
+                "model.onnx",
+                "model_O2.onnx",
+                "model_quantized.onnx",
+                "model_quint8_avx2.onnx"
         );
     }
 
@@ -163,7 +164,7 @@ public class KnowledgeQAProperties {
          * LLM提供商
          * openai: OpenAI 兼容 API（默认，支持 OpenAI、DeepSeek 等所有兼容服务）
          * mock: Mock 模式（测试用）
-         *
+         * <p>
          * 说明：通过配置不同的 apiUrl 和 model 即可切换不同的服务
          */
         private String provider = "openai";
@@ -246,12 +247,12 @@ public class KnowledgeQAProperties {
          * 支持的文件格式
          */
         private List<String> supportedFormats = List.of(
-            "xlsx", "xls",      // Excel
-            "docx", "doc",      // Word
-            "pptx", "ppt",      // PowerPoint
-            "pdf",              // PDF
-            "txt", "md",        // 文本
-            "html", "xml"       // 其他
+                "xlsx", "xls",      // Excel
+                "docx", "doc",      // Word
+                "pptx", "ppt",      // PowerPoint
+                "pdf",              // PDF
+                "txt", "md",        // 文本
+                "html", "xml"       // 其他
         );
 
         /**
@@ -297,12 +298,12 @@ public class KnowledgeQAProperties {
         /**
          * 索引时单个文档最大内容长度（字符数）
          * 超过此长度会被截断，防止后续处理内存溢出
-         *
+         * <p>
          * 建议值：
          * - 内存充足（8GB+）: 100000 (约 200KB)
          * - 内存一般（4GB）: 50000 (约 100KB)
          * - 内存有限（2GB）: 30000 (约 60KB)
-         *
+         * <p>
          * 影响：
          * - 过大：可能导致内存溢出、索引慢
          * - 过小：可能丢失文档尾部内容
@@ -312,7 +313,7 @@ public class KnowledgeQAProperties {
         /**
          * 问答时文档切分最大内容长度（字符数）
          * 在切分文档时，如果内容超过此长度会被截断
-         *
+         * <p>
          * 建议值：
          * - 通常设置为 maxIndexContentLength 的 2 倍
          * - 因为问答时只处理少量文档（5-10个）
@@ -322,9 +323,9 @@ public class KnowledgeQAProperties {
         /**
          * 问答时单次切分最大块数
          * 防止切分产生过多块导致内存溢出
-         *
+         * <p>
          * 建议值：30-100
-         *
+         * <p>
          * 影响：
          * - 过大：可能内存溢出
          * - 过小：可能丢失内容
