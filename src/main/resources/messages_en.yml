@@ -549,6 +549,7 @@ log:
     source_path: "   - Document path: {0}"
     supported_formats: "      Supported formats: {0}"
     up_to_date: "✅ All files are up to date, no updates needed"
+    files_to_update: "📝 Files to update: {0}"
     vector_init_failed: "❌ Vector search engine initialization failed"
   kqa:
     response_time: "\n⏱️  Response time: {0}ms"
@@ -611,6 +612,8 @@ log:
     usage: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}%)"
     usage_phase: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}% )"
     warning: "Phase {0} - High memory usage: {1}%"
+    gc_trigger: "⚠️  High memory usage ({0}%), triggering garbage collection"
+    gc_done: "✅ Garbage collection completed: {0}% -> {1}%"
   optimization:
     chunker:
       batch_completed: "Batch chunking completed: {0} documents -> {1} chunks"
@@ -697,12 +700,13 @@ log:
     document_image_extraction_init: "Initializing document image extraction service: AI analysis={0}"
     image_storage_init: "Initializing image storage service, Path: {0}"
   optimizer:
-    commit: "Optimizer commit: {0}"
-    done: "Optimizer done"
-    embedding_closed: "Embeddings closed"
-    optimize: "Optimizing knowledge base..."
-    saving_vectors: "Saving vectors..."
-    vectors_saved: "Vectors saved: {0}"
+    commit: "Committing optimizer changes"
+    done: "Optimization completed"
+    optimize: "Optimizing index"
+    saving_vectors: "Saving vector index..."
+    vectors_saved: "Vector index saved: {0} vectors"
+    save_failed: "Failed to save vector index"
+    embedding_closed: "Embedding engine closed"
   tika:
     init: "Tika Document Parser initialized."
     max_content: "Max content length: {0} MB"
