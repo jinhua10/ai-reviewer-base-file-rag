@@ -146,6 +146,7 @@
                     // AI分析面板状态
                     const [showAIAnalysis, setShowAIAnalysis] = useState(false);
                     const [selectedDocs, setSelectedDocs] = useState(new Set());
+                    const [selectedDocsData, setSelectedDocsData] = useState([]); // 存储完整的文档对象
                     const [splitPosition, setSplitPosition] = useState(() => {
                         const saved = localStorage.getItem('aiAnalysisSplitPosition');
                         return saved ? parseFloat(saved) : 50;
@@ -281,6 +282,8 @@
                                                         setShowAIAnalysis={setShowAIAnalysis}
                                                         selectedDocs={selectedDocs}
                                                         setSelectedDocs={setSelectedDocs}
+                                                        selectedDocsData={selectedDocsData}
+                                                        setSelectedDocsData={setSelectedDocsData}
                                                     />
                                                 </div>
                                                 <div style={{ display: activeTab === 'stats' ? 'block' : 'none' }}>
@@ -365,13 +368,13 @@
                                             fontSize: '14px'
                                         }}>
                                             {selectedDocs.size > 0
-                                                ? `已选择 ${selectedDocs.size} 个文档`
-                                                : '请在左侧勾选要分析的文档'}
+                                                ? t('selectedDocumentsCount').replace('{0}', selectedDocs.size)
+                                                : t('pleaseCheckDocumentsOnLeft')}
                                         </p>
                                     </div>
 
                                     {window.EmbeddedAIAnalysisPanel && React.createElement(window.EmbeddedAIAnalysisPanel, {
-                                        selectedDocuments: Array.from(selectedDocs),
+                                        selectedDocuments: selectedDocsData,
                                         onClose: () => setShowAIAnalysis(false)
                                     })}
                                 </div>

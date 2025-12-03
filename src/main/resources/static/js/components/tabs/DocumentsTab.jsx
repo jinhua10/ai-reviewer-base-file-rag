@@ -6,7 +6,7 @@
  * @since 2025-11-28
  */
 
-function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSelectedDocs }) {
+function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSelectedDocs, selectedDocsData, setSelectedDocsData }) {
     const { useState, useEffect, useRef } = React;
     const { t, language } = window.LanguageModule.useTranslation();
 
@@ -208,6 +208,36 @@ function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSele
             }
             return newSet;
         });
+
+        // 同时更新文档对象数据
+        if (setSelectedDocsData) {
+            setSelectedDocsData(prev => {
+                const newData = [...prev];
+                const index = newData.findIndex(doc => (doc.fileName || doc.name || doc.title) === fileName);
+
+                if (index >= 0) {
+                    // 已存在，移除
+                    newData.splice(index, 1);
+                } else {
+                    // 不存在，添加
+                    const doc = documents.find(d => d.fileName === fileName) ||
+                               allDocuments.find(d => d.fileName === fileName);
+                    if (doc) {
+                        // 转换为 AIAnalysisPanel 期望的格式
+                        newData.push({
+                            name: doc.fileName,
+                            title: doc.fileName,
+                            path: doc.fileName,
+                            fileType: doc.fileType,
+                            fileSize: doc.fileSize,
+                            uploadTime: doc.uploadTime,
+                            indexed: doc.indexed
+                        });
+                    }
+                }
+                return newData;
+            });
+        }
     };
 
     const formatFileSize = (bytes) => {

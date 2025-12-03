@@ -268,14 +268,15 @@
         hintButton: {
             padding: '8px 14px',
             fontSize: '13px',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
+            background: 'linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)',
+            border: 'none',
             borderRadius: '6px',
             cursor: 'pointer',
             transition: 'all 0.2s',
             fontWeight: '500',
-            color: '#1976d2',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+            color: '#ffffff',
+            boxShadow: '0 2px 6px rgba(66, 165, 245, 0.4)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.2)'
         },
         analyzeButton: {
             width: '100%',
