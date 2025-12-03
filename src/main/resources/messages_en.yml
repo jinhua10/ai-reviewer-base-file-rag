@@ -206,6 +206,7 @@ vision_llm:
     content_extracted: "Vision LLM extracted content [{0}]: {1} characters"
     processing_failed: "Vision LLM processing failed: {0}"
     sending_request: "Sending Vision API request: {0} (format: {1})"
+    sending_request_batch: "Sending batch Vision API request: {0} (format: {1})"
     received_response: "Received Vision API response, elapsed: {0}ms"
     token_usage: "Token usage - Prompt: {0}, Completion: {1}, Total: {2}"
     ollama_complete_chat: "Ollama processing completed (/api/chat format)"
@@ -516,6 +517,15 @@ log:
     vision_model: "      - Model: {0}"
     vision_no_apikey: "   ⚠️ Vision LLM enabled but API Key not configured"
     vision_unavailable: "   ⚠️ Vision LLM strategy unavailable"
+    position:
+      simple_desc: "Image {0}: {1}"
+      full_desc: "Image {0}: {1} (Position: {2}, Coordinates: {3},{4}, Size: {5}x{6})"
+      top: "top"
+      bottom: "bottom"
+      middle: "middle"
+      left: "left"
+      right: "right"
+      center: "center"
   office:
     pptx_start: "Starting to process PPTX file: {0}, total {1} slides"
     pptx_complete: "✅ PPTX processing completed: {0}"

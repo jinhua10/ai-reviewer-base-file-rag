@@ -206,6 +206,7 @@ vision_llm:
     content_extracted: "Vision LLM 提取内容 [{0}]: {1} 字符"
     processing_failed: "Vision LLM 处理失败: {0}"
     sending_request: "发送 Vision API 请求: {0} (格式: {1})"
+    sending_request_batch: "发送批量 Vision API 请求: {0} (格式: {1})"
     received_response: "收到 Vision API 响应，耗时: {0}ms"
     token_usage: "Token 使用 - Prompt: {0}, Completion: {1}, Total: {2}"
     ollama_complete_chat: "Ollama 处理完成（/api/chat 格式）"
@@ -516,6 +517,15 @@ log:
     vision_model: "      - 模型：{0}"
     vision_no_apikey: "   ⚠️ Vision LLM 已启用但未配置 API Key"
     vision_unavailable: "   ⚠️ Vision LLM 策略不可用"
+    position:
+      simple_desc: "图片 {0}: {1}"
+      full_desc: "图片 {0}: {1} (位置: {2}, 坐标: {3},{4}, 大小: {5}x{6})"
+      top: "上方"
+      bottom: "下方"
+      middle: "中间"
+      left: "左侧"
+      right: "右侧"
+      center: "中央"
   office:
     pptx_start: "开始处理PPTX文件: {0}, 共{1}张幻灯片"
     pptx_complete: "✅ PPTX处理完成: {0}"

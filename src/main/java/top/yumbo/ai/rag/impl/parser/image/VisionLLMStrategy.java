@@ -269,7 +269,66 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     /**
-     * 调用 Vision LLM API（Call Vision LLM API）
+     * 批量提取多张图片内容（Batch extract content from multiple images）
+     * 适用于 PPT 等场景，一次处理多张图片以减少 API 调用次数
+     *
+     * @param imageDataList 图片数据列表（byte[]）
+     * @param imageNames 图片名称列表
+     * @return 提取的内容
+     */
+    public String extractContentBatch(java.util.List<byte[]> imageDataList, java.util.List<String> imageNames) {
+        if (!available) {
+            return LogMessageProvider.getMessage("vision_llm.error.unavailable", "batch images");
+        }
+
+        if (imageDataList == null || imageDataList.isEmpty()) {
+            return "";
+        }
+
+        // 过滤掉不支持的格式
+        java.util.List<byte[]> validImages = new java.util.ArrayList<>();
+        java.util.List<String> validNames = new java.util.ArrayList<>();
+
+        for (int i = 0; i < imageDataList.size(); i++) {
+            String imageName = i < imageNames.size() ? imageNames.get(i) : "image_" + i;
+            if (isSupportedImageFormat(imageName)) {
+                validImages.add(imageDataList.get(i));
+                validNames.add(imageName);
+            } else {
+                log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format",
+                    imageName, getFileExtension(imageName)));
+            }
+        }
+
+        if (validImages.isEmpty()) {
+            return LogMessageProvider.getMessage("vision_llm.error.no_valid_images");
+        }
+
+        try {
+            log.info("📦 批量处理 {} 张图片: {}", validImages.size(), String.join(", ", validNames));
+
+            // 转换为 base64
+            java.util.List<String> base64Images = new java.util.ArrayList<>();
+            for (byte[] imageData : validImages) {
+                String base64Image = Base64.getEncoder().encodeToString(imageData);
+                base64Images.add(base64Image);
+            }
+
+            // 调用批量 Vision API
+            String result = callVisionAPIBatch(base64Images, validNames);
+
+            log.info("✅ 批量提取完成: {} 张图片 -> {} 字符", validImages.size(), result.length());
+            return result;
+
+        } catch (Exception e) {
+            log.error("批量 Vision LLM 处理失败", e);
+            return LogMessageProvider.getMessage("vision_llm.error.batch_processing_failed",
+                validImages.size(), e.getMessage());
+        }
+    }
+
+    /**
+     * 调用 Vision LLM API（Call Vision LLM API）- 单张图片
      */
     private String callVisionAPI(String base64Image, String imageName) throws Exception {
         // 根据 API 格式构建不同的请求体
@@ -310,13 +369,179 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     /**
-     * 构建 Vision API 请求体（Build Vision API request body）
+     * 调用 Vision LLM API 处理多张图片（Call Vision LLM API with multiple images）
+     */
+    private String callVisionAPIBatch(java.util.List<String> base64Images, java.util.List<String> imageNames) throws Exception {
+        // 根据 API 格式构建不同的请求体
+        String requestBody = buildVisionRequest(base64Images);
+
+        log.debug(LogMessageProvider.getMessage("vision_llm.log.sending_request_batch", model, apiFormat));
+
+        // 创建 HTTP 请求
+        Request.Builder requestBuilder = new Request.Builder()
+            .url(apiEndpoint)
+            .post(RequestBody.create(requestBody, JSON))
+            .addHeader("Content-Type", "application/json");
+
+        // OpenAI 格式需要 Authorization header
+        if (apiFormat == ApiFormat.OPENAI_CHAT && apiKey != null && !apiKey.isEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer " + apiKey);
+        }
+
+        // 发送请求
+        long startTime = System.currentTimeMillis();
+        try (Response response = httpClient.newCall(requestBuilder.build()).execute()) {
+            long elapsed = System.currentTimeMillis() - startTime;
+
+            if (!response.isSuccessful()) {
+                String errorBody = response.body() != null ? response.body().string() :
+                    LogMessageProvider.getMessage("vision_llm.error.no_response_body");
+                log.error(LogMessageProvider.getMessage("vision_llm.error.api_error_with_body",
+                    response.code(), errorBody));
+                throw new Exception(LogMessageProvider.getMessage("vision_llm.error.api_error", response.code()));
+            }
+
+            String responseBody = response.body().string();
+            log.debug(LogMessageProvider.getMessage("vision_llm.log.received_response", elapsed));
+
+            // 根据 API 格式解析响应
+            return parseVisionResponse(responseBody);
+        }
+    }
+
+    /**
+     * 批量提取多张图片内容 - 带位置信息（Batch extract content with position info）
+     * 适用于 PPT 等场景，保留图片的位置关系有助于理解架构图、流程图
+     *
+     * @param imagePositions 图片位置信息列表
+     * @return 提取的内容
+     */
+    public String extractContentBatchWithPosition(java.util.List<ImagePositionInfo> imagePositions) {
+        if (!available) {
+            return LogMessageProvider.getMessage("vision_llm.error.unavailable", "batch images");
+        }
+
+        if (imagePositions == null || imagePositions.isEmpty()) {
+            return "";
+        }
+
+        // 过滤掉不支持的格式
+        java.util.List<ImagePositionInfo> validImages = new java.util.ArrayList<>();
+
+        for (ImagePositionInfo imgPos : imagePositions) {
+            if (isSupportedImageFormat(imgPos.getImageName())) {
+                validImages.add(imgPos);
+            } else {
+                log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format",
+                    imgPos.getImageName(), getFileExtension(imgPos.getImageName())));
+            }
+        }
+
+        if (validImages.isEmpty()) {
+            return LogMessageProvider.getMessage("vision_llm.error.no_valid_images");
+        }
+
+        try {
+            log.info("📦 批量处理 {} 张图片（含位置信息）", validImages.size());
+
+            // 构建位置信息描述
+            StringBuilder positionDesc = new StringBuilder();
+            positionDesc.append("幻灯片布局信息：\n");
+            for (int i = 0; i < validImages.size(); i++) {
+                ImagePositionInfo img = validImages.get(i);
+                positionDesc.append("  ").append(img.getPositionDescription()).append("\n");
+
+                // 如果有多张图片，描述它们的相对位置
+                if (i > 0) {
+                    String relation = ImagePositionInfo.getRelativePosition(validImages.get(i-1), img);
+                    positionDesc.append("    -> 相对于图片").append(i).append("在").append(relation).append("\n");
+                }
+            }
+
+            // 转换为 base64
+            java.util.List<String> base64Images = new java.util.ArrayList<>();
+            java.util.List<String> imageNames = new java.util.ArrayList<>();
+            for (ImagePositionInfo imgPos : validImages) {
+                String base64Image = Base64.getEncoder().encodeToString(imgPos.getImageData());
+                base64Images.add(base64Image);
+                imageNames.add(imgPos.getImageName());
+            }
+
+            // 调用批量 Vision API，传入位置信息
+            String result = callVisionAPIBatchWithPosition(base64Images, imageNames, positionDesc.toString());
+
+            log.info("✅ 批量提取完成（含位置信息）: {} 张图片 -> {} 字符", validImages.size(), result.length());
+            return result;
+
+        } catch (Exception e) {
+            log.error("批量 Vision LLM 处理失败（含位置信息）", e);
+            return LogMessageProvider.getMessage("vision_llm.error.batch_processing_failed",
+                validImages.size(), e.getMessage());
+        }
+    }
+
+    /**
+     * 调用 Vision LLM API 处理多张图片 - 带位置信息
+     */
+    private String callVisionAPIBatchWithPosition(java.util.List<String> base64Images,
+                                                   java.util.List<String> imageNames,
+                                                   String positionDescription) throws Exception {
+        // 根据 API 格式构建不同的请求体
+        String requestBody = buildVisionRequestWithPosition(base64Images, positionDescription);
+
+        log.debug("发送批量 Vision API 请求（含位置信息）: {} (格式: {})", model, apiFormat);
+
+        // 创建 HTTP 请求
+        Request.Builder requestBuilder = new Request.Builder()
+            .url(apiEndpoint)
+            .post(RequestBody.create(requestBody, JSON))
+            .addHeader("Content-Type", "application/json");
+
+        // OpenAI 格式需要 Authorization header
+        if (apiFormat == ApiFormat.OPENAI_CHAT && apiKey != null && !apiKey.isEmpty()) {
+            requestBuilder.addHeader("Authorization", "Bearer " + apiKey);
+        }
+
+        // 发送请求
+        long startTime = System.currentTimeMillis();
+        try (Response response = httpClient.newCall(requestBuilder.build()).execute()) {
+            long elapsed = System.currentTimeMillis() - startTime;
+
+            if (!response.isSuccessful()) {
+                String errorBody = response.body() != null ? response.body().string() :
+                    LogMessageProvider.getMessage("vision_llm.error.no_response_body");
+                log.error(LogMessageProvider.getMessage("vision_llm.error.api_error_with_body",
+                    response.code(), errorBody));
+                throw new Exception(LogMessageProvider.getMessage("vision_llm.error.api_error", response.code()));
+            }
+
+            String responseBody = response.body().string();
+            log.debug("接收到响应，耗时: {}ms", elapsed);
+
+            // 根据 API 格式解析响应
+            return parseVisionResponse(responseBody);
+        }
+    }
+
+    /**
+     * 构建 Vision API 请求体（Build Vision API request body）- 单张图片
      */
     private String buildVisionRequest(String base64Image) throws Exception {
         if (apiFormat == ApiFormat.OLLAMA) {
             return buildOllamaRequest(base64Image);
         } else {
             return buildOpenAIRequest(base64Image);
+        }
+    }
+
+    /**
+     * 构建 Vision API 请求体（Build Vision API request body）- 多张图片（批量）
+     */
+    private String buildVisionRequest(java.util.List<String> base64Images) throws Exception {
+        if (apiFormat == ApiFormat.OLLAMA) {
+            return buildOllamaRequestBatch(base64Images);
+        } else {
+            return buildOpenAIRequestBatch(base64Images);
         }
     }
 
@@ -353,6 +578,58 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     }
 
     /**
+     * 构建 OpenAI Chat Completions 格式请求 - 多张图片（Build OpenAI Chat Completions format request - Batch）
+     */
+    private String buildOpenAIRequestBatch(java.util.List<String> base64Images) throws Exception {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("model", model);
+        root.put("max_tokens", 2000); // 多张图片需要更多 tokens
+
+        // 构建 messages 数组
+        ArrayNode messages = root.putArray("messages");
+        ObjectNode message = messages.addObject();
+        message.put("role", "user");
+
+        // 构建 content 数组（包含文本和多张图片）
+        ArrayNode content = message.putArray("content");
+
+        // 添加文本提示（针对多张图片优化，强调按顺序和位置关系）
+        ObjectNode textContent = content.addObject();
+        textContent.put("type", "text");
+        String batchPrompt = String.format(
+            "这是一张幻灯片中的 %d 张图片，它们在幻灯片上的排列顺序和相对位置很重要（特别是对于架构图、流程图等）。\n\n" +
+            "请注意：\n" +
+            "1. 这些图片原本在同一张幻灯片上，它们之间可能有连接关系、布局关系\n" +
+            "2. 如果是架构图/流程图，请特别注意组件之间的位置、连接、层次关系\n" +
+            "3. 按照图片出现的顺序（从左到右、从上到下）进行分析\n" +
+            "4. 如果图片之间有关联，请在分析时说明它们的关系\n\n" +
+            "%s",
+            base64Images.size(),
+            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+        );
+        textContent.put("text", batchPrompt);
+
+        // 添加所有图片，并标注序号
+        for (int i = 0; i < base64Images.size(); i++) {
+            // 先添加图片序号说明
+            if (i > 0) { // 第一张图片不需要分隔
+                ObjectNode seqContent = content.addObject();
+                seqContent.put("type", "text");
+                seqContent.put("text", String.format("\n--- 图片 %d ---", i + 1));
+            }
+
+            // 添加图片
+            ObjectNode imageContent = content.addObject();
+            imageContent.put("type", "image_url");
+            ObjectNode imageUrl = imageContent.putObject("image_url");
+            imageUrl.put("url", "data:image/jpeg;base64," + base64Images.get(i));
+            imageUrl.put("detail", "high");
+        }
+
+        return objectMapper.writeValueAsString(root);
+    }
+
+    /**
      * 构建 Ollama 格式请求（Build Ollama format request）
      */
     private String buildOllamaRequest(String base64Image) throws Exception {
@@ -383,6 +660,167 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             images.add(base64Image);
 
             root.put("stream", false);  // 不使用流式输出
+        }
+
+        return objectMapper.writeValueAsString(root);
+    }
+
+    /**
+     * 构建 Ollama 格式请求 - 多张图片（Build Ollama format request - Batch）
+     */
+    private String buildOllamaRequestBatch(java.util.List<String> base64Images) throws Exception {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("model", model);
+
+        String batchPrompt = String.format(
+            "这是一张幻灯片中的 %d 张图片，它们在幻灯片上的排列顺序和相对位置很重要（特别是对于架构图、流程图等）。\n\n" +
+            "请注意：\n" +
+            "1. 这些图片原本在同一张幻灯片上，它们之间可能有连接关系、布局关系\n" +
+            "2. 如果是架构图/流程图，请特别注意组件之间的位置、连接、层次关系\n" +
+            "3. 按照图片出现的顺序（从左到右、从上到下）进行分析\n" +
+            "4. 如果图片之间有关联，请在分析时说明它们的关系\n\n" +
+            "%s",
+            base64Images.size(),
+            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+        );
+
+        // 检查端点类型，使用不同的请求格式
+        if (apiEndpoint.contains("/api/chat")) {
+            // /api/chat 格式
+            ArrayNode messages = root.putArray("messages");
+            ObjectNode message = messages.addObject();
+            message.put("role", "user");
+            message.put("content", batchPrompt);
+
+            // Ollama chat API 使用 images 数组存放多张 base64 图片
+            ArrayNode images = message.putArray("images");
+            for (String base64Image : base64Images) {
+                images.add(base64Image);
+            }
+
+            root.put("stream", false);
+        } else {
+            // /api/generate 格式
+            root.put("prompt", batchPrompt);
+
+            // Ollama 使用 images 数组存放多张 base64 图片
+            ArrayNode images = root.putArray("images");
+            for (String base64Image : base64Images) {
+                images.add(base64Image);
+            }
+
+            root.put("stream", false);
+        }
+
+        return objectMapper.writeValueAsString(root);
+    }
+
+    /**
+     * 构建包含位置信息的 Vision API 请求
+     */
+    private String buildVisionRequestWithPosition(java.util.List<String> base64Images,
+                                                   String positionDescription) throws Exception {
+        if (apiFormat == ApiFormat.OLLAMA) {
+            return buildOllamaRequestWithPosition(base64Images, positionDescription);
+        } else {
+            return buildOpenAIRequestWithPosition(base64Images, positionDescription);
+        }
+    }
+
+    /**
+     * 构建 OpenAI 格式请求 - 带位置信息
+     */
+    private String buildOpenAIRequestWithPosition(java.util.List<String> base64Images,
+                                                   String positionDescription) throws Exception {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("model", model);
+        root.put("max_tokens", 2000);
+
+        ArrayNode messages = root.putArray("messages");
+        ObjectNode message = messages.addObject();
+        message.put("role", "user");
+
+        ArrayNode content = message.putArray("content");
+
+        // 添加文本提示（包含位置信息）
+        ObjectNode textContent = content.addObject();
+        textContent.put("type", "text");
+        String enhancedPrompt = String.format(
+            "这是一张幻灯片中的 %d 张图片。\n\n" +
+            "%s\n" +
+            "**重要**：这些图片的位置和布局关系已在上面列出，对于理解架构图、流程图非常关键。\n" +
+            "请在分析时特别注意：\n" +
+            "- 图片之间的空间位置关系（上下左右）\n" +
+            "- 可能存在的连接线、箭头等关联\n" +
+            "- 整体的布局结构和层次关系\n\n" +
+            "%s",
+            base64Images.size(),
+            positionDescription,
+            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+        );
+        textContent.put("text", enhancedPrompt);
+
+        // 添加所有图片
+        for (int i = 0; i < base64Images.size(); i++) {
+            if (i > 0) {
+                ObjectNode seqContent = content.addObject();
+                seqContent.put("type", "text");
+                seqContent.put("text", String.format("\n--- 图片 %d ---", i + 1));
+            }
+
+            ObjectNode imageContent = content.addObject();
+            imageContent.put("type", "image_url");
+            ObjectNode imageUrl = imageContent.putObject("image_url");
+            imageUrl.put("url", "data:image/jpeg;base64," + base64Images.get(i));
+            imageUrl.put("detail", "high");
+        }
+
+        return objectMapper.writeValueAsString(root);
+    }
+
+    /**
+     * 构建 Ollama 格式请求 - 带位置信息
+     */
+    private String buildOllamaRequestWithPosition(java.util.List<String> base64Images,
+                                                   String positionDescription) throws Exception {
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("model", model);
+
+        String enhancedPrompt = String.format(
+            "这是一张幻灯片中的 %d 张图片。\n\n" +
+            "%s\n" +
+            "**重要**：这些图片的位置和布局关系已在上面列出，对于理解架构图、流程图非常关键。\n" +
+            "请在分析时特别注意：\n" +
+            "- 图片之间的空间位置关系（上下左右）\n" +
+            "- 可能存在的连接线、箭头等关联\n" +
+            "- 整体的布局结构和层次关系\n\n" +
+            "%s",
+            base64Images.size(),
+            positionDescription,
+            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+        );
+
+        if (apiEndpoint.contains("/api/chat")) {
+            ArrayNode messages = root.putArray("messages");
+            ObjectNode message = messages.addObject();
+            message.put("role", "user");
+            message.put("content", enhancedPrompt);
+
+            ArrayNode images = message.putArray("images");
+            for (String base64Image : base64Images) {
+                images.add(base64Image);
+            }
+
+            root.put("stream", false);
+        } else {
+            root.put("prompt", enhancedPrompt);
+
+            ArrayNode images = root.putArray("images");
+            for (String base64Image : base64Images) {
+                images.add(base64Image);
+            }
+
+            root.put("stream", false);
         }
 
         return objectMapper.writeValueAsString(root);
