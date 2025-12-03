@@ -36,12 +36,14 @@ public class TikaDocumentParser implements DocumentParser {
     private final boolean extractImageMetadata;     // 是否提取图片元数据
     private final boolean includeImagePlaceholders; // 是否包含图片占位符
     private final int maxContentLength;             // 最大内容长度（防止内存溢出）
+    private final int visionBatchSize;              // Vision LLM 批量处理大小
     private final top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor; // 智能图片提取器
 
     // 默认配置
     private static final int DEFAULT_MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10MB
     private static final boolean DEFAULT_EXTRACT_IMAGE_METADATA = true;
     private static final boolean DEFAULT_INCLUDE_IMAGE_PLACEHOLDERS = true;
+    private static final int DEFAULT_VISION_BATCH_SIZE = 1; // 默认单张幻灯片处理
 
     // 支持的MIME类型
     private static final Set<String> SUPPORTED_MIME_TYPES = new HashSet<>(Arrays.asList(
@@ -86,16 +88,19 @@ public class TikaDocumentParser implements DocumentParser {
      * @param maxContentLength 最大内容长度（字符数）（Max content length in characters）
      * @param extractImageMetadata 是否提取图片元数据（Whether to extract image metadata）
      * @param includeImagePlaceholders 是否包含图片占位符（Whether to include image placeholders）
+     * @param visionBatchSize Vision LLM 批量处理大小（Vision LLM batch size）
      * @param imageExtractor 智能图片提取器（Smart image extractor）
      */
     public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata,
                              boolean includeImagePlaceholders,
+                             int visionBatchSize,
                              top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
         this.tika = new Tika();
         this.parser = new AutoDetectParser();
         this.maxContentLength = maxContentLength;
         this.extractImageMetadata = extractImageMetadata;
         this.includeImagePlaceholders = includeImagePlaceholders;
+        this.visionBatchSize = Math.max(1, visionBatchSize);
         this.imageExtractor = imageExtractor;
 
         // 显示解析器配置信息（Display parser configuration）
@@ -104,6 +109,24 @@ public class TikaDocumentParser implements DocumentParser {
         log.info(LogMessageProvider.getMessage("log.tika.extract_image_metadata", extractImageMetadata));
         log.info(LogMessageProvider.getMessage("log.tika.include_image_placeholders", includeImagePlaceholders));
         log.info(LogMessageProvider.getMessage("log.tika.active_image_strategy", imageExtractor.getActiveStrategy().getStrategyName()));
+        log.info("Vision LLM 批量大小: {} 张幻灯片/批次", this.visionBatchSize);
+    }
+
+    /**
+     * 带配置的构造函数（兼容旧版本）（Constructor with configuration - backward compatible）
+     *
+     * @param maxContentLength 最大内容长度（字符数）（Max content length in characters）
+     * @param extractImageMetadata 是否提取图片元数据（Whether to extract image metadata）
+     * @param includeImagePlaceholders 是否包含图片占位符（Whether to include image placeholders）
+     * @param imageExtractor 智能图片提取器（Smart image extractor）
+     * @deprecated 使用带 visionBatchSize 参数的构造函数（Use constructor with visionBatchSize parameter）
+     */
+    @Deprecated
+    public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata,
+                             boolean includeImagePlaceholders,
+                             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
+        this(maxContentLength, extractImageMetadata, includeImagePlaceholders,
+             DEFAULT_VISION_BATCH_SIZE, imageExtractor);
     }
 
     /**
@@ -117,6 +140,7 @@ public class TikaDocumentParser implements DocumentParser {
     @Deprecated
     public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata, boolean includeImagePlaceholders) {
         this(maxContentLength, extractImageMetadata, includeImagePlaceholders,
+             DEFAULT_VISION_BATCH_SIZE,
              top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor.fromEnv());
     }
 
@@ -135,7 +159,7 @@ public class TikaDocumentParser implements DocumentParser {
             // 对于Office文档，使用专门的图片提取器
             String filename = file.getName().toLowerCase();
             if (filename.endsWith(".pptx") || filename.endsWith(".docx") || filename.endsWith(".xlsx")) {
-                OfficeImageExtractor officeExtractor = new OfficeImageExtractor(imageExtractor);
+                OfficeImageExtractor officeExtractor = new OfficeImageExtractor(imageExtractor, visionBatchSize);
 
                 String content = "";
                 if (filename.endsWith(".pptx")) {

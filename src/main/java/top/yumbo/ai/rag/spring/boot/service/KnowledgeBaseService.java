@@ -51,11 +51,16 @@ public class KnowledgeBaseService {
         this.optimizer = optimizer;
         this.fileTrackingService = fileTrackingService;
         this.imageExtractionService = imageExtractionService;
+
+        // 获取批量大小配置
+        int visionBatchSize = properties.getImageProcessing().getVisionLlm().getBatch().getSize();
+
         // 使用注入的 SmartImageExtractor 创建 TikaDocumentParser（Use injected SmartImageExtractor to create TikaDocumentParser）
         this.documentParser = new TikaDocumentParser(
             10 * 1024 * 1024,  // 10MB max content
             true,              // extract image metadata
             true,              // include image placeholders
+            visionBatchSize,   // vision batch size from config
             imageExtractor     // use configured image extractor
         );
         this.documentChunker = optimizer.createChunker();

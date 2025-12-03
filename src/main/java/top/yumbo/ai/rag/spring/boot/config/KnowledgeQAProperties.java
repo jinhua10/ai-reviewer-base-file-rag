@@ -399,5 +399,62 @@ public class KnowledgeQAProperties {
          * API 端点
          */
         private String endpoint = "${VISION_LLM_ENDPOINT:}";
+
+        /**
+         * 批量处理配置
+         */
+        private BatchConfig batch = new BatchConfig();
+    }
+
+    /**
+     * Vision LLM 批量处理配置
+     */
+    @Data
+    public static class BatchConfig {
+        /**
+         * 是否启用批量处理
+         */
+        private boolean enabled = true;
+
+        /**
+         * 批量大小（一次处理多少张幻灯片）
+         */
+        private int size = 4;
+
+        /**
+         * 图片压缩配置
+         */
+        private CompressConfig compress = new CompressConfig();
+    }
+
+    /**
+     * 图片压缩配置
+     */
+    @Data
+    public static class CompressConfig {
+        /**
+         * 是否启用压缩
+         */
+        private boolean enabled = true;
+
+        /**
+         * 压缩质量 (0.1-1.0)
+         */
+        private double quality = 0.8;
+
+        /**
+         * 单张图片最大尺寸（KB）
+         */
+        private int maxSizeKb = 300;
+
+        /**
+         * 图片最大宽度
+         */
+        private int maxWidth = 1920;
+
+        /**
+         * 图片最大高度
+         */
+        private int maxHeight = 1080;
     }
 }
