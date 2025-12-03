@@ -51,6 +51,7 @@
     <!-- 4. 公共组件 -->
     <script src="js/components/common/LanguageContext.js"></script>
     <script src="js/components/common/DatePicker.js"></script>
+    <script src="js/components/DocumentAIAnalysisPanel.js"></script>
 
     <!-- 5. UI组件库 -->
     <script type="text/babel" src="js/components/tabs/DocumentsTabComponents.jsx"></script>
@@ -166,8 +167,20 @@
                             setHealth(result);
                         } catch (err) {
                             console.error('❌ Health check error:', err);
-                            setHealth({ status: 'DOWN', message: 'Service connection failed' });
+                            setHealth({ status: t('statusOffline'), message: 'Service connection failed' });
                         }
+                    };
+
+                    // 判断状态并添加图标
+                    const getStatusWithIcon = (status) => {
+                        if (!status) return '';
+                        // 如果状态文本中已经有emoji图标，直接返回
+                        if (/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(status)) {
+                            return status;
+                        }
+                        // 根据状态文本添加对应图标
+                        const isOnline = status === 'UP' || status === '运行中' || status.toLowerCase().includes('online') || status.includes('运行');
+                        return isOnline ? `✅ ${status}` : `❌ ${status}`;
                     };
 
                     return (
@@ -181,7 +194,7 @@
                                 <p>{t('subtitle')}</p>
                                 {health && (
                                     <div style={{ marginTop: '10px', fontSize: '14px' }}>
-                                        {t('status')}: {health.status === 'UP' ? t('statusOnline') : t('statusOffline')}
+                                        {t('status')}: {getStatusWithIcon(health.status)}
                                     </div>
                                 )}
                             </header>

@@ -259,6 +259,46 @@ const api = {
             lang: getCurrentLang() // 添加语言参数 / Add language parameter
         });
         return response.data;
+    },
+
+    // ========== 文档AI分析 ==========
+
+    /**
+     * 通用文档AI问答分析
+     * @param {string} documentPath - 文档路径
+     * @param {string} question - 分析问题/提示词
+     * @returns {Promise<Object>} 分析报告
+     */
+    analyzeDocument: async (documentPath, question) => {
+        const response = await axios.post('http://localhost:8080/api/document-qa/query', {
+            documentPath,
+            question
+        });
+        return response.data;
+    },
+
+    /**
+     * PPT渐进式分析（推荐用于PPT）
+     * @param {string} documentPath - PPT文件路径
+     * @param {string} question - 分析问题/提示词
+     * @returns {Promise<Object>} PPT分析报告
+     */
+    analyzePPT: async (documentPath, question) => {
+        const response = await axios.post('http://localhost:8080/api/document-qa/analyze-ppt', {
+            documentPath,
+            question
+        });
+        return response.data;
+    },
+
+    /**
+     * 清理分析会话临时文件
+     * @param {string} sessionId - 会话ID
+     * @returns {Promise<Object>} 清理结果
+     */
+    cleanupAnalysisSession: async (sessionId) => {
+        const response = await axios.delete(`http://localhost:8080/api/document-qa/cleanup/${sessionId}`);
+        return response.data;
     }
 };
 
@@ -271,4 +311,3 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
 }
-

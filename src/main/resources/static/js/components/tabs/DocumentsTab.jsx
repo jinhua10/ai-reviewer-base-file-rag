@@ -32,6 +32,10 @@ function DocumentsTab() {
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
 
+    // AI分析面板状态
+    const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+    const [uploadedFilesCache, setUploadedFilesCache] = useState([]); // 缓存上传的文件
+
 
     // 高级搜索状态
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -152,13 +156,22 @@ function DocumentsTab() {
         setUploading(true);
         setUploadProgress({ total: files.length, current: 0, success: 0, failed: 0 });
 
+        const successFiles = [];
+
         for (let i = 0; i < files.length; i++) {
             try {
                 await window.api.uploadDocument(files[i]);
                 setUploadProgress(prev => ({ ...prev, current: i + 1, success: prev.success + 1 }));
+                // 缓存成功上传的文件
+                successFiles.push(files[i]);
             } catch (err) {
                 setUploadProgress(prev => ({ ...prev, current: i + 1, failed: prev.failed + 1 }));
             }
+        }
+
+        // 更新上传文件缓存
+        if (successFiles.length > 0) {
+            setUploadedFilesCache(prev => [...successFiles, ...prev].slice(0, 50)); // 保留最近50个
         }
 
         setUploading(false);
@@ -487,6 +500,35 @@ function DocumentsTab() {
                         {/* 排序和分页控制栏 - 只在有文档时显示 */}
                         {totalCount > 0 && (
                             <div className="documents-controls-bar">
+                                {/* AI分析按钮 */}
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => setShowAIAnalysis(true)}
+                                    style={{
+                                        marginRight: '15px',
+                                        backgroundColor: '#9C27B0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                    title={t('openAIAnalysis') || '打开AI分析面板'}
+                                >
+                                    <span style={{ fontSize: '16px' }}>🤖</span>
+                                    <span>{t('aiAnalysis') || 'AI分析'}</span>
+                                    {uploadedFilesCache.length > 0 && (
+                                        <span style={{
+                                            backgroundColor: '#fff',
+                                            color: '#9C27B0',
+                                            padding: '2px 6px',
+                                            borderRadius: '10px',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {uploadedFilesCache.length}
+                                        </span>
+                                    )}
+                                </button>
+
                                 {/* 排序方式 */}
                                 <div className="documents-control-group">
                                     <label className="documents-control-label">{t('docsSortBy')}:</label>
@@ -657,6 +699,15 @@ function DocumentsTab() {
                     </div>
                 )}
             </div>
+
+            {/* AI分析面板 */}
+            {showAIAnalysis && window.DocumentAIAnalysisPanel && (
+                <window.DocumentAIAnalysisPanel
+                    documents={documents}
+                    uploadedFiles={uploadedFilesCache}
+                    onClose={() => setShowAIAnalysis(false)}
+                />
+            )}
         </div>
     );
 }
