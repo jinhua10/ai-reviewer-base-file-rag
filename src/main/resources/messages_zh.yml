@@ -219,14 +219,16 @@ vision_llm:
     unavailable_no_apikey: "⚠️  Vision LLM 不可用: 未配置 API Key"
     hint_set_apikey: "💡 提示: 在配置文件中设置 vision-llm.api-key"
     service_response_error: "服务响应异常: HTTP {0}"
+    unsupported_format: "⚠️  跳过不支持的图片格式: {0} (.{1})，Vision API 仅支持 jpg/png/gif/webp/bmp"
   error:
-    unavailable: "[图片: {0} - Vision LLM不可用]"
-    processing_failed: "[图片: {0} - Vision LLM处理失败: {1}]"
     api_error: "Vision API 错误: HTTP {0}"
     api_error_with_body: "Vision API 错误: HTTP {0}, Body: {1}"
     no_response_body: "无响应体"
     parse_openai_failed: "无法解析 OpenAI API 响应: {0}"
     parse_ollama_failed: "无法解析 Ollama API 响应: {0}"
+    unavailable: "[图片: {0} - Vision LLM不可用]"
+    processing_failed: "[图片: {0} - Vision LLM处理失败: {1}]"
+    unsupported_format: "[图片: {0} - 不支持的格式 .{1}，Vision API 仅支持 jpg/png/gif/webp/bmp]"
   prompt:
     extract_text: |
       请全面分析这张图片，按以下结构输出：

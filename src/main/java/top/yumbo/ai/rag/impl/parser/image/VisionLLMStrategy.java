@@ -212,6 +212,12 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             return LogMessageProvider.getMessage("vision_llm.error.unavailable", imageName);
         }
 
+        // 检查图片格式是否支持
+        if (!isSupportedImageFormat(imageName)) {
+            log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format", imageName, getFileExtension(imageName)));
+            return LogMessageProvider.getMessage("vision_llm.error.unsupported_format", imageName, getFileExtension(imageName));
+        }
+
         try {
             log.debug(LogMessageProvider.getMessage("vision_llm.log.processing_image", imageName));
 
@@ -235,6 +241,12 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     public String extractContent(File imageFile) {
         if (!available) {
             return LogMessageProvider.getMessage("vision_llm.error.unavailable", imageFile.getName());
+        }
+
+        // 检查图片格式是否支持
+        if (!isSupportedImageFormat(imageFile.getName())) {
+            log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format", imageFile.getName(), getFileExtension(imageFile.getName())));
+            return LogMessageProvider.getMessage("vision_llm.error.unsupported_format", imageFile.getName(), getFileExtension(imageFile.getName()));
         }
 
         try {
@@ -460,6 +472,32 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         }
 
         throw new Exception(LogMessageProvider.getMessage("vision_llm.error.parse_ollama_failed", responseBody));
+    }
+
+    /**
+     * 检查图片格式是否被 Vision API 支持
+     */
+    private boolean isSupportedImageFormat(String filename) {
+        String extension = getFileExtension(filename).toLowerCase();
+        // Vision API 通常支持的格式：jpg, jpeg, png, gif, webp, bmp
+        // 不支持的格式：wmf, emf, svg, tiff (某些API), ico 等
+        return extension.equals("jpg") || extension.equals("jpeg") ||
+               extension.equals("png") || extension.equals("gif") ||
+               extension.equals("webp") || extension.equals("bmp");
+    }
+
+    /**
+     * 获取文件扩展名
+     */
+    private String getFileExtension(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            return "";
+        }
+        int lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex == -1 || lastDotIndex == filename.length() - 1) {
+            return "";
+        }
+        return filename.substring(lastDotIndex + 1);
     }
 
     @Override

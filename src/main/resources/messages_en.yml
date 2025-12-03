@@ -215,18 +215,20 @@ vision_llm:
     model: "   - Model: {0}"
     endpoint: "   - Endpoint: {0}"
     service_unavailable: "⚠️  Vision LLM service unavailable: {0}"
-    check_service: "💡 Hint: Please check if service is running"
+    check_service: "💡 Hint: Please check if the service is running properly"
     unavailable_no_apikey: "⚠️  Vision LLM unavailable: API Key not configured"
-    hint_set_apikey: "💡 Hint: Set vision-llm.api-key in config"
+    hint_set_apikey: "💡 Hint: Set vision-llm.api-key in configuration file"
     service_response_error: "Service response error: HTTP {0}"
+    unsupported_format: "⚠️  Skipping unsupported image format: {0} (.{1}), Vision API only supports jpg/png/gif/webp/bmp"
   error:
-    unavailable: "[Image: {0} - Vision LLM unavailable]"
-    processing_failed: "[Image: {0} - Vision LLM processing failed: {1}]"
     api_error: "Vision API error: HTTP {0}"
     api_error_with_body: "Vision API error: HTTP {0}, Body: {1}"
     no_response_body: "No response body"
     parse_openai_failed: "Failed to parse OpenAI API response: {0}"
     parse_ollama_failed: "Failed to parse Ollama API response: {0}"
+    unavailable: "[Image: {0} - Vision LLM unavailable]"
+    processing_failed: "[Image: {0} - Vision LLM processing failed: {1}]"
+    unsupported_format: "[Image: {0} - Unsupported format .{1}, Vision API only supports jpg/png/gif/webp/bmp]"
   prompt:
     extract_text: |
       Please comprehensively analyze this image and provide output in the following structure:
