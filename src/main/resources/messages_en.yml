@@ -231,24 +231,60 @@ vision_llm:
     extract_text: |
       Please comprehensively analyze this image and provide output in the following structure:
       
-      1. **Image Overview**: Summarize the main content and purpose of the image in 1-2 sentences
+      1. **Image Overview**: Summarize the main content, type, and purpose of the image in 1-2 sentences
       
-      2. **Text Content**: Extract all text from the image completely (including titles, body text, annotations, etc.)
+      2. **Text Content**: Extract all text from the image completely
+         - Titles, labels, annotations
+         - Component names, module names
+         - Descriptions, legends
+         - Maintain hierarchical and positional relationships of text
       
-      3. **Visual Elements**:
-         - If chart/graph: Specify chart type, data trends, key findings
-         - If flowchart/architecture diagram: Describe process steps or system components
-         - If table: Maintain table structure, extract all data
-         - If screenshot/interface: Explain interface purpose and main features
-         - If photo/illustration: Describe the scene content and relevant information
+      3. **Structured Information** (describe in detail based on image type):
+         
+         【Architecture/System Diagrams】:
+         - List all components/modules/nodes with their names
+         - Explain connections between components (who connects to whom, direction)
+         - Describe data flow or information flow directions
+         - Explain hierarchical relationships of components (frontend, backend, database, etc.)
+         - Note technology stacks, protocols, ports used
+         
+         【Flowcharts】:
+         - List all process steps in order
+         - Explain conditional branches and decision logic
+         - Mark start and end points
+         
+         【Charts/Graphs】:
+         - Chart type (bar/line/pie chart, etc.)
+         - Axis meanings and units
+         - Specific data points and values
+         - Data trends and key findings
+         
+         【Tables】:
+         - Header information
+         - Extract data completely by rows and columns
+         - Maintain table structure relationships
+         
+         【Screenshots/Interfaces】:
+         - Interface type and functionality
+         - Main functional modules
+         - Interactive elements like menus, buttons
+         
+         【Other Images】:
+         - Describe main content and composition
+         - Key visual elements
       
-      4. **Key Information**: Extract the most important points (such as data, conclusions, key points, etc.)
+      4. **Key Information Extraction**:
+         - Core technical points
+         - Important data or parameters
+         - Key conclusions or points
+         - Information requiring special attention
       
-      Requirements:
-      - Maintain accuracy and completeness of original information
-      - Precisely identify technical terms, numbers, formulas, etc.
-      - Organize content in logical order
-      - Do not add subjective comments or speculation
+      Output Requirements:
+      - Information must be complete, accurate, and structured
+      - For architecture diagrams, must detail component connections
+      - Technical terms, numbers, formulas must be precisely identified
+      - Use clear hierarchical structure to organize content
+      - No subjective comments, only state objective information
 kb_service:
   image:
     description: "Image description: {0}"
