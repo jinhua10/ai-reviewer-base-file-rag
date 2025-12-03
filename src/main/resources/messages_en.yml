@@ -100,6 +100,7 @@ image:
     saved: "Image saved: {0}"
 knowledge_qa_service:
   doc_item: "{0}. {1}"
+  error_processing: "Error occurred while processing Q&A: {0}"
   found_chunks_images: "📦 Found {0} chunks and {1} images"
   image_guide_1: "1. Below are image resources related to your question from the knowledge base. You can reference these images in your answer."
   image_guide_2: "2. If your answer involves content from these images (e.g., architecture diagrams, flowcharts, data charts), please reference the images using Markdown format."

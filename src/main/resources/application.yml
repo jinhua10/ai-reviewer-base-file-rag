@@ -158,7 +158,7 @@ knowledge:
       # DeepSeek: export AI_API_KEY=your-deepseek-key
       # OpenAI: export OPENAI_API_KEY=your-openai-key
       # Qianwen: export QW_API_KEY=your-qianwen-key
-      api-key: ${QW_API_KEY:${AI_API_KEY:}}
+      api-key: ${AI_API_KEY:}
 
       # API 端点
       # DeepSeek: https://api.deepseek.com/v1/chat/completions
