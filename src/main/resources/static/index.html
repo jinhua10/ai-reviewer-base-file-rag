@@ -144,6 +144,18 @@
                     useEffect(() => {
                         console.log('📡 App mounted, checking health...');
                         checkHealth();
+
+                        // 每30秒检查一次服务状态
+                        const intervalId = setInterval(() => {
+                            console.log('🔄 Auto checking health status...');
+                            checkHealth();
+                        }, 30000); // 30秒 = 30000毫秒
+
+                        // 清理定时器
+                        return () => {
+                            console.log('🧹 Cleaning up health check interval');
+                            clearInterval(intervalId);
+                        };
                     }, []);
 
                     const checkHealth = async () => {

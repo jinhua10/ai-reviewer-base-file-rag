@@ -67,7 +67,7 @@ public class OfficeImageExtractor {
             
             List<XSLFSlide> allSlides = ppt.getSlides();
             log.info(LogMessageProvider.getMessage("log.office.pptx_start", file.getName(), allSlides.size()));
-            log.info("批量处理配置: 每次处理 {} 张幻灯片", batchSize);
+            log.info(LogMessageProvider.getMessage("log.office.batch_config", batchSize));
 
             // 检查是否支持批量处理
             boolean supportsBatch = imageExtractor.getActiveStrategy() instanceof VisionLLMStrategy;
@@ -124,7 +124,8 @@ public class OfficeImageExtractor {
             int endIndex = Math.min(processedSlides + batchSize, totalSlides);
             List<XSLFSlide> batchSlides = allSlides.subList(processedSlides, endIndex);
 
-            log.info("📦 处理幻灯片 {}-{}/{}", processedSlides + 1, endIndex, totalSlides);
+            log.info(LogMessageProvider.getMessage("log.office.processing_slides",
+                processedSlides + 1, endIndex, totalSlides));
 
             // 检查这批幻灯片是否需要处理
             List<Integer> slidesToProcess = new ArrayList<>();
@@ -165,9 +166,11 @@ public class OfficeImageExtractor {
                             try {
                                 String docId = pptFile.getName(); // 使用 PPT 文件名作为文档 ID
                                 imageStorageService.saveImage(docId, imageData, imageName);
-                                log.debug("💾 保存图片: {} -> {}/{}", imageName, docId, imageName);
+                                log.debug(LogMessageProvider.getMessage("log.office.save_image",
+                                    imageName, docId, imageName));
                             } catch (Exception e) {
-                                log.warn("保存图片失败: {} - {}", imageName, e.getMessage());
+                                log.warn(LogMessageProvider.getMessage("log.office.save_image_failed",
+                                    imageName, e.getMessage()));
                             }
                         }
 
@@ -208,7 +211,8 @@ public class OfficeImageExtractor {
 
                 if (useCache) {
                     // 使用缓存
-                    log.info("💾 使用缓存: 幻灯片 {} ({} 张图片)", slideNumber, cachedSlide.getImageCount());
+                    log.info(LogMessageProvider.getMessage("log.office.use_cache",
+                        slideNumber, cachedSlide.getImageCount()));
                     if (cachedSlide.getVisionLLMResult() != null && !cachedSlide.getVisionLLMResult().isEmpty()) {
                         batchTextContent.append("\n\n")
                                        .append(LogMessageProvider.getMessage("log.office.image_section"))
@@ -238,7 +242,8 @@ public class OfficeImageExtractor {
 
             // 批量处理需要更新的幻灯片图片
             if (!batchImages.isEmpty()) {
-                log.info("📸 需要处理 {} 张图片（来自 {} 张幻灯片）", batchImages.size(), slidesToProcess.size());
+                log.info(LogMessageProvider.getMessage("log.office.need_process",
+                    batchImages.size(), slidesToProcess.size()));
                 String imageContent = visionStrategy.extractContentBatchWithPosition(batchImages);
 
                 if (imageContent != null && !imageContent.trim().isEmpty()) {
@@ -258,7 +263,8 @@ public class OfficeImageExtractor {
                         }
                     }
 
-                    log.info("✅ 批量分析完成: {} 张图片 -> {} 字符", batchImages.size(), imageContent.length());
+                    log.info(LogMessageProvider.getMessage("log.office.batch_complete",
+                        batchImages.size(), imageContent.length()));
                     processedCount += slidesToProcess.size();
                 }
             }
@@ -270,8 +276,8 @@ public class OfficeImageExtractor {
         // 保存 PPT 缓存
         if (cacheService != null && pptCache != null) {
             cacheService.savePPTCache(pptPath, pptCache);
-            log.info("💾 缓存统计: 使用缓存 {} 张，新处理 {} 张，总计 {} 张",
-                cachedCount, processedCount, totalSlides);
+            log.info(LogMessageProvider.getMessage("log.office.cache_stats",
+                cachedCount, processedCount, totalSlides));
         }
 
         return content.toString();
@@ -322,9 +328,11 @@ public class OfficeImageExtractor {
                         try {
                             String docId = pptFile.getName(); // 使用 PPT 文件名作为文档 ID
                             imageStorageService.saveImage(docId, imageData, imageName);
-                            log.debug("💾 保存图片: {} -> {}/{}", imageName, docId, imageName);
+                            log.debug(LogMessageProvider.getMessage("log.office.save_image",
+                                imageName, docId, imageName));
                         } catch (Exception e) {
-                            log.warn("保存图片失败: {} - {}", imageName, e.getMessage());
+                            log.warn(LogMessageProvider.getMessage("log.office.save_image_failed",
+                                imageName, e.getMessage()));
                         }
                     }
 
