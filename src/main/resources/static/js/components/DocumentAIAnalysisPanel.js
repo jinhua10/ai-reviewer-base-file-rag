@@ -34,6 +34,7 @@
         const [currentAnalysis, setCurrentAnalysis] = useState(null);
         const [analysisHistory, setAnalysisHistory] = useState([]);
         const [showHistory, setShowHistory] = useState(false);
+        const [compareMode, setCompareMode] = useState(false); // 对比模式
 
         // 合并文档列表（已索引 + 新上传）
         const allDocuments = React.useMemo(() => {
@@ -87,6 +88,158 @@
                 : '请总结这份文档的核心内容和主要观点。';
 
             await analyzeDocuments([doc], defaultPrompt);
+        };
+
+        // 导出分析结果
+        const exportResults = (format = 'markdown') => {
+            if (!currentAnalysis || !currentAnalysis.results) return;
+
+            let content = '';
+            const timestamp = new Date().toLocaleString();
+
+            if (format === 'markdown') {
+                content = generateMarkdownReport(currentAnalysis, timestamp);
+                downloadFile(content, `analysis_report_${Date.now()}.md`, 'text/markdown');
+            } else if (format === 'html') {
+                content = generateHTMLReport(currentAnalysis, timestamp);
+                downloadFile(content, `analysis_report_${Date.now()}.html`, 'text/html');
+            } else if (format === 'txt') {
+                content = generateTextReport(currentAnalysis, timestamp);
+                downloadFile(content, `analysis_report_${Date.now()}.txt`, 'text/plain');
+            }
+        };
+
+        // 生成Markdown格式报告
+        const generateMarkdownReport = (analysis, timestamp) => {
+            let md = `# 文档AI分析报告\n\n`;
+            md += `**生成时间**: ${timestamp}\n\n`;
+            md += `**分析问题**: ${analysis.prompt}\n\n`;
+            md += `**文档数量**: ${analysis.documents.length}\n\n`;
+            md += `---\n\n`;
+
+            analysis.results.forEach((result, index) => {
+                md += `## ${index + 1}. ${result.document.displayName}\n\n`;
+
+                if (result.success) {
+                    md += `**状态**: ✅ 成功\n\n`;
+
+                    if (result.data.slideResults) {
+                        // PPT结果
+                        md += `### 综合总结\n\n${result.data.comprehensiveSummary}\n\n`;
+                        md += `### 幻灯片详情\n\n`;
+                        result.data.slideResults.forEach(slide => {
+                            md += `#### 第 ${slide.slideNumber} 张: ${slide.title}\n\n`;
+                            md += `${slide.keyPoints}\n\n`;
+                        });
+                    } else if (result.data.finalReport) {
+                        // 通用文档结果
+                        md += `${result.data.finalReport}\n\n`;
+                    }
+                } else {
+                    md += `**状态**: ❌ 失败\n\n`;
+                    md += `**错误**: ${result.error}\n\n`;
+                }
+
+                md += `---\n\n`;
+            });
+
+            return md;
+        };
+
+        // 生成HTML格式报告
+        const generateHTMLReport = (analysis, timestamp) => {
+            let html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档AI分析报告</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 40px auto; padding: 20px; }
+        h1 { color: #2196F3; border-bottom: 2px solid #2196F3; padding-bottom: 10px; }
+        h2 { color: #333; margin-top: 30px; }
+        h3 { color: #666; }
+        .meta { background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .result { border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .success { border-left: 4px solid #4CAF50; }
+        .failure { border-left: 4px solid #f44336; }
+        .status { font-weight: bold; margin-bottom: 10px; }
+        pre { background: #f9f9f9; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>📊 文档AI分析报告</h1>
+    <div class="meta">
+        <p><strong>生成时间:</strong> ${timestamp}</p>
+        <p><strong>分析问题:</strong> ${analysis.prompt}</p>
+        <p><strong>文档数量:</strong> ${analysis.documents.length}</p>
+    </div>`;
+
+            analysis.results.forEach((result, index) => {
+                const statusClass = result.success ? 'success' : 'failure';
+                html += `<div class="result ${statusClass}">`;
+                html += `<h2>${index + 1}. ${result.document.displayName}</h2>`;
+                html += `<div class="status">${result.success ? '✅ 成功' : '❌ 失败'}</div>`;
+
+                if (result.success) {
+                    if (result.data.slideResults) {
+                        html += `<h3>综合总结</h3>`;
+                        html += `<div>${marked.parse(result.data.comprehensiveSummary || '')}</div>`;
+                    } else if (result.data.finalReport) {
+                        html += `<div>${marked.parse(result.data.finalReport || '')}</div>`;
+                    }
+                } else {
+                    html += `<p style="color: #f44336;"><strong>错误:</strong> ${result.error}</p>`;
+                }
+
+                html += `</div>`;
+            });
+
+            html += `</body></html>`;
+            return html;
+        };
+
+        // 生成纯文本格式报告
+        const generateTextReport = (analysis, timestamp) => {
+            let text = `文档AI分析报告\n`;
+            text += `${'='.repeat(50)}\n\n`;
+            text += `生成时间: ${timestamp}\n`;
+            text += `分析问题: ${analysis.prompt}\n`;
+            text += `文档数量: ${analysis.documents.length}\n\n`;
+            text += `${'='.repeat(50)}\n\n`;
+
+            analysis.results.forEach((result, index) => {
+                text += `${index + 1}. ${result.document.displayName}\n`;
+                text += `${'-'.repeat(50)}\n`;
+                text += `状态: ${result.success ? '成功' : '失败'}\n\n`;
+
+                if (result.success) {
+                    if (result.data.comprehensiveSummary) {
+                        text += `${result.data.comprehensiveSummary}\n`;
+                    } else if (result.data.finalReport) {
+                        text += `${result.data.finalReport}\n`;
+                    }
+                } else {
+                    text += `错误: ${result.error}\n`;
+                }
+
+                text += `\n${'='.repeat(50)}\n\n`;
+            });
+
+            return text;
+        };
+
+        // 下载文件
+        const downloadFile = (content, filename, mimeType) => {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         };
 
         // 批量分析文档
@@ -320,14 +473,156 @@
             );
         };
 
+        // 渲染历史记录
+        const renderAnalysisHistory = () => {
+            if (!showHistory || analysisHistory.length === 0) return null;
+
+            return (
+                <div style={styles.historySection}>
+                    <div style={styles.historySectionHeader}>
+                        <h3>📜 {t('analysisHistory') || '分析历史'}</h3>
+                        <button
+                            onClick={() => setAnalysisHistory([])}
+                            style={styles.clearHistoryButton}
+                        >
+                            🗑️ {t('clearHistory') || '清空历史'}
+                        </button>
+                    </div>
+                    <div style={styles.historyList}>
+                        {analysisHistory.map((record, index) => (
+                            <div key={index} style={styles.historyItem}>
+                                <div style={styles.historyItemHeader}>
+                                    <span style={styles.historyTime}>
+                                        {new Date(record.timestamp).toLocaleString()}
+                                    </span>
+                                    <button
+                                        onClick={() => {
+                                            setCurrentAnalysis(record);
+                                            setShowHistory(false);
+                                        }}
+                                        style={styles.viewResultButton}
+                                    >
+                                        👁️ {t('viewResult') || '查看结果'}
+                                    </button>
+                                </div>
+                                <div style={styles.historyItemBody}>
+                                    <div style={styles.historyPrompt}>
+                                        <strong>问题：</strong>{record.prompt}
+                                    </div>
+                                    <div style={styles.historyDocs}>
+                                        <strong>文档：</strong>
+                                        {record.documents.map(d => d.displayName).join(', ')}
+                                    </div>
+                                    <div style={styles.historyStats}>
+                                        {record.results.filter(r => r.success).length}/{record.results.length} 成功
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // 渲染对比视图
+        const renderCompareView = () => {
+            if (!currentAnalysis || currentAnalysis.results.length < 2) return null;
+
+            const successResults = currentAnalysis.results.filter(r => r.success);
+            if (successResults.length < 2) {
+                return (
+                    <div style={styles.compareEmpty}>
+                        <p>需要至少2个成功的分析结果才能进行对比</p>
+                    </div>
+                );
+            }
+
+            return (
+                <div style={styles.compareView}>
+                    <div style={styles.compareHeader}>
+                        <h3>📊 文档对比分析</h3>
+                        <button
+                            onClick={() => setCompareMode(false)}
+                            style={styles.backButton}
+                        >
+                            ← 返回列表视图
+                        </button>
+                    </div>
+                    <div style={styles.compareGrid}>
+                        {successResults.map((result, index) => (
+                            <div key={index} style={styles.compareColumn}>
+                                <div style={styles.compareColumnHeader}>
+                                    {getFileIcon(result.document.displayName)}
+                                    <span style={styles.compareDocName}>
+                                        {result.document.displayName}
+                                    </span>
+                                </div>
+                                <div style={styles.compareColumnBody}>
+                                    {renderAnalysisData(result.data)}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         // 渲染分析结果
         const renderAnalysisResults = () => {
             if (!currentAnalysis) return null;
+
+            // 如果显示历史记录，则显示历史面板
+            if (showHistory) {
+                return renderAnalysisHistory();
+            }
+
+            // 如果是对比模式，显示对比视图
+            if (compareMode && currentAnalysis.results && currentAnalysis.results.length >= 2) {
+                return renderCompareView();
+            }
 
             return (
                 <div style={styles.resultsSection}>
                     <div style={styles.resultsHeader}>
                         <h3>{t('analysisResults') || '分析结果'}</h3>
+                        {currentAnalysis.status === 'completed' && currentAnalysis.results.length > 0 && (
+                            <div style={styles.exportButtons}>
+                                {currentAnalysis.results.filter(r => r.success).length >= 2 && (
+                                    <button
+                                        onClick={() => setCompareMode(!compareMode)}
+                                        style={{
+                                            ...styles.exportButton,
+                                            backgroundColor: compareMode ? '#2196F3' : '#fff',
+                                            color: compareMode ? '#fff' : '#333'
+                                        }}
+                                        title={t('compareView') || '对比视图'}
+                                    >
+                                        📊 {compareMode ? t('listView') || '列表视图' : t('compareView') || '对比视图'}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => exportResults('markdown')}
+                                    style={styles.exportButton}
+                                    title={t('exportMarkdown') || '导出为Markdown'}
+                                >
+                                    📝 Markdown
+                                </button>
+                                <button
+                                    onClick={() => exportResults('html')}
+                                    style={styles.exportButton}
+                                    title={t('exportHTML') || '导出为HTML'}
+                                >
+                                    🌐 HTML
+                                </button>
+                                <button
+                                    onClick={() => exportResults('txt')}
+                                    style={styles.exportButton}
+                                    title={t('exportText') || '导出为文本'}
+                                >
+                                    📄 TXT
+                                </button>
+                            </div>
+                        )}
                         {currentAnalysis.status === 'running' && (
                             <div style={styles.progressBar}>
                                 <div style={{ ...styles.progressFill, width: `${currentAnalysis.progress}%` }} />
@@ -691,7 +986,26 @@
             padding: '20px'
         },
         resultsHeader: {
-            marginBottom: '20px'
+            marginBottom: '20px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '10px'
+        },
+        exportButtons: {
+            display: 'flex',
+            gap: '8px'
+        },
+        exportButton: {
+            padding: '6px 12px',
+            backgroundColor: '#fff',
+            color: '#333',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px',
+            transition: 'all 0.2s'
         },
         progressBar: {
             width: '100%',
@@ -785,6 +1099,121 @@
         },
         markdown: {
             lineHeight: '1.6'
+        },
+        historySection: {
+            padding: '20px'
+        },
+        historySectionHeader: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px'
+        },
+        clearHistoryButton: {
+            padding: '8px 16px',
+            backgroundColor: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+        },
+        historyList: {
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px'
+        },
+        historyItem: {
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            padding: '15px',
+            backgroundColor: '#fafafa',
+            transition: 'all 0.2s'
+        },
+        historyItemHeader: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px'
+        },
+        historyTime: {
+            fontSize: '12px',
+            color: '#666'
+        },
+        viewResultButton: {
+            padding: '4px 12px',
+            backgroundColor: '#2196F3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '12px'
+        },
+        historyItemBody: {
+            fontSize: '14px'
+        },
+        historyPrompt: {
+            marginBottom: '8px',
+            color: '#333'
+        },
+        historyDocs: {
+            marginBottom: '8px',
+            color: '#666',
+            fontSize: '13px'
+        },
+        historyStats: {
+            color: '#4CAF50',
+            fontSize: '12px',
+            fontWeight: '500'
+        },
+        compareView: {
+            padding: '20px'
+        },
+        compareHeader: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px'
+        },
+        backButton: {
+            padding: '8px 16px',
+            backgroundColor: '#fff',
+            color: '#333',
+            border: '1px solid #ddd',
+            borderRadius: '4px',
+            cursor: 'pointer'
+        },
+        compareGrid: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+            gap: '20px'
+        },
+        compareColumn: {
+            border: '1px solid #e0e0e0',
+            borderRadius: '8px',
+            overflow: 'hidden'
+        },
+        compareColumnHeader: {
+            backgroundColor: '#f5f5f5',
+            padding: '15px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            borderBottom: '2px solid #2196F3'
+        },
+        compareDocName: {
+            fontSize: '14px'
+        },
+        compareColumnBody: {
+            padding: '15px',
+            maxHeight: '600px',
+            overflowY: 'auto'
+        },
+        compareEmpty: {
+            padding: '60px',
+            textAlign: 'center',
+            color: '#999'
         }
     };
 
