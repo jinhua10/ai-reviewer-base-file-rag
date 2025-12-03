@@ -6,7 +6,7 @@
  * @since 2025-11-28
  */
 
-function DocumentsTab() {
+function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSelectedDocs }) {
     const { useState, useEffect, useRef } = React;
     const { t, language } = window.LanguageModule.useTranslation();
 
@@ -32,15 +32,8 @@ function DocumentsTab() {
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState('desc');
 
-    // AI分析面板状态
-    const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+    // 上传文件缓存（用于AI分析）
     const [uploadedFilesCache, setUploadedFilesCache] = useState([]);
-    const [selectedDocs, setSelectedDocs] = useState(new Set());
-    const [splitPosition, setSplitPosition] = useState(() => {
-        const saved = localStorage.getItem('aiAnalysisSplitPosition');
-        return saved ? parseFloat(saved) : 50;
-    });
-    const [isDragging, setIsDragging] = useState(false);
 
     // 高级搜索状态
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -110,30 +103,6 @@ function DocumentsTab() {
         }
     }, [currentPage, pageSize, sortBy, sortOrder, showAdvancedSearch]);
 
-    // 处理分隔线拖拽
-    useEffect(() => {
-        if (!isDragging) return;
-
-        const handleMouseMove = (e) => {
-            const newPosition = (e.clientX / window.innerWidth) * 100;
-            if (newPosition > 20 && newPosition < 80) {
-                setSplitPosition(newPosition);
-                localStorage.setItem('aiAnalysisSplitPosition', newPosition.toString());
-            }
-        };
-
-        const handleMouseUp = () => {
-            setIsDragging(false);
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isDragging]);
 
     // ============================================================================
     // 核心功能函数
@@ -448,12 +417,12 @@ function DocumentsTab() {
 
     const hasActiveFilters = () => {
         return advancedFilters.search !== '' ||
-               advancedFilters.fileTypes.length > 0 ||
-               advancedFilters.minSize !== '' ||
-               advancedFilters.maxSize !== '' ||
-               advancedFilters.indexed !== 'all' ||
-               advancedFilters.startDate !== '' ||
-               advancedFilters.endDate !== '';
+            advancedFilters.fileTypes.length > 0 ||
+            advancedFilters.minSize !== '' ||
+            advancedFilters.maxSize !== '' ||
+            advancedFilters.indexed !== 'all' ||
+            advancedFilters.startDate !== '' ||
+            advancedFilters.endDate !== '';
     };
 
     const getActiveFilterCount = () => {
@@ -498,227 +467,220 @@ function DocumentsTab() {
     // 主渲染
     // ============================================================================
     return (
-        <div style={{ position: 'relative', height: '100%' }}>
-            {/* 主文档管理区域 */}
-            <div style={{
-                width: showAIAnalysis ? `${splitPosition}%` : '100%',
-                height: '100%',
-                overflow: 'auto',
-                transition: showAIAnalysis ? 'none' : 'width 0.3s'
-            }}>
-                {/* 上传区域 */}
-                <UploadArea
-                    uploading={uploading}
-                    uploadProgress={uploadProgress}
-                    handleFileSelect={handleFileSelect}
+        <div>
+            {/* 上传区域 */}
+            <UploadArea
+                uploading={uploading}
+                uploadProgress={uploadProgress}
+                handleFileSelect={handleFileSelect}
+                t={t}
+            />
+
+            {/* 文档列表区域 */}
+            <div>
+                {/* 列表头部 */}
+                <DocumentListHeader
+                    loading={loading}
+                    totalCount={totalCount}
+                    documentsLength={documents.length}
+                    loadDocuments={loadDocuments}
                     t={t}
                 />
 
-                {/* 文档列表区域 */}
-                <div>
-                    {/* 列表头部 */}
-                    <DocumentListHeader
-                        loading={loading}
-                        totalCount={totalCount}
-                        documentsLength={documents.length}
-                        loadDocuments={loadDocuments}
-                        t={t}
-                    />
+                {/* 搜索和筛选区域 */}
+                {!loading && (
+                    <div className="documents-search-container">
+                        <SearchFilters
+                            showAdvancedSearch={showAdvancedSearch}
+                            setShowAdvancedSearch={setShowAdvancedSearch}
+                            filterText={filterText}
+                            handleSearchChange={handleSearchChange}
+                            handleSearchKeyPress={handleSearchKeyPress}
+                            handleSearchSubmit={handleSearchSubmit}
+                            advancedFilters={advancedFilters}
+                            updateFilter={updateFilter}
+                            toggleFileType={toggleFileType}
+                            supportedFileTypes={supportedFileTypes}
+                            applyFilters={applyFilters}
+                            resetFilters={resetFilters}
+                            hasActiveFilters={hasActiveFilters}
+                            getActiveFilterCount={getActiveFilterCount}
+                            language={language}
+                            t={t}
+                        />
 
-                    {/* 搜索和筛选区域 */}
-                    {!loading && (
-                        <div className="documents-search-container">
-                            <SearchFilters
-                                showAdvancedSearch={showAdvancedSearch}
-                                setShowAdvancedSearch={setShowAdvancedSearch}
-                                filterText={filterText}
-                                handleSearchChange={handleSearchChange}
-                                handleSearchKeyPress={handleSearchKeyPress}
-                                handleSearchSubmit={handleSearchSubmit}
-                                advancedFilters={advancedFilters}
-                                updateFilter={updateFilter}
-                                toggleFileType={toggleFileType}
-                                supportedFileTypes={supportedFileTypes}
-                                applyFilters={applyFilters}
-                                resetFilters={resetFilters}
-                                hasActiveFilters={hasActiveFilters}
-                                getActiveFilterCount={getActiveFilterCount}
-                                language={language}
-                                t={t}
-                            />
+                        {/* 排序和分页控制栏 - 只在有文档时显示 */}
+                        {totalCount > 0 && (
+                            <div className="documents-controls-bar">
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => setShowAIAnalysis(!showAIAnalysis)}
+                                    style={{
+                                        marginRight: '15px',
+                                        backgroundColor: showAIAnalysis ? '#f44336' : '#9C27B0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                    title={showAIAnalysis ? '关闭AI分析' : '打开AI分析'}
+                                >
+                                    <span style={{ fontSize: '16px' }}>
+                                        {showAIAnalysis ? '✕' : '🤖'}
+                                    </span>
+                                    <span>
+                                        {showAIAnalysis ? (t('close') || '关闭') : (t('aiAnalysis') || 'AI分析')}
+                                    </span>
+                                    {!showAIAnalysis && selectedDocs.size > 0 && (
+                                        <span style={{
+                                            backgroundColor: '#fff',
+                                            color: '#9C27B0',
+                                            padding: '2px 6px',
+                                            borderRadius: '10px',
+                                            fontSize: '11px',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {selectedDocs.size}
+                                        </span>
+                                    )}
+                                </button>
 
-                            {/* 排序和分页控制栏 - 只在有文档时显示 */}
-                            {totalCount > 0 && (
-                                <div className="documents-controls-bar">
-                                    <button
-                                        className="btn btn-primary"
-                                        onClick={() => setShowAIAnalysis(!showAIAnalysis)}
-                                        style={{
-                                            marginRight: '15px',
-                                            backgroundColor: showAIAnalysis ? '#f44336' : '#9C27B0',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '6px'
-                                        }}
-                                        title={showAIAnalysis ? '关闭AI分析' : '打开AI分析'}
+                                {/* 排序方式 */}
+                                <div className="documents-control-group">
+                                    <label className="documents-control-label">{t('docsSortBy')}:</label>
+                                    <select
+                                        className="input-field documents-control-select"
+                                        value={sortBy}
+                                        onChange={(e) => handleSortChange(e.target.value, null)}
                                     >
-                                        <span style={{ fontSize: '16px' }}>
-                                            {showAIAnalysis ? '✕' : '🤖'}
-                                        </span>
-                                        <span>
-                                            {showAIAnalysis ? (t('close') || '关闭') : (t('aiAnalysis') || 'AI分析')}
-                                        </span>
-                                        {!showAIAnalysis && selectedDocs.size > 0 && (
-                                            <span style={{
-                                                backgroundColor: '#fff',
-                                                color: '#9C27B0',
-                                                padding: '2px 6px',
-                                                borderRadius: '10px',
-                                                fontSize: '11px',
-                                                fontWeight: 'bold'
-                                            }}>
-                                                {selectedDocs.size}
-                                            </span>
-                                        )}
-                                    </button>
-
-                                    {/* 排序方式 */}
-                                    <div className="documents-control-group">
-                                        <label className="documents-control-label">{t('docsSortBy')}:</label>
-                                        <select
-                                            className="input-field documents-control-select"
-                                            value={sortBy}
-                                            onChange={(e) => handleSortChange(e.target.value, null)}
-                                        >
-                                            <option value="date">{t('docsSortByDate')}</option>
-                                            <option value="name">{t('docsSortByName')}</option>
-                                            <option value="size">{t('docsSortBySize')}</option>
-                                            <option value="type">{t('docsSortByType')}</option>
-                                        </select>
-                                        <select
-                                            className="input-field documents-control-select"
-                                            value={sortOrder}
-                                            onChange={(e) => handleSortChange(null, e.target.value)}
-                                        >
-                                            <option value="desc">{t('docsSortDesc')}</option>
-                                            <option value="asc">{t('docsSortAsc')}</option>
-                                        </select>
-                                    </div>
-
-                                    {/* 每页显示数量 */}
-                                    <div className="documents-control-group">
-                                        <label className="documents-control-label">{t('docsPageSize')}:</label>
-                                        <select
-                                            className="input-field documents-control-select"
-                                            value={pageSize}
-                                            onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                                        >
-                                            <option value={10}>10 {t('docsPageSizeItems')}</option>
-                                            <option value={20}>20 {t('docsPageSizeItems')}</option>
-                                            <option value={50}>50 {t('docsPageSizeItems')}</option>
-                                            <option value={100}>100 {t('docsPageSizeItems')}</option>
-                                            <option value={-1}>{t('docsShowAll')}</option>
-                                        </select>
-                                    </div>
-
-                                    {/* 统计信息 */}
-                                    <div className="documents-stats">
-                                        {(localFilterText || filterText || (showAdvancedSearch && (
-                                            localAdvancedFilters.search ||
-                                            localAdvancedFilters.fileTypes.length > 0 ||
-                                            localAdvancedFilters.minSize ||
-                                            localAdvancedFilters.maxSize ||
-                                            localAdvancedFilters.indexed !== 'all' ||
-                                            localAdvancedFilters.startDate ||
-                                            localAdvancedFilters.endDate
-                                        ))) ? (
-                                            <>
-                                                {t('docsFilterResult')} {
-                                                    (showAdvancedSearch ?
-                                                        getAdvancedFilteredDocuments() :
-                                                        getFilteredDocuments()
-                                                    ).length
-                                                } / {allDocuments.length > 0 ? allDocuments.length : totalCount} {t('logDocsCount')}
-                                                <button
-                                                    className="documents-stats-clear-btn"
-                                                    onClick={() => {
-                                                        if (showAdvancedSearch) {
-                                                            resetFilters();
-                                                        } else {
-                                                            handleSearchChange('');
-                                                            setLocalFilterText('');
-                                                        }
-                                                    }}
-                                                >
-                                                    {t('docsFilterClear')}
-                                                </button>
-                                            </>
-                                        ) : (
-                                            `${t('docsPaginationTotal')} ${totalCount} ${t('logDocsCount')}`
-                                        )}
-                                    </div>
+                                        <option value="date">{t('docsSortByDate')}</option>
+                                        <option value="name">{t('docsSortByName')}</option>
+                                        <option value="size">{t('docsSortBySize')}</option>
+                                        <option value="type">{t('docsSortByType')}</option>
+                                    </select>
+                                    <select
+                                        className="input-field documents-control-select"
+                                        value={sortOrder}
+                                        onChange={(e) => handleSortChange(null, e.target.value)}
+                                    >
+                                        <option value="desc">{t('docsSortDesc')}</option>
+                                        <option value="asc">{t('docsSortAsc')}</option>
+                                    </select>
                                 </div>
-                            )}
-                        </div>
-                    )}
 
-                    {/* 加载状态 */}
-                    {loading && (
-                        <div className="loading">
-                            <div className="spinner"></div>
-                            <p>{t('docsLoadingList')}</p>
-                        </div>
-                    )}
+                                {/* 每页显示数量 */}
+                                <div className="documents-control-group">
+                                    <label className="documents-control-label">{t('docsPageSize')}:</label>
+                                    <select
+                                        className="input-field documents-control-select"
+                                        value={pageSize}
+                                        onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                                    >
+                                        <option value={10}>10 {t('docsPageSizeItems')}</option>
+                                        <option value={20}>20 {t('docsPageSizeItems')}</option>
+                                        <option value={50}>50 {t('docsPageSizeItems')}</option>
+                                        <option value={100}>100 {t('docsPageSizeItems')}</option>
+                                        <option value={-1}>{t('docsShowAll')}</option>
+                                    </select>
+                                </div>
 
-                    {/* 错误状态 */}
-                    {error && !loading && (
-                        <div className="error">
-                            {t('qaErrorPrefix')} {error}
-                            <button className="btn btn-secondary" onClick={loadDocuments}>
-                                {t('docsRetry')}
-                            </button>
-                        </div>
-                    )}
+                                {/* 统计信息 */}
+                                <div className="documents-stats">
+                                    {(localFilterText || filterText || (showAdvancedSearch && (
+                                        localAdvancedFilters.search ||
+                                        localAdvancedFilters.fileTypes.length > 0 ||
+                                        localAdvancedFilters.minSize ||
+                                        localAdvancedFilters.maxSize ||
+                                        localAdvancedFilters.indexed !== 'all' ||
+                                        localAdvancedFilters.startDate ||
+                                        localAdvancedFilters.endDate
+                                    ))) ? (
+                                        <>
+                                            {t('docsFilterResult')} {
+                                                (showAdvancedSearch ?
+                                                    getAdvancedFilteredDocuments() :
+                                                    getFilteredDocuments()
+                                                ).length
+                                            } / {allDocuments.length > 0 ? allDocuments.length : totalCount} {t('logDocsCount')}
+                                            <button
+                                                className="documents-stats-clear-btn"
+                                                onClick={() => {
+                                                    if (showAdvancedSearch) {
+                                                        resetFilters();
+                                                    } else {
+                                                        handleSearchChange('');
+                                                        setLocalFilterText('');
+                                                    }
+                                                }}
+                                            >
+                                                {t('docsFilterClear')}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        `${t('docsPaginationTotal')} ${totalCount} ${t('logDocsCount')}`
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
 
-                    {/* 空状态 */}
-                    {!error && !loading && documents.length === 0 && (
-                        <div className="empty-state">
-                            <div className="empty-state-icon">📁</div>
-                            <p>{t('docsListEmpty')}</p>
-                            <p style={{ fontSize: '14px', marginTop: '10px', color: '#ccc' }}>
-                                {t('docsEmptyHint')}
-                            </p>
-                        </div>
-                    )}
+                {/* 加载状态 */}
+                {loading && (
+                    <div className="loading">
+                        <div className="spinner"></div>
+                        <p>{t('docsLoadingList')}</p>
+                    </div>
+                )}
 
-                    {/* 文档列表 */}
-                    {!error && !loading && documents.length > 0 && (
-                        <>
-                            <DocumentList
-                                documents={showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()}
-                                formatFileSize={formatFileSize}
-                                handleDelete={handleDelete}
+                {/* 错误状态 */}
+                {error && !loading && (
+                    <div className="error">
+                        {t('qaErrorPrefix')} {error}
+                        <button className="btn btn-secondary" onClick={loadDocuments}>
+                            {t('docsRetry')}
+                        </button>
+                    </div>
+                )}
+
+                {/* 空状态 */}
+                {!error && !loading && documents.length === 0 && (
+                    <div className="empty-state">
+                        <div className="empty-state-icon">📁</div>
+                        <p>{t('docsListEmpty')}</p>
+                        <p style={{ fontSize: '14px', marginTop: '10px', color: '#ccc' }}>
+                            {t('docsEmptyHint')}
+                        </p>
+                    </div>
+                )}
+
+                {/* 文档列表 */}
+                {!error && !loading && documents.length > 0 && (
+                    <>
+                        <DocumentList
+                            documents={showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()}
+                            formatFileSize={formatFileSize}
+                            handleDelete={handleDelete}
+                            t={t}
+                            showAIAnalysis={showAIAnalysis}
+                            selectedDocs={selectedDocs}
+                            onToggleDoc={toggleDocSelection}
+                        />
+
+                        {/* 分页控制 */}
+                        {pageSize !== -1 && totalPages > 1 && (
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                goToPage={goToPage}
                                 t={t}
-                                showAIAnalysis={showAIAnalysis}
-                                selectedDocs={selectedDocs}
-                                onToggleDoc={toggleDocSelection}
                             />
+                        )}
+                    </>
+                )}
 
-                            {/* 分页控制 */}
-                            {pageSize !== -1 && totalPages > 1 && (
-                                <Pagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    goToPage={goToPage}
-                                    t={t}
-                                />
-                            )}
-                        </>
-                    )}
-
-                    {/* 实时过滤后的空状态 */}
-                    {!error && !loading && documents.length > 0 &&
-                     (showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()).length === 0 && (
+                {/* 实时过滤后的空状态 */}
+                {!error && !loading && documents.length > 0 &&
+                    (showAdvancedSearch ? getAdvancedFilteredDocuments() : getFilteredDocuments()).length === 0 && (
                         <div className="empty-state">
                             <div className="empty-state-icon">🔍</div>
                             <p>{t('docsNoMatchFound')}</p>
@@ -728,102 +690,13 @@ function DocumentsTab() {
                         </div>
                     )}
 
-                    {/* 提示信息 */}
-                    {!error && !loading && totalCount > 0 && !showAIAnalysis && (
-                        <div className="documents-tip">
-                            {t('docsUploadTip')}
-                        </div>
-                    )}
-                </div>
+                {/* 提示信息 */}
+                {!error && !loading && totalCount > 0 && !showAIAnalysis && (
+                    <div className="documents-tip">
+                        {t('docsUploadTip')}
+                    </div>
+                )}
             </div>
-
-            {/* 拖拽分隔线 */}
-            {showAIAnalysis && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        left: `${splitPosition}%`,
-                        top: 0,
-                        bottom: 0,
-                        width: '6px',
-                        backgroundColor: isDragging ? '#2196F3' : '#e0e0e0',
-                        cursor: 'ew-resize',
-                        zIndex: 1000,
-                        transition: isDragging ? 'none' : 'background-color 0.2s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                    onMouseDown={() => setIsDragging(true)}
-                >
-                    <div style={{
-                        width: '20px',
-                        height: '60px',
-                        backgroundColor: isDragging ? '#2196F3' : '#999',
-                        borderRadius: '4px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: '16px',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                    }}>
-                        ⋮
-                    </div>
-                </div>
-            )}
-
-            {/* AI分析右侧面板 */}
-            {showAIAnalysis && (
-                <div style={{
-                    position: 'fixed',
-                    left: `calc(${splitPosition}% + 6px)`,
-                    top: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    overflowY: 'auto',
-                    boxShadow: '-2px 0 12px rgba(0,0,0,0.3)',
-                    zIndex: 999,
-                    padding: '20px'
-                }}>
-                    <div style={{
-                        marginBottom: '20px',
-                        paddingBottom: '15px',
-                        borderBottom: '2px solid rgba(255,255,255,0.3)'
-                    }}>
-                        <h2 style={{
-                            margin: 0,
-                            color: '#ffffff',
-                            fontSize: '24px',
-                            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                        }}>
-                            🤖 {t('aiAnalysis') || 'AI分析'}
-                        </h2>
-                        <p style={{
-                            margin: '8px 0 0 0',
-                            color: 'rgba(255,255,255,0.9)',
-                            fontSize: '14px'
-                        }}>
-                            {selectedDocs.size > 0
-                                ? `已选择 ${selectedDocs.size} 个文档`
-                                : '请在左侧勾选要分析的文档'}
-                        </p>
-                    </div>
-
-                    {window.EmbeddedAIAnalysisPanel && React.createElement(window.EmbeddedAIAnalysisPanel, {
-                        selectedDocuments: documents
-                            .filter(d => selectedDocs.has(d.fileName))
-                            .map(d => ({
-                                title: d.fileName,
-                                name: d.fileName,
-                                path: d.fileName,
-                                size: d.fileSize
-                            })),
-                        onClose: () => setShowAIAnalysis(false)
-                    })}
-                </div>
-            )}
         </div>
     );
 }
