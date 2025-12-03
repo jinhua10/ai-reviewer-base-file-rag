@@ -228,7 +228,27 @@ vision_llm:
     parse_openai_failed: "无法解析 OpenAI API 响应: {0}"
     parse_ollama_failed: "无法解析 Ollama API 响应: {0}"
   prompt:
-    extract_text: "请识别并提取这张图片中的所有文字内容。如果图片包含表格、图表或其他结构化数据，请详细描述。直接返回识别的内容，不需要额外的解释。"
+    extract_text: |
+      请全面分析这张图片，按以下结构输出：
+      
+      1. **图片概述**：用1-2句话概括图片的主要内容和用途
+      
+      2. **文字内容**：完整提取图片中的所有文字（包括标题、正文、标注等）
+      
+      3. **视觉元素**：
+         - 如果是图表/图形：说明图表类型、数据趋势、关键发现
+         - 如果是流程图/架构图：描述流程步骤或系统组成
+         - 如果是表格：保持表格结构，提取所有数据
+         - 如果是截图/界面：说明界面用途和主要功能
+         - 如果是照片/插图：描述画面内容和相关信息
+      
+      4. **关键信息**：提炼出最重要的信息点（如数据、结论、要点等）
+      
+      要求：
+      - 保持原始信息的准确性和完整性
+      - 对于专业术语、数字、公式等要精确识别
+      - 按逻辑顺序组织内容
+      - 不要添加主观评价或推测
 kb_service:
   image:
     description: "图片描述：{0}"
@@ -446,6 +466,11 @@ log:
     ocr_unavailable: "   ⚠️ OCR 策略不可用：缺少 tess4j 依赖"
     placeholder: "   使用占位符策略（默认）"
     strategy: "   已配置策略：{0}"
+    strategy_selected: "✅ 选择图片处理策略: {0}"
+    strategy_none: "⚠️  没有可用的图片处理策略，使用占位符"
+    extract_failed: "图片内容提取失败: {0}"
+    extract_error: "[图片: {0} - 提取失败]"
+    image_placeholder: "[图片: {0}]"
     tessdata: "      - Tessdata 路径：{0}"
     vision_apikey_hint: "   💡 提示：设置环境变量 VISION_LLM_API_KEY 或配置 knowledge.qa.image-processing.vision-llm.api-key"
     vision_available: "   ✅ Vision LLM 策略可用"

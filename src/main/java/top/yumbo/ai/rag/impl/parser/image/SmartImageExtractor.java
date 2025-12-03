@@ -1,6 +1,8 @@
 package top.yumbo.ai.rag.impl.parser.image;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.File;
 import java.io.InputStream;
@@ -39,6 +41,11 @@ import java.util.List;
 public class SmartImageExtractor {
 
     private final List<ImageContentExtractorStrategy> strategies;
+    /**
+     * -- GETTER --
+     *  获取当前激活的策略
+     */
+    @Getter
     private ImageContentExtractorStrategy activeStrategy;
 
     /**
@@ -68,14 +75,14 @@ public class SmartImageExtractor {
         for (ImageContentExtractorStrategy strategy : strategies) {
             if (strategy.isAvailable()) {
                 activeStrategy = strategy;
-                log.info("✅ 选择图片处理策略: {}", strategy.getStrategyName());
+                log.info(LogMessageProvider.getMessage("log.imageproc.strategy_selected", strategy.getStrategyName()));
                 return;
             }
         }
 
         // 兜底：使用占位符
         activeStrategy = new PlaceholderImageStrategy();
-        log.warn("⚠️  没有可用的图片处理策略，使用占位符");
+        log.warn(LogMessageProvider.getMessage("log.imageproc.strategy_none"));
     }
 
     /**
@@ -83,14 +90,14 @@ public class SmartImageExtractor {
      */
     public String extractContent(InputStream imageStream, String imageName) {
         if (activeStrategy == null) {
-            return String.format("[图片: %s]", imageName);
+            return LogMessageProvider.getMessage("log.imageproc.image_placeholder", imageName);
         }
 
         try {
             return activeStrategy.extractContent(imageStream, imageName);
         } catch (Exception e) {
-            log.error("图片内容提取失败: {}", imageName, e);
-            return String.format("[图片: %s - 提取失败]", imageName);
+            log.error(LogMessageProvider.getMessage("log.imageproc.extract_failed", imageName), e);
+            return LogMessageProvider.getMessage("log.imageproc.extract_error", imageName);
         }
     }
 
@@ -99,22 +106,15 @@ public class SmartImageExtractor {
      */
     public String extractContent(File imageFile) {
         if (activeStrategy == null) {
-            return String.format("[图片: %s]", imageFile.getName());
+            return LogMessageProvider.getMessage("log.imageproc.image_placeholder", imageFile.getName());
         }
 
         try {
             return activeStrategy.extractContent(imageFile);
         } catch (Exception e) {
-            log.error("图片内容提取失败: {}", imageFile.getName(), e);
-            return String.format("[图片: %s - 提取失败]", imageFile.getName());
+            log.error(LogMessageProvider.getMessage("log.imageproc.extract_failed", imageFile.getName()), e);
+            return LogMessageProvider.getMessage("log.imageproc.extract_error", imageFile.getName());
         }
-    }
-
-    /**
-     * 获取当前激活的策略
-     */
-    public ImageContentExtractorStrategy getActiveStrategy() {
-        return activeStrategy;
     }
 
     /**

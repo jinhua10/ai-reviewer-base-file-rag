@@ -328,6 +328,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         ObjectNode textContent = content.addObject();
         textContent.put("type", "text");
         textContent.put("text", LogMessageProvider.getMessage("vision_llm.prompt.extract_text"));
+        log.debug("Prompt Text: {}", LogMessageProvider.getMessage("vision_llm.prompt.extract_text"));
 
         // 添加图片
         ObjectNode imageContent = content.addObject();

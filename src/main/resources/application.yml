@@ -157,17 +157,20 @@ knowledge:
       # API Key（从环境变量读取）
       # DeepSeek: export AI_API_KEY=your-deepseek-key
       # OpenAI: export OPENAI_API_KEY=your-openai-key
-      api-key: ${AI_API_KEY:}
+      # Qianwen: export QW_API_KEY=your-qianwen-key
+      api-key: ${QW_API_KEY:${AI_API_KEY:}}
 
       # API 端点
-      # DeepSeek: https://api.deepseek.com/v1/chat/completions（默认配置）
+      # DeepSeek: https://api.deepseek.com/v1/chat/completions
       # OpenAI: https://api.openai.com/v1/chat/completions
+      # Qianwen VL: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions（默认配置）
       # 其他兼容服务: 配置相应的 API 端点
       api-url: https://api.deepseek.com/v1/chat/completions
 
       # 模型名称
-      # DeepSeek: deepseek-chat（默认配置）
+      # DeepSeek: deepseek-chat（不支持图片）
       # OpenAI: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-4, gpt-3.5-turbo
+      # Qianwen VL: qwen-vl-plus, qwen-vl-max（支持图片，默认配置）
       model: deepseek-chat
 
       # 最大上下文长度（字符数）
@@ -333,14 +336,19 @@ knowledge:
       # 图片处理策略:
       #   - placeholder: 占位符（默认，零依赖）
       #   - ocr: OCR 文字识别（需要 Tesseract）
-      #   - vision-llm: Vision LLM 语义理解（需要 API Key，优先使用主 LLM 客户端）
-      #   - llm-vision: 强制使用主 LLM 客户端的图片识别功能（推荐）
+      #   - vision-llm: Vision LLM 语义理解（使用独立配置的 vision-llm）
+      #   - llm-vision: 使用主 LLM 客户端的图片识别功能（仅当主 LLM 支持图片时有效）
       #   - hybrid: 混合模式（LLM Vision + OCR，推荐）
       #
+      # 💡 重要说明：
+      #   - llm-vision 策略要求主 LLM 模型支持图片（如 gpt-4o、qwen-vl-plus）
+      #   - 如果主 LLM 是 deepseek-chat 等不支持图片的模型，请使用 vision-llm 策略
+      #   - vision-llm 策略使用独立配置，不依赖主 LLM
+      #
       # 推荐配置：
-      #   - 如果主 LLM 支持图片（如 gpt-4o、qwen-vl-plus），建议使用 llm-vision 或 hybrid
-      #   - 这样可以复用主 LLM 的配置，避免重复配置 API Key
-      strategy: llm-vision
+      #   - 主 LLM 支持图片（qwen-vl-plus、gpt-4o）→ 使用 llm-vision
+      #   - 主 LLM 不支持图片（deepseek-chat）→ 使用 vision-llm
+      strategy: vision-llm
 
       # 是否启用 OCR
       # 设置为 true 启用 OCR 图片文字识别功能

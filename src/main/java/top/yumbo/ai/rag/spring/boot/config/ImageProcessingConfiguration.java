@@ -63,7 +63,13 @@ public class ImageProcessingConfiguration {
 
             case "llm-vision":
                 // 强制使用 LLMClient
-                addLLMClientVisionStrategy(extractor);
+                if (llmClient != null && llmClient.supportsImageInput()) {
+                    addLLMClientVisionStrategy(extractor);
+                } else {
+                    // 如果主 LLM 不支持图片，退回到 vision-llm 配置
+                    log.warn("⚠️  主 LLM 不支持图片输入，退回到 vision-llm 配置");
+                    addVisionLlmStrategy(extractor, config);
+                }
                 break;
 
             case "hybrid":
@@ -98,6 +104,9 @@ public class ImageProcessingConfiguration {
             log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_client"));
             return;
         }
+
+        log.debug("检查 LLM 客户端是否支持图片：模型={}, 支持图片={}",
+                  llmClient.getModelName(), llmClient.supportsImageInput());
 
         if (!llmClient.supportsImageInput()) {
             log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_image_support", llmClient.getModelName()));
