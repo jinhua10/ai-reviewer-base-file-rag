@@ -58,6 +58,10 @@ public class KnowledgeBaseService {
         // 获取批量大小配置
         int visionBatchSize = properties.getImageProcessing().getVisionLlm().getBatch().getSize();
 
+        // 从 imageExtractionService 获取 ImageStorageService
+        top.yumbo.ai.rag.image.ImageStorageService imageStorageService =
+            imageExtractionService != null ? imageExtractionService.getStorageService() : null;
+
         // 使用注入的 SmartImageExtractor 创建 TikaDocumentParser（Use injected SmartImageExtractor to create TikaDocumentParser）
         this.documentParser = new TikaDocumentParser(
             10 * 1024 * 1024,  // 10MB max content
@@ -65,7 +69,8 @@ public class KnowledgeBaseService {
             true,              // include image placeholders
             visionBatchSize,   // vision batch size from config
             imageExtractor,    // use configured image extractor
-            slideContentCacheService // slide cache service
+            slideContentCacheService, // slide cache service
+            imageStorageService // image storage service
         );
         this.documentChunker = optimizer.createChunker();
     }

@@ -31,20 +31,28 @@ public class OfficeImageExtractor {
     private final SmartImageExtractor imageExtractor;
     private final int batchSize; // 批量处理的幻灯片数量
     private top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService; // 幻灯片缓存服务（可选）
+    private top.yumbo.ai.rag.image.ImageStorageService imageStorageService; // 图片存储服务（可选）
 
     public OfficeImageExtractor(SmartImageExtractor imageExtractor) {
         this(imageExtractor, 1); // 默认每次处理1张幻灯片
     }
 
     public OfficeImageExtractor(SmartImageExtractor imageExtractor, int batchSize) {
-        this(imageExtractor, batchSize, null);
+        this(imageExtractor, batchSize, null, null);
     }
 
     public OfficeImageExtractor(SmartImageExtractor imageExtractor, int batchSize,
                                top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService) {
+        this(imageExtractor, batchSize, cacheService, null);
+    }
+
+    public OfficeImageExtractor(SmartImageExtractor imageExtractor, int batchSize,
+                               top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService,
+                               top.yumbo.ai.rag.image.ImageStorageService imageStorageService) {
         this.imageExtractor = imageExtractor;
         this.batchSize = Math.max(1, batchSize); // 至少为1
         this.cacheService = cacheService;
+        this.imageStorageService = imageStorageService;
     }
 
     /**
@@ -69,7 +77,7 @@ public class OfficeImageExtractor {
                 content.append(extractWithBatchMode(allSlides, file));
             } else {
                 // 使用单张幻灯片模式
-                content.append(extractWithSingleMode(allSlides));
+                content.append(extractWithSingleMode(allSlides, file));
             }
 
             log.info(LogMessageProvider.getMessage("log.office.pptx_complete", file.getName()));
@@ -151,6 +159,17 @@ public class OfficeImageExtractor {
 
                         String imageName = String.format("slide%d_image%d.%s",
                             slideNumber, ++imageIndex, getPPTExtension(pictureData.getType()));
+
+                        // 保存图片到 ImageStorageService（如果可用）
+                        if (imageStorageService != null) {
+                            try {
+                                String docId = pptFile.getName(); // 使用 PPT 文件名作为文档 ID
+                                imageStorageService.saveImage(docId, imageData, imageName);
+                                log.debug("💾 保存图片: {} -> {}/{}", imageName, docId, imageName);
+                            } catch (Exception e) {
+                                log.warn("保存图片失败: {} - {}", imageName, e.getMessage());
+                            }
+                        }
 
                         Rectangle2D anchor = picture.getAnchor();
                         ImagePositionInfo imgPos = new ImagePositionInfo(
@@ -261,7 +280,7 @@ public class OfficeImageExtractor {
     /**
      * 单张幻灯片模式：逐个处理每张幻灯片的每张图片
      */
-    private String extractWithSingleMode(List<XSLFSlide> allSlides) {
+    private String extractWithSingleMode(List<XSLFSlide> allSlides, File pptFile) {
         StringBuilder content = new StringBuilder();
 
         int slideNumber = 0;
@@ -297,6 +316,17 @@ public class OfficeImageExtractor {
 
                     log.info(LogMessageProvider.getMessage("log.office.extract_image",
                         imageName, imageData.length / 1024));
+
+                    // 保存图片到 ImageStorageService（如果可用）
+                    if (imageStorageService != null) {
+                        try {
+                            String docId = pptFile.getName(); // 使用 PPT 文件名作为文档 ID
+                            imageStorageService.saveImage(docId, imageData, imageName);
+                            log.debug("💾 保存图片: {} -> {}/{}", imageName, docId, imageName);
+                        } catch (Exception e) {
+                            log.warn("保存图片失败: {} - {}", imageName, e.getMessage());
+                        }
+                    }
 
                     // 使用OCR提取图片文字
                     String extractedText = imageExtractor.extractContent(

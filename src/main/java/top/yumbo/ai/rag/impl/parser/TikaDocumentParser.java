@@ -39,6 +39,7 @@ public class TikaDocumentParser implements DocumentParser {
     private final int visionBatchSize;              // Vision LLM 批量处理大小
     private final top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor; // 智能图片提取器
     private final top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService; // 幻灯片缓存服务（可选）
+    private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService; // 图片存储服务（可选）
 
     // 默认配置
     private static final int DEFAULT_MAX_CONTENT_LENGTH = 10 * 1024 * 1024; // 10MB
@@ -92,12 +93,14 @@ public class TikaDocumentParser implements DocumentParser {
      * @param visionBatchSize Vision LLM 批量处理大小（Vision LLM batch size）
      * @param imageExtractor 智能图片提取器（Smart image extractor）
      * @param cacheService 幻灯片缓存服务（Slide content cache service）
+     * @param imageStorageService 图片存储服务（Image storage service）
      */
     public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata,
                              boolean includeImagePlaceholders,
                              int visionBatchSize,
                              top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor,
-                             top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService) {
+                             top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService,
+                             top.yumbo.ai.rag.image.ImageStorageService imageStorageService) {
         this.tika = new Tika();
         this.parser = new AutoDetectParser();
         this.maxContentLength = maxContentLength;
@@ -106,6 +109,7 @@ public class TikaDocumentParser implements DocumentParser {
         this.visionBatchSize = Math.max(1, visionBatchSize);
         this.imageExtractor = imageExtractor;
         this.cacheService = cacheService;
+        this.imageStorageService = imageStorageService;
 
         // 显示解析器配置信息（Display parser configuration）
         log.info(LogMessageProvider.getMessage("log.tika.init"));
@@ -117,6 +121,9 @@ public class TikaDocumentParser implements DocumentParser {
         if (cacheService != null) {
             log.info("✅ 幻灯片缓存已启用");
         }
+        if (imageStorageService != null) {
+            log.info("✅ 图片存储服务已启用");
+        }
     }
 
     /**
@@ -126,9 +133,10 @@ public class TikaDocumentParser implements DocumentParser {
     public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata,
                              boolean includeImagePlaceholders,
                              int visionBatchSize,
-                             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
+                             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor,
+                             top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService) {
         this(maxContentLength, extractImageMetadata, includeImagePlaceholders,
-             visionBatchSize, imageExtractor, null);
+             visionBatchSize, imageExtractor, cacheService, null);
     }
 
     /**
@@ -145,7 +153,7 @@ public class TikaDocumentParser implements DocumentParser {
                              boolean includeImagePlaceholders,
                              top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
         this(maxContentLength, extractImageMetadata, includeImagePlaceholders,
-             DEFAULT_VISION_BATCH_SIZE, imageExtractor);
+             DEFAULT_VISION_BATCH_SIZE, imageExtractor, null, null);
     }
 
     /**
@@ -160,7 +168,8 @@ public class TikaDocumentParser implements DocumentParser {
     public TikaDocumentParser(int maxContentLength, boolean extractImageMetadata, boolean includeImagePlaceholders) {
         this(maxContentLength, extractImageMetadata, includeImagePlaceholders,
              DEFAULT_VISION_BATCH_SIZE,
-             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor.fromEnv());
+             top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor.fromEnv(),
+             null, null);
     }
 
     @Override
@@ -178,7 +187,8 @@ public class TikaDocumentParser implements DocumentParser {
             // 对于Office文档，使用专门的图片提取器
             String filename = file.getName().toLowerCase();
             if (filename.endsWith(".pptx") || filename.endsWith(".docx") || filename.endsWith(".xlsx")) {
-                OfficeImageExtractor officeExtractor = new OfficeImageExtractor(imageExtractor, visionBatchSize, cacheService);
+                OfficeImageExtractor officeExtractor = new OfficeImageExtractor(
+                    imageExtractor, visionBatchSize, cacheService, imageStorageService);
 
                 String content = "";
                 if (filename.endsWith(".pptx")) {

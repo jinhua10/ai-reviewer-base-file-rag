@@ -1,5 +1,6 @@
 package top.yumbo.ai.rag.image;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.image.analyzer.AIImageAnalyzer;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
@@ -26,6 +27,11 @@ import java.util.List;
 public class DocumentImageExtractionService {
 
     private final List<DocumentImageExtractor> extractors;
+    /**
+     * -- GETTER --
+     *  获取图片存储服务（Get image storage service）
+     */
+    @Getter
     private final ImageStorageService storageService;
     private final AIImageAnalyzer aiAnalyzer;
     private final boolean aiAnalysisEnabled;
