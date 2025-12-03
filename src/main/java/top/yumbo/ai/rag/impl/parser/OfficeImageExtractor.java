@@ -30,14 +30,21 @@ public class OfficeImageExtractor {
 
     private final SmartImageExtractor imageExtractor;
     private final int batchSize; // 批量处理的幻灯片数量
+    private top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService; // 幻灯片缓存服务（可选）
 
     public OfficeImageExtractor(SmartImageExtractor imageExtractor) {
         this(imageExtractor, 1); // 默认每次处理1张幻灯片
     }
 
     public OfficeImageExtractor(SmartImageExtractor imageExtractor, int batchSize) {
+        this(imageExtractor, batchSize, null);
+    }
+
+    public OfficeImageExtractor(SmartImageExtractor imageExtractor, int batchSize,
+                               top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService cacheService) {
         this.imageExtractor = imageExtractor;
         this.batchSize = Math.max(1, batchSize); // 至少为1
+        this.cacheService = cacheService;
     }
 
     /**
@@ -59,7 +66,7 @@ public class OfficeImageExtractor {
 
             if (supportsBatch && batchSize > 1) {
                 // 使用批量处理模式
-                content.append(extractWithBatchMode(allSlides, ppt));
+                content.append(extractWithBatchMode(allSlides, file));
             } else {
                 // 使用单张幻灯片模式
                 content.append(extractWithSingleMode(allSlides));
@@ -77,30 +84,48 @@ public class OfficeImageExtractor {
 
     /**
      * 批量处理模式：以幻灯片为最小单位，批量发送给 Vision LLM
+     * 支持缓存，避免重复处理
      */
-    private String extractWithBatchMode(List<XSLFSlide> allSlides, XMLSlideShow ppt) {
+    private String extractWithBatchMode(List<XSLFSlide> allSlides, File pptFile) {
         StringBuilder content = new StringBuilder();
         VisionLLMStrategy visionStrategy = (VisionLLMStrategy) imageExtractor.getActiveStrategy();
 
         int totalSlides = allSlides.size();
+        String pptPath = pptFile.getAbsolutePath();
+
+        // 加载 PPT 缓存
+        top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService.PPTCache pptCache = null;
+        if (cacheService != null) {
+            pptCache = cacheService.getPPTCache(pptPath);
+            if (pptCache == null) {
+                // 创建新的 PPT 缓存
+                pptCache = new top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService.PPTCache();
+                pptCache.setFilePath(pptPath);
+                pptCache.setFileLastModified(pptFile.lastModified());
+                pptCache.setFileSize(pptFile.length());
+                pptCache.setTotalSlides(totalSlides);
+                pptCache.setCacheTime(System.currentTimeMillis());
+            }
+        }
+
         int processedSlides = 0;
+        int cachedCount = 0;
+        int processedCount = 0;
 
         while (processedSlides < totalSlides) {
             int endIndex = Math.min(processedSlides + batchSize, totalSlides);
             List<XSLFSlide> batchSlides = allSlides.subList(processedSlides, endIndex);
 
-            log.info("📦 批量处理幻灯片 {}-{}/{}", processedSlides + 1, endIndex, totalSlides);
+            log.info("📦 处理幻灯片 {}-{}/{}", processedSlides + 1, endIndex, totalSlides);
 
-            // 收集这批幻灯片的所有图片（带位置信息）
+            // 检查这批幻灯片是否需要处理
+            List<Integer> slidesToProcess = new ArrayList<>();
             List<ImagePositionInfo> batchImages = new ArrayList<>();
             StringBuilder batchTextContent = new StringBuilder();
 
             for (int i = 0; i < batchSlides.size(); i++) {
                 XSLFSlide slide = batchSlides.get(i);
                 int slideNumber = processedSlides + i + 1;
-
-                // 添加幻灯片标题
-                batchTextContent.append(LogMessageProvider.getMessage("log.office.slide_title", slideNumber));
 
                 // 提取文本内容
                 StringBuilder slideText = new StringBuilder();
@@ -113,58 +138,121 @@ public class OfficeImageExtractor {
                     }
                 }
 
-                if (!slideText.isEmpty()) {
-                    batchTextContent.append(LogMessageProvider.getMessage("log.office.slide_text"))
-                                   .append(slideText);
-                }
+                // 收集图片数据用于计算哈希
+                List<byte[]> slideImageData = new ArrayList<>();
+                List<ImagePositionInfo> slideImages = new ArrayList<>();
 
-                // 提取该幻灯片的所有图片
                 int imageIndex = 0;
                 for (XSLFShape shape : slide.getShapes()) {
                     if (shape instanceof XSLFPictureShape picture) {
                         XSLFPictureData pictureData = picture.getPictureData();
                         byte[] imageData = pictureData.getData();
+                        slideImageData.add(imageData);
+
                         String imageName = String.format("slide%d_image%d.%s",
                             slideNumber, ++imageIndex, getPPTExtension(pictureData.getType()));
 
-                        // 获取图片位置信息
                         Rectangle2D anchor = picture.getAnchor();
                         ImagePositionInfo imgPos = new ImagePositionInfo(
-                            imageData,
-                            imageName,
-                            anchor.getX(),
-                            anchor.getY(),
-                            anchor.getWidth(),
-                            anchor.getHeight(),
+                            imageData, imageName,
+                            anchor.getX(), anchor.getY(),
+                            anchor.getWidth(), anchor.getHeight(),
                             batchImages.size()
                         );
 
-                        batchImages.add(imgPos);
+                        slideImages.add(imgPos);
+                    }
+                }
 
-                        log.debug("收集图片: {} (位置: {:.0f},{:.0f}, 大小: {:.0f}x{:.0f}KB)",
-                            imageName, anchor.getX(), anchor.getY(),
-                            anchor.getWidth(), anchor.getHeight(), imageData.length / 1024.0);
+                // 计算幻灯片哈希
+                String slideHash = cacheService != null ?
+                    cacheService.calculateSlideHash(slideText.toString(), slideImageData) : null;
+
+                // 检查缓存
+                top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService.SlideCache cachedSlide = null;
+                if (cacheService != null && pptCache != null) {
+                    cachedSlide = pptCache.getSlides().get(slideNumber);
+                }
+
+                boolean useCache = false;
+                if (cacheService != null && cachedSlide != null && slideHash != null) {
+                    useCache = !cacheService.needsUpdate(slideHash, cachedSlide);
+                }
+
+                // 添加幻灯片标题
+                batchTextContent.append(LogMessageProvider.getMessage("log.office.slide_title", slideNumber));
+
+                if (!slideText.isEmpty()) {
+                    batchTextContent.append(LogMessageProvider.getMessage("log.office.slide_text"))
+                                   .append(slideText);
+                }
+
+                if (useCache) {
+                    // 使用缓存
+                    log.info("💾 使用缓存: 幻灯片 {} ({} 张图片)", slideNumber, cachedSlide.getImageCount());
+                    if (cachedSlide.getVisionLLMResult() != null && !cachedSlide.getVisionLLMResult().isEmpty()) {
+                        batchTextContent.append("\n\n")
+                                       .append(LogMessageProvider.getMessage("log.office.image_section"))
+                                       .append(cachedSlide.getVisionLLMResult());
+                    }
+                    cachedCount++;
+                } else {
+                    // 需要处理
+                    if (!slideImages.isEmpty()) {
+                        slidesToProcess.add(slideNumber);
+                        batchImages.addAll(slideImages);
+
+                        // 创建新的缓存条目
+                        if (cacheService != null && pptCache != null) {
+                            top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService.SlideCache newCache =
+                                new top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService.SlideCache();
+                            newCache.setSlideNumber(slideNumber);
+                            newCache.setContentHash(slideHash);
+                            newCache.setSlideText(slideText.toString());
+                            newCache.setImageCount(slideImages.size());
+                            newCache.setProcessTime(System.currentTimeMillis());
+                            pptCache.getSlides().put(slideNumber, newCache);
+                        }
                     }
                 }
             }
 
-            // 批量处理这批幻灯片的所有图片
+            // 批量处理需要更新的幻灯片图片
             if (!batchImages.isEmpty()) {
-                log.info("📸 本批次共 {} 张图片，开始批量分析...", batchImages.size());
+                log.info("📸 需要处理 {} 张图片（来自 {} 张幻灯片）", batchImages.size(), slidesToProcess.size());
                 String imageContent = visionStrategy.extractContentBatchWithPosition(batchImages);
 
                 if (imageContent != null && !imageContent.trim().isEmpty()) {
                     batchTextContent.append("\n\n")
                                    .append(LogMessageProvider.getMessage("log.office.image_section"))
                                    .append(imageContent);
+
+                    // 更新缓存
+                    if (cacheService != null && pptCache != null && !slidesToProcess.isEmpty()) {
+                        // 将结果保存到对应的幻灯片缓存中
+                        for (int slideNum : slidesToProcess) {
+                            top.yumbo.ai.rag.spring.boot.service.SlideContentCacheService.SlideCache slideCache =
+                                pptCache.getSlides().get(slideNum);
+                            if (slideCache != null) {
+                                slideCache.setVisionLLMResult(imageContent);
+                            }
+                        }
+                    }
+
                     log.info("✅ 批量分析完成: {} 张图片 -> {} 字符", batchImages.size(), imageContent.length());
+                    processedCount += slidesToProcess.size();
                 }
-            } else {
-                log.info("ℹ️  本批次幻灯片无图片");
             }
 
             content.append(batchTextContent);
             processedSlides = endIndex;
+        }
+
+        // 保存 PPT 缓存
+        if (cacheService != null && pptCache != null) {
+            cacheService.savePPTCache(pptPath, pptCache);
+            log.info("💾 缓存统计: 使用缓存 {} 张，新处理 {} 张，总计 {} 张",
+                cachedCount, processedCount, totalSlides);
         }
 
         return content.toString();

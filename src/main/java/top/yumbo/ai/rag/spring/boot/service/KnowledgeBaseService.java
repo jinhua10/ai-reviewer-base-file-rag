@@ -41,16 +41,19 @@ public class KnowledgeBaseService {
     private final DocumentProcessingOptimizer optimizer;
     private final FileTrackingService fileTrackingService;
     private final top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService;
+    private final SlideContentCacheService slideContentCacheService;
 
     public KnowledgeBaseService(KnowledgeQAProperties properties,
                                 DocumentProcessingOptimizer optimizer,
                                 FileTrackingService fileTrackingService,
                                 top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService,
-                                top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor) {
+                                top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor,
+                                SlideContentCacheService slideContentCacheService) {
         this.properties = properties;
         this.optimizer = optimizer;
         this.fileTrackingService = fileTrackingService;
         this.imageExtractionService = imageExtractionService;
+        this.slideContentCacheService = slideContentCacheService;
 
         // 获取批量大小配置
         int visionBatchSize = properties.getImageProcessing().getVisionLlm().getBatch().getSize();
@@ -61,7 +64,8 @@ public class KnowledgeBaseService {
             true,              // extract image metadata
             true,              // include image placeholders
             visionBatchSize,   // vision batch size from config
-            imageExtractor     // use configured image extractor
+            imageExtractor,    // use configured image extractor
+            slideContentCacheService // slide cache service
         );
         this.documentChunker = optimizer.createChunker();
     }
@@ -86,6 +90,12 @@ public class KnowledgeBaseService {
         try {
             // 1. 初始化文件追踪（Initialize file tracking）
             fileTrackingService.initialize(storagePath);
+
+            // 1.1 初始化幻灯片缓存服务（Initialize slide cache service）
+            if (slideContentCacheService != null) {
+                slideContentCacheService.initialize(storagePath);
+                log.info("✅ 幻灯片缓存服务已初始化");
+            }
 
             // 2. 扫描文件（Scan files）
             List<File> allFiles = scanDocuments(sourcePath);
@@ -520,6 +530,11 @@ public class KnowledgeBaseService {
         try {
             // 1. 初始化文件追踪（Initialize file tracking）
             fileTrackingService.initialize(storagePath);
+
+            // 1.1 初始化幻灯片缓存服务（Initialize slide cache service）
+            if (slideContentCacheService != null) {
+                slideContentCacheService.initialize(storagePath);
+            }
 
             // 2. 扫描所有文件（Scan all files）
             List<File> allFiles = scanDocuments(sourcePath);
