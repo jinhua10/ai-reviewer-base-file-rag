@@ -1,0 +1,159 @@
+/* AI分析面板样式优化 - 适配紫色渐变背景 */
+
+/* 添加按钮hover效果 */
+.ai-analysis-hint-button:hover {
+    background-color: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ai-analysis-hint-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* 分析按钮hover效果 */
+.ai-analysis-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%) !important;
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.5) !important;
+    transform: translateY(-2px);
+}
+
+.ai-analysis-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4) !important;
+}
+
+/* 结果卡片hover效果 */
+.ai-result-item:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+    transform: translateY(-2px);
+}
+
+/* textarea focus效果 */
+.ai-analysis-textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    background-color: #ffffff !important;
+}
+
+/* 选中文档信息区域优化 */
+.ai-selected-info {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+/* 进度条动画 - 适配深色背景 */
+@keyframes progress-animation {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 40px 0;
+    }
+}
+
+.ai-progress-fill {
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 40px 40px;
+    animation: progress-animation 1s linear infinite;
+}
+
+/* Markdown内容样式 */
+.ai-result-body h1,
+.ai-result-body h2,
+.ai-result-body h3,
+.ai-result-body h4 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    color: #1976d2;
+}
+
+.ai-result-body h1 { font-size: 1.8em; }
+.ai-result-body h2 { font-size: 1.5em; }
+.ai-result-body h3 { font-size: 1.3em; }
+.ai-result-body h4 { font-size: 1.1em; }
+
+.ai-result-body p {
+    margin-bottom: 12px;
+    color: #424242;
+}
+
+.ai-result-body ul,
+.ai-result-body ol {
+    margin-left: 24px;
+    margin-bottom: 12px;
+}
+
+.ai-result-body li {
+    margin-bottom: 6px;
+    color: #424242;
+}
+
+.ai-result-body code {
+    background-color: #e3f2fd;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #1565c0;
+}
+
+.ai-result-body pre {
+    background-color: #f5f5f5;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin-bottom: 12px;
+    border: 1px solid #e0e0e0;
+}
+
+.ai-result-body pre code {
+    background-color: transparent;
+    padding: 0;
+}
+
+.ai-result-body blockquote {
+    border-left: 4px solid #2196F3;
+    padding-left: 16px;
+    margin: 12px 0;
+    color: #1976d2;
+    font-style: italic;
+    background-color: #f5f9fc;
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.ai-result-body a {
+    color: #2196F3;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.ai-result-body a:hover {
+    text-decoration: underline;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+    .ai-analysis-hint-button {
+        padding: 6px 10px !important;
+        font-size: 12px !important;
+    }
+
+    .ai-analysis-button {
+        padding: 12px !important;
+        font-size: 14px !important;
+    }
+}
+

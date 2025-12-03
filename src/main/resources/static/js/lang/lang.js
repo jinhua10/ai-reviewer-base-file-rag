@@ -142,6 +142,13 @@ const translations = {
         exportText: '导出为文本',
         compareView: '对比视图',
         listView: '列表视图',
+        close: '关闭',
+
+        // 嵌入式AI分析面板
+        selectedDocumentsCount: '已选择 {0} 个文档',
+        analyzeInProgress: '分析中...',
+        startAnalyze: '开始分析',
+        analysisFailed: '分析失败',
         docsPagination: '第',
         docsPaginationPage: '页',
         docsPaginationTotal: '共',
@@ -486,6 +493,13 @@ const translations = {
         exportText: 'Export as Text',
         compareView: 'Compare View',
         listView: 'List View',
+        close: 'Close',
+
+        // Embedded AI Analysis Panel
+        selectedDocumentsCount: 'Selected {0} documents',
+        analyzeInProgress: 'Analyzing...',
+        startAnalyze: 'Start Analysis',
+        analysisFailed: 'Analysis Failed',
         docsPagination: 'Page',
         docsPaginationPage: '',
         docsPaginationTotal: 'Total',

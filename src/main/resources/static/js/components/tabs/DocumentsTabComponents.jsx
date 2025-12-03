@@ -691,11 +691,33 @@ function FileTypeSelector({ advancedFilters, updateFilter, toggleFileType, suppo
 // ============================================================================
 // 文档列表组件
 // ============================================================================
-const DocumentList = React.memo(function DocumentList({ documents, formatFileSize, handleDelete, t }) {
+const DocumentList = React.memo(function DocumentList({
+    documents,
+    formatFileSize,
+    handleDelete,
+    t,
+    showAIAnalysis = false,
+    selectedDocs = new Set(),
+    onToggleDoc = null
+}) {
     return (
         <div className="documents-list">
             {documents.map((doc) => (
                 <div key={doc.fileName + doc.uploadTime} className="document-card">
+                    {showAIAnalysis && onToggleDoc && (
+                        <div style={{ marginRight: '12px' }}>
+                            <input
+                                type="checkbox"
+                                checked={selectedDocs.has(doc.fileName)}
+                                onChange={() => onToggleDoc(doc.fileName)}
+                                style={{
+                                    width: '18px',
+                                    height: '18px',
+                                    cursor: 'pointer'
+                                }}
+                            />
+                        </div>
+                    )}
                     <div className="document-info">
                         <div className="document-title">
                             {getFileIcon(doc.fileType)} {doc.fileName}
