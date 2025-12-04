@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 
 import java.io.File;
@@ -28,9 +29,12 @@ import java.util.*;
 public class PPTProgressiveAnalysisService {
 
     private final KnowledgeQAService knowledgeQAService;
+    private final LLMClient llmClient;
 
-    public PPTProgressiveAnalysisService(KnowledgeQAService knowledgeQAService) {
+    public PPTProgressiveAnalysisService(KnowledgeQAService knowledgeQAService,
+                                         LLMClient llmClient) {
         this.knowledgeQAService = knowledgeQAService;
+        this.llmClient = llmClient;
     }
 
     /**
@@ -281,8 +285,11 @@ public class PPTProgressiveAnalysisService {
 
             summaryPrompt.append("请生成最终总结报告:\n");
 
-            AIAnswer summaryAnswer = knowledgeQAService.ask(summaryPrompt.toString());
-            report.setComprehensiveSummary(summaryAnswer.getAnswer());
+            // 直接调用 LLM 生成总结，不进行文档检索
+            // 这样可以避免将包含特殊字符的长 prompt 传递给 Lucene 导致解析错误
+            log.info("📝 直接调用 LLM 生成最终总结（跳过文档检索）");
+            String summary = llmClient.generate(summaryPrompt.toString());
+            report.setComprehensiveSummary(summary);
 
             log.info("✅ 综合总结生成完成");
 
