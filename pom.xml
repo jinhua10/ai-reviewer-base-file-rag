@@ -192,6 +192,13 @@
             <version>1.16.3</version>
         </dependency>
 
+        <!-- Hugging Face Tokenizers - 用于文本分词（PPL 服务需要） -->
+        <dependency>
+            <groupId>ai.djl.huggingface</groupId>
+            <artifactId>tokenizers</artifactId>
+            <version>0.30.0</version>
+        </dependency>
+
         <!--
         注意：我们使用简化的向量索引实现（SimpleVectorIndexEngine），
         不依赖外部向量库，适合中小规模数据（<10万条）。
