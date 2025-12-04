@@ -60,7 +60,7 @@ public class PPLConfig {
     private RerankConfig reranking = new RerankConfig();
 
     /**
-     * ONNX 配置
+     * ONNX 配置（使用国产 Qwen 模型）
      */
     @Data
     public static class OnnxConfig {
@@ -70,14 +70,17 @@ public class PPLConfig {
         private boolean enabled = true;
 
         /**
-         * 模型文件路径
+         * 模型文件路径（阿里 Qwen 模型）
+         * qwen2.5-0.5b-instruct - 轻量级，适合 PPL 计算（推荐）
+         * qwen2.5-1.5b-instruct - 平衡性能
+         * qwen2-7b-instruct - 高质量
          */
-        private String modelPath = "./models/gpt2-medium-int8/model.onnx";
+        private String modelPath = "./models/qwen2.5-0.5b-instruct/model.onnx";
 
         /**
          * Tokenizer 文件路径
          */
-        private String tokenizerPath = "./models/gpt2-medium-int8/tokenizer.json";
+        private String tokenizerPath = "./models/qwen2.5-0.5b-instruct/tokenizer.json";
 
         /**
          * 最大批处理大小

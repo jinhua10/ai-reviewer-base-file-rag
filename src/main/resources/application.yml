@@ -72,33 +72,38 @@ knowledge:
     # PPL 服务配置（Perplexity-based Chunking & Reranking）
     # ============================================================
     ppl:
-      # 默认提供商：onnx, ollama, openai
-      # 推荐使用 onnx（本地、快速、免费）
-      default-provider: onnx
+      # 默认提供商：ollama, onnx, openai
+      # 推荐使用 ollama（简单、稳定、开箱即用）
+      default-provider: ollama
 
       # 启用降级策略（当前提供商失败时自动切换）
       enable-fallback: true
 
       # 降级顺序（优先级从高到低）
       fallback-order:
-        - onnx      # 优先：本地 ONNX（最快、免费）
-        - ollama    # 次选：本地 Ollama（大模型支持）
-        - openai    # 备用：云端 API（质量最高）
+        - ollama    # 优先：本地 Ollama（最简单、最稳定）✅
+        - onnx      # 次选：本地 ONNX（需要模型文件）
+        - openai    # 备用：云端 API（需要 API Key）
 
       # ============================================================
-      # ONNX 配置（推荐用于 PPL 计算）
+      # ONNX 配置（使用国产 Qwen 模型）
+      # 注意：需要先下载模型文件，建议使用 Ollama 替代
       # ============================================================
       onnx:
-        enabled: true
+        enabled: false  # 默认禁用，推荐使用 Ollama
 
-        # 模型路径（使用中文优化的模型）
-        # 选项1：GPT2-Medium（通用，推荐）
-        model-path: ./models/gpt2-medium-int8/model.onnx
-        tokenizer-path: ./models/gpt2-medium-int8/tokenizer.json
+        # 模型路径（使用阿里 Qwen 模型）
+        # 选项1：Qwen2.5-0.5B（轻量级，推荐用于 PPL）
+        model-path: ./models/qwen2.5-0.5b-instruct/model.onnx
+        tokenizer-path: ./models/qwen2.5-0.5b-instruct/tokenizer.json
 
-        # 选项2：Chinese-BERT（中文优化）
-        # model-path: ./models/chinese-bert-wwm/model.onnx
-        # tokenizer-path: ./models/chinese-bert-wwm/tokenizer.json
+        # 选项2：Qwen2.5-1.5B（平衡性能）
+        # model-path: ./models/qwen2.5-1.5b-instruct/model.onnx
+        # tokenizer-path: ./models/qwen2.5-1.5b-instruct/tokenizer.json
+
+        # 选项3：Qwen2-7B（高质量，需要更多资源）
+        # model-path: ./models/qwen2-7b-instruct/model.onnx
+        # tokenizer-path: ./models/qwen2-7b-instruct/tokenizer.json
 
         # 批处理配置
         max-batch-size: 8
@@ -109,10 +114,14 @@ knowledge:
         cache-ttl: 3600        # 缓存过期时间（秒）
 
       # ============================================================
-      # Ollama 配置（本地大模型，使用国产 Qwen）
+      # Ollama 配置（本地大模型，使用国产 Qwen）推荐方案 ✅
+      # 使用步骤：
+      # 1. 安装 Ollama：https://ollama.com/download/windows
+      # 2. 下载模型：ollama pull qwen2.5:0.5b
+      # 3. 启动应用即可使用！
       # ============================================================
       ollama:
-        enabled: false         # 默认禁用，需要时启用
+        enabled: true          # 默认启用（推荐）
 
         # Ollama 服务地址
         base-url: http://localhost:11434
