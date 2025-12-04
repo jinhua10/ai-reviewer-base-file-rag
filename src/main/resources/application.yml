@@ -68,7 +68,126 @@ knowledge:
 
       # 是否启用缓存
       enable-cache: true
+    # ============================================================
+    # PPL 服务配置（Perplexity-based Chunking & Reranking）
+    # ============================================================
+    ppl:
+      # 默认提供商：onnx, ollama, openai
+      # 推荐使用 onnx（本地、快速、免费）
+      default-provider: onnx
 
+      # 启用降级策略（当前提供商失败时自动切换）
+      enable-fallback: true
+
+      # 降级顺序（优先级从高到低）
+      fallback-order:
+        - onnx      # 优先：本地 ONNX（最快、免费）
+        - ollama    # 次选：本地 Ollama（大模型支持）
+        - openai    # 备用：云端 API（质量最高）
+
+      # ============================================================
+      # ONNX 配置（推荐用于 PPL 计算）
+      # ============================================================
+      onnx:
+        enabled: true
+
+        # 模型路径（使用中文优化的模型）
+        # 选项1：GPT2-Medium（通用，推荐）
+        model-path: ./models/gpt2-medium-int8/model.onnx
+        tokenizer-path: ./models/gpt2-medium-int8/tokenizer.json
+
+        # 选项2：Chinese-BERT（中文优化）
+        # model-path: ./models/chinese-bert-wwm/model.onnx
+        # tokenizer-path: ./models/chinese-bert-wwm/tokenizer.json
+
+        # 批处理配置
+        max-batch-size: 8
+
+        # 缓存配置（提升性能）
+        use-cache: true
+        cache-size: 10000      # 最多缓存 10000 个结果
+        cache-ttl: 3600        # 缓存过期时间（秒）
+
+      # ============================================================
+      # Ollama 配置（本地大模型，使用国产 Qwen）
+      # ============================================================
+      ollama:
+        enabled: false         # 默认禁用，需要时启用
+
+        # Ollama 服务地址
+        base-url: http://localhost:11434
+
+        # 使用 Qwen 模型（阿里通义千问）
+        # 选项1：Qwen2.5-0.5B（轻量级，推荐用于 PPL）
+        model: qwen2.5:0.5b
+
+        # 选项2：Qwen2.5-1.5B（平衡性能）
+        # model: qwen2.5:1.5b
+
+        # 选项3：Qwen2.5-7B（高质量）
+        # model: qwen2.5:7b
+
+        # 网络配置
+        timeout: 30000         # 请求超时（毫秒）
+        max-retries: 3         # 最大重试次数
+        connection-pool-size: 10
+
+      # ============================================================
+      # OpenAI 配置（云端 API，兼容通义千问）
+      # ============================================================
+      openai:
+        enabled: false         # 默认禁用
+        # API 配置
+        api-key: ${QW_API_KEY:}  # 通义千问 API Key
+        # 使用阿里通义千问模型
+        # qwen-turbo：快速、经济（推荐用于 PPL）
+        # qwen-plus：平衡性能
+        # qwen-max：最高质量
+        model: qwen-turbo
+        # 通义千问 API 端点
+        api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+        timeout: 60000
+        use-logprobs: false    # 通义千问暂不支持 logprobs
+
+      # ============================================================
+      # Chunking 配置（基于 PPL 的智能切分）
+      # ============================================================
+      chunking:
+        # PPL 阈值（困惑度变化超过此值时切分）
+        # 建议值：15.0-25.0
+        # - 15.0：切分更细（块更小，更精确）
+        # - 20.0：平衡（推荐）
+        # - 25.0：切分更粗（块更大，更完整）
+        ppl-threshold: 20.0
+
+        # 块大小限制（字符数）
+        max-chunk-size: 2000   # 最大块大小
+        min-chunk-size: 200    # 最小块大小
+        overlap-size: 100      # 重叠大小（保持上下文）
+
+        # 启用两阶段切分（推荐）
+        # true：先粗分再精分（性能更好）
+        # false：直接 PPL 切分
+        enable-coarse-chunking: true
+
+      # ============================================================
+      # Reranking 配置（基于 PPL 的重排序）
+      # ============================================================
+      reranking:
+        # 是否启用 PPL Rerank
+        enabled: false         # 默认禁用，需要时启用
+        # PPL 分数权重（0.0-1.0）
+        # 最终分数 = (1-weight) * 原始分数 + weight * PPL分数
+        # 建议值：0.10-0.20
+        weight: 0.15
+        # 仅对前 K 个文档重排序（控制成本）
+        top-k: 5
+        # 异步处理（不阻塞主流程）
+        async: true
+        # 超时时间（毫秒）
+        timeout: 5000
+        # 文档内容截断长度（字符数）
+        content-truncate-length: 500
     # 向量检索配置
     vector-search:
       # 是否启用向量检索
@@ -574,4 +693,3 @@ knowledge:
       enabled: true
 
 
-# classpath:simpleExcel
