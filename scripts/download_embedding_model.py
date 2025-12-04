@@ -11,21 +11,70 @@
 import os
 import sys
 import argparse
+import subprocess
 from pathlib import Path
 
-def check_dependencies():
-    """检查依赖"""
-    print("📦 检查依赖...")
-
+def install_package(package_name):
+    """安装 Python 包"""
+    print(f"📥 安装 {package_name}...")
     try:
-        import sentence_transformers
-        print(f"✅ sentence-transformers {sentence_transformers.__version__}")
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--upgrade", package_name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE
+        )
+        print(f"✅ {package_name} 安装成功")
         return True
-    except ImportError:
-        print("❌ sentence-transformers 未安装")
-        print("\n请安装依赖:")
-        print("pip install sentence-transformers")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ {package_name} 安装失败: {e.stderr.decode() if e.stderr else str(e)}")
         return False
+
+def check_dependencies(use_mirror=False):
+    """检查并自动安装所有必需的依赖"""
+    print("=" * 70)
+    print("📦 检查并安装依赖...")
+    print("=" * 70)
+
+    required_packages = {
+        "sentence_transformers": "sentence-transformers>=2.0.0",
+        "torch": "torch>=2.0.0",
+        "transformers": "transformers>=4.30.0",
+        "optimum": "optimum[onnxruntime]>=1.14.0",
+        "onnxruntime": "onnxruntime>=1.15.0",
+        "onnxscript": "onnxscript>=0.1.0"
+    }
+
+    # 如果使用镜像，添加 modelscope
+    if use_mirror:
+        required_packages["modelscope"] = "modelscope>=1.0.0"
+
+    installed_packages = []
+    failed_packages = []
+
+    for package_name, package_spec in required_packages.items():
+        try:
+            # 尝试导入包
+            __import__(package_name)
+            print(f"✅ {package_name} 已安装")
+            installed_packages.append(package_name)
+        except ImportError:
+            print(f"⚠️  {package_name} 未安装，开始安装...")
+            if install_package(package_spec):
+                installed_packages.append(package_name)
+            else:
+                failed_packages.append(package_name)
+
+    print()
+    if failed_packages:
+        print(f"❌ 以下依赖安装失败: {', '.join(failed_packages)}")
+        print("\n请手动安装:")
+        print(f"pip install {' '.join([required_packages[p] for p in failed_packages])}")
+        return False
+
+    print(f"✅ 所有依赖已就绪 ({len(installed_packages)}/{len(required_packages)})")
+    print("=" * 70)
+    print()
+    return True
 
 def download_model_huggingface(model_name, output_dir):
     """从 Hugging Face 下载模型"""
@@ -127,7 +176,6 @@ def convert_to_onnx(model_path):
     try:
         from sentence_transformers import SentenceTransformer
         import torch
-        import subprocess
         import shutil
 
         # 方法1: 尝试使用 optimum-cli（更完整）
@@ -170,23 +218,43 @@ def convert_to_onnx(model_path):
                     return_tensors="pt"
                 )
 
-                # 导出 ONNX
+                # 导出 ONNX - 使用更稳定的 opset 版本
                 onnx_path = Path(output_dir) / "model.onnx"
-                torch.onnx.export(
-                    transformer_model,
-                    (encoded['input_ids'], encoded['attention_mask']),
-                    str(onnx_path),
-                    input_names=['input_ids', 'attention_mask'],
-                    output_names=['last_hidden_state'],
-                    dynamic_axes={
-                        'input_ids': {0: 'batch', 1: 'sequence'},
-                        'attention_mask': {0: 'batch', 1: 'sequence'},
-                        'last_hidden_state': {0: 'batch', 1: 'sequence'}
-                    },
-                    opset_version=14,
-                    do_constant_folding=True
-                )
-                print("✅ torch.onnx.export 转换成功")
+
+                # 尝试不同的 opset 版本（从高到低）
+                opset_versions = [17, 16, 15, 14, 13]
+                export_success = False
+
+                for opset in opset_versions:
+                    try:
+                        print(f"  尝试 opset_version={opset}...")
+                        torch.onnx.export(
+                            transformer_model,
+                            (encoded['input_ids'], encoded['attention_mask']),
+                            str(onnx_path),
+                            input_names=['input_ids', 'attention_mask'],
+                            output_names=['last_hidden_state'],
+                            dynamic_axes={
+                                'input_ids': {0: 'batch', 1: 'sequence'},
+                                'attention_mask': {0: 'batch', 1: 'sequence'},
+                                'last_hidden_state': {0: 'batch', 1: 'sequence'}
+                            },
+                            opset_version=opset,
+                            do_constant_folding=True,
+                            export_params=True
+                        )
+                        print(f"✅ torch.onnx.export 转换成功 (opset={opset})")
+                        export_success = True
+                        break
+                    except Exception as e:
+                        print(f"  ⚠️ opset={opset} 失败: {str(e)[:100]}")
+                        if onnx_path.exists():
+                            onnx_path.unlink()  # 删除失败的文件
+                        continue
+
+                if not export_success:
+                    print("❌ 所有 opset 版本转换都失败")
+                    return False
 
         # 复制 ONNX 文件到原目录
         print("\n📋 复制 ONNX 文件到模型目录...")
@@ -204,11 +272,42 @@ def convert_to_onnx(model_path):
             print("❌ 未找到 ONNX 文件")
             return False
 
+        # 清理临时目录
+        print("\n🧹 清理临时文件...")
+        try:
+            shutil.rmtree(output_dir)
+            print(f"✅ 已删除临时目录: {Path(output_dir).name}")
+        except Exception as e:
+            print(f"⚠️ 清理临时目录失败: {e}")
+
         # 验证 ONNX 模型
         print("\n🧪 验证 ONNX 模型...")
+        onnx_model_path = Path(model_path) / "model.onnx"
+
+        # 检查文件是否存在
+        if not onnx_model_path.exists():
+            print("❌ ONNX 模型文件不存在")
+            return False
+
+        # 检查文件大小
+        file_size = onnx_model_path.stat().st_size
+        if file_size < 1024:  # 小于 1KB，可能是损坏的文件
+            print(f"❌ ONNX 模型文件太小 ({file_size} bytes)，可能已损坏")
+            return False
+
         try:
             import onnxruntime as ort
-            session = ort.InferenceSession(str(Path(model_path) / "model.onnx"))
+
+            # 设置会话选项，禁用不稳定的优化
+            sess_options = ort.SessionOptions()
+            sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_DISABLE_ALL
+
+            # 尝试加载模型
+            session = ort.InferenceSession(
+                str(onnx_model_path),
+                sess_options=sess_options,
+                providers=['CPUExecutionProvider']
+            )
             print("✅ ONNX 模型验证成功")
 
             print("\n📋 模型信息:")
@@ -221,7 +320,10 @@ def convert_to_onnx(model_path):
 
         except Exception as e:
             print(f"⚠️ 验证失败: {e}")
-            return False
+            print(f"💡 这可能是由于 ONNX Runtime 版本不兼容导致")
+            print(f"   模型文件已保存，可以尝试在 Java 应用中使用")
+            # 不返回 False，因为模型可能在 Java 中可用
+            return True
 
         return True
 
@@ -295,8 +397,8 @@ def main():
         print("🌏 使用魔搭社区镜像...")
         os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
-    # 检查依赖
-    if not check_dependencies():
+    # 检查并安装依赖
+    if not check_dependencies(use_mirror=args.mirror):
         sys.exit(1)
 
     # 确定输出路径

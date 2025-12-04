@@ -15,6 +15,63 @@ import argparse
 import subprocess
 from pathlib import Path
 
+def install_package(package_name):
+    """安装 Python 包"""
+    print(f"📥 安装 {package_name}...")
+    try:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--upgrade", package_name],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.PIPE
+        )
+        print(f"✅ {package_name} 安装成功")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ {package_name} 安装失败: {e.stderr.decode() if e.stderr else str(e)}")
+        return False
+
+def check_and_install_dependencies():
+    """检查并自动安装所有必需的依赖"""
+    print("=" * 70)
+    print("📦 检查并安装依赖...")
+    print("=" * 70)
+
+    required_packages = {
+        "transformers": "transformers>=4.30.0",
+        "optimum": "optimum[onnxruntime]>=1.14.0",
+        "onnxruntime": "onnxruntime>=1.15.0",
+        "torch": "torch>=2.0.0",
+        "onnxscript": "onnxscript>=0.1.0"
+    }
+
+    installed_packages = []
+    failed_packages = []
+
+    for package_name, package_spec in required_packages.items():
+        try:
+            # 尝试导入包
+            __import__(package_name)
+            print(f"✅ {package_name} 已安装")
+            installed_packages.append(package_name)
+        except ImportError:
+            print(f"⚠️  {package_name} 未安装，开始安装...")
+            if install_package(package_spec):
+                installed_packages.append(package_name)
+            else:
+                failed_packages.append(package_name)
+
+    print()
+    if failed_packages:
+        print(f"❌ 以下依赖安装失败: {', '.join(failed_packages)}")
+        print("\n请手动安装:")
+        print(f"pip install {' '.join([required_packages[p] for p in failed_packages])}")
+        return False
+
+    print(f"✅ 所有依赖已就绪 ({len(installed_packages)}/{len(required_packages)})")
+    print("=" * 70)
+    print()
+    return True
+
 def check_optimum_cli():
     """检查 optimum-cli 是否可用"""
     result = subprocess.run(
@@ -102,20 +159,21 @@ def main():
     print("=" * 70)
     print()
 
+    # 检查并安装依赖
+    if not check_and_install_dependencies():
+        sys.exit(1)
+
     # 设置镜像
     if args.mirror:
         print("🌏 使用国内镜像...")
         os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
 
-    # 检查依赖
-    print("📦 检查依赖...")
+    # 再次验证 optimum-cli 可用性
     if not check_optimum_cli():
-        print("❌ optimum-cli 不可用")
-        print("\n请安装依赖:")
-        print("pip install optimum[onnxruntime] transformers torch")
+        print("❌ optimum-cli 仍不可用，请检查安装")
         sys.exit(1)
 
-    print("✅ optimum-cli 可用\n")
+    print("✅ optimum-cli 已就绪\n")
 
     # 下载模型
     model_name = model_map[args.model]

@@ -6,7 +6,7 @@
 /release/logs
 /release/*.jar
 
-/models
+/models*/
 
 /src/main/resources/simpleExcel/*
 /src/main/resources/models/*/*.onnx
