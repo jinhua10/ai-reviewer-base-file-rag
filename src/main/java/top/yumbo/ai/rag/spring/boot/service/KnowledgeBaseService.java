@@ -42,18 +42,24 @@ public class KnowledgeBaseService {
     private final FileTrackingService fileTrackingService;
     private final top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService;
     private final SlideContentCacheService slideContentCacheService;
+    private final DocumentPreprocessingService preprocessingService;  // 新增：文档预处理服务
+    private final top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig;  // 新增：PPL 配置
 
     public KnowledgeBaseService(KnowledgeQAProperties properties,
                                 DocumentProcessingOptimizer optimizer,
                                 FileTrackingService fileTrackingService,
                                 top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService,
                                 top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor,
-                                SlideContentCacheService slideContentCacheService) {
+                                SlideContentCacheService slideContentCacheService,
+                                DocumentPreprocessingService preprocessingService,
+                                top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig) {  // 新增参数
         this.properties = properties;
         this.optimizer = optimizer;
         this.fileTrackingService = fileTrackingService;
         this.imageExtractionService = imageExtractionService;
         this.slideContentCacheService = slideContentCacheService;
+        this.preprocessingService = preprocessingService;  // 初始化预处理服务
+        this.pplConfig = pplConfig;  // 初始化 PPL 配置
 
         // 获取批量大小配置
         int visionBatchSize = properties.getImageProcessing().getVisionLlm().getBatch().getSize();
@@ -969,44 +975,15 @@ public class KnowledgeBaseService {
 
             log.info(LogMessageProvider.getMessage("log.kb.content_extracted", content.length()));
 
-            // 2.5 提取图片并将图片信息文本化添加到内容中（关键优化）/ Extract images and add image information to content as text (key optimization)
-            // 这样图片信息会被索引和向量化，在问答时直接可用，不需要重新处理 / This way image information will be indexed and vectorized, directly available at Q&A time without reprocessing
-            if (imageExtractionService != null && imageExtractionService.supportsDocument(file.getName())) {
+            // 2.5 使用预处理服务提取图片并文本化（整合了 OCR/Vision LLM 处理）
+            // Extract images and convert to text using preprocessing service (integrated OCR/Vision LLM processing)
+            if (preprocessingService != null) {
                 try {
-                    List<top.yumbo.ai.rag.image.ImageInfo> images =
-                        imageExtractionService.extractAndSaveImages(file, file.getName());
-
-                    if (!images.isEmpty()) {
-                        log.info(LogMessageProvider.getMessage("log.kb.images_extracted", images.size()));
-
-                        // 将图片信息添加到文档内容中，这样就可以被检索到 / Add image information to document content so it can be retrieved
-                        StringBuilder imageText = new StringBuilder();
-                        imageText.append(LogMessageProvider.getMessage("kb_service.image.section_title"));
-
-                        for (int i = 0; i < images.size(); i++) {
-                            top.yumbo.ai.rag.image.ImageInfo img = images.get(i);
-                            imageText.append(LogMessageProvider.getMessage("kb_service.image.image_number", i + 1));
-                            imageText.append("\n").append(LogMessageProvider.getMessage("kb_service.image.filename", img.getFilename())).append("\n");
-                            imageText.append(LogMessageProvider.getMessage("kb_service.image.url", img.getUrl())).append("\n");
-
-                            if (img.getDescription() != null && !img.getDescription().isEmpty()) {
-                                imageText.append(LogMessageProvider.getMessage("kb_service.image.description", img.getDescription())).append("\n");
-                            }
-
-                            if (img.getOriginalFilename() != null) {
-                                imageText.append(LogMessageProvider.getMessage("kb_service.image.original_file", img.getOriginalFilename())).append("\n");
-                            }
-                        }
-
-                        imageText.append(LogMessageProvider.getMessage("kb_service.image.section_end"));
-
-                        // 将图片信息添加到内容末尾 / Add image information to the end of content
-                        content = content + imageText.toString();
-
-                        log.info(LogMessageProvider.getMessage("log.kb.images_added"));
-                    }
+                    log.info("🔄 Starting document preprocessing (image extraction + text conversion)...");
+                    content = preprocessingService.preprocessDocument(file, content);
+                    log.info("✅ Document preprocessing completed, final content length: {}", content.length());
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.image_extraction_failed", e.getMessage()));
+                    log.warn("⚠️ Document preprocessing failed: {}", e.getMessage());
                     // 不中断文档处理流程 / Do not interrupt document processing flow
                 }
             }
@@ -1032,8 +1009,23 @@ public class KnowledgeBaseService {
             List<Document> documentsToIndex;
 
             if (forceChunk || autoChunk) {
-                documentsToIndex = documentChunker.chunk(document);
-                log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
+                // 尝试使用 PPL 智能切分 / Try using PPL smart chunking
+                if (preprocessingService != null && pplConfig != null &&
+                    pplConfig.getChunking().isEnableCoarseChunking()) {
+                    try {
+                        log.info("🧠 Using PPL-based intelligent chunking...");
+                        documentsToIndex = preprocessingService.chunkDocumentWithPPL(document);
+                        log.info("✅ PPL chunking completed: {} chunks", documentsToIndex.size());
+                    } catch (Exception e) {
+                        log.warn("⚠️ PPL chunking failed, falling back to traditional chunking: {}", e.getMessage());
+                        documentsToIndex = documentChunker.chunk(document);
+                        log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
+                    }
+                } else {
+                    // 使用传统切分 / Use traditional chunking
+                    documentsToIndex = documentChunker.chunk(document);
+                    log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
+                }
             } else {
                 documentsToIndex = List.of(document);
             }

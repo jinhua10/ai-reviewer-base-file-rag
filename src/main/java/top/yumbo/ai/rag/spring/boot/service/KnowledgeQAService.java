@@ -47,7 +47,9 @@ public class KnowledgeQAService {
     private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;
     private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
     private final top.yumbo.ai.rag.feedback.QARecordService qaRecordService;
-    private final SimilarQAService similarQAService;  // 新增
+    private final SimilarQAService similarQAService;
+    private final top.yumbo.ai.rag.ppl.PPLServiceFacade pplServiceFacade;  // PPL 服务门面
+    private final top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig;  // PPL 配置
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -63,7 +65,9 @@ public class KnowledgeQAService {
                               top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService,
                               top.yumbo.ai.rag.image.ImageStorageService imageStorageService,
                               top.yumbo.ai.rag.feedback.QARecordService qaRecordService,
-                              SimilarQAService similarQAService) {  // 新增
+                              SimilarQAService similarQAService,
+                              top.yumbo.ai.rag.ppl.PPLServiceFacade pplServiceFacade,
+                              top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig) {  // 添加 PPL 配置
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
@@ -73,7 +77,9 @@ public class KnowledgeQAService {
         this.chunkStorageService = chunkStorageService;
         this.imageStorageService = imageStorageService;
         this.qaRecordService = qaRecordService;
-        this.similarQAService = similarQAService;  // 新增
+        this.similarQAService = similarQAService;
+        this.pplServiceFacade = pplServiceFacade;  // 初始化 PPL 服务
+        this.pplConfig = pplConfig;  // 初始化 PPL 配置
     }
 
     /**
@@ -312,6 +318,24 @@ public class KnowledgeQAService {
                 // 使用纯关键词检索 / Use pure keyword search
                 documents = hybridSearchService.keywordSearch(question, rag);
                 log.info(LogMessageProvider.getMessage("knowledge_qa_service.using_keyword_search"));
+            }
+
+            // 步骤1.5: PPL Rerank（如果启用）/ Step 1.5: PPL Rerank (if enabled)
+            if (pplServiceFacade != null && pplConfig != null && pplConfig.getReranking() != null &&
+                pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
+                try {
+                    log.info("🔄 Starting PPL Rerank for {} documents...", documents.size());
+                    long rerankStart = System.currentTimeMillis();
+
+                    // PPLServiceFacade.rerank 需要 2 个参数: question, candidates
+                    // config 会自动从 pplConfig 中获取
+                    documents = pplServiceFacade.rerank(question, documents);
+
+                    long rerankTime = System.currentTimeMillis() - rerankStart;
+                    log.info("✅ PPL Rerank completed in {}ms", rerankTime);
+                } catch (Exception e) {
+                    log.warn("⚠️ PPL Rerank failed, using original order: {}", e.getMessage());
+                }
             }
 
             // 根据配置限制文档数量，使用会话管理支持分页引用 / Limit document count according to configuration, use session management to support paginated references
