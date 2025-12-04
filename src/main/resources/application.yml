@@ -74,15 +74,15 @@ knowledge:
     ppl:
       # 默认提供商：ollama, onnx, openai
       # 推荐使用 ollama（简单、稳定、开箱即用）
-      default-provider: ollama
+      default-provider: onnx
 
       # 启用降级策略（当前提供商失败时自动切换）
       enable-fallback: true
 
       # 降级顺序（优先级从高到低）
       fallback-order:
-        - ollama    # 优先：本地 Ollama（最简单、最稳定）✅
         - onnx      # 次选：本地 ONNX（需要模型文件）
+        - ollama    # 优先：本地 Ollama（最简单、最稳定）✅
         - openai    # 备用：云端 API（需要 API Key）
 
       # ============================================================
@@ -90,7 +90,7 @@ knowledge:
       # 注意：需要先下载模型文件，建议使用 Ollama 替代
       # ============================================================
       onnx:
-        enabled: false  # 默认禁用，推荐使用 Ollama
+        enabled: true  # 默认禁用，推荐使用 Ollama
 
         # 模型路径（使用阿里 Qwen 模型）
         # 选项1：Qwen2.5-0.5B（轻量级，推荐用于 PPL）
@@ -204,23 +204,25 @@ knowledge:
       # false: 使用纯关键词检索
       enabled: true
 
-      # 模型配置
+      # 模型配置（已更新为国产模型）
       model:
         # 模型名称（用于日志显示）
-        name: paraphrase-multilingual
+        # 推荐使用国产 BGE 系列，与 Qwen 配套效果更好
+        name: bge-m3
 
         # 模型文件路径（相对于 resources）
-        # 系统会自动查找以下目录中的模型文件：
-        path: ./models/paraphrase-multilingual/model.onnx
+        # BGE-M3: 智源研究院开发，中文效果优秀，支持多语言
+        path: ./models/bge-m3/model.onnx
 
-        # 模型搜索路径（按优先级排序）
+        # 模型搜索路径（按优先级排序，已调整为国产优先）
         # 系统会按顺序在这些目录中查找模型文件
         search-paths:
-          - bge-m3                      # BGE-M3 (推荐, 2024最新)
-          - multilingual-e5-large       # Multilingual E5 Large
-          - bge-large-zh                # BGE Large ZH (中文)
-          - paraphrase-multilingual     # Paraphrase Multilingual
-          - text2vec-base-chinese       # Text2Vec (旧版)
+          - bge-m3                      # BGE-M3 (推荐, 智源, 2024最新) ✅
+          - bge-large-zh                # BGE Large ZH (智源, 中文优化)
+          - bge-base-zh-v1.5            # BGE Base ZH v1.5 (智源, 轻量级)
+          - text2vec-base-chinese       # Text2Vec (阿里, 经典)
+          - paraphrase-multilingual     # Paraphrase Multilingual (备用)
+          - multilingual-e5-large       # Multilingual E5 Large (备用)
 
         # 模型文件名（按优先级排序）
         file-names:
