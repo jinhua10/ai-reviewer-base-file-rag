@@ -48,14 +48,15 @@
                     }));
 
                     try {
-                        const fileName = (doc.title || doc.name || '').toLowerCase();
-                        const isPPT = fileName.endsWith('.pptx') || fileName.endsWith('.ppt');
+                        const docFileName = doc.title || doc.name || '';
+                        const isPPT = docFileName.toLowerCase().endsWith('.pptx') || docFileName.toLowerCase().endsWith('.ppt');
 
+                        // 直接传递文件名，后端会根据配置的 document.source-path 自动解析完整路径
                         let result;
                         if (isPPT) {
-                            result = await window.api.analyzePPT(doc.path || doc.title, finalPrompt);
+                            result = await window.api.analyzePPT(docFileName, finalPrompt);
                         } else {
-                            result = await window.api.analyzeDocument(doc.path || doc.title, finalPrompt);
+                            result = await window.api.analyzeDocument(docFileName, finalPrompt);
                         }
 
                         results.push({
