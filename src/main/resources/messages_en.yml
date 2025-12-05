@@ -1006,3 +1006,57 @@ token_estimator:
   log:
     estimate_complete: "Token estimate: {0} chars ≈ {1} tokens"
 
+# ============================================================
+# DocumentParserFactory
+# ============================================================
+parser_factory:
+  log:
+    registered_parsers: "📚 Registered {0} document parsers"
+    select_parser: "Selected parser: {0} for {1}"
+    no_parser_found: "No supported parser found: {0}"
+    register_parser: "Register parser: {0} - {1}"
+
+# ============================================================
+# PDFDocumentParser
+# ============================================================
+pdf_parser:
+  log:
+    parse_file: "📄 Parsing PDF file: {0} ({1} pages)"
+    parse_page: "  Parsing page {0}: {1} ({2} chars)"
+    parse_failed: "Failed to parse PDF file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+    content_truncated: "...[content truncated]"
+  title:
+    default_page: "Page {0}"
+
+# ============================================================
+# PPTDocumentParser
+# ============================================================
+ppt_parser:
+  log:
+    parse_file: "📊 Parsing PPT file: {0} ({1} slides)"
+    parse_slide: "  Parsing slide {0}: {1}"
+    parse_failed: "Failed to parse PPT file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+  title:
+    default_slide: "Slide {0}"
+  content:
+    image_info: "[Image: {0}, Type: {1}]"
+    table_header: "[Table]"
+
+# ============================================================
+# WordDocumentParser
+# ============================================================
+word_parser:
+  log:
+    parse_file: "📝 Parsing Word file: {0}"
+    parse_chapter: "  Parsing chapter {0}: {1} ({2} chars)"
+    parse_complete: "✅ Word file parsing complete: {0} segments"
+    parse_failed: "Failed to parse Word file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+  title:
+    continued: "Continued..."
+    default_content: "Document Content"

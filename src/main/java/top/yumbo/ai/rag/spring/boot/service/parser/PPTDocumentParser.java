@@ -3,6 +3,7 @@ package top.yumbo.ai.rag.spring.boot.service.parser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.springframework.stereotype.Component;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
 import top.yumbo.ai.rag.spring.boot.model.document.SegmentType;
@@ -41,7 +42,7 @@ public class PPTDocumentParser implements DocumentParser {
     public List<DocumentSegment> parse(String documentPath) throws IOException {
         File file = new File(documentPath);
         if (!file.exists()) {
-            throw new IOException("文件不存在: " + documentPath);
+            throw new IOException(LogMessageProvider.getMessage("ppt_parser.error.file_not_found", documentPath));
         }
 
         List<DocumentSegment> segments = new ArrayList<>();
@@ -52,7 +53,7 @@ public class PPTDocumentParser implements DocumentParser {
             List<XSLFSlide> slides = ppt.getSlides();
             int totalSlides = slides.size();
 
-            log.info("📊 解析 PPT 文件: {} ({} 张幻灯片)", file.getName(), totalSlides);
+            log.info(LogMessageProvider.getMessage("ppt_parser.log.parse_file", file.getName(), totalSlides));
 
             // 创建文档来源信息
             DocumentSource source = DocumentSource.builder()
@@ -72,12 +73,12 @@ public class PPTDocumentParser implements DocumentParser {
                 DocumentSegment segment = parseSlide(slide, slideNumber, source);
                 segments.add(segment);
 
-                log.debug("  解析幻灯片 {}: {}", slideNumber, segment.getTitle());
+                log.debug(LogMessageProvider.getMessage("ppt_parser.log.parse_slide", slideNumber, segment.getTitle()));
             }
 
         } catch (Exception e) {
-            log.error("解析 PPT 文件失败: {}", documentPath, e);
-            throw new IOException("解析 PPT 文件失败: " + e.getMessage(), e);
+            log.error(LogMessageProvider.getMessage("ppt_parser.log.parse_failed", documentPath), e);
+            throw new IOException(LogMessageProvider.getMessage("ppt_parser.log.parse_failed", e.getMessage()), e);
         }
 
         return segments;
@@ -106,7 +107,7 @@ public class PPTDocumentParser implements DocumentParser {
                 .id("slide-" + slideNumber)
                 .index(slideNumber)
                 .type(SegmentType.SLIDE)
-                .title(title != null ? title : "幻灯片 " + slideNumber)
+                .title(title != null ? title : LogMessageProvider.getMessage("ppt_parser.title.default_slide", slideNumber))
                 .textContent(content)
                 .images(images)
                 .tables(tables)
@@ -186,7 +187,7 @@ public class PPTDocumentParser implements DocumentParser {
                 XSLFPictureData pictureData = picture.getPictureData();
                 if (pictureData != null) {
                     // 记录图片信息（不存储实际数据，节省内存）
-                    String imageInfo = String.format("[图片: %s, 类型: %s]",
+                    String imageInfo = LogMessageProvider.getMessage("ppt_parser.content.image_info",
                             shape.getShapeName(),
                             pictureData.getContentType());
                     images.add(imageInfo);
@@ -207,7 +208,7 @@ public class PPTDocumentParser implements DocumentParser {
             if (shape instanceof XSLFTable) {
                 XSLFTable table = (XSLFTable) shape;
                 StringBuilder tableContent = new StringBuilder();
-                tableContent.append("[表格]\n");
+                tableContent.append(LogMessageProvider.getMessage("ppt_parser.content.table_header")).append("\n");
 
                 for (int row = 0; row < table.getNumberOfRows(); row++) {
                     XSLFTableRow tableRow = table.getRows().get(row);
