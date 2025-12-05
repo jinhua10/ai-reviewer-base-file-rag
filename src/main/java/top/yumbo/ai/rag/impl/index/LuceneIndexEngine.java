@@ -318,11 +318,22 @@ public class LuceneIndexEngine implements IndexEngine {
 
         // 主查询
         if (query.getQueryText() != null && !query.getQueryText().isEmpty()) {
+            // 对查询文本进行转义，防止 Lucene 特殊字符导致解析错误
+            String escapedQueryText = escapeLuceneSpecialChars(query.getQueryText());
+
+            // 如果转义后为空，使用 MatchAllDocsQuery
+            if (escapedQueryText.trim().isEmpty()) {
+                return new MatchAllDocsQuery();
+            }
+
             MultiFieldQueryParser parser = new MultiFieldQueryParser(
                     query.getFields(),
                     analyzer
             );
-            org.apache.lucene.search.Query mainQuery = parser.parse(query.getQueryText());
+            // 禁用通配符查询的首字符限制
+            parser.setAllowLeadingWildcard(false);
+
+            org.apache.lucene.search.Query mainQuery = parser.parse(escapedQueryText);
             builder.add(mainQuery, BooleanClause.Occur.MUST);
         }
 
@@ -414,5 +425,44 @@ public class LuceneIndexEngine implements IndexEngine {
                         Instant.ofEpochMilli(Long.parseLong(luceneDoc.get(FIELD_CREATED_AT))) : null)
                 .metadata(metadata)
                 .build();
+    }
+
+    /**
+     * 转义 Lucene 查询字符串中的特殊字符
+     * <p>
+     * Lucene 特殊字符包括：+ - && || ! ( ) { } [ ] ^ " ~ * ? : \ /
+     * 这些字符如果在查询中出现，需要进行转义或移除，否则会导致解析错误
+     *
+     * @param query 原始查询字符串
+     * @return 转义后的查询字符串
+     */
+    private String escapeLuceneSpecialChars(String query) {
+        if (query == null || query.isEmpty()) {
+            return "";
+        }
+
+        // 替换连续的特殊字符模式（如 **、||、&&）
+        String result = query
+            .replaceAll("\\*+", " ")           // ** 或 *** 替换为空格
+            .replaceAll("\\?+", " ")           // ?? 或 ??? 替换为空格
+            .replaceAll("\\|\\|", " ")         // || 替换为空格
+            .replaceAll("&&", " ")             // && 替换为空格
+            .replaceAll("!+", " ")             // ! 替换为空格
+            .replaceAll("~\\d*", " ")          // ~ 或 ~2 替换为空格（模糊查询）
+            .replaceAll("\\^\\d*\\.?\\d*", " ") // ^ 或 ^2 或 ^2.0 替换为空格（boost）
+            .replaceAll("[\\[\\]{}()]", " ")   // 括号替换为空格
+            .replaceAll("\"", " ")             // 引号替换为空格
+            .replaceAll(":", " ")              // 冒号替换为空格（字段限定符）
+            .replaceAll("/", " ")              // 斜杠替换为空格
+            .replaceAll("\\\\", " ")           // 反斜杠替换为空格
+            .replaceAll("\\s+", " ")           // 多个空格合并为一个
+            .trim();
+
+        // 如果结果为空或只剩符号，返回空字符串
+        if (result.isEmpty() || result.matches("[\\s\\p{Punct}]+")) {
+            return "";
+        }
+
+        return result;
     }
 }

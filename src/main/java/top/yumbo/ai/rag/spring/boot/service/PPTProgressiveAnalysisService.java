@@ -221,11 +221,12 @@ public class PPTProgressiveAnalysisService {
         prompt.append("(END_KEY_POINTS)\n");
 
         try {
-            AIAnswer answer = knowledgeQAService.ask(prompt.toString());
-            return answer.getAnswer();
+            // 直接调用 LLM，不需要通过 RAG 搜索
+            // PPT 分析是基于当前幻灯片内容，不需要检索知识库
+            return llmClient.generate(prompt.toString());
         } catch (Exception e) {
             log.error("幻灯片 {} 分析失败", slideNumber, e);
-            return "分析失败: " + e.getMessage();
+            return "处理问答时发生错误: " + e.getMessage();
         }
     }
 
