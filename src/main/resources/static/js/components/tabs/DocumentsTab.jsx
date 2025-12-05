@@ -543,32 +543,18 @@ function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSele
                         {totalCount > 0 && (
                             <div className="documents-controls-bar">
                                 <button
-                                    className="btn btn-primary"
+                                    className={`ai-analysis-toggle-btn ${showAIAnalysis ? 'close' : 'open'}`}
                                     onClick={() => setShowAIAnalysis(!showAIAnalysis)}
-                                    style={{
-                                        marginRight: '15px',
-                                        backgroundColor: showAIAnalysis ? '#f44336' : '#9C27B0',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '6px'
-                                    }}
-                                    title={showAIAnalysis ? '关闭AI分析' : '打开AI分析'}
+                                    title={showAIAnalysis ? t('docsCloseAIAnalysis') : t('docsOpenAIAnalysis')}
                                 >
-                                    <span style={{ fontSize: '16px' }}>
+                                    <span className="ai-analysis-toggle-btn-icon">
                                         {showAIAnalysis ? '✕' : '🤖'}
                                     </span>
                                     <span>
-                                        {showAIAnalysis ? (t('close') || '关闭') : (t('aiAnalysis') || 'AI分析')}
+                                        {showAIAnalysis ? t('docsCloseAIAnalysis') : t('docsOpenAIAnalysis')}
                                     </span>
                                     {!showAIAnalysis && selectedDocs.size > 0 && (
-                                        <span style={{
-                                            backgroundColor: '#fff',
-                                            color: '#9C27B0',
-                                            padding: '2px 6px',
-                                            borderRadius: '10px',
-                                            fontSize: '11px',
-                                            fontWeight: 'bold'
-                                        }}>
+                                        <span className="ai-analysis-toggle-btn-badge">
                                             {selectedDocs.size}
                                         </span>
                                     )}

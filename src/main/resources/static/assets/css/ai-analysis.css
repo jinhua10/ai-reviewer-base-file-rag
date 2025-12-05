@@ -42,16 +42,16 @@
     cursor: not-allowed;
 }
 
-/* 分析按钮hover效果 - 粉红色主题 */
+/* 分析按钮hover效果 - 蓝紫色主题 */
 .ai-analysis-button:hover:not(:disabled) {
-    background: linear-gradient(135deg, #FF80AB 0%, #F50057 100%) !important;
-    box-shadow: 0 8px 24px rgba(255, 107, 157, 0.6) !important;
+    background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%) !important;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.6) !important;
     transform: translateY(-2px) scale(1.02);
 }
 
 .ai-analysis-button:active:not(:disabled) {
     transform: translateY(0) scale(1);
-    box-shadow: 0 4px 16px rgba(255, 107, 157, 0.4) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4) !important;
 }
 
 .ai-analysis-button:disabled {

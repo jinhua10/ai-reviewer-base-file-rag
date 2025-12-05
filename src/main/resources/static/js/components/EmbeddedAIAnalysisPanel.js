@@ -327,7 +327,7 @@
         analyzeButton: {
             width: '100%',
             padding: '16px',
-            background: 'linear-gradient(135deg, #FF6B9D 0%, #C2185B 100%)',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
             border: 'none',
             borderRadius: '10px',
@@ -336,7 +336,7 @@
             fontWeight: '700',
             marginBottom: '20px',
             transition: 'all 0.3s ease',
-            boxShadow: '0 6px 20px rgba(255, 107, 157, 0.4)',
+            boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
             letterSpacing: '0.5px',
             position: 'relative',

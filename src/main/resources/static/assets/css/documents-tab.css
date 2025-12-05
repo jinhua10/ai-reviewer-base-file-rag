@@ -676,5 +676,61 @@
     font-weight: 500;
 }
 
+/* ============================================================================
+   AI分析按钮样式
+   ============================================================================ */
+.ai-analysis-toggle-btn {
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ai-analysis-toggle-btn.open {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.ai-analysis-toggle-btn.open:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.ai-analysis-toggle-btn.close {
+    background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+    color: white;
+}
+
+.ai-analysis-toggle-btn.close:hover {
+    background: linear-gradient(135deg, #d32f2f 0%, #c2185b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.ai-analysis-toggle-btn-icon {
+    font-size: 16px;
+}
+
+.ai-analysis-toggle-btn-badge {
+    background-color: #fff;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.ai-analysis-toggle-btn.open .ai-analysis-toggle-btn-badge {
+    color: #667eea;
+}
+
 /* 加载、错误、空状态等样式继承自 main.css */
 

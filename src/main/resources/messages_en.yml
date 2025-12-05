@@ -1253,3 +1253,30 @@ word_parser:
   title:
     continued: "Continued..."
     default_content: "Document Content"
+# ============================================================
+# PPL ONNX Service
+# ============================================================
+ppl_onnx:
+  log:
+    init_start: "🚀 Initializing ONNX PPL Service..."
+    model_path: "📦 Model path: {0}"
+    tokenizer_path: "📦 Tokenizer path: {0}"
+    env_created: "✅ ONNX Runtime environment created"
+    model_loaded: "✅ ONNX model loaded from: {0}"
+    tokenizer_loaded: "✅ Tokenizer loaded from: {0}"
+    cache_init: "✅ PPL cache initialized (size: {0}, TTL: {1}s)"
+    init_success: "✅ ONNX PPL Service initialized successfully"
+    init_failed: "❌ Failed to initialize ONNX PPL Service"
+    shutdown_start: "🛑 Shutting down ONNX PPL Service..."
+    session_closed: "✅ ONNX session closed"
+    tokenizer_closed: "✅ Tokenizer closed"
+    cache_cleared: "✅ PPL cache cleared"
+    shutdown_success: "✅ ONNX PPL Service shut down successfully"
+    shutdown_error: "Error during shutdown"
+    calc_ppl_failed: "Failed to calculate perplexity for text: {0}"
+    health_check_failed: "Health check failed"
+  error:
+    init_failed: "ONNX initialization failed"
+    calc_ppl_failed: "Failed to calculate perplexity"
+    chunk_failed: "Failed to chunk document"
+    rerank_failed: "Failed to rerank documents"

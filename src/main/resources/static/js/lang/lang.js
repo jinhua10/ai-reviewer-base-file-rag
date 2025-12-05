@@ -442,6 +442,8 @@ const translations = {
         docsLocalFilterHint: '正在前端实时过滤，点击"搜索"或"应用筛选"按钮进行完整搜索',
         docsNoMatchFound: '没有找到匹配的文档',
         docsTryDifferentKeyword: '尝试使用不同的关键词或点击搜索按钮进行完整搜索',
+        docsOpenAIAnalysis: '打开AI分析',
+        docsCloseAIAnalysis: '关闭AI分析',
 
         // LLM Results Tab
         llmResultsTitle: 'LLM 分析结果历史',
@@ -906,6 +908,8 @@ const translations = {
         docsLocalFilterHint: 'Real-time filtering in progress. Click "Search" or "Apply Filter" button for complete search',
         docsNoMatchFound: 'No matching documents found',
         docsTryDifferentKeyword: 'Try using different keywords or click the search button for a complete search',
+        docsOpenAIAnalysis: 'Open AI Analysis',
+        docsCloseAIAnalysis: 'Close AI Analysis',
 
         // LLM Results Tab
         llmResultsTitle: 'LLM Analysis Results History',
