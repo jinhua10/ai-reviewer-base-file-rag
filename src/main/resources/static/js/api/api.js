@@ -299,6 +299,100 @@ const api = {
     cleanupAnalysisSession: async (sessionId) => {
         const response = await axios.delete(`http://localhost:8080/api/document-qa/cleanup/${sessionId}`);
         return response.data;
+    },
+
+    // ========== LLM 结果文档化 ==========
+
+    /**
+     * 保存 LLM 分析结果
+     * @param {Object} result - 分析结果
+     * @returns {Promise<Object>} 保存结果
+     */
+    saveLLMResult: async (result) => {
+        const response = await axios.post('/api/llm-results/save', result);
+        return response.data;
+    },
+
+    /**
+     * 获取 LLM 结果历史
+     * @param {number} limit - 返回数量
+     * @returns {Promise<Object>} 历史记录
+     */
+    getLLMResultHistory: async (limit = 20) => {
+        const response = await axios.get('/api/llm-results/history', {
+            params: { limit }
+        });
+        return response.data;
+    },
+
+    /**
+     * 获取 LLM 结果详情
+     * @param {string} docId - 文档ID
+     * @returns {Promise<Object>} 文档详情
+     */
+    getLLMResultDetail: async (docId) => {
+        const response = await axios.get(`/api/llm-results/${docId}`);
+        return response.data;
+    },
+
+    /**
+     * 预览 LLM 结果（Markdown）
+     * @param {string} docId - 文档ID
+     * @returns {Promise<string>} Markdown 内容
+     */
+    previewLLMResult: async (docId) => {
+        const response = await axios.get(`/api/llm-results/${docId}/preview`);
+        return response.data;
+    },
+
+    /**
+     * 下载 LLM 结果（Markdown，图片嵌入 Base64）
+     * @param {string} docId - 文档ID
+     * @param {string} fileName - 文件名
+     */
+    downloadLLMResultMarkdown: async (docId, fileName) => {
+        const response = await axios.get(`/api/llm-results/${docId}/download/markdown`, {
+            responseType: 'blob'
+        });
+        const blob = response.data;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName || `${docId}.md`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    },
+
+    /**
+     * 下载 LLM 结果（PDF）
+     * @param {string} docId - 文档ID
+     * @param {string} fileName - 文件名
+     */
+    downloadLLMResultPdf: async (docId, fileName) => {
+        const response = await axios.get(`/api/llm-results/${docId}/download/pdf`, {
+            responseType: 'blob'
+        });
+        const blob = response.data;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName || `${docId}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+    },
+
+    /**
+     * 删除 LLM 结果文档
+     * @param {string} docId - 文档ID
+     * @returns {Promise<Object>} 删除结果
+     */
+    deleteLLMResult: async (docId) => {
+        const response = await axios.delete(`/api/llm-results/${docId}`);
+        return response.data;
     }
 };
 

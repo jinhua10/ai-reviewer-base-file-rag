@@ -20,6 +20,7 @@ const translations = {
         // Tabs
         tabQA: '智能问答',
         tabDocumentsSearch: '文档搜索和管理',
+        tabLLMResults: 'AI分析历史',
         tabStats: '统计信息',
 
         // QA Tab
@@ -372,6 +373,7 @@ const translations = {
         // Tabs
         tabQA: 'Q&A',
         tabDocumentsSearch: 'Documents Search & Management',
+        tabLLMResults: 'AI Analysis History',
         tabStats: 'Statistics',
 
         // QA Tab

@@ -613,7 +613,27 @@ knowledge:
 
       # 临时文档过期天数（自动清理）
       temp-document-expiry-days: 30
-
+    # ============================================================
+    # LLM 结果文档化配置
+    # 将 LLM 分析结果保存为文档，支持下载和知识库集成
+    # ============================================================
+    llm-result:
+      # 结果文档存储路径
+      storage-path: ./data/llm-results
+      # 是否自动将结果添加到知识库
+      # true: 每次 LLM 分析结果都会自动加入知识库
+      # false: 仅保存文档，不加入知识库（默认）
+      auto-add-to-knowledge-base: false
+      # 最大历史记录数
+      # 超过此数量会自动清理旧记录
+      max-history: 100
+      # 是否自动保存 LLM 结果
+      # true: 自动保存所有符合条件的 LLM 调用结果
+      # false: 仅手动保存
+      auto-save: true
+      # 最小内容长度（字符数）
+      # 低于此长度的结果不会被自动保存（避免保存无意义内容）
+      min-content-length: 100
     # 渐进式文档分析配置
     progressive-analysis:
       # 是否启用渐进式分析（推荐用于大文档）
