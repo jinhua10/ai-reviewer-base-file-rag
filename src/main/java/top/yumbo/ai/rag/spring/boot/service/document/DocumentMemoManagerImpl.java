@@ -485,8 +485,11 @@ public class DocumentMemoManagerImpl implements DocumentMemoManager {
             return Collections.emptyList();
         }
 
-        // 简单分词：按空格、标点分割
-        String[] tokens = text.split("[\\s，。！？、；：""''\\[\\]()（）《》【】\\-—…·]+");
+        // 简单分词：按空格、中英文标点分割
+        // 使用 Unicode 范围匹配中文标点，避免编码问题
+        // \u3000-\u303F: 中文标点
+        // \uFF00-\uFFEF: 全角字符
+        String[] tokens = text.split("[\\s\\p{Punct}\\u3000-\\u303F\\uFF00-\\uFFEF]+");
 
         Set<String> keywords = new LinkedHashSet<>();
         for (String token : tokens) {

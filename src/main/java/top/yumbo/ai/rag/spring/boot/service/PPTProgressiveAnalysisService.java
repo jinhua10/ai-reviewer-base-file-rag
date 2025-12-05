@@ -3,9 +3,13 @@ package top.yumbo.ai.rag.spring.boot.service;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
-import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
+import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
+import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
+import top.yumbo.ai.rag.spring.boot.model.document.MemoEntry;
+import top.yumbo.ai.rag.spring.boot.service.document.DocumentMemoManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,13 +32,14 @@ import java.util.*;
 @Service
 public class PPTProgressiveAnalysisService {
 
-    private final KnowledgeQAService knowledgeQAService;
     private final LLMClient llmClient;
+    private final DocumentMemoManager memoManager;
 
-    public PPTProgressiveAnalysisService(KnowledgeQAService knowledgeQAService,
-                                         LLMClient llmClient) {
-        this.knowledgeQAService = knowledgeQAService;
+    @Autowired
+    public PPTProgressiveAnalysisService(LLMClient llmClient,
+                                         DocumentMemoManager memoManager) {
         this.llmClient = llmClient;
+        this.memoManager = memoManager;
     }
 
     /**
@@ -54,8 +59,10 @@ public class PPTProgressiveAnalysisService {
 
             log.info("📊 开始渐进式分析PPT: {} ({} 张幻灯片)", pptFile.getName(), totalSlides);
 
-            // 初始化记忆管理器（保留最近3张幻灯片的要点）
-            SlideMemoryManager memory = new SlideMemoryManager(3);
+            // 创建文档来源并初始化备忘录管理器
+            DocumentSource source = DocumentSource.fromPath(
+                    pptFile.getAbsolutePath(), "ppt", totalSlides);
+            memoManager.startNewDocument(source);
 
             // 逐张幻灯片分析
             for (int i = 0; i < slides.size(); i++) {
@@ -67,16 +74,27 @@ public class PPTProgressiveAnalysisService {
                 // 提取幻灯片内容
                 SlideContent slideContent = extractSlideContent(slide, slideNumber);
 
+                // 转换为 DocumentSegment
+                DocumentSegment segment = DocumentSegment.createSlide(
+                        slideNumber,
+                        slideContent.getTitle(),
+                        slideContent.getText(),
+                        slideContent.getImageCount() > 0 ?
+                                Collections.singletonList("[图片: " + slideContent.getImageCount() + " 张]") :
+                                Collections.emptyList(),
+                        source
+                );
+
                 // 渐进式分析（带记忆上下文）
                 String analysis = analyzeSlideWithMemory(
-                    slideContent, question, slideNumber, totalSlides, memory
+                    segment, question, slideNumber, totalSlides
                 );
 
                 // 提取关键点
                 String keyPoints = extractKeyPointsFromAnalysis(analysis);
 
-                // 保存到记忆
-                memory.addMemory(slideNumber, slideContent.getTitle(), keyPoints);
+                // 保存到备忘录管理器
+                memoManager.addSegmentAnalysis(segment, analysis, keyPoints);
 
                 // 记录结果
                 SlideAnalysisResult result = new SlideAnalysisResult();
@@ -94,10 +112,13 @@ public class PPTProgressiveAnalysisService {
             }
 
             // 生成最终总结
-            generateComprehensiveSummary(report, memory, question);
+            generateComprehensiveSummary(report, question);
 
             report.setEndTime(System.currentTimeMillis());
             report.setSuccess(true);
+
+            // 导出备忘录文档
+            report.setMemoDocument(memoManager.exportToMarkdown());
 
             log.info("🎉 PPT渐进式分析完成，耗时: {}ms",
                 report.getEndTime() - report.getStartTime());
@@ -151,9 +172,8 @@ public class PPTProgressiveAnalysisService {
     /**
      * 带记忆上下文的幻灯片分析
      */
-    private String analyzeSlideWithMemory(SlideContent slideContent, String question,
-                                         int slideNumber, int totalSlides,
-                                         SlideMemoryManager memory) {
+    private String analyzeSlideWithMemory(DocumentSegment segment, String question,
+                                         int slideNumber, int totalSlides) {
         StringBuilder prompt = new StringBuilder();
 
         prompt.append("# PPT幻灯片渐进式分析\n\n");
@@ -166,33 +186,49 @@ public class PPTProgressiveAnalysisService {
         prompt.append("- 当前: 第 ").append(slideNumber).append(" 张 / 共 ").append(totalSlides).append(" 张\n");
         prompt.append("- 完成度: ").append(String.format("%.1f%%", slideNumber * 100.0 / totalSlides)).append("\n\n");
 
-        // 添加记忆上下文
-        if (slideNumber > 1 && !memory.isEmpty()) {
+        // 添加短期记忆上下文（使用新的备忘录管理器）
+        List<MemoEntry> shortTermMemory = memoManager.getShortTermMemory();
+        if (!shortTermMemory.isEmpty()) {
             prompt.append("## 📚 前面幻灯片的核心要点\n");
             prompt.append("*(这些是你看过的前面幻灯片的关键信息)*\n\n");
 
-            List<SlideMemory> recentMemories = memory.getRecentMemories();
-            for (SlideMemory mem : recentMemories) {
-                prompt.append("**第 ").append(mem.getSlideNumber()).append(" 张");
-                if (!mem.getTitle().isEmpty()) {
+            for (MemoEntry mem : shortTermMemory) {
+                prompt.append("**第 ").append(mem.getSegmentIndex()).append(" 张");
+                if (mem.getTitle() != null && !mem.getTitle().isEmpty()) {
                     prompt.append(" - ").append(mem.getTitle());
                 }
                 prompt.append("**:\n");
-                prompt.append(mem.getKeyPoints()).append("\n\n");
+                prompt.append(mem.getEffectiveContent()).append("\n\n");
+            }
+        }
+
+        // 添加召回的相关备忘录
+        List<MemoEntry> recalledMemos = memoManager.recallRelevantMemos(segment, 500);
+        if (!recalledMemos.isEmpty()) {
+            prompt.append("## 📋 相关历史内容\n");
+            prompt.append("*(以下是与当前幻灯片相关的早期内容)*\n\n");
+
+            for (MemoEntry mem : recalledMemos) {
+                prompt.append("【第 ").append(mem.getSegmentIndex()).append(" 张");
+                if (mem.getTitle() != null && !mem.getTitle().isEmpty()) {
+                    prompt.append(" - ").append(mem.getTitle());
+                }
+                prompt.append("】\n");
+                prompt.append("> ").append(mem.getEffectiveContent().replace("\n", "\n> ")).append("\n\n");
             }
         }
 
         // 当前幻灯片内容
         prompt.append("## 📄 当前幻灯片\n\n");
-        prompt.append("**标题**: ").append(slideContent.getTitle()).append("\n\n");
+        prompt.append("**标题**: ").append(segment.getTitle()).append("\n\n");
 
-        if (!slideContent.getText().isEmpty()) {
+        if (segment.getTextContent() != null && !segment.getTextContent().isEmpty()) {
             prompt.append("**文字内容**:\n");
-            prompt.append(slideContent.getText()).append("\n\n");
+            prompt.append(segment.getTextContent()).append("\n\n");
         }
 
-        if (slideContent.getImageCount() > 0) {
-            prompt.append("**包含图片**: ").append(slideContent.getImageCount()).append(" 张\n\n");
+        if (!segment.getImages().isEmpty()) {
+            prompt.append("**包含图片**: ").append(segment.getImages().size()).append(" 张\n\n");
         }
 
         // 分析指导
@@ -222,7 +258,6 @@ public class PPTProgressiveAnalysisService {
 
         try {
             // 直接调用 LLM，不需要通过 RAG 搜索
-            // PPT 分析是基于当前幻灯片内容，不需要检索知识库
             return llmClient.generate(prompt.toString());
         } catch (Exception e) {
             log.error("幻灯片 {} 分析失败", slideNumber, e);
@@ -252,9 +287,7 @@ public class PPTProgressiveAnalysisService {
     /**
      * 生成综合总结
      */
-    private void generateComprehensiveSummary(PPTAnalysisReport report,
-                                             SlideMemoryManager memory,
-                                             String question) {
+    private void generateComprehensiveSummary(PPTAnalysisReport report, String question) {
         try {
             log.info("📊 生成PPT综合总结...");
 
@@ -266,15 +299,18 @@ public class PPTProgressiveAnalysisService {
             summaryPrompt.append("## 用户问题\n");
             summaryPrompt.append(question).append("\n\n");
 
-            summaryPrompt.append("## PPT结构与要点\n\n");
+            // 使用备忘录摘要
+            summaryPrompt.append(memoManager.getAllMemosSummary());
 
-            for (SlideAnalysisResult result : report.getSlideResults()) {
-                summaryPrompt.append("### 第 ").append(result.getSlideNumber())
-                            .append(" 张: ").append(result.getTitle()).append("\n");
-                if (result.getKeyPoints() != null && !result.getKeyPoints().isEmpty()) {
-                    summaryPrompt.append(result.getKeyPoints()).append("\n");
+            // 添加独立重要条目
+            List<MemoEntry> independentEntries = memoManager.getIndependentEntries();
+            if (!independentEntries.isEmpty()) {
+                summaryPrompt.append("## ⭐ 独立重要条目\n\n");
+                for (MemoEntry entry : independentEntries) {
+                    summaryPrompt.append("### 第 ").append(entry.getSegmentIndex())
+                                .append(" 张: ").append(entry.getTitle()).append("\n");
+                    summaryPrompt.append(entry.getEffectiveContent()).append("\n\n");
                 }
-                summaryPrompt.append("\n");
             }
 
             summaryPrompt.append("## 总结要求\n\n");
@@ -286,9 +322,7 @@ public class PPTProgressiveAnalysisService {
 
             summaryPrompt.append("请生成最终总结报告:\n");
 
-            // 直接调用 LLM 生成总结，不进行文档检索
-            // 这样可以避免将包含特殊字符的长 prompt 传递给 Lucene 导致解析错误
-            log.info("📝 直接调用 LLM 生成最终总结（跳过文档检索）");
+            log.info("📝 直接调用 LLM 生成最终总结");
             String summary = llmClient.generate(summaryPrompt.toString());
             report.setComprehensiveSummary(summary);
 
@@ -337,51 +371,6 @@ public class PPTProgressiveAnalysisService {
     }
 
     /**
-     * 幻灯片记忆管理器
-     */
-    private static class SlideMemoryManager {
-        private final int maxMemorySize;
-        private final LinkedList<SlideMemory> memories;
-
-        public SlideMemoryManager(int maxMemorySize) {
-            this.maxMemorySize = maxMemorySize;
-            this.memories = new LinkedList<>();
-        }
-
-        public void addMemory(int slideNumber, String title, String keyPoints) {
-            SlideMemory memory = new SlideMemory();
-            memory.setSlideNumber(slideNumber);
-            memory.setTitle(title);
-            memory.setKeyPoints(keyPoints);
-
-            memories.add(memory);
-
-            // 保持固定大小
-            while (memories.size() > maxMemorySize) {
-                memories.removeFirst();
-            }
-        }
-
-        public List<SlideMemory> getRecentMemories() {
-            return new ArrayList<>(memories);
-        }
-
-        public boolean isEmpty() {
-            return memories.isEmpty();
-        }
-    }
-
-    /**
-     * 幻灯片记忆
-     */
-    @Data
-    private static class SlideMemory {
-        private int slideNumber;
-        private String title;
-        private String keyPoints;
-    }
-
-    /**
      * PPT分析报告
      */
     @Data
@@ -394,6 +383,7 @@ public class PPTProgressiveAnalysisService {
         private String errorMessage;
         private List<SlideAnalysisResult> slideResults = new ArrayList<>();
         private String comprehensiveSummary;
+        private String memoDocument;  // 新增：备忘录文档
     }
 
     /**
