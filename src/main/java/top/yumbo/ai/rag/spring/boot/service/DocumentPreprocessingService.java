@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.model.Document;
@@ -17,8 +18,10 @@ import java.util.List;
  *
  * 功能：
  * 1. 图片内容提取和OCR
- * 2. 基于 PPL 的智能切分
+ * 2. 基于 PPL 的智能切分（可选）
  * 3. 内容增强和优化
+ *
+ * 注意：PPL 服务是可选的，当配置禁用时不影响基本功能
  *
  * @author AI Reviewer Team
  * @since 2025-12-05
@@ -33,14 +36,21 @@ public class DocumentPreprocessingService {
     private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
 
     public DocumentPreprocessingService(
-            top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig,
-            PPLServiceFacade pplServiceFacade,
+            @Autowired(required = false) top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig,
+            @Autowired(required = false) PPLServiceFacade pplServiceFacade,
             top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService,
             top.yumbo.ai.rag.image.ImageStorageService imageStorageService) {
         this.pplConfig = pplConfig;
         this.pplServiceFacade = pplServiceFacade;
         this.imageExtractionService = imageExtractionService;
         this.imageStorageService = imageStorageService;
+
+        // 记录PPL服务状态
+        if (pplServiceFacade == null || pplConfig == null) {
+            log.info("📦 PPL 服务未启用（PPL service is disabled）");
+        } else {
+            log.info("✅ PPL 服务已启用（PPL service is enabled）");
+        }
     }
 
     /**
@@ -92,9 +102,15 @@ public class DocumentPreprocessingService {
      * @return 切分后的文档块列表
      */
     public List<Document> chunkDocumentWithPPL(Document document) {
+        // 检查 PPL 服务是否可用
+        if (pplConfig == null || pplServiceFacade == null) {
+            log.debug("📦 PPL service not available, returning original document");
+            return List.of(document);
+        }
+
         // 检查是否启用 PPL Chunking
         ChunkConfig chunkConfig = pplConfig.getChunking();
-        if (!chunkConfig.isEnableCoarseChunking() && chunkConfig.getPplThreshold() <= 0) {
+        if (chunkConfig == null || (!chunkConfig.isEnableCoarseChunking() && chunkConfig.getPplThreshold() <= 0)) {
             // PPL Chunking 未启用，返回原文档
             return List.of(document);
         }

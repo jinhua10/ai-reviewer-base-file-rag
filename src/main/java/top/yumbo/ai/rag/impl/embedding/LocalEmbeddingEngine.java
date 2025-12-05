@@ -15,9 +15,10 @@ import java.util.*;
  * 使用 ONNX Runtime 运行本地 Sentence-BERT 模型
  * <p>
  * 支持的模型：
- * - paraphrase-multilingual-MiniLM-L12-v2 (多语言，384维)
- * - all-MiniLM-L6-v2 (英文，384维)
- * - paraphrase-multilingual-MiniLM-L12-v2 (多语言，384维)
+ * - bge-base-zh-v1.5 (中文，768维，推荐)
+ * - bge-m3 (多语言，1024维，大模型)
+ * - bge-large-zh (中文，1024维)
+ * - text2vec-base-chinese (中文，768维)
  * <p>
  * P0修复：解决缺少向量嵌入能力的问题
  *
@@ -45,7 +46,7 @@ public class LocalEmbeddingEngine implements AutoCloseable {
 
     // 常量
     private static final int DEFAULT_MAX_SEQUENCE_LENGTH = 512;
-    private static final String DEFAULT_MODEL_PATH = "models/paraphrase-multilingual/model.onnx";
+    private static final String DEFAULT_MODEL_PATH = "models/bge-base-zh/model.onnx";
 
     /**
      * 使用默认模型路径构造
@@ -107,19 +108,22 @@ public class LocalEmbeddingEngine implements AutoCloseable {
                     "模型文件不存在: %s\n" +
                             "请下载模型文件到该路径。\n" +
                             "\n" +
-                            "📥 推荐模型：\n" +
-                            "  多语言（推荐）：https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2\n" +
-                            "  中文：https://huggingface.co/shibing624/text2vec-base-chinese\n" +
-                            "  英文：https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2\n" +
+                            "📥 推荐模型（国产）：\n" +
+                            "  中文（推荐）：BAAI/bge-base-zh-v1.5 (768维，~400MB)\n" +
+                            "  多语言大模型：BAAI/bge-m3 (1024维，~2GB)\n" +
+                            "  中文大模型：BAAI/bge-large-zh (1024维)\n" +
                             "\n" +
                             "📁 模型放置位置：\n" +
-                            "  1. 外部目录（推荐）：./models/xxx/model.onnx\n" +
-                            "  2. 开发环境：src/main/resources/models/xxx/model.onnx\n" +
+                            "  1. 外部目录（推荐）：./models/bge-base-zh/model.onnx\n" +
+                            "  2. 开发环境：src/main/resources/models/bge-base-zh/model.onnx\n" +
+                            "\n" +
+                            "🔧 下载脚本：\n" +
+                            "  python scripts/download_embedding_model.py --model bge-base-zh\n" +
                             "\n" +
                             "💡 配置示例（application.yml）：\n" +
                             "  vector:\n" +
                             "    model:\n" +
-                            "      path: ./models/paraphrase-multilingual/model.onnx",
+                            "      path: ./models/bge-base-zh/model.onnx",
                     modelPath
             ));
         }
@@ -251,9 +255,12 @@ public class LocalEmbeddingEngine implements AutoCloseable {
         // 1. 截断到最大长度
         // 2. 使用字符的 Unicode 编码映射到词汇表范围
 
-        // BERT 词汇表大小通常是 21128 或 30522
-        // paraphrase-multilingual 和 text2vec-base-chinese 的词汇表大小都是 30522
-        final int VOCAB_SIZE = 30522;
+        // BERT 词汇表大小：
+        // - BGE-base-zh-v1.5: 21128
+        // - BGE-m3: 250002
+        // - text2vec-base-chinese: 21128
+        // 使用保守值 21128 以确保兼容性
+        final int VOCAB_SIZE = 21128;
         final int CLS_TOKEN = 101;  // [CLS]
         final int SEP_TOKEN = 102;  // [SEP]
         final int UNK_TOKEN = 100;  // [UNK] 未知token
@@ -360,8 +367,8 @@ public class LocalEmbeddingEngine implements AutoCloseable {
                 dim = output2d[0].length;
                 log.debug("检测到二维输出，维度: {}", dim);
             } else {
-                log.warn("未知输出格式: {}, 使用默认维度 384", outputValue.getClass().getName());
-                dim = 384;
+                log.warn("未知输出格式: {}, 使用默认维度 768", outputValue.getClass().getName());
+                dim = 768;
             }
 
             inputTensor.close();
@@ -372,8 +379,8 @@ public class LocalEmbeddingEngine implements AutoCloseable {
             return dim;
 
         } catch (Exception e) {
-            log.warn("无法推断维度，使用默认值 384", e);
-            return 384; // 默认维度
+            log.warn("无法推断维度，使用默认值 768", e);
+            return 768; // 默认维度（BGE-base-zh）
         }
     }
 

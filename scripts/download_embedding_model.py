@@ -161,6 +161,72 @@ def download_model_modelscope(model_name, output_dir):
         traceback.print_exc()
         return False
 
+
+def merge_onnx_external_data(source_onnx_path, target_onnx_path):
+    """
+    将 ONNX 模型的外部数据合并到单个文件中
+
+    Args:
+        source_onnx_path: 源 ONNX 文件路径（带有外部数据）
+        target_onnx_path: 目标 ONNX 文件路径（合并后的单文件）
+
+    Returns:
+        Path: 成功返回目标文件路径，失败返回 None
+    """
+    try:
+        import onnx
+
+        source_path = Path(source_onnx_path)
+        target_path = Path(target_onnx_path)
+
+        # 检查外部数据大小
+        external_data_path = source_path.parent / "model.onnx_data"
+        total_size_mb = source_path.stat().st_size / (1024 * 1024)
+
+        if external_data_path.exists():
+            external_size_mb = external_data_path.stat().st_size / (1024 * 1024)
+            total_size_mb += external_size_mb
+            print(f"  外部数据大小: {external_size_mb:.1f} MB")
+            print(f"  总模型大小: {total_size_mb:.1f} MB")
+
+        # Protobuf 有 2GB 限制，超过 1.9GB 的模型不建议合并
+        if total_size_mb > 1900:
+            print(f"  ⚠️ 模型超过 1.9GB，无法合并为单文件（Protobuf 2GB 限制）")
+            print(f"  将保留分离的 model.onnx 和 model.onnx_data 文件")
+            return None
+
+        print(f"  加载模型: {source_path.name}")
+
+        # 加载模型（包括外部数据）
+        model = onnx.load(str(source_path), load_external_data=True)
+
+        # 保存为单个文件（不使用外部数据）
+        print(f"  合并到单文件: {target_path.name}")
+
+        # 确保目标目录存在
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # 保存模型，所有数据内联
+        onnx.save_model(
+            model,
+            str(target_path),
+            save_as_external_data=False  # 不使用外部数据，全部内联
+        )
+
+        return target_path
+
+    except ImportError:
+        print("  ⚠️ 需要安装 onnx 包: pip install onnx")
+        return None
+    except Exception as e:
+        error_msg = str(e)
+        if "2GB" in error_msg or "protobuf" in error_msg.lower():
+            print(f"  ⚠️ 模型太大，无法合并为单文件（Protobuf 2GB 限制）")
+        else:
+            print(f"  ⚠️ 合并失败: {e}")
+        return None
+
+
 def convert_to_onnx(model_path):
     """
     将 Sentence-Transformers 模型转换为 ONNX 格式
@@ -178,20 +244,30 @@ def convert_to_onnx(model_path):
         import torch
         import shutil
 
-        # 方法1: 尝试使用 optimum-cli（更完整）
-        print("💡 方法1: 尝试使用 optimum-cli...")
         output_dir = str(Path(model_path).parent / (Path(model_path).name + "-onnx"))
+        Path(output_dir).mkdir(parents=True, exist_ok=True)
 
-        # 首先检查模型是否有正确的 Hugging Face 结构
-        model = SentenceTransformer(str(model_path))
+        # 方法1: 使用 optimum ORTModelForFeatureExtraction（最可靠）
+        print("💡 方法1: 尝试使用 optimum ORTModelForFeatureExtraction...")
+        ort_export_success = False
 
-        # 获取第一个模块（Transformer）
-        if len(model) > 0 and hasattr(model[0], 'auto_model'):
-            transformer_model = model[0].auto_model
-            tokenizer = model[0].tokenizer
+        try:
+            from optimum.onnxruntime import ORTModelForFeatureExtraction
 
-            # 使用 transformers 模型导出
-            print("📦 使用 Transformer 模型直接导出...")
+            ort_model = ORTModelForFeatureExtraction.from_pretrained(
+                model_path,
+                export=True
+            )
+            ort_model.save_pretrained(output_dir)
+            print("✅ ORTModelForFeatureExtraction 转换成功")
+            ort_export_success = True
+
+        except Exception as e:
+            print(f"  ⚠️ ORTModelForFeatureExtraction 失败: {str(e)[:150]}")
+
+        # 方法2: 使用 optimum-cli
+        if not ort_export_success:
+            print("\n💡 方法2: 尝试使用 optimum-cli...")
 
             result = subprocess.run([
                 sys.executable, "-m", "optimum.exporters.onnx",
@@ -201,12 +277,19 @@ def convert_to_onnx(model_path):
 
             if result.returncode == 0:
                 print("✅ optimum-cli 转换成功")
+                ort_export_success = True
             else:
-                print(f"⚠️ optimum-cli 失败: {result.stderr[:200]}")
-                print("\n💡 方法2: 使用 torch.onnx.export（更稳定）...")
+                print(f"  ⚠️ optimum-cli 失败: {result.stderr[:200]}")
 
-                # 方法2: 使用 torch 直接导出
-                Path(output_dir).mkdir(parents=True, exist_ok=True)
+        # 方法3: 使用 torch.onnx.export
+        if not ort_export_success:
+            print("\n💡 方法3: 使用 torch.onnx.export...")
+
+            model = SentenceTransformer(str(model_path))
+
+            if len(model) > 0 and hasattr(model[0], 'auto_model'):
+                transformer_model = model[0].auto_model
+                tokenizer = model[0].tokenizer
 
                 # 创建示例输入
                 dummy_text = "This is a sample sentence"
@@ -218,56 +301,109 @@ def convert_to_onnx(model_path):
                     return_tensors="pt"
                 )
 
-                # 导出 ONNX - 使用更稳定的 opset 版本
                 onnx_path = Path(output_dir) / "model.onnx"
-
-                # 尝试不同的 opset 版本（从高到低）
-                opset_versions = [17, 16, 15, 14, 13]
+                opset_versions = [11, 12, 13, 14]
                 export_success = False
+
+                transformer_model.eval()
 
                 for opset in opset_versions:
                     try:
                         print(f"  尝试 opset_version={opset}...")
-                        torch.onnx.export(
-                            transformer_model,
-                            (encoded['input_ids'], encoded['attention_mask']),
-                            str(onnx_path),
-                            input_names=['input_ids', 'attention_mask'],
-                            output_names=['last_hidden_state'],
-                            dynamic_axes={
-                                'input_ids': {0: 'batch', 1: 'sequence'},
-                                'attention_mask': {0: 'batch', 1: 'sequence'},
-                                'last_hidden_state': {0: 'batch', 1: 'sequence'}
-                            },
-                            opset_version=opset,
-                            do_constant_folding=True,
-                            export_params=True
-                        )
+                        with torch.no_grad():
+                            torch.onnx.export(
+                                transformer_model,
+                                (encoded['input_ids'], encoded['attention_mask']),
+                                str(onnx_path),
+                                input_names=['input_ids', 'attention_mask'],
+                                output_names=['last_hidden_state'],
+                                dynamic_axes={
+                                    'input_ids': {0: 'batch', 1: 'sequence'},
+                                    'attention_mask': {0: 'batch', 1: 'sequence'},
+                                    'last_hidden_state': {0: 'batch', 1: 'sequence'}
+                                },
+                                opset_version=opset,
+                                do_constant_folding=True,
+                                export_params=True
+                            )
+
+                        if onnx_path.exists():
+                            size_mb = onnx_path.stat().st_size / (1024 * 1024)
+                            if size_mb < 10:
+                                print(f"  ⚠️ opset={opset}: 文件太小 ({size_mb:.1f}MB)")
+                                onnx_path.unlink()
+                                continue
+
                         print(f"✅ torch.onnx.export 转换成功 (opset={opset})")
                         export_success = True
                         break
                     except Exception as e:
                         print(f"  ⚠️ opset={opset} 失败: {str(e)[:100]}")
                         if onnx_path.exists():
-                            onnx_path.unlink()  # 删除失败的文件
+                            onnx_path.unlink()
                         continue
 
                 if not export_success:
-                    print("❌ 所有 opset 版本转换都失败")
+                    print("❌ 所有转换方法都失败")
                     return False
 
         # 复制 ONNX 文件到原目录
         print("\n📋 复制 ONNX 文件到模型目录...")
-        onnx_file = Path(output_dir) / "model.onnx"
-        onnx_data = Path(output_dir) / "model.onnx_data"
 
-        if onnx_file.exists():
-            shutil.copy2(onnx_file, Path(model_path) / "model.onnx")
-            print(f"✅ 已复制: model.onnx ({onnx_file.stat().st_size / (1024*1024):.1f} MB)")
+        # 递归搜索 model.onnx 和 model.onnx_data 文件（可能在子目录中）
+        output_path = Path(output_dir)
+        onnx_files = list(output_path.rglob("model.onnx"))
+        onnx_data_files = list(output_path.rglob("model.onnx_data"))
 
-            if onnx_data.exists():
-                shutil.copy2(onnx_data, Path(model_path) / "model.onnx_data")
-                print(f"✅ 已复制: model.onnx_data ({onnx_data.stat().st_size / (1024*1024):.1f} MB)")
+        print(f"  搜索到的 ONNX 文件: {[str(f.relative_to(output_path)) for f in onnx_files]}")
+        if onnx_data_files:
+            print(f"  搜索到的权重文件: {[str(f.relative_to(output_path)) for f in onnx_data_files]}")
+
+        if onnx_files:
+            # 优先选择最大的 model.onnx 文件（更可能是完整的）
+            onnx_file = max(onnx_files, key=lambda f: f.stat().st_size)
+            onnx_size_mb = onnx_file.stat().st_size / (1024 * 1024)
+
+            # 检查是否有外部数据文件需要合并
+            onnx_data = onnx_file.parent / "model.onnx_data"
+            has_external_data = onnx_data.exists() or onnx_data_files
+
+            if has_external_data:
+                # 如果有外部数据，先合并再复制
+                print("\n🔧 合并外部数据到 ONNX 文件...")
+                merged_onnx_path = merge_onnx_external_data(onnx_file, Path(model_path) / "model.onnx")
+                if merged_onnx_path:
+                    merged_size_mb = merged_onnx_path.stat().st_size / (1024 * 1024)
+                    print(f"✅ 已合并: model.onnx ({merged_size_mb:.1f} MB) - 包含所有权重数据")
+
+                    # 删除旧的 model.onnx_data 文件（如果存在）
+                    old_data_file = Path(model_path) / "model.onnx_data"
+                    if old_data_file.exists():
+                        old_data_file.unlink()
+                        print(f"🧹 已删除旧的 model.onnx_data 文件")
+                else:
+                    # 合并失败，回退到复制两个文件
+                    print("⚠️  合并失败，将分别复制 model.onnx 和 model.onnx_data")
+                    shutil.copy2(onnx_file, Path(model_path) / "model.onnx")
+                    print(f"✅ 已复制: model.onnx ({onnx_size_mb:.1f} MB)")
+
+                    if onnx_data.exists():
+                        data_size_mb = onnx_data.stat().st_size / (1024 * 1024)
+                        shutil.copy2(onnx_data, Path(model_path) / "model.onnx_data")
+                        print(f"✅ 已复制: model.onnx_data ({data_size_mb:.1f} MB)")
+                    elif onnx_data_files:
+                        largest_data = max(onnx_data_files, key=lambda f: f.stat().st_size)
+                        data_size_mb = largest_data.stat().st_size / (1024 * 1024)
+                        shutil.copy2(largest_data, Path(model_path) / "model.onnx_data")
+                        print(f"✅ 已复制: model.onnx_data ({data_size_mb:.1f} MB)")
+            else:
+                # 没有外部数据，直接复制
+                shutil.copy2(onnx_file, Path(model_path) / "model.onnx")
+                print(f"✅ 已复制: model.onnx ({onnx_size_mb:.1f} MB)")
+
+                if onnx_size_mb < 10:
+                    print(f"⚠️  警告: model.onnx 仅 {onnx_size_mb:.1f}MB，未找到 model.onnx_data 文件!")
+                    print(f"   这对于嵌入模型来说太小了，模型可能不完整")
         else:
             print("❌ 未找到 ONNX 文件")
             return False
@@ -281,51 +417,151 @@ def convert_to_onnx(model_path):
             print(f"⚠️ 清理临时目录失败: {e}")
 
         # 验证 ONNX 模型
-        print("\n🧪 验证 ONNX 模型...")
+        print("\n" + "=" * 60)
+        print("🔍 验证 ONNX 模型完整性...")
+        print("=" * 60)
+
         onnx_model_path = Path(model_path) / "model.onnx"
+        onnx_data_path = Path(model_path) / "model.onnx_data"
+        errors = []
+        warnings = []
 
-        # 检查文件是否存在
+        # 1. 检查 model.onnx 文件是否存在
         if not onnx_model_path.exists():
-            print("❌ ONNX 模型文件不存在")
+            errors.append("ONNX 模型文件 (model.onnx) 不存在")
+            print("❌ model.onnx 不存在")
+        else:
+            file_size = onnx_model_path.stat().st_size
+            file_size_mb = file_size / (1024 * 1024)
+            print(f"✅ model.onnx ({file_size_mb:.2f} MB)")
+
+            if file_size < 1024:  # 小于 1KB
+                errors.append(f"model.onnx 文件太小 ({file_size} bytes)，可能已损坏")
+
+        # 2. 检查 model.onnx_data 文件（外部权重数据）
+        if onnx_data_path.exists():
+            data_size = onnx_data_path.stat().st_size
+            data_size_mb = data_size / (1024 * 1024)
+            print(f"✅ model.onnx_data ({data_size_mb:.2f} MB)")
+        else:
+            # 检查 model.onnx 是否引用了外部数据文件
+            if onnx_model_path.exists():
+                file_size_mb = onnx_model_path.stat().st_size / (1024 * 1024)
+
+                # 检查文件内容是否引用了外部数据
+                has_external_ref = False
+                try:
+                    with open(onnx_model_path, 'rb') as f:
+                        content = f.read(100000)  # 读取前100KB检查
+                        # 检查是否有外部数据引用
+                        if b'model.onnx_data' in content or b'onnx_data' in content or b'external_data' in content:
+                            has_external_ref = True
+                except Exception as e:
+                    warnings.append(f"无法检查 model.onnx 内容: {e}")
+
+                if has_external_ref:
+                    errors.append(
+                        "model.onnx 引用了外部数据文件 model.onnx_data，但该文件缺失！\n"
+                        "   这会导致模型加载失败（Unsupported model IR version 或 file not found 错误）"
+                    )
+                    print("❌ model.onnx_data 缺失（model.onnx 需要此文件！）")
+                elif file_size_mb < 10:
+                    # 小于 10MB 的嵌入模型几乎肯定是不完整的
+                    # BGE-base-zh 约 400MB, BGE-m3 约 2GB
+                    errors.append(
+                        f"❌ model.onnx 仅 {file_size_mb:.2f}MB，这对于嵌入模型来说太小了！\n"
+                        f"   预期大小: BGE-base-zh ~400MB, BGE-m3 ~2GB\n"
+                        f"   问题: model.onnx_data 权重文件缺失，模型不完整"
+                    )
+                    print(f"❌ model.onnx 仅 {file_size_mb:.2f}MB - 模型不完整，缺少权重数据！")
+                elif file_size_mb < 100:
+                    # 10-100MB 的模型可能有问题
+                    warnings.append(
+                        f"model.onnx 仅 {file_size_mb:.1f}MB，可能缺少 model.onnx_data 文件。\n"
+                        "   如果模型加载失败，请尝试重新下载。"
+                    )
+                    print(f"⚠️  model.onnx_data 不存在（模型可能不完整）")
+                else:
+                    print(f"ℹ️  model.onnx_data 不存在（权重已内联在 model.onnx 中）")
+
+        # 3. 检查其他必需文件
+        required_files = ["tokenizer.json", "vocab.txt"]
+        found_tokenizer = False
+        for req_file in required_files:
+            req_path = Path(model_path) / req_file
+            if req_path.exists():
+                found_tokenizer = True
+                print(f"✅ {req_file}")
+
+        if not found_tokenizer:
+            warnings.append("未找到 tokenizer.json 或 vocab.txt，tokenizer 可能无法正常工作")
+            print("⚠️  未找到 tokenizer 文件")
+
+        # 4. 使用 ONNX Runtime 验证
+        if errors:
+            print("\n❌ 跳过 ONNX Runtime 验证（存在严重错误）")
+        else:
+            print("\n🧪 使用 ONNX Runtime 加载验证...")
+            try:
+                import onnxruntime as ort
+
+                sess_options = ort.SessionOptions()
+                sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_DISABLE_ALL
+
+                session = ort.InferenceSession(
+                    str(onnx_model_path),
+                    sess_options=sess_options,
+                    providers=['CPUExecutionProvider']
+                )
+                print("✅ ONNX Runtime 加载成功")
+
+                print("\n📋 模型结构:")
+                print("  输入:")
+                for input_meta in session.get_inputs():
+                    print(f"    - {input_meta.name}: {input_meta.shape}")
+                print("  输出:")
+                for output_meta in session.get_outputs():
+                    print(f"    - {output_meta.name}: {output_meta.shape}")
+
+            except Exception as e:
+                error_msg = str(e)
+                if "model.onnx_data" in error_msg or "external data" in error_msg.lower() or "file_size" in error_msg.lower():
+                    errors.append(
+                        f"ONNX Runtime 加载失败: 缺失外部数据文件 model.onnx_data\n"
+                        f"   原始错误: {error_msg[:200]}"
+                    )
+                elif "IR version" in error_msg:
+                    errors.append(
+                        f"ONNX Runtime 版本不兼容: {error_msg[:200]}\n"
+                        f"   建议升级 ONNX Runtime: pip install --upgrade onnxruntime"
+                    )
+                else:
+                    warnings.append(f"ONNX Runtime 验证失败: {error_msg[:200]}")
+                print(f"⚠️  验证警告: {error_msg[:150]}")
+
+        # 5. 输出验证结果
+        print("\n" + "=" * 60)
+        if errors:
+            print("❌ 模型验证失败!")
+            print("\n错误列表:")
+            for i, error in enumerate(errors, 1):
+                print(f"  {i}. {error}")
+            print("\n💡 修复建议:")
+            print("  1. 删除模型目录，重新运行下载脚本")
+            print("  2. 确保网络连接稳定，磁盘空间充足")
+            print("  3. 使用 --mirror 参数尝试国内镜像")
+            print("  4. 如果问题持续，尝试较小的模型（如 bge-base-zh）")
             return False
-
-        # 检查文件大小
-        file_size = onnx_model_path.stat().st_size
-        if file_size < 1024:  # 小于 1KB，可能是损坏的文件
-            print(f"❌ ONNX 模型文件太小 ({file_size} bytes)，可能已损坏")
-            return False
-
-        try:
-            import onnxruntime as ort
-
-            # 设置会话选项，禁用不稳定的优化
-            sess_options = ort.SessionOptions()
-            sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_DISABLE_ALL
-
-            # 尝试加载模型
-            session = ort.InferenceSession(
-                str(onnx_model_path),
-                sess_options=sess_options,
-                providers=['CPUExecutionProvider']
-            )
-            print("✅ ONNX 模型验证成功")
-
-            print("\n📋 模型信息:")
-            print(f"  输入:")
-            for input_meta in session.get_inputs():
-                print(f"    - {input_meta.name}: {input_meta.shape}")
-            print(f"  输出:")
-            for output_meta in session.get_outputs():
-                print(f"    - {output_meta.name}: {output_meta.shape}")
-
-        except Exception as e:
-            print(f"⚠️ 验证失败: {e}")
-            print(f"💡 这可能是由于 ONNX Runtime 版本不兼容导致")
-            print(f"   模型文件已保存，可以尝试在 Java 应用中使用")
-            # 不返回 False，因为模型可能在 Java 中可用
+        elif warnings:
+            print("⚠️  模型验证通过（有警告）")
+            print("\n警告列表:")
+            for i, warning in enumerate(warnings, 1):
+                print(f"  {i}. {warning}")
+            print("\n模型可能可用，但如果遇到问题请参考上述警告。")
             return True
-
-        return True
+        else:
+            print("✅ 模型验证完全通过!")
+            return True
 
     except Exception as e:
         print(f"❌ 转换失败: {e}")
@@ -451,4 +687,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

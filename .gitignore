@@ -9,7 +9,7 @@
 /models*/
 
 /src/main/resources/simpleExcel/*
-/src/main/resources/models/*/*.onnx
+/src/main/resources/models
 /release/models/*/*.onnx
 
 target/

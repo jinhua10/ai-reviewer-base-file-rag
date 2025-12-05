@@ -72,6 +72,9 @@ knowledge:
     # PPL 服务配置（Perplexity-based Chunking & Reranking）
     # ============================================================
     ppl:
+      # PPL 功能总开关（暂时禁用以避免 ONNX DLL 初始化问题）
+      enabled: false
+
       # 默认提供商：ollama, onnx, openai
       # 推荐使用 ollama（简单、稳定、开箱即用）
       default-provider: onnx
@@ -202,27 +205,30 @@ knowledge:
       # 是否启用向量检索
       # true: 使用语义向量检索（需要模型文件）
       # false: 使用纯关键词检索
+      # 当前禁用：因为 bge-base-zh 模型文件损坏（缺少 model.onnx_data）
       enabled: true
 
       # 模型配置（已更新为国产模型）
       model:
         # 模型名称（用于日志显示）
         # 推荐使用国产 BGE 系列，与 Qwen 配套效果更好
-        name: bge-m3
+        name: bge-base-zh
 
         # 模型文件路径（相对于 resources）
-        # BGE-M3: 智源研究院开发，中文效果优秀，支持多语言
-        path: ./models/bge-m3/model.onnx
+        # BGE-Base-ZH: 智源研究院开发，中文效果优秀，兼容性好
+        # 注意：bge-m3 模型 IR 版本过高，使用 bge-base-zh 替代
+        path: ./models/bge-base-zh/model.onnx
 
         # 模型搜索路径（按优先级排序，已调整为国产优先）
         # 系统会按顺序在这些目录中查找模型文件
         search-paths:
-          - bge-m3                      # BGE-M3 (推荐, 智源, 2024最新) ✅
+          - bge-base-zh                 # BGE-Base-ZH (推荐, 智源, 兼容性好) ✅
           - bge-large-zh                # BGE Large ZH (智源, 中文优化)
           - bge-base-zh-v1.5            # BGE Base ZH v1.5 (智源, 轻量级)
+          - bge-m3                      # BGE-M3 (智源, 2024最新, 需要更新的 ONNX Runtime)
           - text2vec-base-chinese       # Text2Vec (阿里, 经典)
-          - paraphrase-multilingual     # Paraphrase Multilingual (备用)
-          - multilingual-e5-large       # Multilingual E5 Large (备用)
+#          - paraphrase-multilingual     # Paraphrase Multilingual (备用)
+#          - multilingual-e5-large       # Multilingual E5 Large (备用)
 
         # 模型文件名（按优先级排序）
         file-names:
@@ -526,7 +532,7 @@ knowledge:
         #
         # 当前配置: 优先使用 VISION_LLM_API_KEY，如果未设置则使用 AI_API_KEY
         # 本地 Ollama 不需要 API Key
-        api-key: ${VISION_LLM_API_KEY:${QW_API_KEY:}}
+        api-key: ${QW_API_KEY:}
 
         # 💡 提示：如果要直接配置 API Key，替换上面一行为:
         # api-key: sk-your-actual-api-key

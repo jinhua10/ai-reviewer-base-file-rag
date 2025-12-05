@@ -217,10 +217,16 @@ public class KnowledgeQAService {
 
         } catch (OrtException | IOException e) {
             log.error(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
+            log.warn("⚠️ 向量搜索初始化失败，系统将仅使用文本搜索功能（Vector search initialization failed, system will use text search only）");
+            log.warn("💡 提示：embedding 模型文件不完整或损坏（Hint: embedding model file is incomplete or corrupted）");
+            log.warn("📝 解决方案：");
+            log.warn("   1. 在 application.yml 中设置 knowledge.qa.vector-search.enabled: false");
+            log.warn("   2. 或下载完整的 ONNX 模型文件（包含 .onnx 和 .onnx_data 文件）");
             log.warn(LogMessageProvider.getMessage("knowledge_qa_service.model_download_hint"));
             log.warn(LogMessageProvider.getMessage("knowledge_qa_service.model_doc_hint"));
             embeddingEngine = null;
             vectorIndexEngine = null;
+            // 不抛出异常，允许系统继续运行（只使用文本搜索）
         }
     }
 
