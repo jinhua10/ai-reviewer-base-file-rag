@@ -17,6 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MemoEntry {
+    /** 条目唯一标识 */
+    private String id;
+
     /** 片段编号/索引 */
     private int segmentIndex;
 
@@ -152,6 +155,7 @@ public class MemoEntry {
      */
     public static MemoEntry fromSegment(DocumentSegment segment, String keyPoints, int tokens) {
         return MemoEntry.builder()
+                .id("memo-" + segment.getIndex() + "-" + System.currentTimeMillis())
                 .segmentIndex(segment.getIndex())
                 .segmentType(segment.getType())
                 .title(segment.getTitle())
@@ -161,6 +165,13 @@ public class MemoEntry {
                 .createdAt(Instant.now())
                 .lastAccessedAt(Instant.now())
                 .build();
+    }
+
+    /**
+     * 获取当前 Token 数（别名方法）
+     */
+    public int getTokenCount() {
+        return getEffectiveTokens();
     }
 
     /**
