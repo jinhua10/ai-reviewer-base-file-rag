@@ -31,6 +31,11 @@ function QATab() {
     // 相似问题相关状态
     const [expandedSimilarQA, setExpandedSimilarQA] = useState(null); // 展开的相似问题答案
 
+    // 分层反馈和主动学习状态 / Hierarchical feedback and active learning states
+    const [showHierarchicalFeedback, setShowHierarchicalFeedback] = useState(false);
+    const [selectedDocForFeedback, setSelectedDocForFeedback] = useState(null);
+    const [retrievedDocs, setRetrievedDocs] = useState([]); // 用于主动学习推荐
+
     // ============================================================================
     // 副作用 / Effects
     // ============================================================================
@@ -772,6 +777,30 @@ function QATab() {
                                                                 <span className="qa-emoji-text">{text}</span>
                                                             </button>
                                                         ))}
+                                                        {/* 分层反馈按钮 */}
+                                                        <button
+                                                            className="qa-hierarchical-feedback-btn"
+                                                            onClick={() => {
+                                                                setSelectedDocForFeedback({
+                                                                    name: source,
+                                                                    id: source,
+                                                                    content: '' // 内容需要从chunks获取
+                                                                });
+                                                                setShowHierarchicalFeedback(true);
+                                                            }}
+                                                            title="详细反馈（段落/句子级）"
+                                                            style={{
+                                                                marginLeft: '10px',
+                                                                padding: '5px 10px',
+                                                                backgroundColor: '#e3f2fd',
+                                                                border: '1px solid #2196f3',
+                                                                borderRadius: '4px',
+                                                                cursor: 'pointer',
+                                                                fontSize: '12px'
+                                                            }}
+                                                        >
+                                                            📊 详细反馈
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -854,6 +883,23 @@ function QATab() {
                             )}
                         </div>
 
+                        {/* 主动学习推荐面板 / Active Learning Panel */}
+                        {window.ActiveLearningPanel && answer.sources && (
+                            <ActiveLearningPanel
+                                question={question}
+                                retrievedDocs={answer.sources.map((s, i) => ({
+                                    id: s,
+                                    title: s,
+                                    rank: i + 1
+                                }))}
+                                topKUsed={answer.sources?.length || 5}
+                                onFeedbackSubmit={(docName, isRelevant) => {
+                                    console.log('主动学习反馈:', docName, isRelevant);
+                                }}
+                                t={t}
+                            />
+                        )}
+
                         {/* 响应时间 */}
                         <div className="response-time">
                             {t('qaResponseTime')}: {answer.responseTimeMs}ms
@@ -871,6 +917,45 @@ function QATab() {
                     <p style={{fontSize: '14px', marginTop: '10px', color: '#ccc'}}>
                         {t('qaEmptyExample')}
                     </p>
+                </div>
+            )}
+
+            {/* 分层反馈弹窗 / Hierarchical Feedback Modal */}
+            {showHierarchicalFeedback && selectedDocForFeedback && window.HierarchicalFeedbackPanel && (
+                <div
+                    className="qa-modal-overlay"
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        zIndex: 1000
+                    }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowHierarchicalFeedback(false);
+                            setSelectedDocForFeedback(null);
+                        }
+                    }}
+                >
+                    <div style={{ maxWidth: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+                        <HierarchicalFeedbackPanel
+                            qaRecordId={answer?.recordId || 'unknown'}
+                            documentName={selectedDocForFeedback.name}
+                            documentId={selectedDocForFeedback.id}
+                            documentContent={selectedDocForFeedback.content}
+                            onClose={() => {
+                                setShowHierarchicalFeedback(false);
+                                setSelectedDocForFeedback(null);
+                            }}
+                            t={t}
+                        />
+                    </div>
                 </div>
             )}
         </div>
