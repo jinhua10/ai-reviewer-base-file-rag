@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
  * 混合检索服务（Hybrid search service）
  * 结合 Lucene 关键词检索和向量语义检索（Combines Lucene keyword search and vector semantic search）
  *
+ * 📈 优化（2025-12-05）：集成查询扩展服务，提升召回率
+ *
  * @author AI Reviewer Team
  * @since 2025-11-22
  */
@@ -28,10 +31,15 @@ public class HybridSearchService {
 
     private final KnowledgeQAProperties properties;
     private final SearchConfigService configService;
+    private final QueryExpansionService queryExpansionService;
 
-    public HybridSearchService(KnowledgeQAProperties properties, SearchConfigService configService) {
+    @Autowired
+    public HybridSearchService(KnowledgeQAProperties properties,
+                               SearchConfigService configService,
+                               @Autowired(required = false) QueryExpansionService queryExpansionService) {
         this.properties = properties;
         this.configService = configService;
+        this.queryExpansionService = queryExpansionService;
     }
 
     /**
@@ -49,8 +57,11 @@ public class HybridSearchService {
         try {
             long startTime = System.currentTimeMillis();
 
+            // 0. 查询扩展（优化：提升召回率）
+            String expandedQuestion = expandQueryIfEnabled(question);
+
             // 1. Lucene 关键词检索（快速粗筛）
-            String keywords = extractKeywords(question);
+            String keywords = extractKeywords(expandedQuestion);
             log.info(LogMessageProvider.getMessage("log.hybrid.extract_keywords", keywords));
 
             int luceneLimit = configService.getLuceneTopK();
@@ -252,5 +263,28 @@ public class HybridSearchService {
         return Arrays.stream(question.split("\\s+"))
             .filter(word -> !stopWords.contains(word) && word.length() > 1)
             .collect(Collectors.joining(" "));
+    }
+
+    /**
+     * 查询扩展（如果启用）
+     *
+     * 📈 优化（2025-12-05）：通过同义词扩展提升召回率
+     */
+    private String expandQueryIfEnabled(String question) {
+        if (queryExpansionService == null) {
+            return question;
+        }
+
+        try {
+            // 使用简单扩展（不调用 LLM，避免延迟）
+            String expanded = queryExpansionService.simpleExpand(question);
+            if (!expanded.equals(question)) {
+                log.debug("🔍 查询扩展: {} -> {}", question, expanded);
+            }
+            return expanded;
+        } catch (Exception e) {
+            log.warn("⚠️ 查询扩展失败，使用原始查询: {}", e.getMessage());
+            return question;
+        }
     }
 }
