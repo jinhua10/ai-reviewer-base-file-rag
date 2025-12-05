@@ -62,12 +62,12 @@ public class ImageProcessingConfiguration {
                 break;
 
             case "llm-vision":
-                // 强制使用 LLMClient
+                // 强制使用 LLMClient（Force using LLMClient）
                 if (llmClient != null && llmClient.supportsImageInput()) {
                     addLLMClientVisionStrategy(extractor);
                 } else {
-                    // 如果主 LLM 不支持图片，退回到 vision-llm 配置
-                    log.warn("⚠️  主 LLM 不支持图片输入，退回到 vision-llm 配置");
+                    // 如果主 LLM 不支持图片，退回到 vision-llm 配置（If main LLM doesn't support images, fallback to vision-llm config）
+                    log.warn(LogMessageProvider.getMessage("log.imageproc.llm_fallback_vision"));
                     addVisionLlmStrategy(extractor, config);
                 }
                 break;
@@ -97,7 +97,7 @@ public class ImageProcessingConfiguration {
 
     /**
      * 添加 LLMClient Vision 策略（Add LLMClient Vision strategy）
-     * 复用主 LLM 客户端进行图片处理
+     * 复用主 LLM 客户端进行图片处理（Reuse main LLM client for image processing）
      */
     private void addLLMClientVisionStrategy(SmartImageExtractor extractor) {
         if (llmClient == null) {
@@ -105,8 +105,8 @@ public class ImageProcessingConfiguration {
             return;
         }
 
-        log.debug("检查 LLM 客户端是否支持图片：模型={}, 支持图片={}",
-                  llmClient.getModelName(), llmClient.supportsImageInput());
+        log.debug(LogMessageProvider.getMessage("log.imageproc.check_llm_support",
+                  llmClient.getModelName(), llmClient.supportsImageInput()));
 
         if (!llmClient.supportsImageInput()) {
             log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_image_support", llmClient.getModelName()));
@@ -137,7 +137,7 @@ public class ImageProcessingConfiguration {
             String language = ocrConfig.getLanguage();
 
             log.info(LogMessageProvider.getMessage("log.imageproc.add_ocr"));
-            log.info(LogMessageProvider.getMessage("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : "系统默认"));
+            log.info(LogMessageProvider.getMessage("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : LogMessageProvider.getMessage("log.imageproc.tessdata_default")));
             log.info(LogMessageProvider.getMessage("log.imageproc.language", language));
 
             TesseractOCRStrategy ocrStrategy = new TesseractOCRStrategy(tessdataPath, language);

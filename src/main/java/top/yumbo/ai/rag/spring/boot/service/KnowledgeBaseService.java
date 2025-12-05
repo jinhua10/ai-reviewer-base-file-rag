@@ -105,7 +105,7 @@ public class KnowledgeBaseService {
             // 1.1 初始化幻灯片缓存服务（Initialize slide cache service）
             if (slideContentCacheService != null) {
                 slideContentCacheService.initialize(storagePath);
-                log.info("✅ 幻灯片缓存服务已初始化");
+                log.info(LogMessageProvider.getMessage("slide_cache.log.init_success"));
             }
 
             // 2. 扫描文件（Scan files）

@@ -1,0 +1,352 @@
+# ============================================================
+# spring.boot package i18n Configuration (English)
+# New keys to be merged into messages_en.yml
+# Created: 2025-12-05
+# ============================================================
+
+# ============================================================
+# LLM Result Document Service (LLMResultDocumentService)
+# ============================================================
+llm_result:
+  log:
+    result_saved: "✅ LLM result saved: {0} -> {1}"
+    save_failed: "Failed to save LLM result"
+    read_failed: "Failed to read document: {0}"
+    pdf_not_implemented: "PDF export not implemented, returning Markdown bytes"
+    document_deleted: "✅ Document deleted: {0}"
+    delete_failed: "Failed to delete document: {0}"
+    download_image_failed: "Failed to download image: {0}"
+    add_to_kb: "📚 Auto-added to knowledge base: {0}"
+  error:
+    save_failed: "Failed to save LLM result: {0}"
+
+# ============================================================
+# LLM Result Collector (LLMResultCollector)
+# ============================================================
+llm_collector:
+  log:
+    qa_result_saved: "✅ QA result auto-saved"
+    qa_collect_failed: "Failed to collect QA result"
+    doc_analysis_saved: "✅ Document analysis result auto-saved"
+    doc_analysis_collect_failed: "Failed to collect document analysis result"
+    image_analysis_saved: "✅ Image analysis result auto-saved"
+    image_analysis_collect_failed: "Failed to collect image analysis result"
+    session_start: "📝 Session collection started: {0} ({1})"
+    session_not_found: "Session not found: {0}"
+    session_add: "➕ Added to session {0}: {1}"
+    session_empty: "Session is empty or not found: {0}"
+    session_saved: "✅ Session results saved: {0} ({1} segments)"
+    session_save_failed: "Failed to save session results: {0}"
+    session_cancelled: "❌ Session cancelled: {0}"
+  title:
+    qa_prefix: "Q&A: "
+    doc_analysis_prefix: "Document Analysis: "
+    image_analysis: "Image Analysis"
+    progressive_analysis: "Progressive Analysis"
+  section:
+    analysis_process: "Analysis Process"
+    comprehensive_summary: "Comprehensive Summary"
+
+# ============================================================
+# ImageProcessingConfiguration Additions
+# ============================================================
+log:
+  imageproc:
+    llm_fallback_vision: "⚠️  Main LLM doesn't support image input, falling back to vision-llm config"
+    check_llm_support: "Checking if LLM client supports images: model={0}, supports_image={1}"
+    tessdata_default: "System default"
+
+# ============================================================
+# PPL Service Configuration (PPLConfiguration)
+# ============================================================
+ppl:
+  log:
+    onnx_init_start: "🚀 Initializing ONNX PPL service..."
+    onnx_init_success: "✅ ONNX PPL service initialized successfully"
+    onnx_init_failed: "❌ ONNX PPL service initialization failed: {0}"
+    facade_init_start: "🚀 Initializing PPL service facade..."
+    facade_init_success: "✅ PPL service facade initialized, default provider: {0}"
+
+# ============================================================
+# DocumentManagementController
+# ============================================================
+doc_management:
+  log:
+    pagination: "Pagination: page {0}, size {1}, total pages {2}, returned {3}"
+    sort_complete: "Sort complete: {0} {1}"
+    search_mode_failed: "Search mode '{0}' failed: {1}"
+    date_filter_failed: "Date filter failed: {0}"
+    delete_document: "Delete document: {0}"
+    delete_failed: "Failed to delete document"
+    download_document: "Download document: {0}"
+    filename_bytes: "Filename bytes: {0}"
+    find_path: "Find path: {0}"
+    file_not_exists: "❌ File not exists: {0} (path: {1})"
+    possible_reasons: "💡 Possible reasons:"
+    reason_deleted: "   1. File exists only in knowledge base index, but source file was deleted"
+    reason_special_chars: "   2. Filename contains special characters causing path resolution error"
+    reason_not_uploaded: "   3. File was never uploaded to documents directory"
+    file_not_readable: "File not readable: {0}"
+    download_failed: "Failed to download document: {0}"
+    batch_download: "Batch download documents: {0}"
+    filename_list: "Filename list: {0}"
+    find_file: "Find file: {0} -> {1}"
+    added_to_zip: "Added to ZIP: {0}"
+    file_not_exists_skip: "File not exists, skipping: {0} (path: {1})"
+    add_to_zip_failed: "Failed to add file to ZIP: {0}"
+    temp_zip_deleted: "Temp ZIP file deleted: {0}"
+    delete_temp_zip_failed: "Failed to delete temp ZIP file: {0}"
+    batch_download_failed: "Batch download failed"
+    get_file_types: "Get uploaded document file types list"
+    get_file_types_failed: "Failed to get file types list"
+    get_file_types_success: "Successfully got file types list, total {0} types"
+    get_file_types_error: "Failed to get file types list: {0}"
+
+# ============================================================
+# DocumentQAController and DocumentQAService
+# ============================================================
+doc_qa:
+  log:
+    receive_request: "Received document QA request: document={0}, path={1}, question={2}"
+    qa_failed: "Document QA failed"
+    ppt_request: "Received PPT progressive analysis request: document={0}, path={1}, question={2}"
+    ppt_failed: "PPT analysis failed"
+    cleanup_failed: "Cleanup session failed"
+    create_temp_dir: "Create document QA temp directory: {0}"
+    create_temp_dir_failed: "Failed to create temp directory"
+    start_qa: "📄 Starting document QA: {0} (session ID: {1})"
+    question: "❓ Question: {0}"
+    batch_mode: "📦 Document is large, enabling batch processing mode"
+    direct_mode: "📝 Document is small, processing directly"
+    qa_complete: "✅ Document QA complete: {0} (took: {1}ms)"
+    qa_error: "❌ Document QA failed"
+    direct_process_failed: "Direct document processing failed"
+    split_batches: "📦 Document split into {0} batches"
+    process_batch: "🔄 Processing batch {0}/{1} (size: {2} chars)"
+    batch_key_points: "💡 Batch {0} key points extracted ({1} chars)"
+    batch_complete: "✅ Batch {0}/{1} complete"
+    batch_process_failed: "Batch document processing failed"
+    generate_summary: "📊 Generating final summary..."
+    summary_complete: "✅ Final summary complete ({0} chars)"
+    generate_summary_failed: "Failed to generate final summary"
+    batch_result_saved: "💾 Batch result saved: {0}"
+    save_batch_failed: "Failed to save batch result"
+    report_saved: "📊 Final report saved: {0}"
+    save_report_failed: "Failed to save final report"
+    temp_file_deleted: "🗑️ Temp file deleted: {0}"
+    delete_temp_failed: "Failed to delete temp file: {0}"
+    file_process_failed: "File processing failed"
+    doc_analysis_request: "📄 Received document analysis request: {0}, question: {1}"
+
+# ============================================================
+# DocumentProgressiveAnalysisController
+# ============================================================
+doc_progressive_ctrl:
+  log:
+    receive_request: "📄 Received document analysis request: {0}, question: {1}"
+    file_process_failed: "File processing failed"
+
+# ============================================================
+# PPTProgressiveAnalysisService
+# ============================================================
+ppt_analysis:
+  log:
+    start_analysis: "📊 Starting progressive PPT analysis: {0} ({1} slides)"
+    analyze_slide: "🔍 Analyzing slide {0}/{1}"
+    slide_complete: "✅ Slide {0} analysis complete, key points: {1}"
+    analysis_complete: "🎉 PPT progressive analysis complete, took: {0}ms"
+    analysis_failed: "PPT analysis failed"
+    slide_failed: "Slide {0} analysis failed"
+    generate_summary: "📊 Generating PPT comprehensive summary..."
+    direct_llm_summary: "📝 Calling LLM directly to generate final summary"
+    summary_complete: "✅ Comprehensive summary complete"
+    summary_failed: "Failed to generate comprehensive summary"
+
+# ============================================================
+# SearchConfigService
+# ============================================================
+search_config:
+  log:
+    lucene_updated: "✅ Dynamic config updated: luceneTopK = {0}"
+    vector_updated: "✅ Dynamic config updated: vectorTopK = {0}"
+    hybrid_updated: "✅ Dynamic config updated: hybridTopK = {0}"
+    docs_per_query_updated: "✅ Dynamic config updated: documentsPerQuery = {0}"
+    min_score_updated: "✅ Dynamic config updated: minScoreThreshold = {0}"
+    batch_update_complete: "✅ Batch config update complete"
+    reset_to_default: "✅ Config reset to default values (yml config)"
+
+# ============================================================
+# SlideContentCacheService
+# ============================================================
+slide_cache:
+  log:
+    init_success: "✅ Slide cache service initialized"
+    create_cache_dir: "Create slide cache directory: {0}"
+    init_failed: "Failed to initialize slide cache"
+    save_failed: "Failed to save slide cache"
+    hash_failed: "Failed to calculate slide hash"
+    clear_failed: "Failed to clear cache"
+    delete_ppt_cache_failed: "Failed to delete PPT cache"
+    load_cache_index: "Load slide cache index: {0} PPT files"
+    load_cache_index_failed: "Failed to load cache index, creating new index"
+    save_cache_index: "Save slide cache index: {0} PPT files"
+
+# ============================================================
+# SimilarQAService
+# ============================================================
+similar_qa:
+  log:
+    no_valid_keywords: "Query has no valid keywords: {0}"
+    query_keywords: "Query keywords: {0}"
+
+# ============================================================
+# DocumentPreprocessingService
+# ============================================================
+doc_preprocess:
+  log:
+    ppl_disabled: "📦 PPL service is disabled"
+    ppl_enabled: "✅ PPL service is enabled"
+
+# ============================================================
+# KnowledgeQAService Additions
+# ============================================================
+knowledge_qa_extra:
+  log:
+    vector_init_failed_warning: "⚠️ Vector search initialization failed, system will use text search only"
+    model_incomplete_hint: "💡 Hint: embedding model file is incomplete or corrupted"
+    solutions: "📝 Solutions:"
+    solution_disable_vector: "   1. Set knowledge.qa.vector-search.enabled: false in application.yml"
+    solution_download_model: "   2. Or download complete ONNX model files (including .onnx and .onnx_data files)"
+
+# ============================================================
+# KnowledgeBaseService
+# ============================================================
+kb_service_extra:
+  log:
+    slide_cache_init: "✅ Slide cache service initialized"
+
+# ============================================================
+# LLMResultDocumentController
+# ============================================================
+llm_result_ctrl:
+  log:
+    save_failed: "Failed to save result"
+    batch_save_failed: "Batch save failed"
+
+# ============================================================
+# DocumentMemoManagerImpl
+# ============================================================
+memo_manager:
+  log:
+    start_document: "📄 Starting document analysis: {0} ({1} segments)"
+    add_segment: "📝 Adding segment analysis: {0} - {1}"
+    mark_independent: "⭐ Marked as independent important entry: {0}"
+    user_mark_important: "⭐ User marked segment {0} as important"
+    recall_memos: "📋 Recalled {0} related memos, total {1} tokens"
+    skip_compress: "⏭️ Skip compression: {0} (already concise enough)"
+    llm_compress_complete: "✅ LLM compression complete: {0} -> {1} tokens"
+    llm_compress_failed: "⚠️ LLM compression failed, using truncation: {0}"
+    memo_cleared: "🧹 Memo cleared"
+    export_json_failed: "Failed to export JSON"
+    move_to_long_term: "📦 Moving to long-term memo: {0} ({1} tokens)"
+    remove_old_entry: "🗑️ Removing old entry: {0}"
+
+# ============================================================
+# DocumentProgressiveAnalysisService
+# ============================================================
+doc_progressive:
+  log:
+    start_analysis: "📚 Starting progressive document analysis: {0} (parser: {1})"
+    total_segments: "📄 Document has {0} segments"
+    analyze_segment: "🔍 Analyzing segment {0}/{1}: {2}"
+    stage_output: "📊 Generating stage output: {0}"
+    segment_complete: "✅ Segment {0} analysis complete"
+    analysis_complete: "🎉 Document analysis complete, took: {0}ms"
+    analysis_failed: "Document analysis failed: {0}"
+    segment_failed: "Segment {0} analysis failed"
+    generate_summary: "📊 Generating document comprehensive summary..."
+    summary_complete: "✅ Comprehensive summary complete"
+    summary_failed: "Failed to generate comprehensive summary"
+  error:
+    unsupported_type: "Unsupported document type: {0}"
+
+# ============================================================
+# KeywordInvertedIndex
+# ============================================================
+keyword_index:
+  log:
+    index_entry: "Index entry: {0} ({1} keywords)"
+    index_cleared: "Keyword index cleared"
+
+# ============================================================
+# MemoAggregator
+# ============================================================
+memo_aggregator:
+  log:
+    aggregate_by_topic: "Aggregate by topic: {0} entries -> {1} topic groups"
+    llm_aggregate_failed: "LLM aggregation failed, using simple aggregation: {0}"
+    merge_similar: "Merge similar entries: {0} -> {1}"
+
+# ============================================================
+# MemoDocumentExporter
+# ============================================================
+memo_exporter:
+  log:
+    export_json_failed: "Failed to export JSON"
+    exported_to: "Memo exported to: {0}"
+
+# ============================================================
+# RelevanceRecallService
+# ============================================================
+relevance_recall:
+  log:
+    recall_complete: "Recalled {0} related entries, total tokens: {1}"
+
+# ============================================================
+# StageOutputManagerImpl
+# ============================================================
+stage_output:
+  log:
+    generate_output: "📊 Generating stage output ({0}%)"
+    output_complete: "✅ Stage output complete: {0}"
+    manager_cleared: "🧹 Stage output manager cleared"
+    generate_failed: "Failed to generate stage summary, using simple summary: {0}"
+
+# ============================================================
+# DocumentParserFactory
+# ============================================================
+parser_factory:
+  log:
+    registered_parsers: "📚 Registered {0} document parsers"
+    select_parser: "Selected parser: {0} for {1}"
+    no_parser_found: "No supported parser found: {0}"
+    register_parser: "Register parser: {0} - {1}"
+
+# ============================================================
+# PDFDocumentParser
+# ============================================================
+pdf_parser:
+  log:
+    parse_file: "📄 Parsing PDF file: {0} ({1} pages)"
+    parse_page: "  Parsing page {0}: {1} ({2} chars)"
+    parse_failed: "Failed to parse PDF file: {0}"
+
+# ============================================================
+# PPTDocumentParser
+# ============================================================
+ppt_parser:
+  log:
+    parse_file: "📊 Parsing PPT file: {0} ({1} slides)"
+    parse_slide: "  Parsing slide {0}: {1}"
+    parse_failed: "Failed to parse PPT file: {0}"
+
+# ============================================================
+# WordDocumentParser
+# ============================================================
+word_parser:
+  log:
+    parse_file: "📝 Parsing Word file: {0}"
+    parse_chapter: "  Parsing chapter {0}: {1} ({2} chars)"
+    parse_complete: "✅ Word file parsing complete: {0} segments"
+    parse_failed: "Failed to parse Word file: {0}"
+

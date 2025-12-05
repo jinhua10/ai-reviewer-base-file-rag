@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.service.DocumentQAService;
 import top.yumbo.ai.rag.spring.boot.service.PPTProgressiveAnalysisService;
 
@@ -100,8 +101,8 @@ public class DocumentQAController {
 
         try {
             String filePath = resolveFilePath(request.getDocumentPath());
-            log.info("收到PPT渐进式分析请求: 文档={}, 解析路径={}, 问题={}",
-                request.getDocumentPath(), filePath, request.getQuestion());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.ppt_request",
+                request.getDocumentPath(), filePath, request.getQuestion()));
 
             File pptFile = new File(filePath);
 
@@ -111,7 +112,7 @@ public class DocumentQAController {
             return ResponseEntity.ok(report);
 
         } catch (Exception e) {
-            log.error("PPT分析失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.ppt_failed"), e);
 
             PPTProgressiveAnalysisService.PPTAnalysisReport errorReport =
                 new PPTProgressiveAnalysisService.PPTAnalysisReport();
@@ -123,16 +124,16 @@ public class DocumentQAController {
     }
 
     /**
-     * 清理会话临时文件
+     * 清理会话临时文件（Cleanup session temp files）
      */
     @DeleteMapping("/cleanup/{sessionId}")
     public ResponseEntity<String> cleanupSession(@PathVariable String sessionId) {
         try {
             documentQAService.cleanupSession(sessionId);
-            return ResponseEntity.ok("会话临时文件已清理: " + sessionId);
+            return ResponseEntity.ok("Session temp files cleaned: " + sessionId);
         } catch (Exception e) {
-            log.error("清理会话失败", e);
-            return ResponseEntity.internalServerError().body("清理失败: " + e.getMessage());
+            log.error(LogMessageProvider.getMessage("doc_qa.log.cleanup_failed"), e);
+            return ResponseEntity.internalServerError().body("Cleanup failed: " + e.getMessage());
         }
     }
 

@@ -3,10 +3,11 @@ package top.yumbo.ai.rag.spring.boot.service;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 
 /**
- * 搜索配置服务 - 支持动态修改检索参数
+ * 搜索配置服务 - 支持动态修改检索参数（Search config service - supports dynamic parameter modification）
  *
  * @author AI Reviewer Team
  * @since 2025-11-29
@@ -17,7 +18,7 @@ public class SearchConfigService {
 
     private final KnowledgeQAProperties properties;
 
-    // 运行时配置覆盖（优先级高于yml配置）
+    // 运行时配置覆盖（优先级高于yml配置）（Runtime config override）
     private RuntimeConfig runtimeConfig = new RuntimeConfig();
 
     public SearchConfigService(KnowledgeQAProperties properties) {
@@ -25,7 +26,7 @@ public class SearchConfigService {
     }
 
     /**
-     * 获取Lucene检索的top-k（优先使用运行时配置）
+     * 获取Lucene检索的top-k（优先使用运行时配置）（Get Lucene top-k）
      */
     public int getLuceneTopK() {
         return runtimeConfig.luceneTopK != null
@@ -34,7 +35,7 @@ public class SearchConfigService {
     }
 
     /**
-     * 获取向量检索的top-k（优先使用运行时配置）
+     * 获取向量检索的top-k（优先使用运行时配置）（Get vector top-k）
      */
     public int getVectorTopK() {
         return runtimeConfig.vectorTopK != null
@@ -43,7 +44,7 @@ public class SearchConfigService {
     }
 
     /**
-     * 获取混合检索的top-k（优先使用运行时配置）
+     * 获取混合检索的top-k（优先使用运行时配置）（Get hybrid top-k）
      */
     public int getHybridTopK() {
         return runtimeConfig.hybridTopK != null
@@ -52,7 +53,7 @@ public class SearchConfigService {
     }
 
     /**
-     * 获取每次问答引用的文档数（优先使用运行时配置）
+     * 获取每次问答引用的文档数（优先使用运行时配置）（Get documents per query）
      */
     public int getDocumentsPerQuery() {
         return runtimeConfig.documentsPerQuery != null
@@ -61,7 +62,7 @@ public class SearchConfigService {
     }
 
     /**
-     * 获取最小评分阈值（优先使用运行时配置）
+     * 获取最小评分阈值（优先使用运行时配置）（Get min score threshold）
      */
     public float getMinScoreThreshold() {
         return runtimeConfig.minScoreThreshold != null
@@ -70,62 +71,62 @@ public class SearchConfigService {
     }
 
     /**
-     * 更新Lucene检索的top-k
+     * 更新Lucene检索的top-k（Update Lucene top-k）
      */
     public void setLuceneTopK(int luceneTopK) {
         if (luceneTopK <= 0) {
             throw new IllegalArgumentException("luceneTopK must be positive");
         }
         runtimeConfig.luceneTopK = luceneTopK;
-        log.info("✅ 动态配置已更新: luceneTopK = {}", luceneTopK);
+        log.info(LogMessageProvider.getMessage("search_config.log.lucene_updated", luceneTopK));
     }
 
     /**
-     * 更新向量检索的top-k
+     * 更新向量检索的top-k（Update vector top-k）
      */
     public void setVectorTopK(int vectorTopK) {
         if (vectorTopK <= 0) {
             throw new IllegalArgumentException("vectorTopK must be positive");
         }
         runtimeConfig.vectorTopK = vectorTopK;
-        log.info("✅ 动态配置已更新: vectorTopK = {}", vectorTopK);
+        log.info(LogMessageProvider.getMessage("search_config.log.vector_updated", vectorTopK));
     }
 
     /**
-     * 更新混合检索的top-k
+     * 更新混合检索的top-k（Update hybrid top-k）
      */
     public void setHybridTopK(int hybridTopK) {
         if (hybridTopK <= 0) {
             throw new IllegalArgumentException("hybridTopK must be positive");
         }
         runtimeConfig.hybridTopK = hybridTopK;
-        log.info("✅ 动态配置已更新: hybridTopK = {}", hybridTopK);
+        log.info(LogMessageProvider.getMessage("search_config.log.hybrid_updated", hybridTopK));
     }
 
     /**
-     * 更新每次问答引用的文档数
+     * 更新每次问答引用的文档数（Update documents per query）
      */
     public void setDocumentsPerQuery(int documentsPerQuery) {
         if (documentsPerQuery <= 0) {
             throw new IllegalArgumentException("documentsPerQuery must be positive");
         }
         runtimeConfig.documentsPerQuery = documentsPerQuery;
-        log.info("✅ 动态配置已更新: documentsPerQuery = {}", documentsPerQuery);
+        log.info(LogMessageProvider.getMessage("search_config.log.docs_per_query_updated", documentsPerQuery));
     }
 
     /**
-     * 更新最小评分阈值
+     * 更新最小评分阈值（Update min score threshold）
      */
     public void setMinScoreThreshold(float minScoreThreshold) {
         if (minScoreThreshold < 0 || minScoreThreshold > 1) {
             throw new IllegalArgumentException("minScoreThreshold must be between 0 and 1");
         }
         runtimeConfig.minScoreThreshold = minScoreThreshold;
-        log.info("✅ 动态配置已更新: minScoreThreshold = {}", minScoreThreshold);
+        log.info(LogMessageProvider.getMessage("search_config.log.min_score_updated", minScoreThreshold));
     }
 
     /**
-     * 批量更新配置
+     * 批量更新配置（Batch update config）
      */
     public void updateConfig(SearchConfigUpdate update) {
         if (update.getLuceneTopK() != null) {
@@ -143,15 +144,15 @@ public class SearchConfigService {
         if (update.getMinScoreThreshold() != null) {
             setMinScoreThreshold(update.getMinScoreThreshold());
         }
-        log.info("✅ 批量配置更新完成");
+        log.info(LogMessageProvider.getMessage("search_config.log.batch_update_complete"));
     }
 
     /**
-     * 重置为默认配置（yml配置）
+     * 重置为默认配置（yml配置）（Reset to default config）
      */
     public void resetToDefault() {
         runtimeConfig = new RuntimeConfig();
-        log.info("✅ 配置已重置为默认值（yml配置）");
+        log.info(LogMessageProvider.getMessage("search_config.log.reset_to_default"));
     }
 
     /**

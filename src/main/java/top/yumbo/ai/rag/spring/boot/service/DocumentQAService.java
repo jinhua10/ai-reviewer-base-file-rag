@@ -43,7 +43,7 @@ public class DocumentQAService {
     }
 
     /**
-     * 初始化临时目录
+     * 初始化临时目录（Initialize temp directory）
      */
     private void initTempDir(String storagePath) {
         this.tempDir = storagePath + File.separator + ".doc_qa_temp";
@@ -52,32 +52,32 @@ public class DocumentQAService {
         try {
             if (!Files.exists(tempDirPath)) {
                 Files.createDirectories(tempDirPath);
-                log.info("创建文档问答临时目录: {}", tempDir);
+                log.info(LogMessageProvider.getMessage("doc_qa.log.create_temp_dir", tempDir));
             }
         } catch (IOException e) {
-            log.error("创建临时目录失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.create_temp_dir_failed"), e);
         }
     }
 
     /**
-     * 对完整文档进行AI问答
+     * 对完整文档进行AI问答（Query document with AI）
      *
-     * @param documentPath 文档路径
-     * @param question 问题
-     * @param storagePath 知识库存储路径
-     * @return 问答报告
+     * @param documentPath 文档路径（Document path）
+     * @param question 问题（Question）
+     * @param storagePath 知识库存储路径（Knowledge base storage path）
+     * @return 问答报告（QA Report）
      */
     public DocumentQAReport queryDocument(String documentPath, String question, String storagePath) {
         initTempDir(storagePath);
 
         File docFile = new File(documentPath);
         if (!docFile.exists()) {
-            throw new IllegalArgumentException("文档不存在: " + documentPath);
+            throw new IllegalArgumentException("Document not found: " + documentPath);
         }
 
         String sessionId = UUID.randomUUID().toString();
-        log.info("📄 开始文档问答: {} (会话ID: {})", docFile.getName(), sessionId);
-        log.info("❓ 问题: {}", question);
+        log.info(LogMessageProvider.getMessage("doc_qa.log.start_qa", docFile.getName(), sessionId));
+        log.info(LogMessageProvider.getMessage("doc_qa.log.question", question));
 
         DocumentQAReport report = new DocumentQAReport();
         report.setSessionId(sessionId);
@@ -86,31 +86,31 @@ public class DocumentQAService {
         report.setStartTime(System.currentTimeMillis());
 
         try {
-            // 1. 检查文档大小并决定是否分批
+            // 1. 检查文档大小并决定是否分批（Check document size and decide whether to batch）
             long fileSize = docFile.length();
             int maxChunkSize = properties.getDocument().getMaxIndexContentLength();
 
             boolean needsChunking = shouldChunkDocument(docFile, maxChunkSize);
 
             if (needsChunking) {
-                log.info("📦 文档较大，启用分批处理模式");
+                log.info(LogMessageProvider.getMessage("doc_qa.log.batch_mode"));
                 processInChunks(docFile, question, sessionId, report);
             } else {
-                log.info("📝 文档较小，直接处理");
+                log.info(LogMessageProvider.getMessage("doc_qa.log.direct_mode"));
                 processDirectly(docFile, question, sessionId, report);
             }
 
-            // 2. 生成最终报告
+            // 2. 生成最终报告（Generate final report）
             generateFinalReport(report);
 
             report.setEndTime(System.currentTimeMillis());
             report.setSuccess(true);
 
-            log.info("✅ 文档问答完成: {} (耗时: {}ms)",
-                docFile.getName(), report.getEndTime() - report.getStartTime());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.qa_complete",
+                docFile.getName(), report.getEndTime() - report.getStartTime()));
 
         } catch (Exception e) {
-            log.error("❌ 文档问答失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.qa_error"), e);
             report.setSuccess(false);
             report.setErrorMessage(e.getMessage());
             report.setEndTime(System.currentTimeMillis());
@@ -120,20 +120,20 @@ public class DocumentQAService {
     }
 
     /**
-     * 判断是否需要分块处理
+     * 判断是否需要分块处理（Check if chunking is needed）
      */
     private boolean shouldChunkDocument(File docFile, int maxContentLength) {
-        // 简单估算：假设1KB文件约产生1-2字符的内容
+        // 简单估算：假设1KB文件约产生1-2字符的内容（Simple estimation）
         long estimatedContentLength = docFile.length() * 2;
         return estimatedContentLength > maxContentLength;
     }
 
     /**
-     * 直接处理整个文档
+     * 直接处理整个文档（Process document directly）
      */
     private void processDirectly(File docFile, String question, String sessionId, DocumentQAReport report) {
         try {
-            // 使用知识库服务进行问答
+            // 使用知识库服务进行问答（Use knowledge base service for QA）
             AIAnswer aiAnswer = knowledgeQAService.ask(question);
             String answer = aiAnswer.getAnswer();
 
@@ -146,12 +146,12 @@ public class DocumentQAService {
 
             report.getBatchResults().add(result);
 
-            // 保存临时结果
+            // 保存临时结果（Save temp result）
             saveBatchResult(sessionId, result);
 
         } catch (Exception e) {
-            log.error("直接处理文档失败", e);
-            throw new RuntimeException("处理失败: " + e.getMessage(), e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.direct_process_failed"), e);
+            throw new RuntimeException("Processing failed: " + e.getMessage(), e);
         }
     }
 
@@ -165,64 +165,64 @@ public class DocumentQAService {
      */
     private void processInChunks(File docFile, String question, String sessionId, DocumentQAReport report) {
         try {
-            // 读取文档内容
+            // 读取文档内容（Read document content）
             String content = readDocumentContent(docFile);
 
-            // 分割成多个批次
+            // 分割成多个批次（Split into batches）
             int maxChunkSize = properties.getDocument().getMaxIndexContentLength() / 2;
             List<String> chunks = splitContent(content, maxChunkSize);
 
-            log.info("📦 文档已分割为 {} 个批次", chunks.size());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.split_batches", chunks.size()));
 
-            // 初始化记忆管理器
+            // 初始化记忆管理器（Initialize memory manager）
             ProgressiveMemory memory = new ProgressiveMemory(3); // 保留最近3个批次的关键信息
 
-            // 逐批处理
+            // 逐批处理（Process each batch）
             for (int i = 0; i < chunks.size(); i++) {
                 int batchId = i + 1;
                 String chunk = chunks.get(i);
 
-                log.info("🔄 处理批次 {}/{} (大小: {} 字符)", batchId, chunks.size(), chunk.length());
+                log.info(LogMessageProvider.getMessage("doc_qa.log.process_batch", batchId, chunks.size(), chunk.length()));
 
-                // 构建带记忆的提示词
+                // 构建带记忆的提示词（Build prompt with memory）
                 String batchPrompt = buildProgressivePrompt(
                     question, chunk, batchId, chunks.size(), memory
                 );
 
-                // 调用AI问答
+                // 调用AI问答（Call AI QA）
                 AIAnswer aiAnswer = knowledgeQAService.ask(batchPrompt);
                 String answer = aiAnswer.getAnswer();
 
-                // 提取本批次的关键信息并加入记忆
+                // 提取本批次的关键信息并加入记忆（Extract key points and add to memory）
                 String keyPoints = extractKeyPoints(aiAnswer, chunk, batchId);
                 memory.addMemory(batchId, keyPoints);
 
-                log.info("💡 批次 {} 关键信息已提取 ({}字符)", batchId, keyPoints.length());
+                log.info(LogMessageProvider.getMessage("doc_qa.log.batch_key_points", batchId, keyPoints.length()));
 
-                // 保存批次结果
+                // 保存批次结果（Save batch result）
                 BatchResult batchResult = new BatchResult();
                 batchResult.setBatchId(batchId);
                 batchResult.setTotalBatches(chunks.size());
                 batchResult.setQuestion(question);
                 batchResult.setContentChunk(chunk);
                 batchResult.setAnswer(answer);
-                batchResult.setKeyPoints(keyPoints); // 保存关键点
+                batchResult.setKeyPoints(keyPoints);
                 batchResult.setTimestamp(System.currentTimeMillis());
 
                 report.getBatchResults().add(batchResult);
 
-                // 临时持久化
+                // 临时持久化（Persist temporarily）
                 saveBatchResult(sessionId, batchResult);
 
-                log.info("✅ 批次 {}/{} 处理完成", batchId, chunks.size());
+                log.info(LogMessageProvider.getMessage("doc_qa.log.batch_complete", batchId, chunks.size()));
             }
 
-            // 最后，使用所有关键记忆生成总结
+            // 最后，使用所有关键记忆生成总结（Finally, generate summary using all key memories）
             generateFinalSummary(report, memory, question);
 
         } catch (Exception e) {
-            log.error("分批处理文档失败", e);
-            throw new RuntimeException("分批处理失败: " + e.getMessage(), e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.batch_process_failed"), e);
+            throw new RuntimeException("Batch processing failed: " + e.getMessage(), e);
         }
     }
 
@@ -313,13 +313,13 @@ public class DocumentQAService {
     }
 
     /**
-     * 生成最终总结（基于所有关键记忆）
+     * 生成最终总结（基于所有关键记忆）（Generate final summary based on all key memories）
      */
     private void generateFinalSummary(DocumentQAReport report, ProgressiveMemory memory, String question) {
         try {
-            log.info("📊 开始生成最终总结...");
+            log.info(LogMessageProvider.getMessage("doc_qa.log.generate_summary"));
 
-            // 构建总结提示词
+            // 构建总结提示词（Build summary prompt）
             StringBuilder summaryPrompt = new StringBuilder();
 
             summaryPrompt.append("# 文档完整总结任务\n\n");
@@ -346,17 +346,17 @@ public class DocumentQAService {
 
             summaryPrompt.append("请生成最终总结报告：\n");
 
-            // 调用AI生成总结
+            // 调用AI生成总结（Call AI to generate summary）
             AIAnswer summaryAnswer = knowledgeQAService.ask(summaryPrompt.toString());
 
-            // 保存到报告
+            // 保存到报告（Save to report）
             report.setFinalReport(summaryAnswer.getAnswer());
 
-            log.info("✅ 最终总结生成完成 ({} 字符)", summaryAnswer.getAnswer().length());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.summary_complete", summaryAnswer.getAnswer().length()));
 
         } catch (Exception e) {
-            log.error("生成最终总结失败", e);
-            // 使用默认合并方式
+            log.error(LogMessageProvider.getMessage("doc_qa.log.generate_summary_failed"), e);
+            // 使用默认合并方式（Use default merge method）
             report.setFinalReport(generateDefaultSummary(report));
         }
     }
@@ -472,7 +472,7 @@ public class DocumentQAService {
     }
 
     /**
-     * 保存批次结果到临时文件
+     * 保存批次结果到临时文件（Save batch result to temp file）
      */
     private void saveBatchResult(String sessionId, BatchResult result) {
         try {
@@ -482,10 +482,10 @@ public class DocumentQAService {
             objectMapper.writerWithDefaultPrettyPrinter()
                        .writeValue(filePath.toFile(), result);
 
-            log.debug("💾 批次结果已保存: {}", fileName);
+            log.debug(LogMessageProvider.getMessage("doc_qa.log.batch_result_saved", fileName));
 
         } catch (IOException e) {
-            log.error("保存批次结果失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.save_batch_failed"), e);
         }
     }
 
@@ -536,7 +536,7 @@ public class DocumentQAService {
     }
 
     /**
-     * 保存最终报告
+     * 保存最终报告（Save final report）
      */
     private void saveFinalReport(DocumentQAReport report) {
         try {
@@ -546,15 +546,15 @@ public class DocumentQAService {
             objectMapper.writerWithDefaultPrettyPrinter()
                        .writeValue(filePath.toFile(), report);
 
-            log.info("📊 最终报告已保存: {}", fileName);
+            log.info(LogMessageProvider.getMessage("doc_qa.log.report_saved", fileName));
 
         } catch (IOException e) {
-            log.error("保存最终报告失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.save_report_failed"), e);
         }
     }
 
     /**
-     * 清理临时文件
+     * 清理临时文件（Cleanup temp files）
      */
     public void cleanupSession(String sessionId) {
         try {
@@ -565,14 +565,14 @@ public class DocumentQAService {
                      .forEach(path -> {
                          try {
                              Files.delete(path);
-                             log.debug("🗑️ 已删除临时文件: {}", path.getFileName());
+                             log.debug(LogMessageProvider.getMessage("doc_qa.log.temp_file_deleted", path.getFileName()));
                          } catch (IOException e) {
-                             log.warn("删除临时文件失败: {}", path.getFileName());
+                             log.warn(LogMessageProvider.getMessage("doc_qa.log.delete_temp_failed", path.getFileName()));
                          }
                      });
             }
         } catch (IOException e) {
-            log.error("清理会话失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.cleanup_failed"), e);
         }
     }
 

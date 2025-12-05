@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
@@ -16,14 +17,14 @@ import java.io.FileInputStream;
 import java.util.*;
 
 /**
- * PPT 渐进式分析服务
+ * PPT 渐进式分析服务（PPT Progressive Analysis Service）
  *
- * 以幻灯片为最小单位，模拟人类阅读PPT的方式：
- * 1. 逐页阅读幻灯片
- * 2. 提取每页的核心观点
- * 3. 维护阅读记忆（前几页的关键点）
- * 4. 根据上下文理解整体结构
- * 5. 生成连贯的总结报告
+ * 以幻灯片为最小单位，模拟人类阅读PPT的方式：（Use slides as minimum unit, simulating human reading behavior）
+ * 1. 逐页阅读幻灯片（Read slides one by one）
+ * 2. 提取每页的核心观点（Extract key points from each slide）
+ * 3. 维护阅读记忆（Maintain reading memory）
+ * 4. 根据上下文理解整体结构（Understand overall structure from context）
+ * 5. 生成连贯的总结报告（Generate coherent summary report）
  *
  * @author AI Reviewer Team
  * @since 2025-12-03
@@ -43,7 +44,7 @@ public class PPTProgressiveAnalysisService {
     }
 
     /**
-     * 渐进式分析PPT
+     * 渐进式分析PPT（Progressive PPT analysis）
      */
     public PPTAnalysisReport analyzeProgressively(File pptFile, String question) {
         PPTAnalysisReport report = new PPTAnalysisReport();
@@ -57,19 +58,19 @@ public class PPTProgressiveAnalysisService {
             List<XSLFSlide> slides = ppt.getSlides();
             int totalSlides = slides.size();
 
-            log.info("📊 开始渐进式分析PPT: {} ({} 张幻灯片)", pptFile.getName(), totalSlides);
+            log.info(LogMessageProvider.getMessage("ppt_analysis.log.start_analysis", pptFile.getName(), totalSlides));
 
-            // 创建文档来源并初始化备忘录管理器
+            // 创建文档来源并初始化备忘录管理器（Create document source and initialize memo manager）
             DocumentSource source = DocumentSource.fromPath(
                     pptFile.getAbsolutePath(), "ppt", totalSlides);
             memoManager.startNewDocument(source);
 
-            // 逐张幻灯片分析
+            // 逐张幻灯片分析（Analyze each slide）
             for (int i = 0; i < slides.size(); i++) {
                 XSLFSlide slide = slides.get(i);
                 int slideNumber = i + 1;
 
-                log.info("🔍 分析幻灯片 {}/{}", slideNumber, totalSlides);
+                log.info(LogMessageProvider.getMessage("ppt_analysis.log.analyze_slide", slideNumber, totalSlides));
 
                 // 提取幻灯片内容
                 SlideContent slideContent = extractSlideContent(slide, slideNumber);
@@ -107,24 +108,24 @@ public class PPTProgressiveAnalysisService {
 
                 report.getSlideResults().add(result);
 
-                log.info("✅ 幻灯片 {} 分析完成，关键点: {}", slideNumber,
-                    keyPoints.length() > 50 ? keyPoints.substring(0, 50) + "..." : keyPoints);
+                log.info(LogMessageProvider.getMessage("ppt_analysis.log.slide_complete", slideNumber,
+                    keyPoints.length() > 50 ? keyPoints.substring(0, 50) + "..." : keyPoints));
             }
 
-            // 生成最终总结
+            // 生成最终总结（Generate final summary）
             generateComprehensiveSummary(report, question);
 
             report.setEndTime(System.currentTimeMillis());
             report.setSuccess(true);
 
-            // 导出备忘录文档
+            // 导出备忘录文档（Export memo document）
             report.setMemoDocument(memoManager.exportToMarkdown());
 
-            log.info("🎉 PPT渐进式分析完成，耗时: {}ms",
-                report.getEndTime() - report.getStartTime());
+            log.info(LogMessageProvider.getMessage("ppt_analysis.log.analysis_complete",
+                report.getEndTime() - report.getStartTime()));
 
         } catch (Exception e) {
-            log.error("PPT分析失败", e);
+            log.error(LogMessageProvider.getMessage("ppt_analysis.log.analysis_failed"), e);
             report.setSuccess(false);
             report.setErrorMessage(e.getMessage());
             report.setEndTime(System.currentTimeMillis());
@@ -257,11 +258,11 @@ public class PPTProgressiveAnalysisService {
         prompt.append("(END_KEY_POINTS)\n");
 
         try {
-            // 直接调用 LLM，不需要通过 RAG 搜索
+            // 直接调用 LLM，不需要通过 RAG 搜索（Call LLM directly, no RAG search needed）
             return llmClient.generate(prompt.toString());
         } catch (Exception e) {
-            log.error("幻灯片 {} 分析失败", slideNumber, e);
-            return "处理问答时发生错误: " + e.getMessage();
+            log.error(LogMessageProvider.getMessage("ppt_analysis.log.slide_failed", slideNumber), e);
+            return "Processing QA error: " + e.getMessage();
         }
     }
 
@@ -285,11 +286,11 @@ public class PPTProgressiveAnalysisService {
     }
 
     /**
-     * 生成综合总结
+     * 生成综合总结（Generate comprehensive summary）
      */
     private void generateComprehensiveSummary(PPTAnalysisReport report, String question) {
         try {
-            log.info("📊 生成PPT综合总结...");
+            log.info(LogMessageProvider.getMessage("ppt_analysis.log.generate_summary"));
 
             StringBuilder summaryPrompt = new StringBuilder();
 
@@ -322,14 +323,14 @@ public class PPTProgressiveAnalysisService {
 
             summaryPrompt.append("请生成最终总结报告:\n");
 
-            log.info("📝 直接调用 LLM 生成最终总结");
+            log.info(LogMessageProvider.getMessage("ppt_analysis.log.direct_llm_summary"));
             String summary = llmClient.generate(summaryPrompt.toString());
             report.setComprehensiveSummary(summary);
 
-            log.info("✅ 综合总结生成完成");
+            log.info(LogMessageProvider.getMessage("ppt_analysis.log.summary_complete"));
 
         } catch (Exception e) {
-            log.error("生成综合总结失败", e);
+            log.error(LogMessageProvider.getMessage("ppt_analysis.log.summary_failed"), e);
             report.setComprehensiveSummary(generateDefaultSummary(report));
         }
     }

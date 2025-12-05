@@ -185,8 +185,8 @@ public class DocumentManagementController {
                     paginatedDocuments = filteredDocuments.subList(startIndex, endIndex);
                 }
 
-                log.debug("分页: 第 {} 页, 每页 {} 条, 共 {} 页, 返回 {} 条",
-                        page, pageSize, totalPages, paginatedDocuments.size());
+                log.debug(LogMessageProvider.getMessage("doc_management.log.pagination",
+                        page, pageSize, totalPages, paginatedDocuments.size()));
             }
 
             ListResponse response = new ListResponse();
@@ -243,7 +243,7 @@ public class DocumentManagementController {
         }
 
         sorted.sort(comparator);
-        log.debug("排序完成: {} {}", sortBy, sortOrder);
+        log.debug(LogMessageProvider.getMessage("doc_management.log.sort_complete", sortBy, sortOrder));
 
         return sorted;
     }
@@ -283,7 +283,7 @@ public class DocumentManagementController {
                             break;
                     }
                 } catch (Exception e) {
-                    log.warn("搜索模式 '{}' 处理失败: {}", searchMode, e.getMessage());
+                    log.warn(LogMessageProvider.getMessage("doc_management.log.search_mode_failed", searchMode, e.getMessage()));
                     matchName = doc.getFileName().toLowerCase().contains(search.toLowerCase());
                 }
                 if (!matchName) {
@@ -337,7 +337,7 @@ public class DocumentManagementController {
                         }
                     }
                 } catch (Exception e) {
-                    log.warn("日期过滤处理失败: {}", e.getMessage());
+                    log.warn(LogMessageProvider.getMessage("doc_management.log.date_filter_failed", e.getMessage()));
                 }
             }
 
@@ -346,13 +346,13 @@ public class DocumentManagementController {
     }
 
     /**
-     * 删除文档 / Delete document
+     * 删除文档（Delete document）
      */
     @DeleteMapping("/{fileName}")
     public DeleteResponse deleteDocument(
             @PathVariable String fileName,
             @RequestParam(value = "lang", defaultValue = "zh") String lang) {
-        log.info("删除文档: {}", fileName);
+        log.info(LogMessageProvider.getMessage("doc_management.log.delete_document", fileName));
 
         DeleteResponse response = new DeleteResponse();
 
@@ -370,7 +370,7 @@ public class DocumentManagementController {
 
             return response;
         } catch (Exception e) {
-            log.error("删除文档失败", e);
+            log.error(LogMessageProvider.getMessage("doc_management.log.delete_failed"), e);
             response.setSuccess(false);
             response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.delete_failed", lang, e.getMessage()));
             return response;
@@ -419,35 +419,35 @@ public class DocumentManagementController {
     }
 
     /**
-     * 下载单个文档
+     * 下载单个文档（Download single document）
      */
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadDocument(@RequestParam("fileName") String fileName) {
-        log.info("下载文档: {}", fileName);
-        log.debug("文件名字节: {}", java.util.Arrays.toString(fileName.getBytes(StandardCharsets.UTF_8)));
+        log.info(LogMessageProvider.getMessage("doc_management.log.download_document", fileName));
+        log.debug(LogMessageProvider.getMessage("doc_management.log.filename_bytes", java.util.Arrays.toString(fileName.getBytes(StandardCharsets.UTF_8))));
 
         try {
-            // URL解码已由Spring自动处理
+            // URL解码已由Spring自动处理（URL decoding is handled by Spring automatically）
             Path filePath = documentService.getDocumentPath(fileName);
-            log.debug("查找路径: {}", filePath.toAbsolutePath());
+            log.debug(LogMessageProvider.getMessage("doc_management.log.find_path", filePath.toAbsolutePath()));
 
             if (!Files.exists(filePath)) {
-                log.warn("❌ 文件不存在: {} (路径: {})", fileName, filePath.toAbsolutePath());
-                log.warn("💡 可能原因：");
-                log.warn("   1. 文件只存在于知识库索引中，但源文件已被删除");
-                log.warn("   2. 文件名包含特殊字符导致路径解析错误");
-                log.warn("   3. 文件从未上传到documents目录");
+                log.warn(LogMessageProvider.getMessage("doc_management.log.file_not_exists", fileName, filePath.toAbsolutePath()));
+                log.warn(LogMessageProvider.getMessage("doc_management.log.possible_reasons"));
+                log.warn(LogMessageProvider.getMessage("doc_management.log.reason_deleted"));
+                log.warn(LogMessageProvider.getMessage("doc_management.log.reason_special_chars"));
+                log.warn(LogMessageProvider.getMessage("doc_management.log.reason_not_uploaded"));
                 return ResponseEntity.notFound().build();
             }
 
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
-                log.warn("文件不可读: {}", fileName);
+                log.warn(LogMessageProvider.getMessage("doc_management.log.file_not_readable", fileName));
                 return ResponseEntity.notFound().build();
             }
 
-            // 设置响应头 - 使用RFC 5987编码方式
+            // 设置响应头 - 使用RFC 5987编码方式（Set response header - using RFC 5987 encoding）
             String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
 
             return ResponseEntity.ok()
@@ -456,28 +456,28 @@ public class DocumentManagementController {
                     .body(resource);
 
         } catch (Exception e) {
-            log.error("下载文档失败: {}", fileName, e);
+            log.error(LogMessageProvider.getMessage("doc_management.log.download_failed", fileName), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * 批量下载文档（打包为ZIP）
+     * 批量下载文档（打包为ZIP）（Batch download documents as ZIP）
      */
     @PostMapping("/download-batch")
     public ResponseEntity<Resource> downloadBatch(@RequestBody List<String> fileNames) {
-        log.info("批量下载文档: {} 个", fileNames.size());
-        log.debug("文件名列表: {}", fileNames);
+        log.info(LogMessageProvider.getMessage("doc_management.log.batch_download", fileNames.size()));
+        log.debug(LogMessageProvider.getMessage("doc_management.log.filename_list", fileNames));
 
         try {
-            // 创建临时ZIP文件
+            // 创建临时ZIP文件（Create temp ZIP file）
             Path tempZipFile = Files.createTempFile("documents_", ".zip");
             
             try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(tempZipFile.toFile()))) {
                 for (String fileName : fileNames) {
                     try {
                         Path filePath = documentService.getDocumentPath(fileName);
-                        log.debug("查找文件: {} -> {}", fileName, filePath.toAbsolutePath());
+                        log.debug(LogMessageProvider.getMessage("doc_management.log.find_file", fileName, filePath.toAbsolutePath()));
 
                         if (Files.exists(filePath)) {
                             ZipEntry zipEntry = new ZipEntry(fileName);
@@ -486,12 +486,12 @@ public class DocumentManagementController {
                             Files.copy(filePath, zipOut);
                             zipOut.closeEntry();
                             
-                            log.debug("已添加到ZIP: {}", fileName);
+                            log.debug(LogMessageProvider.getMessage("doc_management.log.added_to_zip", fileName));
                         } else {
-                            log.warn("文件不存在，跳过: {} (路径: {})", fileName, filePath.toAbsolutePath());
+                            log.warn(LogMessageProvider.getMessage("doc_management.log.file_not_exists_skip", fileName, filePath.toAbsolutePath()));
                         }
                     } catch (Exception e) {
-                        log.error("添加文件到ZIP失败: {}", fileName, e);
+                        log.error(LogMessageProvider.getMessage("doc_management.log.add_to_zip_failed", fileName), e);
                     }
                 }
             }
@@ -518,9 +518,9 @@ public class DocumentManagementController {
                                     super.close();
                                     try {
                                         Files.deleteIfExists(tempZipFile);
-                                        log.debug("临时ZIP文件已删除: {}", tempZipFile);
+                                        log.debug(LogMessageProvider.getMessage("doc_management.log.temp_zip_deleted", tempZipFile));
                                     } catch (IOException e) {
-                                        log.warn("删除临时ZIP文件失败: {}", tempZipFile, e);
+                                        log.warn(LogMessageProvider.getMessage("doc_management.log.delete_temp_zip_failed", tempZipFile), e);
                                     }
                                 }
                             };
@@ -553,17 +553,17 @@ public class DocumentManagementController {
                     });
 
         } catch (Exception e) {
-            log.error("批量下载失败", e);
+            log.error(LogMessageProvider.getMessage("doc_management.log.batch_download_failed"), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
-     * 获取已上传文档的文件类型列表（动态扫描）
+     * 获取已上传文档的文件类型列表（动态扫描）（Get uploaded document file types list）
      */
     @GetMapping("/supported-types")
     public SupportedTypesResponse getSupportedTypes() {
-        log.info("获取已上传文档的文件类型列表");
+        log.info(LogMessageProvider.getMessage("doc_management.log.get_file_types"));
 
         SupportedTypesResponse response = new SupportedTypesResponse();
 
@@ -571,12 +571,12 @@ public class DocumentManagementController {
             List<String> types = documentService.getSupportedTypes();
             response.setSuccess(true);
             response.setTypes(types);
-            response.setMessage("成功获取文件类型列表，共 " + types.size() + " 种");
+            response.setMessage(LogMessageProvider.getMessage("doc_management.log.get_file_types_success", types.size()));
             response.setCount(types.size());
         } catch (Exception e) {
-            log.error("获取文件类型列表失败", e);
+            log.error(LogMessageProvider.getMessage("doc_management.log.get_file_types_failed"), e);
             response.setSuccess(false);
-            response.setMessage("获取文件类型列表失败: " + e.getMessage());
+            response.setMessage(LogMessageProvider.getMessage("doc_management.log.get_file_types_error", e.getMessage()));
             response.setTypes(new java.util.ArrayList<>());
             response.setCount(0);
         }
@@ -584,7 +584,7 @@ public class DocumentManagementController {
         return response;
     }
 
-    // ========== DTO 类 ==========
+    // ========== DTO 类（DTO Classes）==========
 
     @Data
     public static class UploadResponse {

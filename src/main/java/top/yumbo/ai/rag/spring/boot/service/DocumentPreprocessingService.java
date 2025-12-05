@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.ppl.PPLException;
 import top.yumbo.ai.rag.ppl.PPLServiceFacade;
@@ -14,14 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 文档智能预处理服务
+ * 文档智能预处理服务（Document intelligent preprocessing service）
  *
- * 功能：
- * 1. 图片内容提取和OCR
- * 2. 基于 PPL 的智能切分（可选）
- * 3. 内容增强和优化
+ * 功能：（Features:）
+ * 1. 图片内容提取和OCR（Image content extraction and OCR）
+ * 2. 基于 PPL 的智能切分（可选）（PPL-based intelligent chunking - optional）
+ * 3. 内容增强和优化（Content enhancement and optimization）
  *
  * 注意：PPL 服务是可选的，当配置禁用时不影响基本功能
+ * (Note: PPL service is optional, basic functionality is not affected when disabled)
  *
  * @author AI Reviewer Team
  * @since 2025-12-05
@@ -45,11 +47,11 @@ public class DocumentPreprocessingService {
         this.imageExtractionService = imageExtractionService;
         this.imageStorageService = imageStorageService;
 
-        // 记录PPL服务状态
+        // 记录PPL服务状态（Log PPL service status）
         if (pplServiceFacade == null || pplConfig == null) {
-            log.info("📦 PPL 服务未启用（PPL service is disabled）");
+            log.info(LogMessageProvider.getMessage("doc_preprocess.log.ppl_disabled"));
         } else {
-            log.info("✅ PPL 服务已启用（PPL service is enabled）");
+            log.info(LogMessageProvider.getMessage("doc_preprocess.log.ppl_enabled"));
         }
     }
 
