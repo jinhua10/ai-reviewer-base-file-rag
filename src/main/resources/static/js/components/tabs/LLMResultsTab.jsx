@@ -68,10 +68,69 @@ function LLMResultsTab() {
         }
     };
 
-    // 下载 PDF
+    // 下载 PDF（前端生成）
     const handleDownloadPdf = async (result) => {
         try {
-            await window.api.downloadLLMResultPdf(result.id, result.fileName + '.pdf');
+            // 检查 html2pdf 是否已加载
+            if (typeof html2pdf === 'undefined') {
+                showToast('PDF 生成库未加载，请刷新页面重试', 'error');
+                return;
+            }
+
+            showToast('正在生成 PDF...', 'info');
+
+            // 获取 Markdown 内容
+            let markdownContent = previewContent;
+            if (!markdownContent || selectedResult?.id !== result.id) {
+                markdownContent = await window.api.previewLLMResult(result.id);
+            }
+
+            // 将 Markdown 转换为 HTML
+            const htmlContent = marked.parse(markdownContent);
+
+            // 创建临时容器
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <div style="padding: 20px; font-family: 'Microsoft YaHei', 'SimSun', sans-serif; line-height: 1.8;">
+                    <style>
+                        h1 { color: #333; border-bottom: 2px solid #4CAF50; padding-bottom: 10px; }
+                        h2 { color: #555; margin-top: 20px; }
+                        h3 { color: #666; }
+                        blockquote { background: #f9f9f9; border-left: 4px solid #4CAF50; padding: 10px 15px; margin: 10px 0; }
+                        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+                        pre { background: #f4f4f4; padding: 15px; border-radius: 5px; overflow-x: auto; }
+                        ul, ol { padding-left: 20px; }
+                        hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+                        table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background: #f5f5f5; }
+                        img { max-width: 100%; height: auto; }
+                    </style>
+                    ${htmlContent}
+                </div>
+            `;
+
+            // 配置 PDF 选项
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: (result.fileName || 'llm-result') + '.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+            };
+
+            // 生成 PDF
+            await html2pdf().set(opt).from(container).save();
+
             showToast(t('llmResultsDownloadSuccess'), 'success');
         } catch (err) {
             console.error(t('llmResultsLogDownloadError'), err);

@@ -319,17 +319,21 @@ public class LLMResultDocumentService {
     }
 
     /**
-     * 获取 PDF 内容（图片嵌入）
+     * 获取 PDF 内容
+     *
+     * 注意：PDF 生成已改为前端处理（使用 html2pdf.js）
+     * 此方法保留用于向后兼容，返回 Markdown 内容的字节数组
+     * 前端获取后可自行转换为 PDF
+     *
+     * @deprecated 推荐使用前端 html2pdf.js 生成 PDF
      */
+    @Deprecated
     public byte[] getPdfForDownload(String docId) {
         String markdown = getMarkdownForDownload(docId);
         if (markdown == null) {
             return null;
         }
-
-        // TODO: 实现 Markdown 到 PDF 的转换
-        // 可以使用 iText、Flying Saucer 或调用外部工具
-        log.warn(LogMessageProvider.getMessage("llm_result.log.pdf_not_implemented"));
+        // 返回 Markdown 内容，前端负责转换为 PDF
         return markdown.getBytes();
     }
 
@@ -578,10 +582,22 @@ public class LLMResultDocumentService {
 
     /**
      * 添加到知识库
+     *
+     * 将 LLM 分析结果添加到知识库，使其可被后续检索使用
      */
     private void addToKnowledgeBase(LLMResultDocument document, String content) {
-        // TODO: 调用知识库服务添加文档
-        log.info(LogMessageProvider.getMessage("llm_result.log.add_to_kb", document.getId()));
+        try {
+            // 知识库服务会自动发现新文件并索引
+            // 因为文件已保存在 storagePath 目录下
+            // 这里只需要记录日志
+            log.info("📚 LLM 分析结果已保存，下次增量索引时将自动添加到知识库: {}", document.getFileName());
+
+            // 如果需要立即索引，可以注入 KnowledgeBaseService 并调用：
+            // knowledgeBaseService.incrementalIndexFile(Paths.get(document.getFilePath()));
+
+        } catch (Exception e) {
+            log.warn("⚠️ 添加到知识库失败（不影响保存）: {}", e.getMessage());
+        }
     }
 
     // ==================== 数据类 ====================
