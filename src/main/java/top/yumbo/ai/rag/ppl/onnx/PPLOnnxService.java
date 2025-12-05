@@ -7,7 +7,6 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.ppl.PPLException;
@@ -266,18 +265,77 @@ public class PPLOnnxService implements PPLService {
     }
 
     /**
-     * 粗分块 - 按最大块大小粗略分割
+     * 粗分块 - 语义感知的分割（优化版）
+     *
+     * 改进点：
+     * 1. 在语义边界切分，而不是固定字数
+     * 2. 支持上下文重叠，避免信息丢失
+     * 3. 软限制 + 硬限制，保证块大小在合理范围
      */
     private List<List<String>> coarseChunk(List<String> sentences, int maxChunkSize) {
+        return semanticCoarseChunk(sentences, maxChunkSize, true, 2);
+    }
+
+    /**
+     * 语义感知的粗分块
+     *
+     * @param sentences 句子列表
+     * @param maxChunkSize 最大块大小
+     * @param semanticAware 是否启用语义感知
+     * @param overlapSentences 重叠句子数
+     */
+    private List<List<String>> semanticCoarseChunk(List<String> sentences,
+            int maxChunkSize, boolean semanticAware, int overlapSentences) {
+
         List<List<String>> chunks = new ArrayList<>();
         List<String> currentChunk = new ArrayList<>();
+        List<String> overlapBuffer = new ArrayList<>();  // 重叠缓冲区
         int currentSize = 0;
 
-        for (String sentence : sentences) {
+        // 目标大小为最大大小的 60%，软限制
+        int targetSize = (int) (maxChunkSize * 0.6);
+        // 硬性上限为最大大小的 125%
+        int hardLimit = (int) (maxChunkSize * 1.25);
+
+        for (int i = 0; i < sentences.size(); i++) {
+            String sentence = sentences.get(i);
             int sentenceLength = sentence.length();
 
-            if (currentSize + sentenceLength > maxChunkSize && !currentChunk.isEmpty()) {
-                chunks.add(new ArrayList<>(currentChunk));
+            boolean shouldSplit = false;
+
+            if (semanticAware) {
+                // 语义感知模式：到达目标大小后，在语义边界切分
+                String prevSentence = i > 0 ? sentences.get(i - 1) : null;
+                boolean isSemanticBoundary = isSemanticBoundary(sentence, prevSentence);
+
+                if (currentSize >= targetSize && isSemanticBoundary) {
+                    shouldSplit = true;
+                }
+            }
+
+            // 硬性上限：超过则强制切分
+            if (currentSize + sentenceLength > hardLimit && !currentChunk.isEmpty()) {
+                shouldSplit = true;
+            }
+
+            if (shouldSplit && !currentChunk.isEmpty()) {
+                // 添加当前块（包含前一块的尾部作为上下文）
+                List<String> chunkWithContext = new ArrayList<>();
+                if (!overlapBuffer.isEmpty()) {
+                    chunkWithContext.addAll(overlapBuffer);
+                }
+                chunkWithContext.addAll(currentChunk);
+                chunks.add(chunkWithContext);
+
+                // 更新重叠缓冲区（保留最后 N 个句子）
+                overlapBuffer.clear();
+                if (overlapSentences > 0) {
+                    int overlapStart = Math.max(0, currentChunk.size() - overlapSentences);
+                    for (int j = overlapStart; j < currentChunk.size(); j++) {
+                        overlapBuffer.add(currentChunk.get(j));
+                    }
+                }
+
                 currentChunk.clear();
                 currentSize = 0;
             }
@@ -286,11 +344,72 @@ public class PPLOnnxService implements PPLService {
             currentSize += sentenceLength;
         }
 
+        // 处理最后一块
         if (!currentChunk.isEmpty()) {
-            chunks.add(currentChunk);
+            List<String> chunkWithContext = new ArrayList<>();
+            if (!overlapBuffer.isEmpty()) {
+                chunkWithContext.addAll(overlapBuffer);
+            }
+            chunkWithContext.addAll(currentChunk);
+            chunks.add(chunkWithContext);
         }
 
         return chunks;
+    }
+
+    /**
+     * 检测语义边界
+     *
+     * @param current 当前句子
+     * @param previous 前一句子
+     * @return 是否是语义边界
+     */
+    private boolean isSemanticBoundary(String current, String previous) {
+        if (current == null || current.isEmpty()) {
+            return false;
+        }
+
+        String trimmed = current.trim();
+
+        // 1. 章节标题（中文）
+        if (trimmed.matches("^第[一二三四五六七八九十百千零\\d]+[章节篇部条款项].*")) {
+            return true;
+        }
+
+        // 2. Markdown 标题
+        if (trimmed.matches("^#{1,6}\\s+.*")) {
+            return true;
+        }
+
+        // 3. 数字编号标题（如 "1. xxx", "1.1 xxx"）
+        if (trimmed.matches("^\\d+(\\.\\d+)*[.、\\s].*") && trimmed.length() < 100) {
+            return true;
+        }
+
+        // 4. 段落开头词（表示新主题）
+        if (trimmed.matches("^(首先|其次|再次|然后|接着|最后|另外|此外|" +
+                "综上|总之|因此|所以|总结|结论|概述|简介|背景|目的|" +
+                "一方面|另一方面|与此同时|需要注意|值得一提|特别是).*")) {
+            return true;
+        }
+
+        // 5. 前一句是列表项结尾，当前不是列表项（列表结束）
+        if (previous != null) {
+            boolean prevIsList = previous.trim().matches("^[\\d一二三四五六七八九十]+[.、）)].*")
+                    || previous.trim().matches("^[-*•]\\s.*");
+            boolean currIsList = trimmed.matches("^[\\d一二三四五六七八九十]+[.、）)].*")
+                    || trimmed.matches("^[-*•]\\s.*");
+            if (prevIsList && !currIsList) {
+                return true;
+            }
+        }
+
+        // 6. 段落分隔标记（如果在分句时保留了）
+        if (trimmed.startsWith("[PARA]") || trimmed.startsWith("---") || trimmed.startsWith("***")) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -172,15 +172,28 @@ knowledge:
         # - 25.0：切分更粗（块更大，更完整）
         ppl-threshold: 20.0
 
-        # 块大小限制（字符数）
-        max-chunk-size: 2000   # 最大块大小
-        min-chunk-size: 200    # 最小块大小
-        overlap-size: 100      # 重叠大小（保持上下文）
+        # 块大小设为软限制 + 硬限制
+        target-chunk-size: 1500   # 目标大小（软限制，到达后寻找语义边界）
+        max-chunk-size: 2500      # 硬性上限（超过强制切分）
+        min-chunk-size: 300       # 最小块大小（避免过碎）
+
+        # 上下文重叠（保持语义连贯）
+        overlap-size: 150         # 重叠字符数
+        overlap-sentences: 2      # 重叠句子数（推荐 2-3）
 
         # 启用两阶段切分（推荐）
         # true：先粗分再精分（性能更好）
         # false：直接 PPL 切分
         enable-coarse-chunking: true
+
+        # 语义感知分块（推荐启用）
+        semantic-aware: true           # 在语义边界切分
+        detect-paragraph: true         # 检测段落边界
+        detect-chapter: true           # 检测章节标题
+        detect-list-end: true          # 检测列表结束
+
+        # 动态 PPL 阈值（根据文档特性自适应）
+        use-dynamic-threshold: false   # 高级功能，按需启用
 
       # ============================================================
       # Reranking 配置（基于 PPL 的重排序）
