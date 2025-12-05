@@ -40,6 +40,11 @@ public class KnowledgeQAProperties {
      */
     private ImageProcessingConfig imageProcessing = new ImageProcessingConfig();
 
+    /**
+     * 搜索配置（停用词等）
+     */
+    private SearchConfig search = new SearchConfig();
+
     @Data
     public static class KnowledgeBaseConfig {
         /**
@@ -456,5 +461,67 @@ public class KnowledgeQAProperties {
          * 图片最大高度
          */
         private int maxHeight = 1080;
+    }
+
+    /**
+     * 搜索配置（停用词等）
+     */
+    @Data
+    public static class SearchConfig {
+        /**
+         * 中文停用词列表
+         * 在提取关键词时会过滤这些词
+         */
+        private List<String> chineseStopWords = List.of(
+            "的", "是", "在", "了", "和", "有", "我", "你", "他", "她", "它",
+            "们", "这", "那", "之", "与", "及", "或", "等", "也", "就", "都",
+            "而", "及", "着", "把", "被", "让", "给", "向", "往", "从", "自",
+            "什么", "怎么", "如何", "为什么", "哪", "哪些", "哪个", "哪里",
+            "谁", "多少", "几", "吗", "呢", "啊", "吧", "呀", "哦", "嗯",
+            "一个", "一些", "这个", "那个", "这些", "那些", "某", "某些",
+            "可以", "可能", "应该", "需要", "必须", "能够", "能", "会",
+            "请", "请问", "想", "要", "想要", "希望", "可否", "是否",
+            "非常", "很", "太", "最", "更", "比较", "相当", "十分"
+        );
+
+        /**
+         * 英文停用词列表
+         * 在提取关键词时会过滤这些词
+         */
+        private List<String> englishStopWords = List.of(
+            // 冠词
+            "a", "an", "the",
+            // be 动词
+            "is", "are", "was", "were", "be", "been", "being", "am",
+            // 代词
+            "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them",
+            "my", "your", "his", "its", "our", "their", "mine", "yours", "hers", "ours", "theirs",
+            "this", "that", "these", "those", "who", "whom", "which", "what", "whose",
+            // 介词
+            "in", "on", "at", "to", "for", "of", "with", "by", "from", "up", "down",
+            "into", "onto", "out", "off", "over", "under", "about", "between", "through",
+            // 连词
+            "and", "or", "but", "if", "then", "else", "when", "while", "because", "although",
+            "however", "therefore", "so", "yet", "nor", "either", "neither",
+            // 助动词
+            "do", "does", "did", "have", "has", "had", "will", "would", "shall", "should",
+            "can", "could", "may", "might", "must",
+            // 疑问词
+            "how", "why", "where", "when", "what", "which", "who",
+            // 其他常见词
+            "not", "no", "yes", "all", "any", "some", "each", "every", "both", "few", "more",
+            "most", "other", "such", "only", "same", "than", "too", "very", "just", "also"
+        );
+
+        /**
+         * 最小关键词长度
+         * 小于此长度的词会被过滤（对英文生效）
+         */
+        private int minKeywordLength = 2;
+
+        /**
+         * 是否启用停用词过滤
+         */
+        private boolean enableStopWordsFilter = true;
     }
 }

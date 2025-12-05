@@ -252,16 +252,38 @@ public class HybridSearchService {
 
     /**
      * 提取关键词（Extract keywords）
+     *
+     * 支持中英文停用词过滤，通过 yml 配置可自定义停用词列表
      */
     private String extractKeywords(String question) {
-        // 简单的停用词列表
-        List<String> stopWords = Arrays.asList(
-            "的", "是", "在", "了", "和", "有", "我", "你", "他", "她",
-            "什么", "怎么", "如何", "为什么", "吗", "呢", "啊", "那些"
-        );
+        // 获取配置的停用词
+        KnowledgeQAProperties.SearchConfig searchConfig = properties.getSearch();
+
+        // 如果禁用停用词过滤，直接返回原文
+        if (!searchConfig.isEnableStopWordsFilter()) {
+            return question;
+        }
+
+        // 合并中英文停用词
+        Set<String> stopWords = new HashSet<>();
+        if (searchConfig.getChineseStopWords() != null) {
+            stopWords.addAll(searchConfig.getChineseStopWords());
+        }
+        if (searchConfig.getEnglishStopWords() != null) {
+            // 英文停用词转小写
+            searchConfig.getEnglishStopWords().forEach(w -> stopWords.add(w.toLowerCase()));
+        }
+
+        int minLength = searchConfig.getMinKeywordLength();
 
         return Arrays.stream(question.split("\\s+"))
-            .filter(word -> !stopWords.contains(word) && word.length() > 1)
+            .filter(word -> {
+                String lowerWord = word.toLowerCase();
+                // 过滤停用词和过短的词
+                return !stopWords.contains(word)
+                    && !stopWords.contains(lowerWord)
+                    && word.length() >= minLength;
+            })
             .collect(Collectors.joining(" "));
     }
 
