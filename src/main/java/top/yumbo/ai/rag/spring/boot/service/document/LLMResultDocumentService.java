@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.io.IOException;
 import java.net.URL;
@@ -95,7 +96,7 @@ public class LLMResultDocumentService {
             // 添加到历史记录
             addToHistory(document);
 
-            log.info("✅ LLM 结果已保存: {} -> {}", docId, filePath);
+            log.info(LogMessageProvider.getMessage("llm_result.log.result_saved", docId, filePath));
 
             // 可选：自动添加到知识库
             if (autoAddToKnowledgeBase) {
@@ -105,8 +106,8 @@ public class LLMResultDocumentService {
             return document;
 
         } catch (Exception e) {
-            log.error("保存 LLM 结果失败", e);
-            throw new RuntimeException("保存 LLM 结果失败: " + e.getMessage(), e);
+            log.error(LogMessageProvider.getMessage("llm_result.log.save_failed"), e);
+            throw new RuntimeException(LogMessageProvider.getMessage("llm_result.error.save_failed", e.getMessage()), e);
         }
     }
 
@@ -122,7 +123,7 @@ public class LLMResultDocumentService {
         try {
             return Files.readString(Paths.get(doc.getFilePath()));
         } catch (IOException e) {
-            log.error("读取文档失败: {}", docId, e);
+            log.error(LogMessageProvider.getMessage("llm_result.log.read_failed", docId), e);
             return null;
         }
     }
@@ -151,7 +152,7 @@ public class LLMResultDocumentService {
 
         // TODO: 实现 Markdown 到 PDF 的转换
         // 可以使用 iText、Flying Saucer 或调用外部工具
-        log.warn("PDF 导出功能待实现，返回 Markdown 转换的字节");
+        log.warn(LogMessageProvider.getMessage("llm_result.log.pdf_not_implemented"));
         return markdown.getBytes();
     }
 
@@ -195,11 +196,11 @@ public class LLMResultDocumentService {
                 resultHistory.removeIf(d -> d.getId().equals(docId));
             }
 
-            log.info("✅ 文档已删除: {}", docId);
+            log.info(LogMessageProvider.getMessage("llm_result.log.document_deleted", docId));
             return true;
 
         } catch (IOException e) {
-            log.error("删除文档失败: {}", docId, e);
+            log.error(LogMessageProvider.getMessage("llm_result.log.delete_failed", docId), e);
             return false;
         }
     }
@@ -300,7 +301,7 @@ public class LLMResultDocumentService {
                 String replacement = "![" + altText + "](data:" + mimeType + ";base64," + base64 + ")";
                 urlMatcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
             } catch (Exception e) {
-                log.warn("下载图片失败: {}", imageUrl, e);
+                log.warn(LogMessageProvider.getMessage("llm_result.log.download_image_failed", imageUrl), e);
                 // 保持原样
                 urlMatcher.appendReplacement(sb, Matcher.quoteReplacement(urlMatcher.group()));
             }
@@ -397,7 +398,7 @@ public class LLMResultDocumentService {
      */
     private void addToKnowledgeBase(LLMResultDocument document, String content) {
         // TODO: 调用知识库服务添加文档
-        log.info("📚 自动添加到知识库: {}", document.getId());
+        log.info(LogMessageProvider.getMessage("llm_result.log.add_to_kb", document.getId()));
     }
 
     // ==================== 数据类 ====================

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.service.document.LLMResultDocumentService.LLMAnalysisResult;
 import top.yumbo.ai.rag.spring.boot.service.document.LLMResultDocumentService.LLMResultDocument;
 import top.yumbo.ai.rag.spring.boot.service.document.LLMResultDocumentService.ImageInfo;
@@ -76,13 +77,13 @@ public class LLMResultCollector {
 
             if (autoSave) {
                 documentService.saveResult(result);
-                log.debug("✅ 问答结果已自动保存");
+                log.debug(LogMessageProvider.getMessage("llm_collector.log.qa_result_saved"));
             }
 
             return true;
 
         } catch (Exception e) {
-            log.error("收集问答结果失败", e);
+            log.error(LogMessageProvider.getMessage("llm_collector.log.qa_collect_failed"), e);
             return false;
         }
     }
@@ -98,23 +99,23 @@ public class LLMResultCollector {
 
         try {
             LLMAnalysisResult result = LLMAnalysisResult.builder()
-                    .title("文档分析: " + documentName)
+                    .title(LogMessageProvider.getMessage("llm_collector.title.doc_analysis_prefix") + documentName)
                     .sourceDocument(documentName)
                     .question(question)
-                    .analysisType("文档分析")
+                    .analysisType(LogMessageProvider.getMessage("llm_collector.title.doc_analysis_prefix").replace(": ", ""))
                     .content(analysis)
                     .keyPoints(keyPoints != null ? keyPoints : extractKeyPoints(analysis))
                     .build();
 
             if (autoSave) {
                 documentService.saveResult(result);
-                log.debug("✅ 文档分析结果已自动保存");
+                log.debug(LogMessageProvider.getMessage("llm_collector.log.doc_analysis_saved"));
             }
 
             return true;
 
         } catch (Exception e) {
-            log.error("收集文档分析结果失败", e);
+            log.error(LogMessageProvider.getMessage("llm_collector.log.doc_analysis_collect_failed"), e);
             return false;
         }
     }
@@ -134,22 +135,22 @@ public class LLMResultCollector {
             images.add(imageInfo);
 
             LLMAnalysisResult result = LLMAnalysisResult.builder()
-                    .title("图片分析")
+                    .title(LogMessageProvider.getMessage("llm_collector.title.image_analysis"))
                     .sourceDocument(sourceDocument)
-                    .analysisType("图片分析")
+                    .analysisType(LogMessageProvider.getMessage("llm_collector.title.image_analysis"))
                     .content(description)
                     .images(images)
                     .build();
 
             if (autoSave) {
                 documentService.saveResult(result);
-                log.debug("✅ 图片分析结果已自动保存");
+                log.debug(LogMessageProvider.getMessage("llm_collector.log.image_analysis_saved"));
             }
 
             return true;
 
         } catch (Exception e) {
-            log.error("收集图片分析结果失败", e);
+            log.error(LogMessageProvider.getMessage("llm_collector.log.image_analysis_collect_failed"), e);
             return false;
         }
     }
@@ -160,7 +161,7 @@ public class LLMResultCollector {
     public String startSession(String sessionName) {
         String sessionId = "session-" + System.currentTimeMillis();
         sessionResults.put(sessionId, new ArrayList<>());
-        log.debug("📝 开始会话收集: {} ({})", sessionName, sessionId);
+        log.debug(LogMessageProvider.getMessage("llm_collector.log.session_start", sessionName, sessionId));
         return sessionId;
     }
 
@@ -171,7 +172,7 @@ public class LLMResultCollector {
                              List<String> keyPoints) {
         List<CollectedResult> results = sessionResults.get(sessionId);
         if (results == null) {
-            log.warn("会话不存在: {}", sessionId);
+            log.warn(LogMessageProvider.getMessage("llm_collector.log.session_not_found", sessionId));
             return;
         }
 
@@ -182,7 +183,7 @@ public class LLMResultCollector {
         collected.timestamp = System.currentTimeMillis();
 
         results.add(collected);
-        log.debug("➕ 添加到会话 {}: {}", sessionId, segmentName);
+        log.debug(LogMessageProvider.getMessage("llm_collector.log.session_add", sessionId, segmentName));
     }
 
     /**
@@ -192,7 +193,7 @@ public class LLMResultCollector {
                                                 String question, String finalSummary) {
         List<CollectedResult> results = sessionResults.remove(sessionId);
         if (results == null || results.isEmpty()) {
-            log.warn("会话为空或不存在: {}", sessionId);
+            log.warn(LogMessageProvider.getMessage("llm_collector.log.session_empty", sessionId));
             return null;
         }
 
@@ -201,7 +202,7 @@ public class LLMResultCollector {
             StringBuilder combinedContent = new StringBuilder();
             List<String> allKeyPoints = new ArrayList<>();
 
-            combinedContent.append("## 分析过程\n\n");
+            combinedContent.append("## ").append(LogMessageProvider.getMessage("llm_collector.section.analysis_process")).append("\n\n");
 
             for (int i = 0; i < results.size(); i++) {
                 CollectedResult result = results.get(i);
@@ -217,25 +218,25 @@ public class LLMResultCollector {
             // 添加最终总结
             if (finalSummary != null && !finalSummary.isEmpty()) {
                 combinedContent.append("---\n\n");
-                combinedContent.append("## 综合总结\n\n");
+                combinedContent.append("## ").append(LogMessageProvider.getMessage("llm_collector.section.comprehensive_summary")).append("\n\n");
                 combinedContent.append(finalSummary).append("\n");
             }
 
             LLMAnalysisResult analysisResult = LLMAnalysisResult.builder()
                     .title(title)
                     .question(question)
-                    .analysisType("渐进式分析")
+                    .analysisType(LogMessageProvider.getMessage("llm_collector.title.progressive_analysis"))
                     .content(combinedContent.toString())
                     .keyPoints(allKeyPoints)
                     .build();
 
             LLMResultDocument document = documentService.saveResult(analysisResult);
-            log.info("✅ 会话结果已保存: {} ({} 个片段)", sessionId, results.size());
+            log.info(LogMessageProvider.getMessage("llm_collector.log.session_saved", sessionId, results.size()));
 
             return document;
 
         } catch (Exception e) {
-            log.error("保存会话结果失败: {}", sessionId, e);
+            log.error(LogMessageProvider.getMessage("llm_collector.log.session_save_failed", sessionId), e);
             return null;
         }
     }
@@ -245,7 +246,7 @@ public class LLMResultCollector {
      */
     public void cancelSession(String sessionId) {
         sessionResults.remove(sessionId);
-        log.debug("❌ 会话已取消: {}", sessionId);
+        log.debug(LogMessageProvider.getMessage("llm_collector.log.session_cancelled", sessionId));
     }
 
     /**

@@ -840,3 +840,169 @@ vector_index:
     query_dimension_mismatch: "查询向量维度不匹配: 期望 {0}, 实际 {1}"
     vector_dimension_mismatch: "向量维度不匹配"
     index_dimension_mismatch: "向量维度不匹配: 索引={0}, 期望={1}"
+# ============================================================
+# LLM 结果文档化服务国际化配置 (中文)
+# 新增的 key，请合并到 messages_zh.yml
+# ============================================================
+
+# LLM 结果文档服务
+llm_result:
+  log:
+    result_saved: "✅ LLM 结果已保存: {0} -> {1}"
+    save_failed: "保存 LLM 结果失败"
+    read_failed: "读取文档失败: {0}"
+    pdf_not_implemented: "PDF 导出功能待实现，返回 Markdown 转换的字节"
+    document_deleted: "✅ 文档已删除: {0}"
+    delete_failed: "删除文档失败: {0}"
+    download_image_failed: "下载图片失败: {0}"
+    add_to_kb: "📚 自动添加到知识库: {0}"
+  error:
+    save_failed: "保存 LLM 结果失败: {0}"
+  markdown:
+    generated_time: "生成时间"
+    source_document: "源文档"
+    analysis_question: "分析问题"
+    analysis_type: "分析类型"
+    key_points: "📌 关键要点"
+    related_images: "🖼️ 相关图片"
+    image_number: "图片 {0}"
+    footer: "本文档由 AI 智能分析生成"
+
+# LLM 结果收集器
+llm_collector:
+  log:
+    qa_result_saved: "✅ 问答结果已自动保存"
+    qa_collect_failed: "收集问答结果失败"
+    doc_analysis_saved: "✅ 文档分析结果已自动保存"
+    doc_analysis_collect_failed: "收集文档分析结果失败"
+    image_analysis_saved: "✅ 图片分析结果已自动保存"
+    image_analysis_collect_failed: "收集图片分析结果失败"
+    session_start: "📝 开始会话收集: {0} ({1})"
+    session_not_found: "会话不存在: {0}"
+    session_add: "➕ 添加到会话 {0}: {1}"
+    session_empty: "会话为空或不存在: {0}"
+    session_saved: "✅ 会话结果已保存: {0} ({1} 个片段)"
+    session_save_failed: "保存会话结果失败: {0}"
+    session_cancelled: "❌ 会话已取消: {0}"
+  title:
+    qa_prefix: "问答: "
+    doc_analysis_prefix: "文档分析: "
+    image_analysis: "图片分析"
+    progressive_analysis: "渐进式分析"
+  section:
+    analysis_process: "分析过程"
+    comprehensive_summary: "综合总结"
+
+# 文档渐进式分析服务
+doc_progressive:
+  log:
+    start_analysis: "📚 开始渐进式分析文档: {0} (解析器: {1})"
+    total_segments: "📄 文档共 {0} 个片段"
+    unsupported_type: "不支持的文档类型: {0}"
+    analyzing_segment: "正在分析第 {0}/{1} 个片段: {2}"
+    segment_analysis_complete: "片段分析完成"
+    generating_summary: "正在生成最终总结..."
+    analysis_complete: "✅ 文档分析完成: 共 {0} 个片段，耗时 {1}ms"
+    analysis_failed: "文档分析失败: {0}"
+  prompt:
+    segment_analysis: |
+      你正在逐段分析一份文档。
+      
+      ## 当前进度
+      进度: {0}/{1} ({2}%)
+      
+      ## 历史要点
+      {3}
+      
+      ## 当前片段
+      标题: {4}
+      内容: {5}
+      
+      ## 用户问题
+      {6}
+      
+      请分析当前片段的核心内容，并提取关键要点。
+    final_summary: |
+      请根据以下分析要点，生成一份完整的总结报告。
+      
+      ## 用户问题
+      {0}
+      
+      ## 各片段分析要点
+      {1}
+      
+      请生成一份结构清晰、内容完整的总结报告。
+
+# 文档解析器
+doc_parser:
+  log:
+    ppt_parsing: "📊 解析 PPT 文档: {0}"
+    ppt_slide_count: "幻灯片数量: {0}"
+    ppt_parse_complete: "PPT 解析完成: {0} 个片段"
+    pdf_parsing: "📄 解析 PDF 文档: {0}"
+    pdf_page_count: "页面数量: {0}"
+    pdf_parse_complete: "PDF 解析完成: {0} 个片段"
+    word_parsing: "📝 解析 Word 文档: {0}"
+    word_parse_complete: "Word 解析完成: {0} 个片段"
+    parse_failed: "文档解析失败: {0}"
+  error:
+    unsupported_format: "不支持的文档格式: {0}"
+    file_not_found: "文件不存在: {0}"
+    parse_error: "解析错误: {0}"
+
+# 备忘录管理器
+memo_manager:
+  log:
+    new_document: "📄 开始新文档: {0}"
+    segment_added: "📝 添加片段 {0}: {1}"
+    memo_entry_created: "📌 创建备忘录条目: {0}"
+    memo_cleared: "🗑️ 备忘录已清空"
+    context_built: "📋 上下文构建完成: {0} 条短期记忆, {1} 条备忘录"
+
+# 阶段输出管理器
+stage_output:
+  log:
+    stage_checkpoint: "📍 阶段检查点: {0}%"
+    stage_summary_saved: "💾 阶段性总结已保存: 第 {0} 阶段"
+    final_summary_saved: "📋 最终总结已保存"
+  title:
+    stage_summary: "阶段性总结 ({0}%)"
+    final_summary: "最终总结"
+
+# 关键词倒排索引
+keyword_index:
+  log:
+    index_built: "🔍 关键词索引构建完成: {0} 个词条"
+    search_complete: "搜索完成: 找到 {0} 个匹配"
+
+# 相关性召回服务
+relevance_recall:
+  log:
+    recall_complete: "📌 召回 {0} 条相关记忆"
+
+# 备忘录聚合器
+memo_aggregator:
+  log:
+    aggregation_start: "🔄 开始聚合备忘录: {0} 条"
+    aggregation_complete: "✅ 聚合完成: {0} -> {1} 条"
+    merge_similar: "合并相似条目: {0} 条 -> 1 条"
+    compress_large: "压缩大型条目: {0} 字符 -> {1} 字符"
+
+# 备忘录文档导出
+memo_exporter:
+  log:
+    export_markdown: "📄 导出 Markdown: {0}"
+    export_json: "📋 导出 JSON: {0}"
+    export_html: "🌐 导出 HTML: {0}"
+    export_failed: "导出失败: {0}"
+  title:
+    document_memo: "文档分析备忘录"
+    key_points: "关键要点"
+    memo_entries: "备忘录条目"
+    generated_by: "由 AI 智能分析系统生成"
+
+# Token 估算器
+token_estimator:
+  log:
+    estimate_complete: "Token 估算: {0} 字符 ≈ {1} tokens"
+
