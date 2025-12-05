@@ -2,7 +2,6 @@ package top.yumbo.ai.rag.ppl.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +13,6 @@ import java.util.List;
  * @since 2025-12-04
  */
 @Data
-@Component
 @ConfigurationProperties(prefix = "knowledge.qa.ppl")
 public class PPLConfig {
 

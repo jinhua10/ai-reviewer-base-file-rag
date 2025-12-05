@@ -73,7 +73,7 @@ knowledge:
     # ============================================================
     ppl:
       # PPL 功能总开关（暂时禁用以避免 ONNX DLL 初始化问题）
-      enabled: false
+      enabled: true
 
       # 默认提供商：ollama, onnx, openai
       # 推荐使用 ollama（简单、稳定、开箱即用）

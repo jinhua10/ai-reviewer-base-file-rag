@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.spring.boot.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.ppl.PPLServiceFacade;
@@ -19,22 +20,10 @@ import java.util.List;
  */
 @Slf4j
 @Configuration
+@EnableConfigurationProperties(PPLConfig.class)
 @ConditionalOnProperty(prefix = "knowledge.qa.ppl", name = "enabled", havingValue = "true", matchIfMissing = false)
 public class PPLConfiguration {
 
-    /**
-     * PPL 配置 Bean
-     */
-    @Bean
-    public PPLConfig pplConfig(KnowledgeQAProperties properties) {
-        PPLConfig config = new PPLConfig();
-
-        // 从 properties 中读取配置（如果有的话）
-        // 这里可以根据实际需要扩展配置映射
-
-        log.info("✅ PPL 配置初始化完成");
-        return config;
-    }
 
     /**
      * ONNX PPL 服务 Bean
