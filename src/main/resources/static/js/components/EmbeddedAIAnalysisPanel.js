@@ -79,6 +79,27 @@
                     results: results
                 }));
 
+                // 保存成功的分析结果到历史记录
+                // (Save successful analysis results to history)
+                for (const result of results) {
+                    if (result.success && result.data) {
+                        try {
+                            const docName = result.document.title || result.document.name;
+                            await window.api.saveLLMResult({
+                                title: `${docName} - ${t('aiAnalysis') || 'AI分析'}`,
+                                sourceDocument: docName,
+                                question: finalPrompt,
+                                analysisType: t('documentAnalysis') || '文档分析',
+                                content: result.data.answer || result.data.summary || result.data.comprehensiveSummary || result.data.finalReport || JSON.stringify(result.data),
+                                keyPoints: result.data.keyPoints || []
+                            });
+                            console.log(t('logAnalysisResultSaved') || '✅ 分析结果已保存到历史记录');
+                        } catch (saveError) {
+                            console.warn(t('logAnalysisResultSaveFailed') || '⚠️ 保存分析结果失败:', saveError);
+                        }
+                    }
+                }
+
             } catch (error) {
                 console.error(t('embeddedAILogAnalysisError'), error);
                 setCurrentAnalysis(prev => ({

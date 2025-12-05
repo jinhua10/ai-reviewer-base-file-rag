@@ -46,7 +46,7 @@
 
 .qa-ask-button,
 .qa-clear-button {
-    height: 55px;
+    height: 40px;
     padding: 0 20px;
     border: none;
     border-radius: 8px;
@@ -588,7 +588,7 @@
     .qa-ask-button,
     .qa-clear-button {
         flex: 1;
-        height: 48px;
+        height: 40px;
     }
 
     .qa-answer-header {

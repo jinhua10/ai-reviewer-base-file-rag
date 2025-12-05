@@ -343,7 +343,7 @@ function SearchFilters({
                     <button
                         className="btn btn-primary"
                         onClick={handleSearchSubmit}
-                        style={{ whiteSpace: 'nowrap' }}
+                        style={{ whiteSpace: 'nowrap',height: '45px', width: '100px' }}
                     >
                         🔍 {t('docsSearchButton')}
                     </button>
