@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
  * @since 2025-12-04
  */
 @Slf4j
-@Service
 @ConditionalOnProperty(prefix = "knowledge.qa.ppl.onnx", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class PPLOnnxService implements PPLService {
 
