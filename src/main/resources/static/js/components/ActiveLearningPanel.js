@@ -53,7 +53,7 @@
                     }
                 }
             } catch (err) {
-                console.error('获取推荐失败:', err);
+                console.error(t('activeLearningLogRecommendationError'), err);
             } finally {
                 setLoading(false);
             }
@@ -83,7 +83,7 @@
                     }
                 }
             } catch (err) {
-                console.error('提交反馈失败:', err);
+                console.error(t('activeLearningLogFeedbackError'), err);
             }
         };
 
@@ -91,7 +91,7 @@
         if (loading) {
             return (
                 <div style={styles.panel}>
-                    <div style={styles.loading}>🔄 正在分析推荐...</div>
+                    <div style={styles.loading}>{t('activeLearningAnalyzing')}</div>
                 </div>
             );
         }
@@ -117,7 +117,7 @@
                     onClick={() => setExpanded(!expanded)}
                 >
                     <span style={styles.title}>
-                        🎯 主动学习推荐
+                        {t('activeLearningTitle')}
                         <span style={styles.badge}>
                             {(recommendations.uncertainDocuments?.length || 0) +
                              (recommendations.potentiallyRelevantDocuments?.length || 0) +
@@ -133,7 +133,7 @@
                     <div style={styles.content}>
                         {/* 置信度指示器 */}
                         <div style={styles.confidenceBar}>
-                            <span>检索置信度:</span>
+                            <span>{t('activeLearningConfidence')}:</span>
                             <div style={styles.progressBar}>
                                 <div style={{
                                     ...styles.progressFill,
@@ -155,13 +155,13 @@
                         {recommendations.uncertainDocuments?.length > 0 && (
                             <div style={styles.section}>
                                 <h4 style={styles.sectionTitle}>
-                                    ❓ 边界文档 - 可能相关
+                                    {t('activeLearningQuestionMark')} {t('activeLearningBoundaryDocs')}
                                 </h4>
                                 {recommendations.uncertainDocuments.map((doc, idx) => (
                                     <div key={idx} style={styles.docItem}>
                                         <div style={styles.docInfo}>
                                             <span style={styles.docName}>
-                                                #{doc.rank} {doc.document?.title || '未知文档'}
+                                                {t('activeLearningHashMark')}{doc.rank} {doc.document?.title || t('activeLearningUnknownDoc')}
                                             </span>
                                             <span style={styles.docReason}>{doc.reason}</span>
                                         </div>
@@ -175,14 +175,14 @@
                         {recommendations.potentiallyRelevantDocuments?.length > 0 && (
                             <div style={styles.section}>
                                 <h4 style={styles.sectionTitle}>
-                                    ⭐ 历史高分文档
+                                    {t('activeLearningStarMark')} {t('activeLearningHighRatedDocs')}
                                 </h4>
                                 {recommendations.potentiallyRelevantDocuments.map((doc, idx) => (
                                     <div key={idx} style={styles.docItem}>
                                         <div style={styles.docInfo}>
                                             <span style={styles.docName}>{doc.documentName}</span>
                                             <span style={styles.docReason}>
-                                                权重: {doc.historicalWeight?.toFixed(2)} - {doc.reason}
+                                                {t('activeLearningWeight')}: {doc.historicalWeight?.toFixed(2)} - {doc.reason}
                                             </span>
                                         </div>
                                         {renderFeedbackButtons(doc.documentName)}
@@ -195,14 +195,14 @@
                         {recommendations.historyBasedRecommendations?.length > 0 && (
                             <div style={styles.section}>
                                 <h4 style={styles.sectionTitle}>
-                                    📚 相似问题推荐
+                                    {t('activeLearningBookMark')} {t('activeLearningHistoryBased')}
                                 </h4>
                                 {recommendations.historyBasedRecommendations.map((rec, idx) => (
                                     <div key={idx} style={styles.docItem}>
                                         <div style={styles.docInfo}>
                                             <span style={styles.docName}>{rec.documentName}</span>
                                             <span style={styles.docReason}>
-                                                来自相似问题 (相似度: {Math.round(rec.similarityScore * 100)}%)
+                                                {t('activeLearningFromSimilar')} ({t('activeLearningSimilarity')}: {Math.round(rec.similarityScore * 100)}%)
                                             </span>
                                         </div>
                                         {renderFeedbackButtons(rec.documentName)}
@@ -222,7 +222,7 @@
             if (feedback) {
                 return (
                     <div style={styles.feedbackGiven}>
-                        {feedback === 'relevant' ? '✅ 已标记相关' : '❌ 已标记不相关'}
+                        {feedback === 'relevant' ? t('activeLearningMarkedRelevant') : t('activeLearningMarkedIrrelevant')}
                     </div>
                 );
             }
@@ -232,16 +232,16 @@
                     <button
                         style={{...styles.feedbackBtn, ...styles.relevantBtn}}
                         onClick={() => submitFeedback(documentName, true)}
-                        title="这个文档与问题相关"
+                        title={t('activeLearningRelevantTitle')}
                     >
-                        👍 相关
+                        {t('activeLearningRelevant')}
                     </button>
                     <button
                         style={{...styles.feedbackBtn, ...styles.irrelevantBtn}}
                         onClick={() => submitFeedback(documentName, false)}
-                        title="这个文档与问题不相关"
+                        title={t('activeLearningIrrelevantTitle')}
                     >
-                        👎 不相关
+                        {t('activeLearningIrrelevant')}
                     </button>
                 </div>
             );
@@ -388,6 +388,8 @@
     // 导出组件
     window.ActiveLearningPanel = ActiveLearningPanel;
 
-    console.log('✅ ActiveLearningPanel loaded');
+    // 获取翻译函数并输出加载日志
+    const getT = () => window.LanguageModule ? window.LanguageModule.useTranslation().t : (k) => k;
+    console.log(getT()('activeLearningLogComponentLoaded'));
 })();
 

@@ -27,11 +27,11 @@ function LLMResultsTab() {
             if (response.success) {
                 setResults(response.documents || []);
             } else {
-                setError(response.error || '加载失败');
+                setError(response.error || t('llmResultsLoadError'));
             }
         } catch (err) {
-            console.error('加载 LLM 结果历史失败:', err);
-            setError(err.message || '加载失败');
+            console.error(t('llmResultsLogLoadHistoryError'), err);
+            setError(err.message || t('llmResultsLoadError'));
         } finally {
             setLoading(false);
         }
@@ -50,8 +50,8 @@ function LLMResultsTab() {
             const content = await window.api.previewLLMResult(result.id);
             setPreviewContent(content);
         } catch (err) {
-            console.error('预览失败:', err);
-            setPreviewContent('预览加载失败: ' + err.message);
+            console.error(t('llmResultsLogPreviewError'), err);
+            setPreviewContent(t('llmResultsPreviewError') + err.message);
         } finally {
             setPreviewLoading(false);
         }
@@ -61,10 +61,10 @@ function LLMResultsTab() {
     const handleDownloadMarkdown = async (result) => {
         try {
             await window.api.downloadLLMResultMarkdown(result.id, result.fileName + '.md');
-            showToast('下载成功', 'success');
+            showToast(t('llmResultsDownloadSuccess'), 'success');
         } catch (err) {
-            console.error('下载失败:', err);
-            showToast('下载失败: ' + err.message, 'error');
+            console.error(t('llmResultsLogDownloadError'), err);
+            showToast(t('llmResultsDownloadError') + err.message, 'error');
         }
     };
 
@@ -72,34 +72,34 @@ function LLMResultsTab() {
     const handleDownloadPdf = async (result) => {
         try {
             await window.api.downloadLLMResultPdf(result.id, result.fileName + '.pdf');
-            showToast('下载成功', 'success');
+            showToast(t('llmResultsDownloadSuccess'), 'success');
         } catch (err) {
-            console.error('下载失败:', err);
-            showToast('下载失败: ' + err.message, 'error');
+            console.error(t('llmResultsLogDownloadError'), err);
+            showToast(t('llmResultsDownloadError') + err.message, 'error');
         }
     };
 
     // 删除文档
     const handleDelete = async (result) => {
-        if (!confirm(`确定要删除 "${result.fileName}" 吗？`)) {
+        if (!confirm(t('llmResultsDeleteConfirm').replace('{0}', result.fileName))) {
             return;
         }
 
         try {
             const response = await window.api.deleteLLMResult(result.id);
             if (response.success) {
-                showToast('删除成功', 'success');
+                showToast(t('llmResultsDeleteSuccess'), 'success');
                 loadHistory(); // 重新加载列表
                 if (selectedResult && selectedResult.id === result.id) {
                     setSelectedResult(null);
                     setPreviewContent('');
                 }
             } else {
-                showToast('删除失败: ' + response.error, 'error');
+                showToast(t('llmResultsDeleteError') + response.error, 'error');
             }
         } catch (err) {
-            console.error('删除失败:', err);
-            showToast('删除失败: ' + err.message, 'error');
+            console.error(t('llmResultsLogDeleteError'), err);
+            showToast(t('llmResultsDeleteError') + err.message, 'error');
         }
     };
 
@@ -128,13 +128,58 @@ function LLMResultsTab() {
 
     // 获取分析类型图标
     const getTypeIcon = (type) => {
-        switch (type) {
-            case '问答': return '💬';
-            case '文档分析': return '📄';
-            case '图片分析': return '🖼️';
-            case '渐进式分析': return '📊';
-            default: return '📝';
+        if (!type) return '📝';
+        
+        const normalizedType = type.toLowerCase().trim();
+        
+        // 问答类型
+        if (normalizedType.includes('问答') || normalizedType.includes('qa') || 
+            normalizedType.includes('q&a') || normalizedType.includes('question')) {
+            return '💬';
         }
+        // 文档分析
+        if (normalizedType.includes('文档') || normalizedType.includes('document') || 
+            normalizedType.includes('分析') || normalizedType.includes('analysis')) {
+            return '📄';
+        }
+        // 图片分析
+        if (normalizedType.includes('图片') || normalizedType.includes('image') || 
+            normalizedType.includes('图像') || normalizedType.includes('picture')) {
+            return '🖼️';
+        }
+        // 渐进式分析
+        if (normalizedType.includes('渐进') || normalizedType.includes('progressive') || 
+            normalizedType.includes('incremental')) {
+            return '📊';
+        }
+        
+        return '📝';
+    };
+    
+    // 获取翻译后的类型名称
+    const getTranslatedType = (type) => {
+        if (!type) return t('llmResultsTypeDefault');
+        
+        const normalizedType = type.toLowerCase().trim();
+        
+        if (normalizedType.includes('问答') || normalizedType.includes('qa') || 
+            normalizedType.includes('q&a') || normalizedType.includes('question')) {
+            return t('llmResultsTypeQA');
+        }
+        if (normalizedType.includes('文档') || normalizedType.includes('document') || 
+            normalizedType.includes('分析') || normalizedType.includes('analysis')) {
+            return t('llmResultsTypeDocument');
+        }
+        if (normalizedType.includes('图片') || normalizedType.includes('image') || 
+            normalizedType.includes('图像') || normalizedType.includes('picture')) {
+            return t('llmResultsTypeImage');
+        }
+        if (normalizedType.includes('渐进') || normalizedType.includes('progressive') || 
+            normalizedType.includes('incremental')) {
+            return t('llmResultsTypeProgressive');
+        }
+        
+        return type || t('llmResultsTypeDefault');
     };
 
     // 渲染 Markdown
@@ -151,7 +196,7 @@ function LLMResultsTab() {
             <div className="llm-results-header">
                 <h2>
                     <span className="icon">📚</span>
-                    LLM 分析结果历史
+                    {t('llmResultsTitle')}
                 </h2>
                 <div className="header-actions">
                     <button
@@ -159,7 +204,7 @@ function LLMResultsTab() {
                         onClick={loadHistory}
                         disabled={loading}
                     >
-                        🔄 刷新
+                        🔄 {t('llmResultsRefresh')}
                     </button>
                 </div>
             </div>
@@ -179,13 +224,13 @@ function LLMResultsTab() {
                     {loading ? (
                         <div className="loading-state">
                             <div className="spinner"></div>
-                            <p>加载中...</p>
+                            <p>{t('llmResultsLoading')}</p>
                         </div>
                     ) : results.length === 0 ? (
                         <div className="empty-state">
                             <span className="icon">📭</span>
-                            <p>暂无分析结果</p>
-                            <p className="hint">进行问答或文档分析后，结果会自动保存在这里</p>
+                            <p>{t('llmResultsEmpty')}</p>
+                            <p className="hint">{t('llmResultsEmptyHint')}</p>
                         </div>
                     ) : (
                         <div className="results-list">
@@ -203,7 +248,7 @@ function LLMResultsTab() {
                                             {result.fileName || result.id}
                                         </div>
                                         <div className="result-meta">
-                                            <span className="type-badge">{result.analysisType}</span>
+                                            <span className="type-badge">{getTranslatedType(result.analysisType)}</span>
                                             <span className="time">{formatTime(result.createdAt)}</span>
                                         </div>
                                         {result.summary && (
@@ -217,14 +262,14 @@ function LLMResultsTab() {
                                     <div className="result-actions">
                                         <button
                                             className="btn-icon"
-                                            title="下载 Markdown"
+                                            title={t('llmResultsDownloadMarkdown')}
                                             onClick={(e) => { e.stopPropagation(); handleDownloadMarkdown(result); }}
                                         >
                                             📥
                                         </button>
                                         <button
                                             className="btn-icon"
-                                            title="删除"
+                                            title={t('llmResultsDelete')}
                                             onClick={(e) => { e.stopPropagation(); handleDelete(result); }}
                                         >
                                             🗑️
@@ -247,18 +292,18 @@ function LLMResultsTab() {
                                         className="btn btn-primary btn-sm"
                                         onClick={() => handleDownloadMarkdown(selectedResult)}
                                     >
-                                        📥 下载 Markdown
+                                        📥 {t('llmResultsDownloadMarkdown')}
                                     </button>
                                     <button
                                         className="btn btn-secondary btn-sm"
                                         onClick={() => handleDownloadPdf(selectedResult)}
                                     >
-                                        📄 下载 PDF
+                                        📄 {t('llmResultsDownloadPdf')}
                                     </button>
                                     <button
                                         className="btn-icon"
                                         onClick={handleClosePreview}
-                                        title="关闭"
+                                        title={t('llmResultsClose')}
                                     >
                                         ✕
                                     </button>
@@ -266,19 +311,19 @@ function LLMResultsTab() {
                             </div>
                             <div className="preview-meta">
                                 {selectedResult.sourceDocument && (
-                                    <span><strong>源文档:</strong> {selectedResult.sourceDocument}</span>
+                                    <span><strong>{t('llmResultsSourceDoc')}</strong> {selectedResult.sourceDocument}</span>
                                 )}
                                 {selectedResult.question && (
-                                    <span><strong>问题:</strong> {selectedResult.question}</span>
+                                    <span><strong>{t('llmResultsQuestion')}</strong> {selectedResult.question}</span>
                                 )}
-                                <span><strong>类型:</strong> {selectedResult.analysisType}</span>
-                                <span><strong>时间:</strong> {formatTime(selectedResult.createdAt)}</span>
+                                <span><strong>{t('llmResultsType')}</strong> {getTranslatedType(selectedResult.analysisType)}</span>
+                                <span><strong>{t('llmResultsTime')}</strong> {formatTime(selectedResult.createdAt)}</span>
                             </div>
                             <div className="preview-content">
                                 {previewLoading ? (
                                     <div className="loading-state">
                                         <div className="spinner"></div>
-                                        <p>加载预览...</p>
+                                        <p>{t('llmResultsPreviewLoading')}</p>
                                     </div>
                                 ) : (
                                     <div
@@ -291,7 +336,7 @@ function LLMResultsTab() {
                     ) : (
                         <div className="empty-preview">
                             <span className="icon">👈</span>
-                            <p>选择左侧的结果查看详情</p>
+                            <p>{t('llmResultsSelectHint')}</p>
                         </div>
                     )}
                 </div>

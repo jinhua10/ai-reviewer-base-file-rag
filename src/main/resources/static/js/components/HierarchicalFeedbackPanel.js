@@ -73,7 +73,7 @@
                     }
                 }
             } catch (err) {
-                console.error('加载反馈失败:', err);
+                console.error(t('hierarchicalLogLoadFeedbackError'), err);
             }
         };
 
@@ -92,7 +92,7 @@
                     }
                 }
             } catch (err) {
-                console.error('分析段落失败:', err);
+                console.error(t('hierarchicalLogAnalyzeParagraphsError'), err);
             }
         };
 
@@ -114,11 +114,11 @@
                     })
                 });
                 if (response.ok) {
-                    alert('✅ 文档级反馈已保存');
+                    alert(t('hierarchicalSubmitSuccess'));
                     loadExistingFeedback();
                 }
             } catch (err) {
-                alert('❌ 提交失败: ' + err.message);
+                alert(t('hierarchicalSubmitError') + err.message);
             } finally {
                 setLoading(false);
             }
@@ -147,7 +147,7 @@
                     loadExistingFeedback();
                 }
             } catch (err) {
-                console.error('段落反馈失败:', err);
+                console.error(t('hierarchicalLogParagraphFeedbackError'), err);
             }
         };
 
@@ -182,7 +182,7 @@
                     })
                 });
             } catch (err) {
-                console.error('高亮保存失败:', err);
+                console.error(t('hierarchicalLogHighlightSaveError'), err);
             }
         };
 
@@ -205,19 +205,19 @@
                     style={{...styles.tab, ...(activeTab === 'document' ? styles.tabActive : {})}}
                     onClick={() => setActiveTab('document')}
                 >
-                    📄 文档级
+                    {t('hierarchicalDocLevel')}
                 </button>
                 <button
                     style={{...styles.tab, ...(activeTab === 'paragraph' ? styles.tabActive : {})}}
                     onClick={() => setActiveTab('paragraph')}
                 >
-                    📝 段落级
+                    {t('hierarchicalParagraphLevel')}
                 </button>
                 <button
                     style={{...styles.tab, ...(activeTab === 'sentence' ? styles.tabActive : {})}}
                     onClick={() => setActiveTab('sentence')}
                 >
-                    ✨ 句子级
+                    {t('hierarchicalSentenceLevel')}
                 </button>
             </div>
         );
@@ -225,7 +225,7 @@
         // 渲染文档级反馈
         const renderDocumentFeedback = () => (
             <div style={styles.feedbackSection}>
-                <h4>📊 整体评分</h4>
+                <h4>{t('hierarchicalRatingIcon')} {t('hierarchicalRating')}</h4>
                 <div style={styles.ratingRow}>
                     {[1, 2, 3, 4, 5].map(star => (
                         <span
@@ -238,31 +238,31 @@
                     ))}
                 </div>
 
-                <h4>🎯 相关性评估</h4>
+                <h4>{t('hierarchicalRelevanceIcon')} {t('hierarchicalRelevance')}</h4>
                 <select
                     style={styles.select}
                     value={docRelevance}
                     onChange={(e) => setDocRelevance(e.target.value)}
                 >
-                    <option value="">请选择...</option>
-                    <option value="HIGHLY_RELEVANT">高度相关</option>
-                    <option value="RELEVANT">相关</option>
-                    <option value="PARTIALLY_RELEVANT">部分相关</option>
-                    <option value="NOT_RELEVANT">不相关</option>
-                    <option value="MISLEADING">误导性</option>
+                    <option value="">{t('hierarchicalSelectPlaceholder')}</option>
+                    <option value="HIGHLY_RELEVANT">{t('hierarchicalRelevanceHighly')}</option>
+                    <option value="RELEVANT">{t('hierarchicalRelevanceRelevant')}</option>
+                    <option value="PARTIALLY_RELEVANT">{t('hierarchicalRelevancePartially')}</option>
+                    <option value="NOT_RELEVANT">{t('hierarchicalRelevanceNot')}</option>
+                    <option value="MISLEADING">{t('hierarchicalRelevanceMisleading')}</option>
                 </select>
 
-                <h4>💬 评论</h4>
+                <h4>{t('hierarchicalCommentIcon')} {t('hierarchicalComment')}</h4>
                 <textarea
                     style={styles.textarea}
                     value={docComment}
                     onChange={(e) => setDocComment(e.target.value)}
-                    placeholder="请输入您的评论..."
+                    placeholder={t('hierarchicalCommentPlaceholder')}
                 />
 
-                <h4>🏷️ 标签</h4>
+                <h4>{t('hierarchicalTagsIcon')} {t('hierarchicalTags')}</h4>
                 <div style={styles.tagsContainer}>
-                    {['准确', '有用', '详细', '需要补充', '过时', '错误'].map(tag => (
+                    {[t('hierarchicalTagAccurate'), t('hierarchicalTagUseful'), t('hierarchicalTagDetailed'), t('hierarchicalTagNeedsMore'), t('hierarchicalTagOutdated'), t('hierarchicalTagWrong')].map(tag => (
                         <span
                             key={tag}
                             style={{
@@ -287,7 +287,7 @@
                     onClick={submitDocumentFeedback}
                     disabled={loading || docRating === 0}
                 >
-                    {loading ? '提交中...' : '提交文档反馈'}
+                    {loading ? t('hierarchicalSubmitting') : t('hierarchicalSubmit')}
                 </button>
             </div>
         );
@@ -295,10 +295,10 @@
         // 渲染段落级反馈
         const renderParagraphFeedback = () => (
             <div style={styles.feedbackSection}>
-                <p style={styles.hint}>点击段落旁的按钮标记是否有帮助</p>
+                <p style={styles.hint}>{t('hierarchicalParagraphHint')}</p>
 
                 {paragraphs.length === 0 ? (
-                    <p>正在分析段落...</p>
+                    <p>{t('hierarchicalAnalyzingParagraphs')}</p>
                 ) : (
                     <div style={styles.paragraphList}>
                         {paragraphs.map((para, idx) => (
@@ -311,28 +311,28 @@
                                     <button
                                         style={styles.helpfulBtn}
                                         onClick={() => submitParagraphFeedback(idx, true, 'KEY_POINT')}
-                                        title="关键要点"
+                                        title={t('hierarchicalKeyPoint')}
                                     >
                                         🔑
                                     </button>
                                     <button
                                         style={styles.helpfulBtn}
                                         onClick={() => submitParagraphFeedback(idx, true, 'SUPPORTING_DETAIL')}
-                                        title="支撑细节"
+                                        title={t('hierarchicalSupportingDetail')}
                                     >
                                         👍
                                     </button>
                                     <button
                                         style={styles.notHelpfulBtn}
                                         onClick={() => submitParagraphFeedback(idx, false, 'IRRELEVANT')}
-                                        title="不相关"
+                                        title={t('hierarchicalIrrelevant')}
                                     >
                                         👎
                                     </button>
                                     <button
                                         style={styles.notHelpfulBtn}
                                         onClick={() => submitParagraphFeedback(idx, false, 'WRONG_INFO')}
-                                        title="错误信息"
+                                        title={t('hierarchicalWrongInfo')}
                                     >
                                         ❌
                                     </button>
@@ -347,7 +347,7 @@
         // 渲染句子级反馈（高亮标记）
         const renderSentenceFeedback = () => (
             <div style={styles.feedbackSection}>
-                <p style={styles.hint}>选中文本后点击按钮添加高亮标记</p>
+                <p style={styles.hint}>{t('hierarchicalSentenceHint')}</p>
 
                 {selectedText && (
                     <div style={styles.selectionToolbar}>
@@ -356,30 +356,30 @@
                             <button
                                 style={{...styles.highlightBtn, backgroundColor: '#4caf50'}}
                                 onClick={() => addHighlight('ANSWER', true)}
-                                title="标记为答案"
+                                title={t('hierarchicalMarkAsAnswer')}
                             >
-                                ✓ 答案
+                                {t('hierarchicalHighlightAnswer')}
                             </button>
                             <button
                                 style={{...styles.highlightBtn, backgroundColor: '#2196f3'}}
                                 onClick={() => addHighlight('KEY_FACT', true)}
-                                title="标记为关键事实"
+                                title={t('hierarchicalMarkAsKeyFact')}
                             >
-                                ★ 关键
+                                {t('hierarchicalHighlightKeyFact')}
                             </button>
                             <button
                                 style={{...styles.highlightBtn, backgroundColor: '#ff9800'}}
                                 onClick={() => addHighlight('IMPORTANT')}
-                                title="标记为重要"
+                                title={t('hierarchicalMarkAsImportant')}
                             >
-                                ! 重要
+                                {t('hierarchicalHighlightImportant')}
                             </button>
                             <button
                                 style={{...styles.highlightBtn, backgroundColor: '#f44336'}}
                                 onClick={() => addHighlight('WRONG')}
-                                title="标记为错误"
+                                title={t('hierarchicalMarkAsWrong')}
                             >
-                                ✗ 错误
+                                {t('hierarchicalHighlightWrong')}
                             </button>
                         </div>
                     </div>
@@ -389,12 +389,12 @@
                     style={styles.contentArea}
                     onMouseUp={handleTextSelection}
                 >
-                    {documentContent || '无文档内容'}
+                    {documentContent || t('hierarchicalNoContent')}
                 </div>
 
                 {highlights.length > 0 && (
                     <div style={styles.highlightsList}>
-                        <h4>已添加的高亮 ({highlights.length})</h4>
+                        <h4>{t('hierarchicalHighlightsList')} ({highlights.length})</h4>
                         {highlights.map((h, idx) => (
                             <div key={idx} style={styles.highlightItem}>
                                 <span style={{
@@ -414,7 +414,7 @@
         return (
             <div style={styles.panel}>
                 <div style={styles.header}>
-                    <h3>📊 分层反馈 - {documentName}</h3>
+                    <h3>{t('hierarchicalFeedbackTitle')} - {documentName}</h3>
                     {onClose && (
                         <button style={styles.closeBtn} onClick={onClose}>×</button>
                     )}

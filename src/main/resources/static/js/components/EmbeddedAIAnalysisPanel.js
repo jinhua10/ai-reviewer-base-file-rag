@@ -80,7 +80,7 @@
                 }));
 
             } catch (error) {
-                console.error('分析失败:', error);
+                console.error(t('embeddedAILogAnalysisError'), error);
                 setCurrentAnalysis(prev => ({
                     ...prev,
                     status: 'error',
@@ -413,6 +413,8 @@
         }
     };
 
-    console.log('✅ EmbeddedAIAnalysisPanel component loaded');
+    // 获取翻译函数并输出加载日志
+    const getT = () => window.LanguageModule ? window.LanguageModule.useTranslation().t : (k) => k;
+    console.log(getT()('embeddedAILogComponentLoaded'));
 })();
 

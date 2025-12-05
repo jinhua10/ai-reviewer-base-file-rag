@@ -1,5 +1,9 @@
 package top.yumbo.ai.rag.spring.boot.service.document;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.annotation.PostConstruct;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +31,7 @@ import java.util.regex.Pattern;
  * 2. 支持在线预览和下载
  * 3. 自动添加到知识库（可选）
  * 4. 图片处理：在线预览用链接，下载时转 Base64
+ * 5. ✅ 持久化历史记录，服务重启后自动恢复
  */
 @Slf4j
 @Service
@@ -44,6 +49,12 @@ public class LLMResultDocumentService {
     /** 结果历史记录 */
     private final LinkedList<LLMResultDocument> resultHistory = new LinkedList<>();
 
+    /** 元数据文件名 */
+    private static final String METADATA_FILE = "history-metadata.json";
+
+    /** JSON 序列化器 */
+    private final ObjectMapper objectMapper;
+
     /** 图片 URL 匹配正则 */
     private static final Pattern IMAGE_URL_PATTERN = Pattern.compile(
             "!\\[([^\\]]*)\\]\\((https?://[^)]+)\\)"
@@ -53,6 +64,172 @@ public class LLMResultDocumentService {
     private static final Pattern IMAGE_LOCAL_PATTERN = Pattern.compile(
             "!\\[([^\\]]*)\\]\\(([^)]+)\\)"
     );
+
+    public LLMResultDocumentService() {
+        this.objectMapper = new ObjectMapper();
+        this.objectMapper.registerModule(new JavaTimeModule());
+    }
+
+    /**
+     * 服务启动时加载历史记录
+     */
+    @PostConstruct
+    public void init() {
+        loadHistoryFromDisk();
+    }
+
+    /**
+     * 从磁盘加载历史记录
+     */
+    private void loadHistoryFromDisk() {
+        try {
+            Path storageDir = Paths.get(storagePath);
+            if (!Files.exists(storageDir)) {
+                Files.createDirectories(storageDir);
+                log.info("📁 创建 LLM 结果存储目录: {}", storageDir.toAbsolutePath());
+                return;
+            }
+
+            Path metadataPath = storageDir.resolve(METADATA_FILE);
+
+            if (Files.exists(metadataPath)) {
+                // 从元数据文件加载
+                String json = Files.readString(metadataPath);
+                List<LLMResultDocument> loaded = objectMapper.readValue(json,
+                        new TypeReference<List<LLMResultDocument>>() {});
+
+                synchronized (resultHistory) {
+                    resultHistory.clear();
+
+                    // 验证文件是否存在，只加载有效记录
+                    for (LLMResultDocument doc : loaded) {
+                        if (doc.getFilePath() != null && Files.exists(Paths.get(doc.getFilePath()))) {
+                            resultHistory.add(doc);
+                        } else {
+                            log.warn("⚠️ 跳过无效记录（文件不存在）: {}", doc.getFileName());
+                        }
+                    }
+                }
+
+                log.info("✅ 从磁盘加载了 {} 条 LLM 分析历史记录", resultHistory.size());
+            } else {
+                // 元数据文件不存在，尝试从现有 .md 文件恢复
+                rebuildHistoryFromFiles(storageDir);
+            }
+
+        } catch (Exception e) {
+            log.error("❌ 加载 LLM 分析历史失败: {}", e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 从现有 .md 文件重建历史记录
+     */
+    private void rebuildHistoryFromFiles(Path storageDir) {
+        try {
+            List<Path> mdFiles = Files.list(storageDir)
+                    .filter(p -> p.toString().endsWith(".md"))
+                    .sorted((a, b) -> {
+                        try {
+                            return Files.getLastModifiedTime(b).compareTo(Files.getLastModifiedTime(a));
+                        } catch (IOException e) {
+                            return 0;
+                        }
+                    })
+                    .limit(maxHistory)
+                    .toList();
+
+            synchronized (resultHistory) {
+                resultHistory.clear();
+
+                for (Path mdFile : mdFiles) {
+                    try {
+                        LLMResultDocument doc = parseDocumentFromFile(mdFile);
+                        if (doc != null) {
+                            resultHistory.add(doc);
+                        }
+                    } catch (Exception e) {
+                        log.warn("⚠️ 解析文件失败: {}", mdFile.getFileName());
+                    }
+                }
+            }
+
+            if (!resultHistory.isEmpty()) {
+                log.info("📂 从现有文件重建了 {} 条历史记录", resultHistory.size());
+                saveHistoryToDisk(); // 保存元数据
+            }
+
+        } catch (IOException e) {
+            log.warn("⚠️ 扫描存储目录失败: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 从 Markdown 文件解析文档信息
+     */
+    private LLMResultDocument parseDocumentFromFile(Path mdFile) throws IOException {
+        String content = Files.readString(mdFile);
+        String fileName = mdFile.getFileName().toString().replace(".md", "");
+
+        // 提取元信息
+        String sourceDocument = extractMetaValue(content, "源文档");
+        String question = extractMetaValue(content, "分析问题");
+        String analysisType = extractMetaValue(content, "分析类型");
+
+        // 生成 ID
+        String docId = "llm-" + fileName.hashCode() + "-" +
+                       UUID.randomUUID().toString().substring(0, 4);
+
+        return LLMResultDocument.builder()
+                .id(docId)
+                .fileName(fileName)
+                .filePath(mdFile.toAbsolutePath().toString())
+                .sourceDocument(sourceDocument)
+                .question(question)
+                .analysisType(analysisType != null ? analysisType : "未知")
+                .summary(extractSummary(content, 200))
+                .createdAt(LocalDateTime.now()) // 可以从文件名解析
+                .contentLength(content.length())
+                .hasImages(containsImages(content))
+                .build();
+    }
+
+    /**
+     * 从内容中提取元信息值
+     */
+    private String extractMetaValue(String content, String key) {
+        Pattern pattern = Pattern.compile("\\*\\*" + key + "\\*\\*:\\s*(.+?)\\s*(?:\\n|$)");
+        Matcher matcher = pattern.matcher(content);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+        return null;
+    }
+
+    /**
+     * 保存历史记录到磁盘
+     */
+    private void saveHistoryToDisk() {
+        try {
+            Path storageDir = Paths.get(storagePath);
+            if (!Files.exists(storageDir)) {
+                Files.createDirectories(storageDir);
+            }
+
+            Path metadataPath = storageDir.resolve(METADATA_FILE);
+
+            synchronized (resultHistory) {
+                String json = objectMapper.writerWithDefaultPrettyPrinter()
+                        .writeValueAsString(new ArrayList<>(resultHistory));
+                Files.writeString(metadataPath, json);
+            }
+
+            log.debug("💾 历史记录已保存到磁盘: {} 条", resultHistory.size());
+
+        } catch (Exception e) {
+            log.error("❌ 保存历史记录失败: {}", e.getMessage(), e);
+        }
+    }
 
     /**
      * 保存 LLM 分析结果
@@ -195,6 +372,9 @@ public class LLMResultDocumentService {
             synchronized (resultHistory) {
                 resultHistory.removeIf(d -> d.getId().equals(docId));
             }
+
+            // 持久化到磁盘
+            saveHistoryToDisk();
 
             log.info(LogMessageProvider.getMessage("llm_result.log.document_deleted", docId));
             return true;
@@ -391,6 +571,9 @@ public class LLMResultDocumentService {
                 resultHistory.removeLast();
             }
         }
+
+        // 持久化到磁盘
+        saveHistoryToDisk();
     }
 
     /**
@@ -461,6 +644,8 @@ public class LLMResultDocumentService {
      */
     @Data
     @Builder
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
     public static class LLMResultDocument {
         /** 文档ID */
         private String id;
