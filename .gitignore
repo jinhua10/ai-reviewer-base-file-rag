@@ -6,7 +6,7 @@
 /release/data
 /release/logs
 /release/*.jar
-
+/temp
 /models*/
 
 /src/main/resources/simpleExcel/*
