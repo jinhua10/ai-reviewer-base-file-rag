@@ -19,6 +19,14 @@ spring:
   application:
     name: knowledge-qa-system
 
+  # 国际化消息源配置 (I18n Message Source Configuration)
+  # 确保所有 messages*.properties 文件以 UTF-8 编码加载
+  messages:
+    basename: messages
+    encoding: UTF-8
+    cache-duration: 3600
+    fallback-to-system-locale: false
+
   # 文件上传配置
   servlet:
     multipart:
@@ -115,6 +123,52 @@ knowledge:
       # 检索返回的文档数量
       top-k: 20
 
+    # ============================================================
+    # 搜索配置（停用词、关键词提取）
+    # ============================================================
+    search:
+      # 是否启用停用词过滤
+      enable-stop-words-filter: true
+
+      # 最小关键词长度（小于此长度的词会被过滤）
+      min-keyword-length: 2
+
+      # 中文停用词列表（可自定义）
+      chinese-stop-words:
+        - 的
+        - 是
+        - 在
+        - 了
+        - 和
+        - 有
+        - 我
+        - 你
+        - 他
+        - 她
+        - 它
+        - 们
+        - 这
+        - 那
+        - 之
+        - 与
+        - 及
+        - 或
+
+      # 英文停用词列表（可自定义）
+      english-stop-words:
+        - the
+        - a
+        - an
+        - in
+        - on
+        - at
+        - of
+        - for
+        - to
+        - and
+        - or
+        - but
+
     # LLM 配置
     llm:
       # LLM 提供商
@@ -204,71 +258,143 @@ knowledge:
       chunk-overlap: 400
 
       # 并行处理配置（🚀 大幅提升索引速度）
-      # 是否启用并行处理
-      # 说明：当文档数量 > 5 时自动启用并行处理，可显著提升索引速度
-      #      小文档场景：速度提升 2-3 倍
-      #      大文档场景：速度提升 1.5-2 倍
       parallel-processing: true
 
-      # 并行处理线程数
-      # 0 = 自动（使用 CPU 核心数，推荐）
-      # 建议值：
-      #   - 4 核 CPU: 保持 0（自动）或设置为 3-4
-      #   - 8 核 CPU: 保持 0（自动）或设置为 6-8
-      #   - 16 核 CPU: 保持 0（自动）或设置为 12-16
+      # 并行处理线程数（0 = 自动，使用 CPU 核心数）
       parallel-threads: 0
 
       # 批处理大小（文档数）
-      # 每批处理多少个文档后提交一次
-      # 说明：
-      #   - 较小值 (5-10): 内存占用低，但提交频率高
-      #   - 较大值 (20-50): 性能更好，但内存占用高
-      #   - 推荐值: 10
       batch-size: 10
+
+    # ============================================================
+    # 智能分析配置
+    # ============================================================
+    smart-analysis:
+      # 是否启用智能分析
+      enabled: false
+
+      # LLM 配置（用于智能分析）
+      llm:
+        api-key: ${ANALYSIS_API_KEY:${AI_API_KEY:}}
+        api-url: https://api.deepseek.com/v1/chat/completions
+        model: deepseek-chat
+
+    # ============================================================
+    # 分块优化配置（PPL - Perplexity Based Chunking）
+    # ============================================================
+    chunking:
+      # 是否启用 PPL 优化分块
+      # true: 启用（需要配置 PPL 服务）
+      # false: 使用固定长度分块（默认，推荐）
+      ppl-enabled: false
+
+      # PPL 服务配置
+      ppl:
+        # PPL 服务类型:
+        #   - ollama: Ollama 本地服务（推荐）
+        #   - openai: OpenAI 兼容 API
+        provider: ollama
+
+        # API 端点
+        # Ollama: http://localhost:11434/api/generate
+        # OpenAI: https://api.openai.com/v1/completions
+        api-url: http://localhost:11434/api/generate
+
+        # 模型名称
+        # Ollama: qwen2.5:7b, llama3.2:3b 等
+        # OpenAI: gpt-3.5-turbo-instruct 等
+        model: qwen2.5:7b
+
+        # API Key（OpenAI 需要）
+        api-key: ${PPL_API_KEY:}
+
+        # 最大序列长度
+        max-sequence-length: 512
+
+        # PPL 分块阈值
+        # 当连续句子的困惑度变化超过此阈值时切分
+        threshold: 1.5
+
+    # ============================================================
+    # 反馈系统配置
+    # ============================================================
+    feedback:
+      # 反馈模式:
+      #   - star: 星级评价（1-5 星）
+      #   - emoji: 表情评价（😀😊😐😞😢）
+      #   - like: 点赞/点踩（👍👎）
+      mode: star
+
+      # 是否启用文档级反馈
+      document-feedback-enabled: true
+
+      # 反馈权重衰减因子（0.0-1.0）
+      # 控制历史反馈对当前检索的影响程度
+      # 0.0: 不使用历史反馈
+      # 1.0: 完全信任历史反馈
+      # 推荐: 0.1-0.3
+      weight-decay: 0.2
+
+      # 最小反馈次数阈值
+      # 文档至少需要多少次反馈才会影响排序
+      min-feedback-count: 3
+
+    # ============================================================
+    # PPL 优化分块配置（详细）
+    # ============================================================
+    ppl-chunking:
+      # 是否启用（生产环境建议关闭，仅在需要时启用）
+      enabled: false
+
+      # PPL 模型配置
+      model:
+        # 模型类型: ollama, openai
+        type: ollama
+
+        # 模型名称
+        name: qwen2.5:7b
+
+        # API 端点
+        endpoint: http://localhost:11434/api/generate
+
+      # 分块参数
+      chunk:
+        # 最小块大小（字符）
+        min-size: 500
+
+        # 最大块大小（字符）
+        max-size: 3000
+
+        # PPL 阈值
+        threshold: 1.5
+
+        # 窗口大小（句子数）
+        window-size: 3
+
+      # 每个文档最大块数
+      max-chunks-per-document: 50
 
     # 图片处理配置
     image-processing:
       # 图片处理策略:
-      #   - placeholder: 占位符（默认，零依赖，显示 [图片: xxx.png]）
-      #   - ocr: OCR 文字识别（需要安装 Tesseract OCR）
-      #   - vision-llm: Vision LLM 语义理解（需要 API Key）
-      #   - hybrid: 混合模式（OCR + Vision LLM，推荐）
-      strategy: placeholder
+      #   - placeholder: 占位符（默认，零依赖）
+      #   - vision-llm: 使用独立的 Vision LLM 配置（下方 vision-llm 配置节）
+      #   - llm-client: 使用主 LLM 客户端的图片识别功能（仅当主 LLM 支持 Vision 时有效）
+      #
+      # 💡 重要说明：
+      #   - llm-client 策略要求主 LLM 模型支持图片（如 gpt-4o、qwen-vl-plus）
+      #   - 如果主 LLM 不支持图片（如 deepseek-chat），请使用 vision-llm 策略
+      #   - vision-llm 策略使用独立配置，不依赖主 LLM
+      #
+      # 推荐配置：
+      #   - 主 LLM 支持图片（qwen-vl-plus、gpt-4o）→ 使用 llm-client
+      #   - 主 LLM 不支持图片（deepseek-chat）→ 使用 vision-llm
+      strategy: vision-llm
 
-      # 是否启用 OCR
-      # ⚠️ 启用前请确保已安装 Tesseract OCR
-      # 下载地址:
-      #   Windows: https://github.com/UB-Mannheim/tesseract/wiki
-      #   Linux: sudo apt-get install tesseract-ocr tesseract-ocr-chi-sim
-      #   Mac: brew install tesseract tesseract-lang
-      enable-ocr: false
-
-      # OCR 配置
-      ocr:
-        # Tesseract 数据路径
-        #
-        # 🔧 配置方法：
-        # 方式1（推荐）：直接指定绝对路径
-        #   Windows 示例: tessdata-path: C:/Program Files/Tesseract-OCR/tessdata
-        #   Linux/Mac 示例: tessdata-path: /usr/share/tesseract-ocr/4.00/tessdata
-        #
-        # 方式2：使用环境变量
-        #   set TESSDATA_PREFIX=C:\path\to\tessdata (Windows)
-        #   export TESSDATA_PREFIX=/path/to/tessdata (Linux/Mac)
-        #
-        # 方式3：使用项目内置路径
-        #   将 tessdata 文件夹放在项目根目录下
-        #
-        # 💡 提示：修改下面的配置，直接指定你的 tessdata 路径
-        tessdata-path: ${TESSDATA_PREFIX:./tessdata}
-
-        # 识别语言
-        # chi_sim: 简体中文
-        # eng: 英文
-        # chi_sim+eng: 中英文混合（推荐）
-        # jpn: 日文
-        # kor: 韩文
-        language: chi_sim+eng
+      # 图片文本化提取模式（Image text extraction mode）
+      #   - concise: 精简模式，提取关键信息，避免冗余但不遗漏重要内容（节省 token）
+      #   - detailed: 详细模式，完整分析图片内容（推荐用于需要详细描述的场景）
+      extraction-mode: concise
 
       # Vision LLM 配置
       vision-llm:
@@ -276,25 +402,47 @@ knowledge:
         enabled: true
 
         # API Key
-        # 💡 配置方法：
-        # 方式1（推荐）：直接配置
+        # 方式1（推荐）：直接配置 API Key
         #   api-key: sk-your-actual-api-key
         #
-        # 方式2：使用环境变量
-        #   set VISION_LLM_API_KEY=sk-your-api-key
-        #   或使用主 LLM 的 API Key: set AI_API_KEY=sk-your-api-key
+        # 方式2：使用环境变量（更安全）
+        #   export VISION_LLM_API_KEY=sk-your-api-key
+        #   或使用主 LLM 的 API Key: export AI_API_KEY=sk-your-api-key
+        #
+        # 当前配置: 优先使用 VISION_LLM_API_KEY，如果未设置则使用 AI_API_KEY
         # 本地 Ollama 不需要 API Key
-        api-key: ${VISION_LLM_API_KEY:${AI_API_KEY:}}
+        api-key: ${QW_API_KEY:}
+
+        # 💡 提示：如果要直接配置 API Key，替换上面一行为:
+        # api-key: sk-your-actual-api-key
 
         # 模型名称
         # OpenAI: gpt-4o, gpt-4-vision-preview
+        # Anthropic: claude-3-opus
+        # Google: gemini-pro-vision
+        # Qwen: qwen-vl-plus
         # Ollama（本地）: qwen3-vl:8b, llava:7b, minicpm-v
-        model: qwen3-vl:8b
+        model: qwen-vl-plus
 
-        # API 端点
+        # API 端点（可选）
         # OpenAI: https://api.openai.com/v1/chat/completions
         # Ollama（本地）: http://localhost:11434/api/chat
-        endpoint: ${VISION_LLM_ENDPOINT:http://localhost:11434/api/chat}
+        endpoint: ${VISION_LLM_ENDPOINT:https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions}
+
+        # 💡 提示：如果要直接配置端点，替换上面一行为:
+        # endpoint: http://localhost:11434/api/chat
+
+        # 批量处理配置（针对 PPT/演示文稿场景优化）
+        batch:
+          # 是否启用批量处理（一次发送多张图片）
+          enabled: true
+
+          # 每批处理的图片数量
+          # 建议值：3-5 张（取决于模型上下文限制和图片大小）
+          # - GPT-4o: 可以处理 10+ 张
+          # - Qwen-VL: 建议 3-5 张
+          # - Claude-3: 可以处理 5-10 张
+          size: 4
 
 # 日志配置
 logging:
