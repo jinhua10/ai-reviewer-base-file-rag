@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.image.ImageInfo;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.ppl.PPLException;
 import top.yumbo.ai.rag.ppl.PPLServiceFacade;
@@ -72,8 +73,10 @@ public class DocumentPreprocessingService {
             try {
                 log.info("🖼️ Starting image extraction for document: {}", file.getName());
 
-                List<top.yumbo.ai.rag.image.ImageInfo> images =
-                    imageExtractionService.extractAndSaveImages(file, file.getName());
+                // 使用新方法：传递原始内容以便计算图片位置
+                List<ImageInfo> images =
+                    imageExtractionService.extractAndSaveImagesWithPosition(
+                        file, file.getName(), originalContent);
 
                 if (!images.isEmpty()) {
                     log.info("✅ Extracted {} images from {}", images.size(), file.getName());

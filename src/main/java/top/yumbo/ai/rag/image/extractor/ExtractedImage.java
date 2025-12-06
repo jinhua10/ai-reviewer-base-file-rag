@@ -38,10 +38,28 @@ public class ExtractedImage {
     private int position;
 
     /**
+     * 图片在文档文本中的字符位置（Character position in document text）
+     * 用于将图片文本插入到正确位置（Used to insert image text at the correct position）
+     */
+    private Integer charPositionInDocument;
+
+    /**
      * 图片在文档中的上下文文本（Context text of image in document）
      * 用于 AI 分析图片的语义（Used for AI to analyze image semantics）
      */
     private String contextText;
+
+    /**
+     * 图片前的上下文（约100字符）（Context before image (about 100 characters)）
+     * 用于帮助 Vision LLM 更好地理解图片（Used to help Vision LLM better understand the image）
+     */
+    private String contextBefore;
+
+    /**
+     * 图片后的上下文（约100字符）（Context after image (about 100 characters)）
+     * 用于帮助 Vision LLM 更好地理解图片（Used to help Vision LLM better understand the image）
+     */
+    private String contextAfter;
 
     /**
      * 图片类型（由 AI 分析得出）（Image type (determined by AI analysis)）

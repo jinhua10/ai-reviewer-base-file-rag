@@ -83,6 +83,26 @@ public class DocumentImageExtractionService {
     }
 
     /**
+     * 从文档中提取并保存图片（带位置信息）
+     * Extract and save images from document (with position information)
+     *
+     * @param documentFile 文档文件（Document file）
+     * @param documentId 文档ID（用于存储）（Document ID (for storage)）
+     * @param originalContent 原始文本内容（用于计算图片位置）（Original text content (for calculating image position)）
+     * @return 保存的图片信息列表（List of saved image information）
+     */
+    public List<ImageInfo> extractAndSaveImagesWithPosition(File documentFile, String documentId, String originalContent) {
+        String fileName = documentFile.getName();
+
+        try (InputStream stream = new FileInputStream(documentFile)) {
+            return extractAndSaveImagesWithPosition(stream, fileName, documentId, originalContent);
+        } catch (Exception e) {
+            log.error(I18N.get("log.image.service.extract_failed", fileName), e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
      * 从文档流中提取并保存图片（Extract and save images from document stream）
      *
      * @param documentStream 文档输入流（Document input stream）
@@ -160,13 +180,24 @@ public class DocumentImageExtractionService {
                             originalName
                     );
 
-                    // 补充 AI 分析信息（Supplement AI analysis information）
+                    // 补充 AI 分析信息和位置信息（Supplement AI analysis and position information）
                     savedImage.setDescription(extracted.getAiDescription());
                     savedImage.setOriginalFilename(extracted.getOriginalName());
+
+                    // 设置位置信息（用于图片文本的原位置插入）
+                    // Set position information (for inserting image text at original position)
+                    savedImage.setPositionInDocument(extracted.getCharPositionInDocument());
+                    savedImage.setContextBefore(extracted.getContextBefore());
+                    savedImage.setContextAfter(extracted.getContextAfter());
+                    savedImage.setExtractedText(extracted.getAiDescription());  // Vision LLM 提取的文本
 
                     savedImages.add(savedImage);
 
                     log.info(I18N.get("log.image.service.saved", savedImage.getFilename(), extracted.getImageType(), extracted.getFileSize() / 1024));
+
+                    if (extracted.getCharPositionInDocument() != null) {
+                        log.debug("   📍 图片位置: 字符偏移 {}", extracted.getCharPositionInDocument());
+                    }
 
                 } catch (Exception e) {
                     log.error(I18N.get("log.image.service.save_failed", extracted.getOriginalName()), e);
@@ -179,6 +210,186 @@ public class DocumentImageExtractionService {
             log.error(I18N.get("log.image.service.failed", documentName), e);
         }
 
+        return savedImages;
+    }
+
+    /**
+     * 从文档流中提取并保存图片（带位置信息）
+     * Extract and save images from document stream (with position information)
+     */
+    private List<ImageInfo> extractAndSaveImagesWithPosition(InputStream documentStream,
+                                                             String documentName,
+                                                             String documentId,
+                                                             String originalContent) {
+        List<ImageInfo> savedImages = new ArrayList<>();
+
+        try {
+            log.info(I18N.get("log.image.service.start", documentName));
+
+            // 1. 找到合适的提取器
+            DocumentImageExtractor extractor = findExtractor(documentName);
+            if (extractor == null) {
+                log.warn(I18N.get("log.image.service.no_extractor", documentName));
+                return savedImages;
+            }
+
+            log.info(I18N.get("log.image.service.using_extractor", extractor.getName()));
+
+            // 2. 提取图片
+            List<ExtractedImage> extractedImages = extractor.extractImages(documentStream, documentName);
+
+            if (extractedImages.isEmpty()) {
+                log.info(I18N.get("log.image.service.no_images", documentName));
+                return savedImages;
+            }
+
+            log.info(I18N.get("log.image.service.extracted", extractedImages.size()));
+
+            // 2.5 计算图片在文档文本中的位置
+            // Calculate image positions in document text
+            calculateImagePositions(extractedImages, originalContent);
+
+            // 3. 使用 SmartImageExtractor 理解图片含义
+            for (ExtractedImage image : extractedImages) {
+                try {
+                    // 使用 SmartImageExtractor 提取图片内容（传递上下文以提高准确度）
+                    ByteArrayInputStream imageStream = new ByteArrayInputStream(image.getData());
+                    String imageContent = smartImageExtractor.extractContent(imageStream, image.getDisplayName());
+
+                    if (imageContent != null && !imageContent.trim().isEmpty()) {
+                        image.setAiDescription(imageContent);
+                        log.debug("   图片 [{}] 内容理解完成: {} 字符",
+                                 image.getDisplayName(), imageContent.length());
+                    }
+                } catch (Exception e) {
+                    log.warn("   图片内容理解失败 [{}]: {}", image.getDisplayName(), e.getMessage());
+                }
+            }
+
+            // 4. 保存图片（复用原有逻辑）
+            return saveExtractedImages(extractedImages, documentId, documentName);
+
+        } catch (Exception e) {
+            log.error(I18N.get("log.image.service.failed", documentName), e);
+        }
+
+        return savedImages;
+    }
+
+    /**
+     * 计算图片在文档文本中的位置
+     * Calculate image positions in document text
+     */
+    private void calculateImagePositions(List<ExtractedImage> images, String content) {
+        if (content == null || content.isEmpty()) {
+            log.debug("   ⚠️ 无原始内容，无法计算图片位置");
+            return;
+        }
+
+        // 对于每个图片，根据其页码/位置信息估算在文本中的位置
+        // For each image, estimate its position in text based on page/position info
+        int totalLength = content.length();
+        int imageCount = images.size();
+
+        for (int i = 0; i < images.size(); i++) {
+            ExtractedImage image = images.get(i);
+
+            // 策略1：如果有页码信息，按页码比例估算位置
+            if (image.getPosition() > 0) {
+                // 假设图片均匀分布在文档中
+                // 位置 = (图片页码 / 总图片数) * 文档总长度
+                int estimatedPosition = (int) ((double) (i + 1) / (imageCount + 1) * totalLength);
+                image.setCharPositionInDocument(estimatedPosition);
+
+                log.debug("   📍 图片 [{}] 估算位置: 字符偏移 {} (基于顺序 {}/{})",
+                         image.getDisplayName(), estimatedPosition, i + 1, imageCount);
+            }
+
+            // 策略2：提取图片前后的上下文
+            if (image.getCharPositionInDocument() != null) {
+                int pos = image.getCharPositionInDocument();
+
+                // 提取前100字符作为上下文
+                int beforeStart = Math.max(0, pos - 100);
+                int beforeEnd = pos;
+                if (beforeEnd > beforeStart && beforeEnd <= content.length()) {
+                    String contextBefore = content.substring(beforeStart, beforeEnd).trim();
+                    image.setContextBefore(contextBefore);
+                }
+
+                // 提取后100字符作为上下文
+                int afterStart = pos;
+                int afterEnd = Math.min(content.length(), pos + 100);
+                if (afterEnd > afterStart && afterStart < content.length()) {
+                    String contextAfter = content.substring(afterStart, afterEnd).trim();
+                    image.setContextAfter(contextAfter);
+                }
+
+                if (image.getContextBefore() != null || image.getContextAfter() != null) {
+                    log.debug("   📝 已提取图片上下文: 前{}字 后{}字",
+                             image.getContextBefore() != null ? image.getContextBefore().length() : 0,
+                             image.getContextAfter() != null ? image.getContextAfter().length() : 0);
+                }
+            }
+        }
+    }
+
+    /**
+     * 保存提取的图片（提取公共逻辑）
+     * Save extracted images (extracted common logic)
+     */
+    private List<ImageInfo> saveExtractedImages(List<ExtractedImage> extractedImages,
+                                               String documentId,
+                                               String documentName) {
+        List<ImageInfo> savedImages = new ArrayList<>();
+
+        // AI 分析（如果启用）
+        if (aiAnalysisEnabled && aiAnalyzer != null) {
+            extractedImages = aiAnalyzer.analyzeImages(extractedImages);
+        } else {
+            for (ExtractedImage image : extractedImages) {
+                if (aiAnalyzer != null) {
+                    aiAnalyzer.simpleAnalyze(image);
+                }
+            }
+        }
+
+        // 保存图片到存储
+        for (ExtractedImage extracted : extractedImages) {
+            try {
+                String originalName = extracted.getDisplayName();
+
+                ImageInfo savedImage = storageService.saveImage(
+                        documentId,
+                        extracted.getData(),
+                        originalName
+                );
+
+                // 补充 AI 分析信息和位置信息
+                savedImage.setDescription(extracted.getAiDescription());
+                savedImage.setOriginalFilename(extracted.getOriginalName());
+
+                // 设置位置信息（用于图片文本的原位置插入）
+                savedImage.setPositionInDocument(extracted.getCharPositionInDocument());
+                savedImage.setContextBefore(extracted.getContextBefore());
+                savedImage.setContextAfter(extracted.getContextAfter());
+                savedImage.setExtractedText(extracted.getAiDescription());  // Vision LLM 提取的文本
+
+                savedImages.add(savedImage);
+
+                log.info(I18N.get("log.image.service.saved", savedImage.getFilename(),
+                         extracted.getImageType(), extracted.getFileSize() / 1024));
+
+                if (extracted.getCharPositionInDocument() != null) {
+                    log.debug("   📍 图片位置: 字符偏移 {}", extracted.getCharPositionInDocument());
+                }
+
+            } catch (Exception e) {
+                log.error(I18N.get("log.image.service.save_failed", extracted.getOriginalName()), e);
+            }
+        }
+
+        log.info(I18N.get("log.image.service.success", savedImages.size(), documentName));
         return savedImages;
     }
 
