@@ -659,3 +659,309 @@
         font-size: 11px;
     }
 }
+
+/* ==================== 智能推荐提示 ==================== */
+.ai-smart-recommend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 2px solid #4CAF50;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    animation: recommend-pulse 2s ease-in-out infinite;
+}
+
+@keyframes recommend-pulse {
+    0%, 100% { box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2); }
+    50% { box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4); }
+}
+
+.ai-recommend-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ai-recommend-icon {
+    font-size: 20px;
+}
+
+.ai-recommend-text {
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+.ai-recommend-reason {
+    font-size: 12px;
+    color: #558b2f;
+}
+
+.ai-recommend-apply-btn {
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+}
+
+.ai-recommend-apply-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(76, 175, 80, 0.5);
+}
+
+/* ==================== 分析目标选择（用户友好版）==================== */
+.ai-goal-selection {
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 255, 0.95) 100%);
+    border-radius: 12px;
+    margin-bottom: 16px;
+    border: 2px solid rgba(100, 181, 246, 0.3);
+    box-shadow: 0 4px 16px rgba(66, 165, 245, 0.12);
+}
+
+.ai-goal-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 14px;
+}
+
+.ai-goal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.ai-goal-option {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.2s ease;
+    background-color: #ffffff;
+}
+
+.ai-goal-option:hover:not(.disabled) {
+    border-color: #64b5f6;
+    background-color: #f5f9ff;
+}
+
+.ai-goal-option.active {
+    border-color: #2196f3;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    box-shadow: 0 3px 10px rgba(33, 150, 243, 0.2);
+}
+
+.ai-goal-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ai-goal-option input[type="radio"] {
+    display: none;
+}
+
+.ai-goal-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: 100%;
+}
+
+.ai-goal-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.ai-goal-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.ai-goal-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.ai-goal-desc {
+    font-size: 12px;
+    color: #666;
+    line-height: 1.3;
+}
+
+.ai-goal-warning {
+    font-size: 11px;
+    color: #f57c00;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.ai-goal-time {
+    font-size: 11px;
+    color: #7b1fa2;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* ==================== 高级选项 ==================== */
+.ai-advanced-toggle {
+    margin-bottom: 12px;
+}
+
+.ai-advanced-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 6px 0;
+    transition: color 0.2s;
+}
+
+.ai-advanced-btn:hover {
+    color: #ffffff;
+}
+
+.ai-advanced-options {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.ai-mode-select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+.ai-mode-select:focus {
+    outline: none;
+    border-color: #64b5f6;
+}
+
+/* ==================== 操作按钮区域 ==================== */
+.ai-action-section {
+    margin-bottom: 16px;
+}
+
+.ai-estimate-info {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 8px;
+}
+
+.ai-analysis-button.comprehensive {
+    background: linear-gradient(135deg, #7B1FA2 0%, #4A148C 100%);
+    box-shadow: 0 6px 20px rgba(123, 31, 162, 0.5);
+}
+
+.ai-analysis-button.comprehensive:hover:not(:disabled) {
+    background: linear-gradient(135deg, #9C27B0 0%, #6A1B9A 100%);
+    box-shadow: 0 8px 24px rgba(123, 31, 162, 0.7);
+}
+
+/* ==================== 反馈区域 ==================== */
+.ai-feedback-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 255, 0.9) 100%);
+    border-radius: 10px;
+    border: 2px solid rgba(100, 181, 246, 0.3);
+}
+
+.ai-feedback-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.ai-feedback-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.ai-feedback-btn {
+    padding: 8px 16px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-feedback-btn.positive {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border-color: #81c784;
+}
+
+.ai-feedback-btn.positive:hover {
+    background-color: #c8e6c9;
+    transform: scale(1.05);
+}
+
+.ai-feedback-btn.neutral {
+    background-color: #fff3e0;
+    color: #e65100;
+    border-color: #ffb74d;
+}
+
+.ai-feedback-btn.neutral:hover {
+    background-color: #ffe0b2;
+    transform: scale(1.05);
+}
+
+.ai-feedback-btn.negative {
+    background-color: #ffebee;
+    color: #c62828;
+    border-color: #ef9a9a;
+}
+
+.ai-feedback-btn.negative:hover {
+    background-color: #ffcdd2;
+    transform: scale(1.05);
+}
+
+/* ==================== 响应式：分析目标网格 ==================== */
+@media (max-width: 600px) {
+    .ai-goal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-goal-option {
+        padding: 10px;
+    }
+
+    .ai-goal-icon {
+        font-size: 20px;
+    }
+
+    .ai-feedback-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
