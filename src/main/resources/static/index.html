@@ -394,7 +394,19 @@
 
                                     {window.EmbeddedAIAnalysisPanel && React.createElement(window.EmbeddedAIAnalysisPanel, {
                                         selectedDocuments: selectedDocsData,
-                                        onClose: () => setShowAIAnalysis(false)
+                                        onClose: () => setShowAIAnalysis(false),
+                                        onRemoveDocument: (doc) => {
+                                            // 从选中的文档中移除 (Remove from selected documents)
+                                            const docId = doc.id || doc.title || doc.name;
+                                            const newSelectedDocs = new Set(selectedDocs);
+                                            newSelectedDocs.delete(docId);
+                                            setSelectedDocs(newSelectedDocs);
+
+                                            // 从文档数据数组中移除 (Remove from document data array)
+                                            setSelectedDocsData(prev =>
+                                                prev.filter(d => (d.id || d.title || d.name) !== docId)
+                                            );
+                                        }
                                     })}
                                 </div>
                             )}

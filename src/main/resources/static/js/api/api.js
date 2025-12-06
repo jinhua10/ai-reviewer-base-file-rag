@@ -9,6 +9,8 @@
 const API_BASE_URL = 'http://localhost:8080/api/qa';
 const API_DOCS_URL = 'http://localhost:8080/api/documents';
 const API_FEEDBACK_URL = 'http://localhost:8080/api/feedback';
+const API_DOCUMENT_QA_URL = 'http://localhost:8080/api/document-qa';
+const API_LLM_RESULTS_URL = 'http://localhost:8080/api/llm-results';
 
 /**
  * 获取当前语言设置 / Get current language setting
@@ -271,7 +273,7 @@ const api = {
      * @returns {Promise<Object>} 分析报告 (analysis report)
      */
     analyzeDocument: async (documentPath, question) => {
-        const response = await axios.post('http://localhost:8080/api/document-qa/query', {
+        const response = await axios.post(`${API_DOCUMENT_QA_URL}/query`, {
             documentPath,
             question
         });
@@ -286,7 +288,7 @@ const api = {
      * @returns {Promise<Object>} 分析报告 (analysis report)
      */
     analyzeDocumentDirect: async (documentPath, question) => {
-        const response = await axios.post('http://localhost:8080/api/document-qa/analyze-direct', {
+        const response = await axios.post(`${API_DOCUMENT_QA_URL}/analyze-direct`, {
             documentPath,
             question
         });
@@ -301,7 +303,7 @@ const api = {
      * @returns {Promise<Object>} PPT分析报告 (PPT analysis report)
      */
     analyzePPT: async (documentPath, question) => {
-        const response = await axios.post('http://localhost:8080/api/document-qa/analyze-ppt', {
+        const response = await axios.post(`${API_DOCUMENT_QA_URL}/analyze-ppt`, {
             documentPath,
             question
         });
@@ -316,8 +318,26 @@ const api = {
      * @returns {Promise<Object>} PPT分析报告 (PPT analysis report)
      */
     analyzePPTDirect: async (documentPath, question) => {
-        const response = await axios.post('http://localhost:8080/api/document-qa/analyze-ppt-direct', {
+        const response = await axios.post(`${API_DOCUMENT_QA_URL}/analyze-ppt-direct`, {
             documentPath,
+            question
+        });
+        return response.data;
+    },
+
+    /**
+     * 多文档联合分析
+     * (Multi-document joint analysis)
+     * 分析多个文档之间的关联、逻辑、因果关系
+     * (Analyze relationships, logic, and causality between multiple documents)
+     *
+     * @param {string[]} documentPaths - 文档路径数组 (array of document paths)
+     * @param {string} question - 分析问题/提示词 (analysis question/prompt)
+     * @returns {Promise<Object>} 多文档分析报告 (multi-document analysis report)
+     */
+    analyzeMultiDocuments: async (documentPaths, question) => {
+        const response = await axios.post(`${API_DOCUMENT_QA_URL}/analyze-multi`, {
+            documentPaths,
             question
         });
         return response.data;
@@ -330,7 +350,7 @@ const api = {
      * @returns {Promise<Object>} 清理结果 (cleanup result)
      */
     cleanupAnalysisSession: async (sessionId) => {
-        const response = await axios.delete(`http://localhost:8080/api/document-qa/cleanup/${sessionId}`);
+        const response = await axios.delete(`${API_DOCUMENT_QA_URL}/cleanup/${sessionId}`);
         return response.data;
     },
 
@@ -343,7 +363,7 @@ const api = {
      * @returns {Promise<Object>} 保存结果 (save result)
      */
     saveLLMResult: async (result) => {
-        const response = await axios.post('/api/llm-results/save', result);
+        const response = await axios.post(`${API_LLM_RESULTS_URL}/save`, result);
         return response.data;
     },
 
@@ -353,7 +373,7 @@ const api = {
      * @returns {Promise<Object>} 历史记录
      */
     getLLMResultHistory: async (limit = 20) => {
-        const response = await axios.get('/api/llm-results/history', {
+        const response = await axios.get(`${API_LLM_RESULTS_URL}/history`, {
             params: { limit }
         });
         return response.data;
@@ -365,7 +385,7 @@ const api = {
      * @returns {Promise<Object>} 文档详情
      */
     getLLMResultDetail: async (docId) => {
-        const response = await axios.get(`/api/llm-results/${docId}`);
+        const response = await axios.get(`${API_LLM_RESULTS_URL}/${docId}`);
         return response.data;
     },
 
@@ -375,7 +395,7 @@ const api = {
      * @returns {Promise<string>} Markdown 内容
      */
     previewLLMResult: async (docId) => {
-        const response = await axios.get(`/api/llm-results/${docId}/preview`);
+        const response = await axios.get(`${API_LLM_RESULTS_URL}/${docId}/preview`);
         return response.data;
     },
 
@@ -385,7 +405,7 @@ const api = {
      * @param {string} fileName - 文件名
      */
     downloadLLMResultMarkdown: async (docId, fileName) => {
-        const response = await axios.get(`/api/llm-results/${docId}/download/markdown`, {
+        const response = await axios.get(`${API_LLM_RESULTS_URL}/${docId}/download/markdown`, {
             responseType: 'blob'
         });
         const blob = response.data;
@@ -405,7 +425,7 @@ const api = {
      * @param {string} fileName - 文件名
      */
     downloadLLMResultPdf: async (docId, fileName) => {
-        const response = await axios.get(`/api/llm-results/${docId}/download/pdf`, {
+        const response = await axios.get(`${API_LLM_RESULTS_URL}/${docId}/download/pdf`, {
             responseType: 'blob'
         });
         const blob = response.data;
@@ -425,7 +445,7 @@ const api = {
      * @returns {Promise<Object>} 删除结果
      */
     deleteLLMResult: async (docId) => {
-        const response = await axios.delete(`/api/llm-results/${docId}`);
+        const response = await axios.delete(`${API_LLM_RESULTS_URL}/${docId}`);
         return response.data;
     }
 };

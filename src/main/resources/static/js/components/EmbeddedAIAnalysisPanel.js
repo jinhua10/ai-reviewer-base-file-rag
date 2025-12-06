@@ -3,6 +3,11 @@
  * (Embedded AI Analysis Panel - Simplified Version)
  * 用于分屏显示，不包含弹窗和文档列表
  * (For split-screen display, without modal and document list)
+ *
+ * 支持三种分析模式 (Supports three analysis modes):
+ * 1. 单文档分析 - 逐个分析每个文档 (Single document analysis)
+ * 2. 知识库分析 - 结合知识库进行分析 (Knowledge base analysis)
+ * 3. 多文档联合分析 - 分析文档间的关联、逻辑、因果关系 (Multi-document joint analysis)
  */
 (function() {
     'use strict';
@@ -11,21 +16,37 @@
 
     window.EmbeddedAIAnalysisPanel = function EmbeddedAIAnalysisPanel({
         selectedDocuments = [],
-        onClose
+        onClose,
+        onRemoveDocument  // 新增：移除文档回调 (New: remove document callback)
     }) {
         const { t } = window.LanguageModule.useTranslation();
 
         const [customPrompt, setCustomPrompt] = useState('');
         const [analyzing, setAnalyzing] = useState(false);
         const [currentAnalysis, setCurrentAnalysis] = useState(null);
-        // 知识库选项：默认关闭，只分析单个文档
-        // (Knowledge base option: disabled by default, only analyze single document)
-        const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
+
+        // 分析模式: 'direct' | 'knowledgeBase' | 'multiDoc'
+        // (Analysis mode: 'direct' | 'knowledgeBase' | 'multiDoc')
+        const [analysisMode, setAnalysisMode] = useState('direct');
+
+        // 处理移除文档 (Handle document removal)
+        const handleRemoveDocument = (doc) => {
+            if (onRemoveDocument && !analyzing) {
+                onRemoveDocument(doc);
+            }
+        };
 
         // 批量分析文档 (Batch analyze documents)
         const analyzeDocuments = async () => {
             if (!selectedDocuments || selectedDocuments.length === 0) {
                 alert(t('pleaseSelectDocuments') || '请选择要分析的文档');
+                return;
+            }
+
+            // 多文档联合分析需要至少2个文档
+            // (Multi-document analysis requires at least 2 documents)
+            if (analysisMode === 'multiDoc' && selectedDocuments.length < 2) {
+                alert(t('multiDocNeedAtLeast2') || '多文档联合分析至少需要选择2个文档');
                 return;
             }
 
@@ -38,56 +59,88 @@
                 status: 'running',
                 progress: 0,
                 results: [],
-                useKnowledgeBase: useKnowledgeBase
+                analysisMode: analysisMode
             });
 
             try {
-                const results = [];
+                let results = [];
 
-                for (let i = 0; i < selectedDocuments.length; i++) {
-                    const doc = selectedDocuments[i];
-
+                if (analysisMode === 'multiDoc') {
+                    // 多文档联合分析模式 (Multi-document joint analysis mode)
                     setCurrentAnalysis(prev => ({
                         ...prev,
-                        progress: Math.round(((i + 1) / selectedDocuments.length) * 100),
-                        currentDoc: doc.title || doc.name
+                        progress: 10,
+                        currentDoc: t('multiDocAnalyzing') || '多文档联合分析中...'
                     }));
 
                     try {
-                        const docFileName = doc.title || doc.name || '';
-                        const isPPT = docFileName.toLowerCase().endsWith('.pptx') || docFileName.toLowerCase().endsWith('.ppt');
-
-                        let result;
-
-                        if (useKnowledgeBase) {
-                            // 使用知识库：结合知识库进行分析
-                            // (Use knowledge base: analyze with knowledge base context)
-                            if (isPPT) {
-                                result = await window.api.analyzePPT(docFileName, finalPrompt);
-                            } else {
-                                result = await window.api.analyzeDocument(docFileName, finalPrompt);
-                            }
-                        } else {
-                            // 不使用知识库：直接分析单个文档
-                            // (Without knowledge base: directly analyze single document)
-                            if (isPPT) {
-                                result = await window.api.analyzePPTDirect(docFileName, finalPrompt);
-                            } else {
-                                result = await window.api.analyzeDocumentDirect(docFileName, finalPrompt);
-                            }
-                        }
+                        const docNames = selectedDocuments.map(d => d.title || d.name);
+                        const result = await window.api.analyzeMultiDocuments(docNames, finalPrompt);
 
                         results.push({
-                            document: doc,
+                            document: { title: t('multiDocResult') || '多文档联合分析结果', name: docNames.join(', ') },
                             success: true,
-                            data: result
+                            data: result,
+                            isMultiDoc: true
                         });
+
+                        setCurrentAnalysis(prev => ({
+                            ...prev,
+                            progress: 100
+                        }));
                     } catch (error) {
                         results.push({
-                            document: doc,
+                            document: { title: t('multiDocResult') || '多文档联合分析结果' },
                             success: false,
-                            error: error.message
+                            error: error.message,
+                            isMultiDoc: true
                         });
+                    }
+                } else {
+                    // 单文档或知识库分析模式 (Single document or knowledge base analysis mode)
+                    for (let i = 0; i < selectedDocuments.length; i++) {
+                        const doc = selectedDocuments[i];
+
+                        setCurrentAnalysis(prev => ({
+                            ...prev,
+                            progress: Math.round(((i + 1) / selectedDocuments.length) * 100),
+                            currentDoc: doc.title || doc.name
+                        }));
+
+                        try {
+                            const docFileName = doc.title || doc.name || '';
+                            const isPPT = docFileName.toLowerCase().endsWith('.pptx') || docFileName.toLowerCase().endsWith('.ppt');
+
+                            let result;
+
+                            if (analysisMode === 'knowledgeBase') {
+                                // 使用知识库分析
+                                if (isPPT) {
+                                    result = await window.api.analyzePPT(docFileName, finalPrompt);
+                                } else {
+                                    result = await window.api.analyzeDocument(docFileName, finalPrompt);
+                                }
+                            } else {
+                                // 直接分析单个文档
+                                if (isPPT) {
+                                    result = await window.api.analyzePPTDirect(docFileName, finalPrompt);
+                                } else {
+                                    result = await window.api.analyzeDocumentDirect(docFileName, finalPrompt);
+                                }
+                            }
+
+                            results.push({
+                                document: doc,
+                                success: true,
+                                data: result
+                            });
+                        } catch (error) {
+                            results.push({
+                                document: doc,
+                                success: false,
+                                error: error.message
+                            });
+                        }
                     }
                 }
 
@@ -103,11 +156,12 @@
                     if (result.success && result.data) {
                         try {
                             const docName = result.document.title || result.document.name;
+                            const analysisTypeKey = result.isMultiDoc ? 'multiDocAnalysis' : 'documentAnalysis';
                             await window.api.saveLLMResult({
                                 title: `${docName} - ${t('aiAnalysis') || 'AI分析'}`,
                                 sourceDocument: docName,
                                 question: finalPrompt,
-                                analysisType: t('documentAnalysis') || '文档分析',
+                                analysisType: t(analysisTypeKey) || (result.isMultiDoc ? '多文档联合分析' : '文档分析'),
                                 content: result.data.answer || result.data.summary || result.data.comprehensiveSummary || result.data.finalReport || JSON.stringify(result.data),
                                 keyPoints: result.data.keyPoints || []
                             });
@@ -142,127 +196,192 @@
             }, text);
         };
 
-        return React.createElement('div', { style: styles.container },
-            // 选中的文档信息 (Selected document info)
-            React.createElement('div', {
-                style: styles.selectedInfo,
-                className: 'ai-selected-info'
-            },
-                React.createElement('h3', { style: { margin: 0, fontSize: '16px', color: '#1976d2' } },
+        return React.createElement('div', { className: 'ai-analysis-container' },
+            // 选中的文档信息（带快速取消按钮）(Selected document info with quick remove button)
+            React.createElement('div', { className: 'ai-selected-info' },
+                React.createElement('h3', null,
                     `📁 ${t('selectedDocumentsCount') ? t('selectedDocumentsCount').replace('{0}', selectedDocuments.length) : `已选择 ${selectedDocuments.length} 个文档`}`
                 ),
-                selectedDocuments.length > 0 && React.createElement('div', { style: styles.docList },
+                selectedDocuments.length > 0 && React.createElement('div', { className: 'ai-doc-list' },
                     selectedDocuments.map((doc, i) =>
-                        React.createElement('div', { key: i, style: styles.docItem },
-                            `• ${doc.title || doc.name}`
+                        React.createElement('div', { key: i, className: 'ai-doc-item-removable' },
+                            React.createElement('span', { className: 'ai-doc-name' },
+                                `📄 ${doc.title || doc.name}`
+                            ),
+                            // 快速取消选择按钮 (Quick remove button)
+                            React.createElement('button', {
+                                className: 'ai-doc-remove-btn',
+                                onClick: () => handleRemoveDocument(doc),
+                                disabled: analyzing,
+                                title: t('removeDocument') || '移除此文档'
+                            }, '×')
                         )
+                    )
+                ),
+                selectedDocuments.length === 0 && React.createElement('div', { className: 'ai-no-docs-hint' },
+                    t('noDocumentsSelected') || '请在左侧列表中勾选要分析的文档'
+                )
+            ),
+
+            // 分析模式选择 (Analysis mode selection)
+            React.createElement('div', { className: 'ai-mode-selection' },
+                React.createElement('div', { className: 'ai-mode-title' },
+                    t('analysisMode') || '分析模式'
+                ),
+                
+                // 单文档分析选项 (Single document analysis option)
+                React.createElement('label', {
+                    className: 'ai-mode-option' + (analysisMode === 'direct' ? ' active direct-mode' : '')
+                },
+                    React.createElement('input', {
+                        type: 'radio',
+                        name: 'analysisMode',
+                        checked: analysisMode === 'direct',
+                        onChange: () => setAnalysisMode('direct'),
+                        disabled: analyzing
+                    }),
+                    React.createElement('div', { className: 'ai-mode-option-content' },
+                        React.createElement('div', { className: 'ai-mode-option-title direct' },
+                            '📄 ' + (t('directAnalysisMode') || '单文档分析')
+                        ),
+                        React.createElement('div', { className: 'ai-mode-option-desc' },
+                            t('directModeDesc') || '逐个分析每个文档，不使用知识库'
+                        )
+                    )
+                ),
+                
+                // 知识库分析选项 (Knowledge base analysis option)
+                React.createElement('label', {
+                    className: 'ai-mode-option' + (analysisMode === 'knowledgeBase' ? ' active kb-mode' : '')
+                },
+                    React.createElement('input', {
+                        type: 'radio',
+                        name: 'analysisMode',
+                        checked: analysisMode === 'knowledgeBase',
+                        onChange: () => setAnalysisMode('knowledgeBase'),
+                        disabled: analyzing
+                    }),
+                    React.createElement('div', { className: 'ai-mode-option-content' },
+                        React.createElement('div', { className: 'ai-mode-option-title kb' },
+                            '📚 ' + (t('knowledgeBaseMode') || '知识库分析')
+                        ),
+                        React.createElement('div', { className: 'ai-mode-option-desc' },
+                            t('kbModeDesc') || '结合知识库中的相关内容进行分析'
+                        )
+                    )
+                ),
+
+                // 多文档联合分析选项 (Multi-document joint analysis option)
+                React.createElement('label', {
+                    className: 'ai-mode-option' + (analysisMode === 'multiDoc' ? ' active multi-doc-mode' : '')
+                },
+                    React.createElement('input', {
+                        type: 'radio',
+                        name: 'analysisMode',
+                        checked: analysisMode === 'multiDoc',
+                        onChange: () => setAnalysisMode('multiDoc'),
+                        disabled: analyzing
+                    }),
+                    React.createElement('div', { className: 'ai-mode-option-content' },
+                        React.createElement('div', { className: 'ai-mode-option-title multi-doc' },
+                            '🔗 ' + (t('multiDocMode') || '多文档联合分析')
+                        ),
+                        React.createElement('div', { className: 'ai-mode-option-desc' },
+                            t('multiDocModeDesc') || '分析文档间的关联、逻辑和因果关系'
+                        ),
+                        selectedDocuments.length < 2 && analysisMode === 'multiDoc' &&
+                            React.createElement('div', { className: 'ai-mode-warning' },
+                                '⚠️ ' + (t('multiDocNeedAtLeast2') || '至少需要选择2个文档')
+                            )
                     )
                 )
             ),
 
-            // 知识库选项 (Knowledge base option)
-            React.createElement('div', {
-                style: {
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '10px 15px',
-                    backgroundColor: useKnowledgeBase ? '#e3f2fd' : '#f5f5f5',
-                    borderRadius: '8px',
-                    marginBottom: '10px',
-                    border: useKnowledgeBase ? '1px solid #2196f3' : '1px solid #e0e0e0'
-                },
-                className: 'ai-kb-option'
-            },
-                React.createElement('label', {
-                    style: {
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        fontSize: '14px'
-                    }
-                },
-                    React.createElement('input', {
-                        type: 'checkbox',
-                        checked: useKnowledgeBase,
-                        onChange: (e) => setUseKnowledgeBase(e.target.checked),
-                        disabled: analyzing,
-                        style: { width: '18px', height: '18px', cursor: 'pointer' }
-                    }),
-                    React.createElement('span', null,
-                        useKnowledgeBase
-                            ? (t('useKnowledgeBaseEnabled') || '📚 使用知识库（结合已索引文档分析）')
-                            : (t('useKnowledgeBaseDisabled') || '📄 单文档分析（不使用知识库）')
-                    )
+            // 多文档分析提示词快捷按钮（仅在多文档模式显示）
+            // (Multi-doc prompt shortcuts - only show in multi-doc mode)
+            analysisMode === 'multiDoc' && React.createElement('div', { className: 'ai-multi-doc-prompts' },
+                React.createElement('div', { className: 'ai-multi-doc-prompts-title' },
+                    '🔗 ' + (t('multiDocPromptShortcuts') || '联合分析快捷提示')
                 ),
-                React.createElement('span', {
-                    style: {
-                        fontSize: '12px',
-                        color: '#666',
-                        marginLeft: 'auto'
-                    }
-                }, useKnowledgeBase
-                    ? (t('kbModeHint') || '将结合知识库中的相关内容')
-                    : (t('directModeHint') || '仅分析所选文档本身')
+                React.createElement('div', { className: 'ai-multi-doc-prompts-grid' },
+                    React.createElement('button', {
+                        onClick: () => setCustomPrompt(t('multiDocRelationPrompt') || '请分析这些文档之间的关联关系，找出它们的共同点和差异点。'),
+                        className: 'ai-multi-doc-prompt-btn',
+                        disabled: analyzing
+                    }, '🔍 ' + (t('relationAnalysis') || '关联分析')),
+                    React.createElement('button', {
+                        onClick: () => setCustomPrompt(t('multiDocCausalPrompt') || '请分析这些文档之间的因果关系和逻辑链条。'),
+                        className: 'ai-multi-doc-prompt-btn',
+                        disabled: analyzing
+                    }, '⛓️ ' + (t('causalAnalysis') || '因果分析')),
+                    React.createElement('button', {
+                        onClick: () => setCustomPrompt(t('multiDocComparePrompt') || '请对比分析这些文档，生成对比表格，总结各自的优缺点。'),
+                        className: 'ai-multi-doc-prompt-btn',
+                        disabled: analyzing
+                    }, '📊 ' + (t('compareAnalysis') || '对比分析')),
+                    React.createElement('button', {
+                        onClick: () => setCustomPrompt(t('multiDocSynthesisPrompt') || '请综合这些文档的内容，生成一份整合报告，包含思维导图结构。'),
+                        className: 'ai-multi-doc-prompt-btn',
+                        disabled: analyzing
+                    }, '🗺️ ' + (t('synthesisReport') || '综合报告'))
                 )
             ),
 
             // 提示词输入 (Prompt input)
-            React.createElement('div', { style: styles.promptSection },
-                React.createElement('label', { style: styles.label },
+            React.createElement('div', { className: 'ai-prompt-section' },
+                React.createElement('label', { className: 'ai-prompt-label' },
                     t('customPrompt') || '自定义提示词'
                 ),
                 React.createElement('textarea', {
                     value: customPrompt,
                     onChange: (e) => setCustomPrompt(e.target.value),
-                    placeholder: t('promptPlaceholder') || '输入你的问题或分析要求...',
-                    style: styles.textarea,
+                    placeholder: analysisMode === 'multiDoc'
+                        ? (t('multiDocPromptPlaceholder') || '输入多文档联合分析的问题，如：分析文档间的关联、对比差异等...')
+                        : (t('promptPlaceholder') || '输入你的问题或分析要求...'),
                     className: 'ai-analysis-textarea',
                     rows: 3,
                     disabled: analyzing
                 }),
-                React.createElement('div', { style: styles.promptHints },
+                // 单文档模式的快捷提示词 (Single doc mode prompt shortcuts)
+                analysisMode !== 'multiDoc' && React.createElement('div', { className: 'ai-prompt-hints' },
                     React.createElement('button', {
                         onClick: () => setCustomPrompt(t('summaryPrompt') || '请详细总结这份文档的核心内容和关键观点。'),
-                        style: styles.hintButtonSummary,
                         className: 'ai-analysis-hint-button ai-hint-summary',
                         disabled: analyzing
                     }, '📋 ' + (t('summary') || '总结')),
                     React.createElement('button', {
-                        onClick: () => setCustomPrompt('请分析这份文档的逻辑结构和论证方式。'),
-                        style: styles.hintButtonAnalyze,
+                        onClick: () => setCustomPrompt(t('analyzePrompt') || '请分析这份文档的逻辑结构和论证方式。'),
                         className: 'ai-analysis-hint-button ai-hint-analyze',
                         disabled: analyzing
                     }, '🔍 ' + (t('analyze') || '分析')),
                     React.createElement('button', {
-                        onClick: () => setCustomPrompt('请提取文档中的关键数据和重要结论。'),
-                        style: styles.hintButtonExtract,
+                        onClick: () => setCustomPrompt(t('extractPrompt') || '请提取文档中的关键数据和重要结论。'),
                         className: 'ai-analysis-hint-button ai-hint-extract',
                         disabled: analyzing
                     }, '💡 ' + (t('extract') || '提取'))
                 )
             ),
 
-            // 开始分析按钮
+            // 开始分析按钮 (Start analysis button)
             React.createElement('button', {
                 onClick: analyzeDocuments,
-                disabled: analyzing || selectedDocuments.length === 0,
-                className: 'ai-analysis-button',
-                style: {
-                    ...styles.analyzeButton,
-                    ...(analyzing || selectedDocuments.length === 0 ? styles.buttonDisabled : {})
-                }
-            }, analyzing ? `🔄 ${t('analyzeInProgress') || '分析中...'}` : `🚀 ${t('startAnalyze') || '开始分析'} (${selectedDocuments.length})`),
+                disabled: analyzing || selectedDocuments.length === 0 || (analysisMode === 'multiDoc' && selectedDocuments.length < 2),
+                className: 'ai-analysis-button' + (analysisMode === 'multiDoc' ? ' multi-doc' : '')
+            }, analyzing
+                ? `🔄 ${t('analyzeInProgress') || '分析中...'}`
+                : analysisMode === 'multiDoc'
+                    ? `🔗 ${t('startMultiDocAnalyze') || '开始联合分析'} (${selectedDocuments.length})`
+                    : `🚀 ${t('startAnalyze') || '开始分析'} (${selectedDocuments.length})`
+            ),
 
-            // 分析结果
-            currentAnalysis && React.createElement('div', { style: styles.resultsSection },
-                currentAnalysis.status === 'running' && React.createElement('div', { style: styles.progressBar },
+            // 分析结果 (Analysis results)
+            currentAnalysis && React.createElement('div', { className: 'ai-results-section' },
+                currentAnalysis.status === 'running' && React.createElement('div', { className: 'ai-progress-bar' },
                     React.createElement('div', {
-                        style: { ...styles.progressFill, width: `${currentAnalysis.progress}%` },
-                        className: 'ai-progress-fill'
+                        className: 'ai-progress-fill' + (currentAnalysis.analysisMode === 'multiDoc' ? ' multi-doc' : ''),
+                        style: { width: `${currentAnalysis.progress}%` }
                     }),
-                    React.createElement('span', { style: styles.progressText },
+                    React.createElement('span', { className: 'ai-progress-text' },
                         `${currentAnalysis.progress}% - ${currentAnalysis.currentDoc || ''}`
                     )
                 ),
@@ -271,28 +390,26 @@
                     currentAnalysis.results.map((result, index) =>
                         React.createElement('div', {
                             key: index,
-                            style: styles.resultItem,
-                            className: 'ai-result-item'
+                            className: 'ai-result-item' + (result.isMultiDoc ? ' multi-doc-result' : '')
                         },
-                            React.createElement('div', { style: styles.resultHeader },
-                                React.createElement('span', { style: styles.resultIcon },
-                                    result.success ? '✅' : '❌'
+                            React.createElement('div', { className: 'ai-result-header' },
+                                React.createElement('span', { className: 'ai-result-icon' },
+                                    result.success ? (result.isMultiDoc ? '🔗' : '✅') : '❌'
                                 ),
                                 React.createElement('span', null, result.document.title || result.document.name)
                             ),
-                            React.createElement('div', {
-                                style: styles.resultBody,
-                                className: 'ai-result-body'
-                            },
+                            React.createElement('div', { className: 'ai-result-body' },
                                 result.success ?
                                     React.createElement('div', null,
                                         result.data.comprehensiveSummary ?
                                             renderMarkdown(result.data.comprehensiveSummary) :
                                         result.data.finalReport ?
                                             renderMarkdown(result.data.finalReport) :
+                                        result.data.multiDocAnalysis ?
+                                            renderMarkdown(result.data.multiDocAnalysis) :
                                             JSON.stringify(result.data, null, 2)
                                     ) :
-                                    React.createElement('div', { style: { color: '#f44336' } },
+                                    React.createElement('div', { className: 'ai-result-error' },
                                         `${t('analysisFailed') || '分析失败'}: ${result.error}`
                                     )
                             )
@@ -302,206 +419,7 @@
         );
     };
 
-    const styles = {
-        container: {
-            padding: '0'
-        },
-        selectedInfo: {
-            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 255, 0.95) 100%)',
-            padding: '20px',
-            borderRadius: '12px',
-            marginBottom: '20px',
-            border: '2px solid rgba(100, 181, 246, 0.3)',
-            boxShadow: '0 6px 20px rgba(66, 165, 245, 0.15)',
-            transition: 'all 0.3s ease'
-        },
-        docList: {
-            marginTop: '14px',
-            fontSize: '14px',
-            color: '#1976d2',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            paddingRight: '8px'
-        },
-        docItem: {
-            padding: '6px 0',
-            color: '#1565c0',
-            transition: 'all 0.2s',
-            borderLeft: '3px solid transparent',
-            paddingLeft: '8px'
-        },
-        promptSection: {
-            marginBottom: '20px'
-        },
-        label: {
-            display: 'block',
-            marginBottom: '10px',
-            fontWeight: '600',
-            color: '#ffffff',
-            fontSize: '15px',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            letterSpacing: '0.3px'
-        },
-        textarea: {
-            width: '100%',
-            padding: '14px',
-            border: '2px solid rgba(255, 255, 255, 0.4)',
-            borderRadius: '8px',
-            fontSize: '14px',
-            boxSizing: 'border-box',
-            resize: 'vertical',
-            fontFamily: 'inherit',
-            transition: 'all 0.3s ease',
-            backgroundColor: 'rgba(255, 255, 255, 0.98)',
-            color: '#333',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            lineHeight: '1.6'
-        },
-        promptHints: {
-            marginTop: '14px',
-            display: 'flex',
-            gap: '12px',
-            flexWrap: 'wrap'
-        },
-        // 总结按钮 - 蓝色
-        hintButtonSummary: {
-            padding: '10px 18px',
-            fontSize: '13px',
-            background: 'linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%)',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            color: '#ffffff',
-            boxShadow: '0 4px 12px rgba(66, 165, 245, 0.5)',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-            position: 'relative',
-            overflow: 'hidden'
-        },
-        // 分析按钮 - 橙色
-        hintButtonAnalyze: {
-            padding: '10px 18px',
-            fontSize: '13px',
-            background: 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            color: '#ffffff',
-            boxShadow: '0 4px 12px rgba(255, 152, 0, 0.5)',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-            position: 'relative',
-            overflow: 'hidden'
-        },
-        // 提取按钮 - 绿色
-        hintButtonExtract: {
-            padding: '10px 18px',
-            fontSize: '13px',
-            background: 'linear-gradient(135deg, #66BB6A 0%, #43A047 100%)',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            fontWeight: '600',
-            color: '#ffffff',
-            boxShadow: '0 4px 12px rgba(102, 187, 106, 0.5)',
-            textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-            position: 'relative',
-            overflow: 'hidden'
-        },
-        analyzeButton: {
-            width: '100%',
-            padding: '16px',
-            background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: '700',
-            marginBottom: '20px',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 6px 20px rgba(76, 175, 80, 0.5)',
-            textShadow: '0 2px 4px rgba(0,0,0,0.2)',
-            letterSpacing: '0.5px',
-            position: 'relative',
-            overflow: 'hidden'
-        },
-        buttonDisabled: {
-            background: 'linear-gradient(135deg, rgba(189, 189, 189, 0.5) 0%, rgba(158, 158, 158, 0.5) 100%)',
-            cursor: 'not-allowed',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            color: 'rgba(255, 255, 255, 0.7)',
-            border: '2px solid rgba(255, 255, 255, 0.2)'
-        },
-        resultsSection: {
-            marginTop: '24px'
-        },
-        progressBar: {
-            width: '100%',
-            height: '36px',
-            backgroundColor: 'rgba(255, 255, 255, 0.25)',
-            borderRadius: '8px',
-            position: 'relative',
-            marginBottom: '20px',
-            overflow: 'hidden',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.1)'
-        },
-        progressFill: {
-            height: '100%',
-            background: 'linear-gradient(90deg, #00E676 0%, #00C853 50%, #00BFA5 100%)',
-            transition: 'width 0.3s ease',
-            boxShadow: '0 0 20px rgba(0, 230, 118, 0.5)',
-            position: 'relative'
-        },
-        progressText: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            fontSize: '13px',
-            fontWeight: '700',
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-            letterSpacing: '0.5px'
-        },
-        resultItem: {
-            border: '2px solid rgba(100, 181, 246, 0.3)',
-            borderRadius: '12px',
-            marginBottom: '18px',
-            overflow: 'hidden',
-            boxShadow: '0 6px 20px rgba(0,0,0,0.12)',
-            transition: 'all 0.3s ease',
-            backgroundColor: 'rgba(255, 255, 255, 0.98)'
-        },
-        resultHeader: {
-            padding: '16px 20px',
-            background: 'linear-gradient(135deg, #E8EAF6 0%, #C5CAE9 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            fontWeight: '700',
-            borderBottom: '2px solid rgba(63, 81, 181, 0.2)',
-            color: '#3F51B5',
-            fontSize: '15px'
-        },
-        resultIcon: {
-            fontSize: '22px'
-        },
-        resultBody: {
-            padding: '20px',
-            lineHeight: '1.8',
-            backgroundColor: '#ffffff',
-            color: '#333',
-            fontSize: '14px'
-        }
-    };
-
     // 获取翻译函数并输出加载日志
     const getT = () => window.LanguageModule ? window.LanguageModule.useTranslation().t : (k) => k;
     console.log(getT()('embeddedAILogComponentLoaded'));
 })();
-

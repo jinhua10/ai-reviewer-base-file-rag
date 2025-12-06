@@ -1,5 +1,188 @@
 /* AI分析面板样式优化 - 适配紫色渐变背景 */
 
+/* ==================== 容器和布局 ==================== */
+.ai-analysis-container {
+    padding: 0;
+}
+
+/* 选中文档信息区域 */
+.ai-selected-info {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 255, 0.95) 100%);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 2px solid rgba(100, 181, 246, 0.3);
+    box-shadow: 0 6px 20px rgba(66, 165, 245, 0.15);
+    transition: all 0.3s ease;
+}
+
+.ai-selected-info:hover {
+    box-shadow: 0 8px 24px rgba(66, 165, 245, 0.25);
+    border-color: rgba(100, 181, 246, 0.5);
+}
+
+.ai-selected-info h3 {
+    margin: 0;
+    font-size: 16px;
+    color: #1976d2;
+}
+
+.ai-doc-list {
+    margin-top: 14px;
+    font-size: 14px;
+    color: #1976d2;
+    max-height: 200px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.ai-doc-item {
+    padding: 6px 0;
+    color: #1565c0;
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    padding-left: 8px;
+}
+
+/* 分析模式选择 */
+.ai-mode-selection {
+    padding: 15px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(100, 181, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(66, 165, 245, 0.15);
+}
+
+.ai-mode-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 12px;
+}
+
+.ai-mode-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.ai-mode-option.direct-mode {
+    background-color: #e8f5e9;
+    border-color: #4CAF50;
+}
+
+.ai-mode-option.kb-mode {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+}
+
+.ai-mode-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.ai-mode-option-content {
+    flex: 1;
+}
+
+.ai-mode-option-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ai-mode-option-title.direct {
+    color: #2e7d32;
+}
+
+.ai-mode-option-title.kb {
+    color: #1976d2;
+}
+
+.ai-mode-option-desc {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* ==================== 提示词输入 ==================== */
+.ai-prompt-section {
+    margin-bottom: 20px;
+}
+
+.ai-prompt-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    letter-spacing: 0.3px;
+}
+
+.ai-analysis-textarea {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    font-size: 14px;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.98);
+    color: #333;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    line-height: 1.6;
+}
+
+.ai-analysis-textarea:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.7) !important;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0,0,0,0.15) !important;
+    background-color: #ffffff !important;
+}
+
+.ai-prompt-hints {
+    margin-top: 14px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* ==================== 提示词快捷按钮 ==================== */
+.ai-analysis-hint-button {
+    padding: 10px 18px;
+    font-size: 13px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-analysis-hint-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 总结按钮 - 蓝色主题 */
+.ai-hint-summary {
+    background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%);
+    box-shadow: 0 4px 12px rgba(66, 165, 245, 0.5);
+}
+
 /* 总结按钮 - 蓝色主题 */
 .ai-hint-summary:hover:not(:disabled) {
     background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%) !important;
@@ -13,6 +196,11 @@
 }
 
 /* 分析按钮 - 橙色主题 */
+.ai-hint-analyze {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.5);
+}
+
 .ai-hint-analyze:hover:not(:disabled) {
     background: linear-gradient(135deg, #FFB74D 0%, #FFA726 100%) !important;
     transform: translateY(-2px) scale(1.05);
@@ -25,6 +213,11 @@
 }
 
 /* 提取按钮 - 绿色主题 */
+.ai-hint-extract {
+    background: linear-gradient(135deg, #66BB6A 0%, #43A047 100%);
+    box-shadow: 0 4px 12px rgba(102, 187, 106, 0.5);
+}
+
 .ai-hint-extract:hover:not(:disabled) {
     background: linear-gradient(135deg, #81C784 0%, #66BB6A 100%) !important;
     transform: translateY(-2px) scale(1.05);
@@ -36,13 +229,26 @@
     box-shadow: 0 3px 10px rgba(102, 187, 106, 0.5) !important;
 }
 
-/* 通用禁用样式 */
-.ai-analysis-hint-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+/* ==================== 开始分析按钮 ==================== */
+.ai-analysis-button {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
 }
 
-/* 分析按钮hover效果 - 绿色主题 */
 .ai-analysis-button:hover:not(:disabled) {
     background: linear-gradient(135deg, #45a049 0%, #2a6e2a 100%) !important;
     box-shadow: 0 8px 24px rgba(76, 175, 80, 0.7) !important;
@@ -55,14 +261,72 @@
 }
 
 .ai-analysis-button:disabled {
-    opacity: 0.6;
+    background: linear-gradient(135deg, rgba(189, 189, 189, 0.5) 0%, rgba(158, 158, 158, 0.5) 100%);
     cursor: not-allowed;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    color: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    opacity: 0.6;
     transform: none !important;
 }
 
-/* 结果卡片hover效果 */
+/* ==================== 分析结果区域 ==================== */
+.ai-results-section {
+    margin-top: 24px;
+}
+
+.ai-progress-bar {
+    width: 100%;
+    height: 36px;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    position: relative;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.ai-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00E676 0%, #00C853 50%, #00BFA5 100%);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.5);
+    position: relative;
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 50px 50px;
+    animation: progress-animation 1s linear infinite, progress-glow 2s ease-in-out infinite;
+}
+
+.ai-progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 0.5px;
+}
+
 .ai-result-item {
+    border: 2px solid rgba(100, 181, 246, 0.3);
+    border-radius: 12px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: rgba(255, 255, 255, 0.98);
 }
 
 .ai-result-item:hover {
@@ -71,24 +335,35 @@
     border-color: rgba(100, 181, 246, 0.5) !important;
 }
 
-/* textarea focus效果 */
-.ai-analysis-textarea:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.7) !important;
-    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2), 0 4px 12px rgba(0,0,0,0.15) !important;
-    background-color: #ffffff !important;
+.ai-result-header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #E8EAF6 0%, #C5CAE9 100%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    border-bottom: 2px solid rgba(63, 81, 181, 0.2);
+    color: #3F51B5;
+    font-size: 15px;
 }
 
-/* 选中文档信息区域优化 */
-.ai-selected-info {
-    transition: all 0.3s ease;
+.ai-result-icon {
+    font-size: 22px;
 }
 
-.ai-selected-info:hover {
-    box-shadow: 0 8px 24px rgba(66, 165, 245, 0.25);
-    border-color: rgba(100, 181, 246, 0.5);
+.ai-result-body {
+    padding: 20px;
+    line-height: 1.8;
+    background-color: #ffffff;
+    color: #333;
+    font-size: 14px;
 }
 
+.ai-result-error {
+    color: #f44336;
+}
+
+/* ==================== 动画效果 ==================== */
 /* 进度条动画 - 流动的绿色光效 */
 @keyframes progress-animation {
     0% {
@@ -108,22 +383,7 @@
     }
 }
 
-.ai-progress-fill {
-    background-image: linear-gradient(
-        45deg,
-        rgba(255, 255, 255, 0.2) 25%,
-        transparent 25%,
-        transparent 50%,
-        rgba(255, 255, 255, 0.2) 50%,
-        rgba(255, 255, 255, 0.2) 75%,
-        transparent 75%,
-        transparent
-    );
-    background-size: 50px 50px;
-    animation: progress-animation 1s linear infinite, progress-glow 2s ease-in-out infinite;
-}
-
-/* Markdown内容样式 */
+/* ==================== Markdown内容样式 ==================== */
 .ai-result-body h1,
 .ai-result-body h2,
 .ai-result-body h3,
@@ -211,3 +471,191 @@
     }
 }
 
+/* ==================== 可移除的文档项 ==================== */
+.ai-doc-item-removable {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, rgba(227, 242, 253, 0.8) 0%, rgba(187, 222, 251, 0.6) 100%);
+    border-radius: 8px;
+    border: 1px solid rgba(100, 181, 246, 0.3);
+    transition: all 0.2s ease;
+}
+
+.ai-doc-item-removable:hover {
+    background: linear-gradient(135deg, rgba(227, 242, 253, 1) 0%, rgba(187, 222, 251, 0.9) 100%);
+    border-color: rgba(100, 181, 246, 0.5);
+    box-shadow: 0 2px 8px rgba(66, 165, 245, 0.2);
+}
+
+.ai-doc-name {
+    flex: 1;
+    font-size: 13px;
+    color: #1565c0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ai-doc-remove-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ef5350 0%, #e53935 100%);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(229, 57, 53, 0.4);
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.ai-doc-remove-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    transform: scale(1.1);
+    box-shadow: 0 3px 10px rgba(229, 57, 53, 0.6);
+}
+
+.ai-doc-remove-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* 无文档提示 */
+.ai-no-docs-hint {
+    padding: 16px;
+    text-align: center;
+    color: #9e9e9e;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* ==================== 多文档联合分析模式 ==================== */
+.ai-mode-option.active {
+    border-width: 3px;
+}
+
+.ai-mode-option.multi-doc-mode {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-color: #FF9800;
+}
+
+.ai-mode-option.multi-doc-mode.active {
+    background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
+}
+
+.ai-mode-option-title.multi-doc {
+    color: #e65100;
+}
+
+.ai-mode-warning {
+    margin-top: 6px;
+    padding: 6px 10px;
+    background-color: rgba(255, 152, 0, 0.15);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #e65100;
+    font-weight: 500;
+}
+
+/* 多文档分析快捷提示按钮区域 */
+.ai-multi-doc-prompts {
+    padding: 15px;
+    background: linear-gradient(135deg, rgba(255, 243, 224, 0.95) 0%, rgba(255, 224, 178, 0.95) 100%);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(255, 152, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+}
+
+.ai-multi-doc-prompts-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e65100;
+    margin-bottom: 12px;
+}
+
+.ai-multi-doc-prompts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ai-multi-doc-prompt-btn {
+    padding: 10px 14px;
+    font-size: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 10px rgba(255, 152, 0, 0.4);
+}
+
+.ai-multi-doc-prompt-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FFB74D 0%, #FFA726 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.5);
+}
+
+.ai-multi-doc-prompt-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 多文档分析按钮样式 */
+.ai-analysis-button.multi-doc {
+    background: linear-gradient(135deg, #FF9800 0%, #E65100 100%);
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.5);
+}
+
+.ai-analysis-button.multi-doc:hover:not(:disabled) {
+    background: linear-gradient(135deg, #FFB74D 0%, #F57C00 100%);
+    box-shadow: 0 8px 24px rgba(255, 152, 0, 0.7);
+}
+
+/* 多文档分析进度条 */
+.ai-progress-fill.multi-doc {
+    background: linear-gradient(90deg, #FFB74D 0%, #FF9800 50%, #F57C00 100%);
+    box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+}
+
+/* 多文档分析结果样式 */
+.ai-result-item.multi-doc-result {
+    border-color: rgba(255, 152, 0, 0.4);
+}
+
+.ai-result-item.multi-doc-result .ai-result-header {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    color: #e65100;
+    border-bottom-color: rgba(255, 152, 0, 0.3);
+}
+
+.ai-result-item.multi-doc-result:hover {
+    border-color: rgba(255, 152, 0, 0.6);
+    box-shadow: 0 8px 24px rgba(255, 152, 0, 0.25);
+}
+
+/* 响应式：多文档提示按钮 */
+@media (max-width: 768px) {
+    .ai-multi-doc-prompts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-multi-doc-prompt-btn {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}
