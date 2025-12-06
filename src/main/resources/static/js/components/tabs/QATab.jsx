@@ -1024,12 +1024,6 @@ function QATab() {
             {showHierarchicalFeedback && selectedDocForFeedback && window.HierarchicalFeedbackPanel && (
                 <div
                     className="qa-modal-overlay"
-                    onClick={(e) => {
-                        if (e.target === e.currentTarget) {
-                            setShowHierarchicalFeedback(false);
-                            setSelectedDocForFeedback(null);
-                        }
-                    }}
                 >
                     <div className="qa-modal-container">
                         <HierarchicalFeedbackPanel

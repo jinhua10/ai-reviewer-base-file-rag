@@ -112,8 +112,8 @@
         if (!visible) return null;
 
         return (
-            <div style={styles.overlay} onClick={onClose}>
-                <div style={styles.panel} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.overlay}>
+                <div style={styles.panel}>
                     {/* 标题栏 */}
                     <div style={styles.header}>
                         <h3 style={styles.title}>

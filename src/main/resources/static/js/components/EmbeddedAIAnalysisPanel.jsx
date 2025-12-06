@@ -764,10 +764,9 @@
         };
 
         return (
-            <div className="ai-modal-overlay" onClick={onClose}>
+            <div className="ai-modal-overlay">
                 <div
                     className="ai-strategy-market-modal"
-                    onClick={e => e.stopPropagation()}
                 >
                     {/* 头部 */}
                     <div className="ai-market-header">

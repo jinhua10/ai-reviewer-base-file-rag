@@ -562,9 +562,25 @@
         return (
             <div style={styles.panel}>
                 <div style={styles.header}>
-                    <h3>{t('hierarchicalFeedbackTitle')} - {documentName}</h3>
+                    <h3 style={{ margin: 0, color: '#ffffff', fontSize: '20px', fontWeight: '600' }}>
+                        {t('hierarchicalFeedbackTitle')} - {documentName}
+                    </h3>
                     {onClose && (
-                        <button style={styles.closeBtn} onClick={onClose}>×</button>
+                        <button 
+                            style={styles.closeBtn} 
+                            onClick={onClose}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.1) rotate(90deg)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(238, 90, 111, 0.5)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(238, 90, 111, 0.3)';
+                            }}
+                            title={t('hierarchicalFeedbackModalClose')}
+                        >
+                            ×
+                        </button>
                     )}
                 </div>
 
@@ -597,25 +613,36 @@
     const styles = {
         panel: {
             backgroundColor: '#fff',
-            borderRadius: '8px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-            maxWidth: '600px',
-            margin: '10px auto'
+            borderRadius: '12px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            width: '100%',
+            margin: '0 auto'
         },
         header: {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '15px 20px',
-            borderBottom: '1px solid #eee',
-            backgroundColor: '#f8f9fa'
+            padding: '20px 24px',
+            borderBottom: '2px solid #e8eaf6',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: '12px 12px 0 0'
         },
         closeBtn: {
-            background: 'none',
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
             border: 'none',
-            fontSize: '24px',
+            fontSize: '22px',
+            fontWeight: 'bold',
             cursor: 'pointer',
-            color: '#666'
+            color: '#fff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 2px 8px rgba(238, 90, 111, 0.3)',
+            lineHeight: '1'
         },
         tabs: {
             display: 'flex',

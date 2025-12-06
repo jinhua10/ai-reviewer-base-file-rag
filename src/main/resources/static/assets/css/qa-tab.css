@@ -1361,6 +1361,25 @@
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
 }
 
+/* 批量下载按钮（文档切分块区域） */
+.qa-chunks-download-all-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.4);
+}
+
+.qa-chunks-download-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.6);
+}
+
 /* 文档卡片容器（支持相对定位） */
 .qa-chunk-card-wrapper {
     position: relative;
@@ -1369,7 +1388,6 @@
 /* 文档卡片上的小按钮 */
 .qa-chunk-add-btn {
     position: absolute;
-    top: 8px;
     right: 8px;
     width: 32px;
     height: 32px;
@@ -1445,7 +1463,8 @@
 }
 
 .qa-modal-container {
-    max-width: 90%;
+    max-width: 95%;
+    width: 1200px; /* 设置希望的宽度 */
     max-height: 90vh;
     overflow: auto;
     background: #ffffff;
