@@ -724,15 +724,39 @@ function QATab() {
                                     <h4 className="qa-unified-title">
                                         {t('qaChunksAndFeedback')}
                                     </h4>
-                                    {answer.sources && answer.sources.length > 1 && (
-                                        <button
-                                            className="qa-batch-download-btn"
-                                            onClick={handleBatchDownload}
-                                            title={t('qaBatchDownload')}
-                                        >
-                                            {t('qaBatchDownload')} ({answer.sources.length})
-                                        </button>
-                                    )}
+                                    <div className="qa-chunks-header-actions">
+                                        {answer.sources && answer.sources.length > 0 && (
+                                            <button
+                                                className="qa-add-to-ai-btn"
+                                                onClick={() => {
+                                                    const docs = answer.sources.map((source, index) => ({
+                                                        id: source,
+                                                        name: source,
+                                                        title: source,
+                                                        fileName: source
+                                                    }));
+                                                    if (window.addDocumentsToAIAnalysis) {
+                                                        const added = window.addDocumentsToAIAnalysis(docs);
+                                                        if (added > 0) {
+                                                            showToast(`✅ ${t('documentAdded')}: ${added} 个文档`, 'success');
+                                                        }
+                                                    }
+                                                }}
+                                                title={t('addToAIAnalysis')}
+                                            >
+                                                🤖 {t('addToAIAnalysis')}
+                                            </button>
+                                        )}
+                                        {answer.sources && answer.sources.length > 1 && (
+                                            <button
+                                                className="qa-chunks-download-all-btn"
+                                                onClick={handleBatchDownload}
+                                                title={t('qaBatchDownload')}
+                                            >
+                                                {t('qaBatchDownload')} ({answer.sources.length})
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* 参考来源列表 - 带下载和反馈 */}
@@ -743,13 +767,39 @@ function QATab() {
                                                 <div className="qa-source-header">
                                                     <span className="qa-source-number">{index + 1}</span>
                                                     <span className="qa-source-name">{source}</span>
-                                                    <button
-                                                        className="qa-source-download-btn-inline"
-                                                        onClick={() => handleDownload(source)}
-                                                        title={t('qaDownload')}
-                                                    >
-                                                         {t('qaDownload')}
-                                                    </button>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button
+                                                            className="qa-chunk-add-btn"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (window.addDocumentsToAIAnalysis) {
+                                                                    const doc = {
+                                                                        id: source,
+                                                                        name: source,
+                                                                        title: source,
+                                                                        fileName: source
+                                                                    };
+                                                                    const added = window.addDocumentsToAIAnalysis(doc);
+                                                                    if (added > 0) {
+                                                                        showToast(`✅ ${t('documentAdded')}`, 'success');
+                                                                    } else {
+                                                                        showToast(`ℹ️ ${t('documentAlreadyAdded')}`, 'info');
+                                                                    }
+                                                                }
+                                                            }}
+                                                            title={t('addToAIAnalysis')}
+                                                            style={{ position: 'relative', marginRight: '8px' }}
+                                                        >
+                                                            🤖
+                                                        </button>
+                                                        <button
+                                                            className="qa-source-download-btn-inline"
+                                                            onClick={() => handleDownload(source)}
+                                                            title={t('qaDownload')}
+                                                        >
+                                                             {t('qaDownload')}
+                                                        </button>
+                                                    </div>
                                                 </div>
 
                                                 {/* 表情评价行 / Emoji Rating Row */}
@@ -788,18 +838,9 @@ function QATab() {
                                                                 });
                                                                 setShowHierarchicalFeedback(true);
                                                             }}
-                                                            title="详细反馈（段落/句子级）"
-                                                            style={{
-                                                                marginLeft: '10px',
-                                                                padding: '5px 10px',
-                                                                backgroundColor: '#e3f2fd',
-                                                                border: '1px solid #2196f3',
-                                                                borderRadius: '4px',
-                                                                cursor: 'pointer',
-                                                                fontSize: '12px'
-                                                            }}
+                                                            title={t('hierarchicalDetailedFeedbackTitle')}
                                                         >
-                                                            📊 详细反馈
+                                                            {t('hierarchicalDetailedFeedback')}
                                                         </button>
                                                     </div>
                                                 </div>
@@ -983,18 +1024,6 @@ function QATab() {
             {showHierarchicalFeedback && selectedDocForFeedback && window.HierarchicalFeedbackPanel && (
                 <div
                     className="qa-modal-overlay"
-                    style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000
-                    }}
                     onClick={(e) => {
                         if (e.target === e.currentTarget) {
                             setShowHierarchicalFeedback(false);
@@ -1002,7 +1031,7 @@ function QATab() {
                         }
                     }}
                 >
-                    <div style={{ maxWidth: '90%', maxHeight: '90vh', overflow: 'auto' }}>
+                    <div className="qa-modal-container">
                         <HierarchicalFeedbackPanel
                             qaRecordId={answer?.recordId || 'unknown'}
                             documentName={selectedDocForFeedback.name}
