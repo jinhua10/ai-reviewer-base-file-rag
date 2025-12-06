@@ -10,6 +10,7 @@ import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * 反馈配置管理控制器
@@ -44,7 +45,7 @@ public class FeedbackConfigController {
         config.put("maxWeight", feedbackConfig.getMaxWeight());
         config.put("enableDynamicWeighting", feedbackConfig.isEnableDynamicWeighting());
 
-        log.info(I18N.get("feedback_config.log.get_config", lang));
+        log.info(I18N.getLang("feedback_config.log.get_config", lang));
         return ResponseEntity.ok(config);
     }
 
@@ -59,44 +60,44 @@ public class FeedbackConfigController {
             if (updates.containsKey("requireApproval")) {
                 boolean requireApproval = (Boolean) updates.get("requireApproval");
                 feedbackConfig.setRequireApproval(requireApproval);
-                log.info(I18N.get("feedback_config.log.update_require_approval", lang, requireApproval));
+                log.info(I18N.getLang("feedback_config.log.update_require_approval", lang, requireApproval));
             }
 
             if (updates.containsKey("autoApply")) {
                 boolean autoApply = (Boolean) updates.get("autoApply");
                 feedbackConfig.setAutoApply(autoApply);
-                log.info(I18N.get("feedback_config.log.update_auto_apply", lang, autoApply));
+                log.info(I18N.getLang("feedback_config.log.update_auto_apply", lang, autoApply));
             }
 
             if (updates.containsKey("likeWeightIncrement")) {
                 double value = ((Number) updates.get("likeWeightIncrement")).doubleValue();
                 feedbackConfig.setLikeWeightIncrement(value);
-                log.info(I18N.get("feedback_config.log.update_like_weight", lang, value));
+                log.info(I18N.getLang("feedback_config.log.update_like_weight", lang, value));
             }
 
             if (updates.containsKey("dislikeWeightDecrement")) {
                 double value = ((Number) updates.get("dislikeWeightDecrement")).doubleValue();
                 feedbackConfig.setDislikeWeightDecrement(value);
-                log.info(I18N.get("feedback_config.log.update_dislike_weight", lang, value));
+                log.info(I18N.getLang("feedback_config.log.update_dislike_weight", lang, value));
             }
 
             if (updates.containsKey("enableDynamicWeighting")) {
                 boolean enable = (Boolean) updates.get("enableDynamicWeighting");
                 feedbackConfig.setEnableDynamicWeighting(enable);
-                log.info(I18N.get("feedback_config.log.update_enable_weighting", lang, enable));
+                log.info(I18N.getLang("feedback_config.log.update_enable_weighting", lang, enable));
             }
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", I18N.get("feedback_config.api.success.config_updated", lang),
-                "config", getConfig(lang).getBody()
+                "message", I18N.getLang("feedback_config.api.success.config_updated", lang),
+                "config", Objects.requireNonNull(getConfig(lang).getBody())
             ));
 
         } catch (Exception e) {
             log.error("Configuration update failed", e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback_config.api.error.update_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback_config.api.error.update_failed", lang, e.getMessage())
             ));
         }
     }
@@ -111,12 +112,12 @@ public class FeedbackConfigController {
         feedbackConfig.setRequireApproval(requireApproval);
 
         String modeKey = requireApproval ? "feedback_config.api.mode.require_approval" : "feedback_config.api.mode.auto_apply";
-        String mode = I18N.get(modeKey, lang);
-        log.info(I18N.get("feedback_config.log.toggle_mode", lang, mode));
+        String mode = I18N.getLang(modeKey, lang);
+        log.info(I18N.getLang("feedback_config.log.toggle_mode", lang, mode));
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", I18N.get("feedback_config.api.success.mode_switched", lang, mode),
+            "message", I18N.getLang("feedback_config.api.success.mode_switched", lang, mode),
             "requireApproval", requireApproval
         ));
     }
@@ -151,7 +152,7 @@ public class FeedbackConfigController {
         if (documentName == null || documentName.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback_config.api.error.document_name_empty", lang)
+                "message", I18N.getLang("feedback_config.api.error.document_name_empty", lang)
             ));
         }
 
@@ -159,7 +160,7 @@ public class FeedbackConfigController {
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", I18N.get("feedback_config.api.success.weight_reset", lang, documentName)
+            "message", I18N.getLang("feedback_config.api.success.weight_reset", lang, documentName)
         ));
     }
 
@@ -174,7 +175,7 @@ public class FeedbackConfigController {
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", I18N.get("feedback_config.api.success.weights_cleared", lang)
+            "message", I18N.getLang("feedback_config.api.success.weights_cleared", lang)
         ));
     }
 }

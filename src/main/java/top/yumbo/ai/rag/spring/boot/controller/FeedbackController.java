@@ -120,7 +120,7 @@ public class FeedbackController {
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.record_not_found", lang)
+                    "message", I18N.getLang("feedback.api.error.record_not_found", lang)
                 ));
             }
 

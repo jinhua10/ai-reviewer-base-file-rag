@@ -145,7 +145,7 @@ public class ImageProcessingConfiguration {
 
             log.info(I18N.get("log.imageproc.add_ocr"));
             log.info(I18N.get("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : I18N.get("log.imageproc.tessdata_default")));
-            log.info(I18N.get("log.imageproc.language", language));
+            log.info(I18N.getLang("log.imageproc.language", language));
 
             TesseractOCRStrategy ocrStrategy = new TesseractOCRStrategy(tessdataPath, language);
             extractor.addStrategy(ocrStrategy);
