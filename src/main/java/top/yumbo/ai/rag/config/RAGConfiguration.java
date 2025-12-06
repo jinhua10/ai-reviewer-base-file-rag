@@ -35,11 +35,6 @@ public class RAGConfiguration {
     @Builder.Default
     private CacheConfig cache = new CacheConfig();
 
-    /**
-     * 服务器配置 (Server configuration)
-     */
-    @Builder.Default
-    private ServerConfig server = new ServerConfig();
 
     /**
      * 存储配置 (Storage configuration)
@@ -60,18 +55,6 @@ public class RAGConfiguration {
          */
         @Builder.Default
         private boolean compression = true;
-
-        /**
-         * 是否启用加密 (Whether to enable encryption)
-         */
-        @Builder.Default
-        private boolean encryption = false;
-
-        /**
-         * 加密算法 (Encryption algorithm)
-         */
-        @Builder.Default
-        private String encryptionAlgorithm = "AES-256";
     }
 
     /**
@@ -152,38 +135,6 @@ public class RAGConfiguration {
         private boolean enabled = true;
     }
 
-    /**
-     * 服务器配置 (Server configuration)
-     */
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ServerConfig {
-        /**
-         * 服务端口 (Service port)
-         */
-        @Builder.Default
-        private int port = 8080;
-
-        /**
-         * 工作线程数 (Worker thread count)
-         */
-        @Builder.Default
-        private int threads = 100;
-
-        /**
-         * 请求超时时间（秒） (Request timeout in seconds)
-         */
-        @Builder.Default
-        private int requestTimeoutSeconds = 30;
-
-        /**
-         * 是否启用服务器 (Whether to enable server)
-         */
-        @Builder.Default
-        private boolean enabled = false;
-    }
 
     /**
      * 创建默认配置 (Create default configuration)

@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.1</version>
+        <version>3.2.11</version>
         <relativePath/>
     </parent>
 
@@ -65,8 +65,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <lucene.version>9.10.0</lucene.version>
-        <netty.version>4.1.114.Final</netty.version>
-        <poi.version>5.4.1</poi.version>
+        <poi.version>5.5.0</poi.version>
         <tika.version>3.2.3</tika.version>
         <console.encoding>UTF-8</console.encoding>
     </properties>
@@ -74,14 +73,6 @@
     <!-- 依赖管理 - 统一管理依赖版本，避免传递依赖的安全漏洞 -->
     <dependencyManagement>
         <dependencies>
-            <!-- 统一管理所有Netty模块版本，防止传递依赖引入旧版本 -->
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-bom</artifactId>
-                <version>${netty.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
 
             <!-- 升级Commons Compress以修复安全漏洞 CVE-2024-25710, CVE-2024-26308 -->
             <dependency>
@@ -219,14 +210,6 @@
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.44.1.0</version>
-        </dependency>
-
-        <!-- Netty - HTTP服务器 (Optional) -->
-        <!-- 版本由dependencyManagement统一管理，避免传递依赖的安全漏洞 -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- Fastjson2 - JSON处理 -->
