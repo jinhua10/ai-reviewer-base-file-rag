@@ -261,13 +261,14 @@ const api = {
         return response.data;
     },
 
-    // ========== 文档AI分析 ==========
+    // ========== 文档AI分析 (Document AI Analysis) ==========
 
     /**
-     * 通用文档AI问答分析
-     * @param {string} documentPath - 文档路径
-     * @param {string} question - 分析问题/提示词
-     * @returns {Promise<Object>} 分析报告
+     * 通用文档AI问答分析（使用知识库）
+     * (General document AI Q&A analysis - with knowledge base)
+     * @param {string} documentPath - 文档路径 (document path)
+     * @param {string} question - 分析问题/提示词 (analysis question/prompt)
+     * @returns {Promise<Object>} 分析报告 (analysis report)
      */
     analyzeDocument: async (documentPath, question) => {
         const response = await axios.post('http://localhost:8080/api/document-qa/query', {
@@ -278,10 +279,26 @@ const api = {
     },
 
     /**
-     * PPT渐进式分析（推荐用于PPT）
-     * @param {string} documentPath - PPT文件路径
-     * @param {string} question - 分析问题/提示词
-     * @returns {Promise<Object>} PPT分析报告
+     * 通用文档AI直接分析（不使用知识库）
+     * (General document AI direct analysis - without knowledge base)
+     * @param {string} documentPath - 文档路径 (document path)
+     * @param {string} question - 分析问题/提示词 (analysis question/prompt)
+     * @returns {Promise<Object>} 分析报告 (analysis report)
+     */
+    analyzeDocumentDirect: async (documentPath, question) => {
+        const response = await axios.post('http://localhost:8080/api/document-qa/analyze-direct', {
+            documentPath,
+            question
+        });
+        return response.data;
+    },
+
+    /**
+     * PPT渐进式分析（推荐用于PPT，使用知识库）
+     * (PPT progressive analysis - recommended for PPT, with knowledge base)
+     * @param {string} documentPath - PPT文件路径 (PPT file path)
+     * @param {string} question - 分析问题/提示词 (analysis question/prompt)
+     * @returns {Promise<Object>} PPT分析报告 (PPT analysis report)
      */
     analyzePPT: async (documentPath, question) => {
         const response = await axios.post('http://localhost:8080/api/document-qa/analyze-ppt', {
@@ -292,21 +309,38 @@ const api = {
     },
 
     /**
+     * PPT直接分析（不使用知识库）
+     * (PPT direct analysis - without knowledge base)
+     * @param {string} documentPath - PPT文件路径 (PPT file path)
+     * @param {string} question - 分析问题/提示词 (analysis question/prompt)
+     * @returns {Promise<Object>} PPT分析报告 (PPT analysis report)
+     */
+    analyzePPTDirect: async (documentPath, question) => {
+        const response = await axios.post('http://localhost:8080/api/document-qa/analyze-ppt-direct', {
+            documentPath,
+            question
+        });
+        return response.data;
+    },
+
+    /**
      * 清理分析会话临时文件
-     * @param {string} sessionId - 会话ID
-     * @returns {Promise<Object>} 清理结果
+     * (Clean up analysis session temporary files)
+     * @param {string} sessionId - 会话ID (session ID)
+     * @returns {Promise<Object>} 清理结果 (cleanup result)
      */
     cleanupAnalysisSession: async (sessionId) => {
         const response = await axios.delete(`http://localhost:8080/api/document-qa/cleanup/${sessionId}`);
         return response.data;
     },
 
-    // ========== LLM 结果文档化 ==========
+    // ========== LLM 结果文档化 (LLM Result Documentation) ==========
 
     /**
      * 保存 LLM 分析结果
-     * @param {Object} result - 分析结果
-     * @returns {Promise<Object>} 保存结果
+     * (Save LLM analysis result)
+     * @param {Object} result - 分析结果 (analysis result)
+     * @returns {Promise<Object>} 保存结果 (save result)
      */
     saveLLMResult: async (result) => {
         const response = await axios.post('/api/llm-results/save', result);

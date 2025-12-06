@@ -1,6 +1,8 @@
 /**
  * 嵌入式AI分析面板 - 简化版
+ * (Embedded AI Analysis Panel - Simplified Version)
  * 用于分屏显示，不包含弹窗和文档列表
+ * (For split-screen display, without modal and document list)
  */
 (function() {
     'use strict';
@@ -16,15 +18,18 @@
         const [customPrompt, setCustomPrompt] = useState('');
         const [analyzing, setAnalyzing] = useState(false);
         const [currentAnalysis, setCurrentAnalysis] = useState(null);
+        // 知识库选项：默认关闭，只分析单个文档
+        // (Knowledge base option: disabled by default, only analyze single document)
+        const [useKnowledgeBase, setUseKnowledgeBase] = useState(false);
 
-        // 批量分析文档
+        // 批量分析文档 (Batch analyze documents)
         const analyzeDocuments = async () => {
             if (!selectedDocuments || selectedDocuments.length === 0) {
                 alert(t('pleaseSelectDocuments') || '请选择要分析的文档');
                 return;
             }
 
-            const finalPrompt = customPrompt || '请总结这些文档的核心内容。';
+            const finalPrompt = customPrompt || (t('defaultAnalysisPrompt') || '请总结这些文档的核心内容。');
 
             setAnalyzing(true);
             setCurrentAnalysis({
@@ -32,7 +37,8 @@
                 prompt: finalPrompt,
                 status: 'running',
                 progress: 0,
-                results: []
+                results: [],
+                useKnowledgeBase: useKnowledgeBase
             });
 
             try {
@@ -51,12 +57,24 @@
                         const docFileName = doc.title || doc.name || '';
                         const isPPT = docFileName.toLowerCase().endsWith('.pptx') || docFileName.toLowerCase().endsWith('.ppt');
 
-                        // 直接传递文件名，后端会根据配置的 document.source-path 自动解析完整路径
                         let result;
-                        if (isPPT) {
-                            result = await window.api.analyzePPT(docFileName, finalPrompt);
+
+                        if (useKnowledgeBase) {
+                            // 使用知识库：结合知识库进行分析
+                            // (Use knowledge base: analyze with knowledge base context)
+                            if (isPPT) {
+                                result = await window.api.analyzePPT(docFileName, finalPrompt);
+                            } else {
+                                result = await window.api.analyzeDocument(docFileName, finalPrompt);
+                            }
                         } else {
-                            result = await window.api.analyzeDocument(docFileName, finalPrompt);
+                            // 不使用知识库：直接分析单个文档
+                            // (Without knowledge base: directly analyze single document)
+                            if (isPPT) {
+                                result = await window.api.analyzePPTDirect(docFileName, finalPrompt);
+                            } else {
+                                result = await window.api.analyzeDocumentDirect(docFileName, finalPrompt);
+                            }
                         }
 
                         results.push({
@@ -125,7 +143,7 @@
         };
 
         return React.createElement('div', { style: styles.container },
-            // 选中的文档信息
+            // 选中的文档信息 (Selected document info)
             React.createElement('div', {
                 style: styles.selectedInfo,
                 className: 'ai-selected-info'
@@ -142,7 +160,55 @@
                 )
             ),
 
-            // 提示词输入
+            // 知识库选项 (Knowledge base option)
+            React.createElement('div', {
+                style: {
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 15px',
+                    backgroundColor: useKnowledgeBase ? '#e3f2fd' : '#f5f5f5',
+                    borderRadius: '8px',
+                    marginBottom: '10px',
+                    border: useKnowledgeBase ? '1px solid #2196f3' : '1px solid #e0e0e0'
+                },
+                className: 'ai-kb-option'
+            },
+                React.createElement('label', {
+                    style: {
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                    }
+                },
+                    React.createElement('input', {
+                        type: 'checkbox',
+                        checked: useKnowledgeBase,
+                        onChange: (e) => setUseKnowledgeBase(e.target.checked),
+                        disabled: analyzing,
+                        style: { width: '18px', height: '18px', cursor: 'pointer' }
+                    }),
+                    React.createElement('span', null,
+                        useKnowledgeBase
+                            ? (t('useKnowledgeBaseEnabled') || '📚 使用知识库（结合已索引文档分析）')
+                            : (t('useKnowledgeBaseDisabled') || '📄 单文档分析（不使用知识库）')
+                    )
+                ),
+                React.createElement('span', {
+                    style: {
+                        fontSize: '12px',
+                        color: '#666',
+                        marginLeft: 'auto'
+                    }
+                }, useKnowledgeBase
+                    ? (t('kbModeHint') || '将结合知识库中的相关内容')
+                    : (t('directModeHint') || '仅分析所选文档本身')
+                )
+            ),
+
+            // 提示词输入 (Prompt input)
             React.createElement('div', { style: styles.promptSection },
                 React.createElement('label', { style: styles.label },
                     t('customPrompt') || '自定义提示词'
@@ -158,7 +224,7 @@
                 }),
                 React.createElement('div', { style: styles.promptHints },
                     React.createElement('button', {
-                        onClick: () => setCustomPrompt('请详细总结这份文档的核心内容和关键观点。'),
+                        onClick: () => setCustomPrompt(t('summaryPrompt') || '请详细总结这份文档的核心内容和关键观点。'),
                         style: styles.hintButtonSummary,
                         className: 'ai-analysis-hint-button ai-hint-summary',
                         disabled: analyzing
@@ -348,7 +414,7 @@
         analyzeButton: {
             width: '100%',
             padding: '16px',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%)',
             color: 'white',
             border: 'none',
             borderRadius: '10px',
@@ -357,7 +423,7 @@
             fontWeight: '700',
             marginBottom: '20px',
             transition: 'all 0.3s ease',
-            boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
+            boxShadow: '0 6px 20px rgba(76, 175, 80, 0.5)',
             textShadow: '0 2px 4px rgba(0,0,0,0.2)',
             letterSpacing: '0.5px',
             position: 'relative',

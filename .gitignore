@@ -1,6 +1,7 @@
 /data/
 /logs/
 *.log
+/knowledge-base/
 /release/models/*.onnx
 /release/data
 /release/logs

@@ -120,6 +120,281 @@ public class DocumentQAService {
     }
 
     /**
+     * 直接分析文档（不使用知识库）
+     * (Direct document analysis - without knowledge base)
+     *
+     * 处理策略 (Processing strategy):
+     * 1. 如果未配置 maxIndexContentLength 或内容未超限，直接完整分析
+     * 2. 如果内容超限，使用渐进式备忘录机制分批处理
+     *
+     * @param documentPath 文档路径（Document path）
+     * @param question 问题（Question）
+     * @return 问答报告（QA Report）
+     */
+    public DocumentQAReport analyzeDocumentDirect(String documentPath, String question) {
+        File docFile = new File(documentPath);
+        if (!docFile.exists()) {
+            throw new IllegalArgumentException("Document not found: " + documentPath);
+        }
+
+        String sessionId = UUID.randomUUID().toString();
+        log.info("开始直接文档分析（不使用知识库）: 文档={}, 会话ID={}", docFile.getName(), sessionId);
+        log.info("分析问题: {}", question);
+
+        DocumentQAReport report = new DocumentQAReport();
+        report.setSessionId(sessionId);
+        report.setDocumentName(docFile.getName());
+        report.setQuestion(question);
+        report.setStartTime(System.currentTimeMillis());
+
+        try {
+            // 1. 读取文档内容 (Read document content)
+            String content = readDocumentContent(docFile);
+            log.info("文档内容长度: {} 字符", content.length());
+
+            // 2. 获取配置的最大内容长度（0 或负数表示不限制）
+            // (Get configured max content length, 0 or negative means no limit)
+            int maxContentLength = properties.getDocument().getMaxIndexContentLength();
+
+            // 3. 判断是否需要分批处理
+            // (Determine if batch processing is needed)
+            boolean needsBatchProcessing = maxContentLength > 0 && content.length() > maxContentLength;
+
+            if (needsBatchProcessing) {
+                // 使用渐进式备忘录机制分批处理
+                // (Use progressive memo mechanism for batch processing)
+                log.info("文档内容超过限制（{}），使用备忘录机制分批处理", maxContentLength);
+                processDirectWithMemo(content, question, docFile.getName(), report);
+            } else {
+                // 直接完整分析
+                // (Direct full analysis)
+                log.info("直接完整分析文档");
+                processDirectFully(content, question, docFile.getName(), report);
+            }
+
+            report.setEndTime(System.currentTimeMillis());
+            report.setSuccess(true);
+
+            log.info("直接文档分析完成: 文档={}, 耗时={}ms",
+                docFile.getName(), report.getEndTime() - report.getStartTime());
+
+        } catch (Exception e) {
+            log.error("直接文档分析失败", e);
+            report.setSuccess(false);
+            report.setErrorMessage(e.getMessage());
+            report.setEndTime(System.currentTimeMillis());
+        }
+
+        return report;
+    }
+
+    /**
+     * 直接完整分析（无截断）
+     * (Direct full analysis without truncation)
+     */
+    private void processDirectFully(String content, String question, String fileName, DocumentQAReport report) {
+        String prompt = buildFullAnalysisPrompt(question, content, fileName);
+
+        AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt);
+        String answer = aiAnswer != null ? aiAnswer.getAnswer() : "分析失败";
+
+        BatchResult result = new BatchResult();
+        result.setBatchId(1);
+        result.setTotalBatches(1);
+        result.setQuestion(question);
+        result.setAnswer(answer);
+        result.setTimestamp(System.currentTimeMillis());
+
+        report.getBatchResults().add(result);
+        report.setFinalReport(answer);
+    }
+
+    /**
+     * 使用备忘录机制分批处理
+     * (Process with memo mechanism in batches)
+     */
+    private void processDirectWithMemo(String content, String question, String fileName, DocumentQAReport report) {
+        int maxChunkSize = properties.getDocument().getMaxIndexContentLength();
+        List<String> chunks = splitContent(content, maxChunkSize);
+
+        log.info("文档分割为 {} 个批次进行分析", chunks.size());
+
+        // 使用渐进式记忆
+        ProgressiveMemory memory = new ProgressiveMemory(3);
+
+        for (int i = 0; i < chunks.size(); i++) {
+            int batchId = i + 1;
+            String chunk = chunks.get(i);
+
+            log.info("处理第 {}/{} 批次，内容长度: {} 字符", batchId, chunks.size(), chunk.length());
+
+            // 构建带记忆的提示词
+            String prompt = buildDirectBatchPrompt(question, chunk, fileName, batchId, chunks.size(), memory);
+
+            AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt);
+            String answer = aiAnswer != null ? aiAnswer.getAnswer() : "分析失败";
+
+            // 提取关键点并加入记忆
+            String keyPoints = extractKeyPointsFromAnswer(answer);
+            memory.addMemory(batchId, keyPoints);
+
+            BatchResult result = new BatchResult();
+            result.setBatchId(batchId);
+            result.setTotalBatches(chunks.size());
+            result.setQuestion(question);
+            result.setAnswer(answer);
+            result.setKeyPoints(keyPoints);
+            result.setTimestamp(System.currentTimeMillis());
+
+            report.getBatchResults().add(result);
+        }
+
+        // 生成最终综合报告
+        String finalReport = generateDirectFinalReport(question, fileName, report.getBatchResults(), memory);
+        report.setFinalReport(finalReport);
+    }
+
+    /**
+     * 构建完整分析提示词（不截断）
+     * (Build full analysis prompt without truncation)
+     */
+    private String buildFullAnalysisPrompt(String question, String content, String fileName) {
+        StringBuilder prompt = new StringBuilder();
+
+        prompt.append("# 文档分析任务\n\n");
+        prompt.append("## 文档信息\n");
+        prompt.append("- 文件名: ").append(fileName).append("\n");
+        prompt.append("- 内容长度: ").append(content.length()).append(" 字符\n\n");
+        prompt.append("## 用户问题\n");
+        prompt.append(question).append("\n\n");
+        prompt.append("## 完整文档内容\n");
+        prompt.append(content);
+        prompt.append("\n\n## 分析要求\n");
+        prompt.append("1. 仔细阅读以上完整文档内容\n");
+        prompt.append("2. 直接针对文档内容回答用户问题\n");
+        prompt.append("3. 提供结构化、有条理的回答\n");
+        prompt.append("4. 如有关键数据，请准确引用\n");
+        prompt.append("5. 使用标题、列表等组织内容\n");
+
+        return prompt.toString();
+    }
+
+    /**
+     * 构建分批分析提示词（带记忆）
+     * (Build batch analysis prompt with memory)
+     */
+    private String buildDirectBatchPrompt(String question, String chunk, String fileName,
+                                          int batchId, int totalBatches, ProgressiveMemory memory) {
+        StringBuilder prompt = new StringBuilder();
+
+        prompt.append("# 文档分批分析任务\n\n");
+        prompt.append("## 背景信息\n");
+        prompt.append("- 文件名: ").append(fileName).append("\n");
+        prompt.append("- 当前批次: 第 ").append(batchId).append("/").append(totalBatches).append(" 部分\n\n");
+        prompt.append("## 用户问题\n");
+        prompt.append(question).append("\n\n");
+
+        // 添加之前的关键记忆
+        List<String> recentMemories = memory.getRecentMemories();
+        if (!recentMemories.isEmpty()) {
+            prompt.append("## 之前内容的关键要点（记忆上下文）\n");
+            for (String mem : recentMemories) {
+                prompt.append(mem).append("\n");
+            }
+            prompt.append("\n");
+        }
+
+        prompt.append("## 当前批次内容\n");
+        prompt.append(chunk).append("\n\n");
+
+        prompt.append("## 分析要求\n");
+        prompt.append("1. 仔细分析当前批次的内容\n");
+        prompt.append("2. 结合之前的关键要点理解整体脉络\n");
+        prompt.append("3. 提取本批次最重要的 3-5 个关键信息\n");
+        prompt.append("4. 重点关注与用户问题相关的内容\n");
+
+        if (batchId < totalBatches) {
+            prompt.append("5. 这不是最后一部分，保持开放性\n");
+        } else {
+            prompt.append("5. 这是最后一部分，可以做出完整总结\n");
+        }
+
+        prompt.append("\n请按以下格式输出：\n");
+        prompt.append("### 本批次分析\n[你的分析]\n\n");
+        prompt.append("### 关键要点\n[用 - 列出 3-5 个关键点]\n");
+
+        return prompt.toString();
+    }
+
+    /**
+     * 从回答中提取关键点
+     * (Extract key points from answer)
+     */
+    private String extractKeyPointsFromAnswer(String answer) {
+        // 尝试找到"关键要点"部分
+        int keyPointsIdx = answer.indexOf("关键要点");
+        if (keyPointsIdx != -1) {
+            String afterKeyPoints = answer.substring(keyPointsIdx);
+            // 取关键要点后的内容（最多500字符）
+            return afterKeyPoints.length() > 500 ? afterKeyPoints.substring(0, 500) : afterKeyPoints;
+        }
+        // 如果没找到，取回答的后半部分作为关键点（假设关键点在后面）
+        int halfLength = answer.length() / 2;
+        return answer.length() > 500 ? answer.substring(halfLength, Math.min(halfLength + 500, answer.length())) : answer;
+    }
+
+    /**
+     * 生成直接分析的最终报告
+     * (Generate final report for direct analysis)
+     */
+    private String generateDirectFinalReport(String question, String fileName,
+                                             List<BatchResult> batchResults, ProgressiveMemory memory) {
+        StringBuilder prompt = new StringBuilder();
+
+        prompt.append("# 文档分析最终总结任务\n\n");
+        prompt.append("## 背景\n");
+        prompt.append("你已经分批分析完一份文档的所有内容，现在需要生成最终综合报告。\n\n");
+        prompt.append("## 文档信息\n");
+        prompt.append("- 文件名: ").append(fileName).append("\n");
+        prompt.append("- 分析批次数: ").append(batchResults.size()).append("\n\n");
+        prompt.append("## 用户问题\n");
+        prompt.append(question).append("\n\n");
+
+        prompt.append("## 各批次关键要点汇总\n");
+        for (BatchResult result : batchResults) {
+            prompt.append("### 第 ").append(result.getBatchId()).append(" 部分\n");
+            if (result.getKeyPoints() != null && !result.getKeyPoints().isEmpty()) {
+                prompt.append(result.getKeyPoints()).append("\n\n");
+            } else {
+                prompt.append(result.getAnswer().length() > 300
+                    ? result.getAnswer().substring(0, 300) + "..."
+                    : result.getAnswer()).append("\n\n");
+            }
+        }
+
+        prompt.append("## 生成要求\n");
+        prompt.append("1. **整体把握**: 综合所有批次的关键信息\n");
+        prompt.append("2. **回答问题**: 直接、清晰地回答用户的问题\n");
+        prompt.append("3. **结构清晰**: 使用标题、列表等组织内容\n");
+        prompt.append("4. **要点提炼**: 突出最核心的 3-5 个观点\n");
+        prompt.append("5. **连贯表达**: 确保内容前后连贯，逻辑通顺\n\n");
+        prompt.append("请生成最终综合分析报告：\n");
+
+        AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt.toString());
+        return aiAnswer != null ? aiAnswer.getAnswer() : "生成最终报告失败";
+    }
+
+    /**
+     * 构建直接分析提示词（已废弃，保留兼容）
+     * (Build direct analysis prompt - deprecated, kept for compatibility)
+     * @deprecated 使用 buildFullAnalysisPrompt 或 buildDirectBatchPrompt 替代
+     */
+    @Deprecated
+    private String buildDirectAnalysisPrompt(String question, String content, String fileName) {
+        return buildFullAnalysisPrompt(question, content, fileName);
+    }
+
+    /**
      * 判断是否需要分块处理（Check if chunking is needed）
      */
     private boolean shouldChunkDocument(File docFile, int maxContentLength) {

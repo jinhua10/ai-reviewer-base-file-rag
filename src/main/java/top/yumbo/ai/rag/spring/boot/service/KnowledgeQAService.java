@@ -520,6 +520,50 @@ public class KnowledgeQAService {
     }
 
     /**
+     * 直接问答（不使用知识库检索）
+     * (Direct QA - without knowledge base retrieval)
+     *
+     * 用于单文档分析场景，直接将文档内容作为上下文发送给 LLM
+     * (Used for single document analysis, directly sends document content as context to LLM)
+     *
+     * @param prompt 完整的提示词（包含文档内容）(Complete prompt including document content)
+     * @return AI 回答 (AI Answer)
+     */
+    public AIAnswer askDirectly(String prompt) {
+        if (llmClient == null) {
+            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.system_not_initialized"));
+        }
+
+        long startTime = System.currentTimeMillis();
+
+        try {
+            log.info("📄 直接问答模式（不使用知识库检索）");
+            log.debug("提示词长度: {} 字符", prompt.length());
+
+            // 直接调用 LLM
+            String answer = llmClient.generate(prompt);
+
+            long totalTime = System.currentTimeMillis() - startTime;
+            log.info("✅ 直接问答完成，耗时: {}ms", totalTime);
+
+            return new AIAnswer(
+                answer,
+                List.of(), // 无引用来源
+                totalTime
+            );
+
+        } catch (Exception e) {
+            log.error("❌ 直接问答失败", e);
+            long totalTime = System.currentTimeMillis() - startTime;
+            return new AIAnswer(
+                "直接问答处理失败: " + e.getMessage(),
+                List.of(),
+                totalTime
+            );
+        }
+    }
+
+    /**
      * 使用会话中的特定批次文档进行问答
      *
      * @param question 问题

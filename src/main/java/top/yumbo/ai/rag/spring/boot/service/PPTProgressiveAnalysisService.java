@@ -6,6 +6,7 @@ import org.apache.poi.xslf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
@@ -35,12 +36,15 @@ public class PPTProgressiveAnalysisService {
 
     private final LLMClient llmClient;
     private final DocumentMemoManager memoManager;
+    private final KnowledgeQAProperties properties;
 
     @Autowired
     public PPTProgressiveAnalysisService(LLMClient llmClient,
-                                         DocumentMemoManager memoManager) {
+                                         DocumentMemoManager memoManager,
+                                         KnowledgeQAProperties properties) {
         this.llmClient = llmClient;
         this.memoManager = memoManager;
+        this.properties = properties;
     }
 
     /**
@@ -132,6 +136,144 @@ public class PPTProgressiveAnalysisService {
         }
 
         return report;
+    }
+
+    /**
+     * 直接分析PPT（不使用知识库）
+     * (Direct PPT analysis - without knowledge base)
+     */
+    public PPTAnalysisReport analyzeProgressivelyDirect(File pptFile, String question) {
+        PPTAnalysisReport report = new PPTAnalysisReport();
+        report.setFileName(pptFile.getName());
+        report.setQuestion(question);
+        report.setStartTime(System.currentTimeMillis());
+
+        try (FileInputStream fis = new FileInputStream(pptFile);
+             XMLSlideShow ppt = new XMLSlideShow(fis)) {
+
+            List<XSLFSlide> slides = ppt.getSlides();
+            int totalSlides = slides.size();
+
+            log.info("开始直接分析PPT（不使用知识库）: {}, 共 {} 张幻灯片", pptFile.getName(), totalSlides);
+
+            // 逐张幻灯片分析（Analyze each slide）
+            StringBuilder allContent = new StringBuilder();
+            for (int i = 0; i < slides.size(); i++) {
+                XSLFSlide slide = slides.get(i);
+                int slideNumber = i + 1;
+
+                // 提取幻灯片内容
+                SlideContent slideContent = extractSlideContent(slide, slideNumber);
+
+                // 记录结果
+                SlideAnalysisResult result = new SlideAnalysisResult();
+                result.setSlideNumber(slideNumber);
+                result.setTitle(slideContent.getTitle());
+                result.setContent(slideContent.getText());
+                result.setImageCount(slideContent.getImageCount());
+
+                report.getSlideResults().add(result);
+
+                // 累积内容用于最终分析
+                allContent.append("### 第 ").append(slideNumber).append(" 张: ");
+                allContent.append(slideContent.getTitle()).append("\n");
+                allContent.append(slideContent.getText()).append("\n\n");
+            }
+
+            // 生成直接分析总结（不使用知识库）
+            String directAnalysis = generateDirectAnalysisSummary(
+                allContent.toString(), question, pptFile.getName()
+            );
+
+            report.setComprehensiveSummary(directAnalysis);
+            report.setEndTime(System.currentTimeMillis());
+            report.setSuccess(true);
+
+            log.info("直接PPT分析完成，耗时: {}ms",
+                report.getEndTime() - report.getStartTime());
+
+        } catch (Exception e) {
+            log.error("直接PPT分析失败", e);
+            report.setSuccess(false);
+            report.setErrorMessage(e.getMessage());
+            report.setEndTime(System.currentTimeMillis());
+        }
+
+        return report;
+    }
+
+    /**
+     * 生成直接分析总结（不使用知识库，不截断内容）
+     * (Generate direct analysis summary - without knowledge base, no truncation)
+     *
+     * 处理策略：
+     * 1. 如果未配置 maxIndexContentLength 或内容未超限，直接完整分析
+     * 2. 如果内容超限，逐张幻灯片分析并汇总（使用备忘录机制）
+     */
+    private String generateDirectAnalysisSummary(String content, String question, String fileName) {
+        // 获取配置的最大内容长度（0 或负数表示不限制）
+        int maxContentLength = properties.getDocument().getMaxIndexContentLength();
+
+        // 判断是否需要分批处理
+        boolean needsBatchProcessing = maxContentLength > 0 && content.length() > maxContentLength;
+
+        if (needsBatchProcessing) {
+            log.info("PPT内容超过限制（{}），逐张幻灯片分析", maxContentLength);
+            // 内容已经在 analyzeProgressivelyDirect 中逐张分析，这里只需生成总结
+            return generatePPTSummaryFromSlides(content, question, fileName);
+        }
+
+        // 直接完整分析
+        StringBuilder prompt = new StringBuilder();
+
+        prompt.append("# PPT文档直接分析\n\n");
+        prompt.append("## 文件名\n").append(fileName).append("\n\n");
+        prompt.append("## 用户问题\n").append(question).append("\n\n");
+        prompt.append("## 完整PPT内容\n");
+        prompt.append(content);  // 不截断，完整内容
+        prompt.append("\n\n## 分析要求\n");
+        prompt.append("1. 仔细阅读以上完整PPT内容\n");
+        prompt.append("2. 直接针对PPT内容回答用户问题\n");
+        prompt.append("3. 提供结构化的回答\n");
+        prompt.append("4. 提炼核心观点和关键数据\n");
+        prompt.append("5. 使用清晰的层级结构组织内容\n");
+
+        try {
+            return llmClient.generate(prompt.toString());
+        } catch (Exception e) {
+            log.error("生成直接分析总结失败", e);
+            return "分析失败: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 从幻灯片内容生成总结（内容过长时使用）
+     * (Generate summary from slide contents when content is too long)
+     */
+    private String generatePPTSummaryFromSlides(String content, String question, String fileName) {
+        StringBuilder prompt = new StringBuilder();
+
+        prompt.append("# PPT内容总结任务\n\n");
+        prompt.append("## 背景\n");
+        prompt.append("以下是一份PPT的完整内容，请综合分析并回答用户问题。\n\n");
+        prompt.append("## 文件名\n").append(fileName).append("\n\n");
+        prompt.append("## 用户问题\n").append(question).append("\n\n");
+        prompt.append("## PPT内容\n");
+        prompt.append(content);  // 完整内容
+        prompt.append("\n\n## 总结要求\n");
+        prompt.append("1. **整体把握**: 理解PPT的整体结构和逻辑脉络\n");
+        prompt.append("2. **要点提炼**: 突出最核心的3-5个观点\n");
+        prompt.append("3. **回答问题**: 直接、清晰地回答用户的问题\n");
+        prompt.append("4. **结构清晰**: 使用标题、列表等组织内容\n");
+        prompt.append("5. **连贯表达**: 确保内容前后连贯，逻辑通顺\n\n");
+        prompt.append("请生成分析报告：\n");
+
+        try {
+            return llmClient.generate(prompt.toString());
+        } catch (Exception e) {
+            log.error("生成PPT总结失败", e);
+            return "总结生成失败: " + e.getMessage();
+        }
     }
 
     /**

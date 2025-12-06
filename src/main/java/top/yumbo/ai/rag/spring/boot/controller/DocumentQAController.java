@@ -138,6 +138,71 @@ public class DocumentQAController {
     }
 
     /**
+     * 直接分析文档（不使用知识库）
+     * (Direct document analysis - without knowledge base)
+     */
+    @PostMapping("/analyze-direct")
+    public ResponseEntity<DocumentQAService.DocumentQAReport> analyzeDocumentDirect(
+            @RequestBody DocumentQARequest request) {
+
+        try {
+            String filePath = resolveFilePath(request.getDocumentPath());
+            log.info("收到直接文档分析请求（不使用知识库）: 文档={}, 解析路径={}, 问题={}",
+                request.getDocumentPath(), filePath, request.getQuestion());
+
+            // 使用直接分析模式，不查询知识库
+            DocumentQAService.DocumentQAReport report = documentQAService.analyzeDocumentDirect(
+                filePath,
+                request.getQuestion()
+            );
+
+            return ResponseEntity.ok(report);
+
+        } catch (Exception e) {
+            log.error("直接文档分析失败", e);
+
+            DocumentQAService.DocumentQAReport errorReport = new DocumentQAService.DocumentQAReport();
+            errorReport.setSuccess(false);
+            errorReport.setErrorMessage(e.getMessage());
+
+            return ResponseEntity.internalServerError().body(errorReport);
+        }
+    }
+
+    /**
+     * 直接分析 PPT（不使用知识库）
+     * (Direct PPT analysis - without knowledge base)
+     */
+    @PostMapping("/analyze-ppt-direct")
+    public ResponseEntity<PPTProgressiveAnalysisService.PPTAnalysisReport> analyzePPTDirect(
+            @RequestBody DocumentQARequest request) {
+
+        try {
+            String filePath = resolveFilePath(request.getDocumentPath());
+            log.info("收到直接PPT分析请求（不使用知识库）: 文档={}, 解析路径={}, 问题={}",
+                request.getDocumentPath(), filePath, request.getQuestion());
+
+            File pptFile = new File(filePath);
+
+            // 使用直接分析模式
+            PPTProgressiveAnalysisService.PPTAnalysisReport report =
+                pptAnalysisService.analyzeProgressivelyDirect(pptFile, request.getQuestion());
+
+            return ResponseEntity.ok(report);
+
+        } catch (Exception e) {
+            log.error("直接PPT分析失败", e);
+
+            PPTProgressiveAnalysisService.PPTAnalysisReport errorReport =
+                new PPTProgressiveAnalysisService.PPTAnalysisReport();
+            errorReport.setSuccess(false);
+            errorReport.setErrorMessage(e.getMessage());
+
+            return ResponseEntity.internalServerError().body(errorReport);
+        }
+    }
+
+    /**
      * 文档问答请求
      */
     @Data
