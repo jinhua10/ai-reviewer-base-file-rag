@@ -702,14 +702,55 @@ eureka:
 
 ---
 
+## 📄 开源许可证
+
+### 项目许可证
+
+本项目采用 **Apache License 2.0** 开源许可证。
+
+### 第三方依赖
+
+本项目使用了以下开源组件，均采用商业友好的许可证：
+
+| 组件 | 许可证 | 用途 |
+|------|--------|------|
+| Apache Lucene | Apache 2.0 | 全文检索引擎 |
+| Apache Tika | Apache 2.0 | 文档解析 |
+| Apache POI | Apache 2.0 | Office 文档处理 |
+| Spring Boot | Apache 2.0 | 应用框架 |
+| ONNX Runtime | MIT | AI 模型推理 |
+| Hugging Face Tokenizers | Apache 2.0 | 文本分词 |
+| OkHttp | Apache 2.0 | HTTP 客户端 |
+| Caffeine | Apache 2.0 | 缓存框架 |
+| SQLite JDBC | Apache 2.0 | 数据库驱动 |
+| Fastjson2 | Apache 2.0 | JSON 处理 |
+
+> 📋 完整的依赖列表和版权声明请查看 [NOTICE](NOTICE) 文件  
+> 📜 许可证全文请查看 [LICENSE](LICENSE.txt) 文件
+
+### 商业使用
+
+✅ **本项目可安全用于商业用途**
+
+- ✅ 可用于构建 SaaS 服务
+- ✅ 可售卖商业软件
+- ✅ 可嵌入企业产品
+- ✅ 无需开源衍生代码
+- ✅ 无需支付许可费
+
+详细的商业风险评估请查看 [依赖商业风险评估报告](md/20251207-依赖商业风险评估报告.md)
+
+---
+
 ## 🌟 致谢
 
 本项目基于以下优秀开源项目构建：
 
 - [Apache Lucene](https://lucene.apache.org/) - 全文检索引擎
 - [Apache Tika](https://tika.apache.org/) - 文档解析框架
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) - OCR 引擎
 - [Spring Boot](https://spring.io/projects/spring-boot) - 应用框架
+- [ONNX Runtime](https://onnxruntime.ai/) - AI 模型推理
+- [Hugging Face](https://huggingface.co/) - NLP 工具
 
 感谢所有贡献者的辛勤付出！🙏
 

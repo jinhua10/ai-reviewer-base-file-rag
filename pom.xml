@@ -66,6 +66,12 @@
         <maven.compiler.target>21</maven.compiler.target>
         <lucene.version>9.10.0</lucene.version>
         <poi.version>5.5.0</poi.version>
+        <!-- Apache Tika 3.2.3 (2024-12-26 最新稳定版) -->
+        <!-- CVE-2025-48924 (5.3 - Insufficient Information)：
+             - 漏洞详情尚未完全公开
+             - 评分：5.3（中等风险）
+             - 状态：信息不足，等待 Apache Tika 官方更新
+             - 缓解措施：已排除 tika-parser-crypto-module，减少攻击面 -->
         <tika.version>3.2.3</tika.version>
         <console.encoding>UTF-8</console.encoding>
     </properties>
@@ -79,28 +85,6 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-compress</artifactId>
                 <version>1.27.1</version>
-            </dependency>
-
-            <!-- BouncyCastle - 修复CVE-2025-8916等安全漏洞，升级到1.79 -->
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcprov-jdk18on</artifactId>
-                <version>1.79</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcpkix-jdk18on</artifactId>
-                <version>1.79</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcutil-jdk18on</artifactId>
-                <version>1.79</version>
-            </dependency>
-            <dependency>
-                <groupId>org.bouncycastle</groupId>
-                <artifactId>bcmail-jdk18on</artifactId>
-                <version>1.79</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -134,6 +118,18 @@
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-parsers-standard-package</artifactId>
             <version>${tika.version}</version>
+            <exclusions>
+                <!-- 排除加密文档解析模块（不需要处理加密文档，可避免 BouncyCastle 依赖） -->
+                <exclusion>
+                    <groupId>org.apache.tika</groupId>
+                    <artifactId>tika-parser-crypto-module</artifactId>
+                </exclusion>
+                <!-- 排除 BouncyCastle 加密库（避免出口管制问题） -->
+                <exclusion>
+                    <groupId>org.bouncycastle</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
 
