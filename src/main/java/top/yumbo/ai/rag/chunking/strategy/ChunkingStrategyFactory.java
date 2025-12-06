@@ -4,9 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.ppl.PPLService;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
-import top.yumbo.ai.rag.util.I18N;
+
 
 /**
  * 分块策略工厂 (Chunking strategy factory)
