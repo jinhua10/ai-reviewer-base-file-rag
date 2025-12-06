@@ -67,31 +67,31 @@ function App() {
     // 移除文档从 AI 分析列表
     const removeDocumentsFromAIAnalysis = React.useCallback((docs) => {
         const docsArray = Array.isArray(docs) ? docs : [docs];
-        let removedCount = 0;
+        
+        // 收集要移除的文档名称
+        const docNamesToRemove = new Set(
+            docsArray.map(doc => doc.name || doc.title || doc.fileName)
+        );
 
-        docsArray.forEach(doc => {
-            const docName = doc.name || doc.title || doc.fileName;
-            
-            // 查找并移除文档
-            const index = selectedDocsData.findIndex(d => 
-                (d.name || d.title || d.fileName) === docName
-            );
-
-            if (index !== -1) {
-                const docToRemove = selectedDocsData[index];
-                const docId = docToRemove.id || docName;
-                
-                setSelectedDocs(prev => {
-                    const newSet = new Set(prev);
-                    newSet.delete(docId);
-                    return newSet;
-                });
-                setSelectedDocsData(prev => prev.filter((_, i) => i !== index));
-                removedCount++;
-            }
+        // 过滤出不在移除列表中的文档
+        const remainingDocs = selectedDocsData.filter(d => {
+            const docName = d.name || d.title || d.fileName;
+            return !docNamesToRemove.has(docName);
         });
 
+        // 计算被移除的数量
+        const removedCount = selectedDocsData.length - remainingDocs.length;
+
         if (removedCount > 0) {
+            // 更新状态
+            setSelectedDocsData(remainingDocs);
+            
+            // 更新 selectedDocs Set
+            const remainingDocIds = new Set(
+                remainingDocs.map(d => d.id || d.title || d.name)
+            );
+            setSelectedDocs(remainingDocIds);
+            
             console.log(`✖️ 已移除 ${removedCount} 个文档`);
         }
 

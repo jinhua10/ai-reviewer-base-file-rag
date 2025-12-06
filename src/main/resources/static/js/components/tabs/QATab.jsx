@@ -728,28 +728,56 @@ function QATab() {
                                         {t('qaChunksAndFeedback')}
                                     </h4>
                                     <div className="qa-chunks-header-actions">
-                                        {answer.sources && answer.sources.length > 0 && (
-                                            <button
-                                                className="qa-add-to-ai-btn"
-                                                onClick={() => {
-                                                    const docs = answer.sources.map((source, index) => ({
-                                                        id: source,
-                                                        name: source,
-                                                        title: source,
-                                                        fileName: source
-                                                    }));
-                                                    if (window.addDocumentsToAIAnalysis) {
-                                                        const added = window.addDocumentsToAIAnalysis(docs);
-                                                        if (added > 0) {
-                                                            showToast(`✅ ${t('documentAdded')}: ${added} 个文档`, 'success');
+                                        {answer.sources && answer.sources.length > 0 && (() => {
+                                            // 检查所有文档是否已添加
+                                            const docs = answer.sources.map((source) => ({
+                                                id: source,
+                                                name: source,
+                                                title: source,
+                                                fileName: source
+                                            }));
+                                            const allAdded = docs.every(doc => 
+                                                window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                            );
+                                            const someAdded = docs.some(doc => 
+                                                window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                            );
+                                            
+                                            return (
+                                                <button
+                                                    key={`batch-add-sources-${addedDocsVersion}`}
+                                                    className="qa-add-to-ai-btn"
+                                                    onClick={() => {
+                                                        if (allAdded || someAdded) {
+                                                            // 全部或部分已添加，执行批量移除
+                                                            if (window.removeDocumentsFromAIAnalysis) {
+                                                                const removed = window.removeDocumentsFromAIAnalysis(docs);
+                                                                if (removed > 0) {
+                                                                    showToast(`✖️ ${t('documentRemoved') || '已移除'}: ${removed} 个文档`, 'info');
+                                                                    setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
+                                                                }
+                                                            }
+                                                        } else {
+                                                            // 未添加，执行批量添加
+                                                            if (window.addDocumentsToAIAnalysis) {
+                                                                const added = window.addDocumentsToAIAnalysis(docs);
+                                                                if (added > 0) {
+                                                                    showToast(`✅ ${t('documentAdded')}: ${added} 个文档`, 'success');
+                                                                    setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
+                                                                }
+                                                            }
                                                         }
-                                                    }
-                                                }}
-                                                title={t('addToAIAnalysis')}
-                                            >
-                                                🤖 {t('addToAIAnalysis')}
-                                            </button>
-                                        )}
+                                                    }}
+                                                    title={allAdded || someAdded ? (t('removeFromAIAnalysis') || '移除') : t('addToAIAnalysis')}
+                                                    style={{
+                                                        opacity: allAdded ? 0.6 : someAdded ? 0.8 : 1,
+                                                        filter: allAdded || someAdded ? 'grayscale(50%)' : 'none'
+                                                    }}
+                                                >
+                                                    {allAdded ? '✔️' : someAdded ? '🔄' : '🤖'} {allAdded || someAdded ? (t('removeFromAIAnalysis') || '移除') : t('addToAIAnalysis')}
+                                                </button>
+                                            );
+                                        })()}
                                         {answer.sources && answer.sources.length > 1 && (
                                             <button
                                                 className="qa-chunks-download-all-btn"
@@ -789,7 +817,8 @@ function QATab() {
                                                                         const removed = window.removeDocumentsFromAIAnalysis(doc);
                                                                         if (removed > 0) {
                                                                             showToast(`✖️ ${t('documentRemoved') || '已移除'}`, 'info');
-                                                                            setAddedDocsVersion(v => v + 1);
+                                                                            // 使用 setTimeout 确保状态更新立即生效
+                                                                            setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
                                                                         }
                                                                     }
                                                                 } else {
@@ -798,7 +827,8 @@ function QATab() {
                                                                         const added = window.addDocumentsToAIAnalysis(doc);
                                                                         if (added > 0) {
                                                                             showToast(`✅ ${t('documentAdded')}`, 'success');
-                                                                            setAddedDocsVersion(v => v + 1);
+                                                                            // 使用 setTimeout 确保状态更新立即生效
+                                                                            setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
                                                                         }
                                                                     }
                                                                 }
@@ -879,6 +909,7 @@ function QATab() {
                                             </h5>
                                             <div className="qa-chunks-header-actions">
                                                 <button
+                                                    key={`batch-add-chunks-${addedDocsVersion}`}
                                                     className="qa-add-to-ai-btn"
                                                     onClick={() => {
                                                         // 提取唯一的文档并添加到AI分析
@@ -899,16 +930,94 @@ function QATab() {
                                                             }
                                                         });
 
-                                                        if (window.addDocumentsToAIAnalysis) {
-                                                            const added = window.addDocumentsToAIAnalysis(uniqueDocs);
-                                                            if (added > 0) {
-                                                                showToast(`✅ ${t('documentAdded')}: ${added} 个文档`, 'success');
+                                                        // 检查所有文档是否已添加
+                                                        const allAdded = uniqueDocs.every(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        const someAdded = uniqueDocs.some(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+
+                                                        if (allAdded || someAdded) {
+                                                            // 全部或部分已添加，执行批量移除
+                                                            if (window.removeDocumentsFromAIAnalysis) {
+                                                                const removed = window.removeDocumentsFromAIAnalysis(uniqueDocs);
+                                                                if (removed > 0) {
+                                                                    showToast(`✖️ ${t('documentRemoved') || '已移除'}: ${removed} 个文档`, 'info');
+                                                                    setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
+                                                                }
+                                                            }
+                                                        } else {
+                                                            // 未添加，执行批量添加
+                                                            if (window.addDocumentsToAIAnalysis) {
+                                                                const added = window.addDocumentsToAIAnalysis(uniqueDocs);
+                                                                if (added > 0) {
+                                                                    showToast(`✅ ${t('documentAdded')}: ${added} 个文档`, 'success');
+                                                                    setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
+                                                                }
                                                             }
                                                         }
                                                     }}
-                                                    title={t('addToAIAnalysis')}
+                                                    title={(() => {
+                                                        const uniqueDocs = [];
+                                                        const docNames = new Set();
+                                                        answer.chunks.forEach(chunk => {
+                                                            const docName = chunk.title || chunk.fileName || `文档_${chunk.documentId}`;
+                                                            if (!docNames.has(docName)) {
+                                                                docNames.add(docName);
+                                                                uniqueDocs.push({ id: chunk.documentId, name: docName });
+                                                            }
+                                                        });
+                                                        const allAdded = uniqueDocs.every(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        const someAdded = uniqueDocs.some(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        return allAdded || someAdded ? (t('removeFromAIAnalysis') || '移除') : t('addToAIAnalysis');
+                                                    })()}
+                                                    style={(() => {
+                                                        const uniqueDocs = [];
+                                                        const docNames = new Set();
+                                                        answer.chunks.forEach(chunk => {
+                                                            const docName = chunk.title || chunk.fileName || `文档_${chunk.documentId}`;
+                                                            if (!docNames.has(docName)) {
+                                                                docNames.add(docName);
+                                                                uniqueDocs.push({ id: chunk.documentId, name: docName });
+                                                            }
+                                                        });
+                                                        const allAdded = uniqueDocs.every(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        const someAdded = uniqueDocs.some(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        return {
+                                                            opacity: allAdded ? 0.6 : someAdded ? 0.8 : 1,
+                                                            filter: allAdded || someAdded ? 'grayscale(50%)' : 'none'
+                                                        };
+                                                    })()}
                                                 >
-                                                    🤖 {t('addToAIAnalysis')}
+                                                    {(() => {
+                                                        const uniqueDocs = [];
+                                                        const docNames = new Set();
+                                                        answer.chunks.forEach(chunk => {
+                                                            const docName = chunk.title || chunk.fileName || `文档_${chunk.documentId}`;
+                                                            if (!docNames.has(docName)) {
+                                                                docNames.add(docName);
+                                                                uniqueDocs.push({ id: chunk.documentId, name: docName });
+                                                            }
+                                                        });
+                                                        const allAdded = uniqueDocs.every(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        const someAdded = uniqueDocs.some(doc => 
+                                                            window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)
+                                                        );
+                                                        const icon = allAdded ? '✔️' : someAdded ? '🔄' : '🤖';
+                                                        const text = allAdded || someAdded ? (t('removeFromAIAnalysis') || '移除') : t('addToAIAnalysis');
+                                                        return `${icon} ${text}`;
+                                                    })()}
                                                 </button>
                                                 <button
                                                     className="qa-chunks-download-all-btn"
@@ -958,7 +1067,8 @@ function QATab() {
                                                                     const removed = window.removeDocumentsFromAIAnalysis(doc);
                                                                     if (removed > 0) {
                                                                         showToast(`✖️ ${t('documentRemoved') || '已移除'}`, 'info');
-                                                                        setAddedDocsVersion(v => v + 1);
+                                                                        // 使用 setTimeout 确保状态更新立即生效
+                                                                        setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
                                                                     }
                                                                 }
                                                             } else {
@@ -967,7 +1077,8 @@ function QATab() {
                                                                     const added = window.addDocumentsToAIAnalysis(doc);
                                                                     if (added > 0) {
                                                                         showToast(`✅ ${t('documentAdded')}`, 'success');
-                                                                        setAddedDocsVersion(v => v + 1);
+                                                                        // 使用 setTimeout 确保状态更新立即生效
+                                                                        setTimeout(() => setAddedDocsVersion(v => v + 1), 0);
                                                                     }
                                                                 }
                                                             }
