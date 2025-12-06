@@ -2,8 +2,10 @@ package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
+import top.yumbo.ai.rag.chunking.strategy.ChunkingStrategy;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.image.ImageInfo;
 import top.yumbo.ai.rag.model.Document;
@@ -37,22 +39,33 @@ public class DocumentPreprocessingService {
     private final PPLServiceFacade pplServiceFacade;
     private final top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService;
     private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
+    private final top.yumbo.ai.rag.chunking.strategy.ChunkingStrategyFactory chunkingStrategyFactory;
+
+    @Value("${knowledge.qa.chunking.strategy:ppl}")
+    private String chunkingStrategy;
 
     public DocumentPreprocessingService(
             @Autowired(required = false) top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig,
             @Autowired(required = false) PPLServiceFacade pplServiceFacade,
             top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService,
-            top.yumbo.ai.rag.image.ImageStorageService imageStorageService) {
+            top.yumbo.ai.rag.image.ImageStorageService imageStorageService,
+            @Autowired(required = false) top.yumbo.ai.rag.chunking.strategy.ChunkingStrategyFactory chunkingStrategyFactory) {
         this.pplConfig = pplConfig;
         this.pplServiceFacade = pplServiceFacade;
         this.imageExtractionService = imageExtractionService;
         this.imageStorageService = imageStorageService;
+        this.chunkingStrategyFactory = chunkingStrategyFactory;
 
         // 记录PPL服务状态（Log PPL service status）
         if (pplServiceFacade == null || pplConfig == null) {
             log.info(I18N.get("doc_preprocess.log.ppl_disabled"));
         } else {
             log.info(I18N.get("doc_preprocess.log.ppl_enabled"));
+        }
+
+        // 记录分块策略
+        if (chunkingStrategyFactory != null) {
+            log.info("📦 分块策略工厂已启用");
         }
     }
 
@@ -156,12 +169,55 @@ public class DocumentPreprocessingService {
     }
 
     /**
-     * 使用 PPL 对文档进行智能切分
+     * 使用智能策略对文档进行切分（支持 PPL/LLM/Auto）
      *
      * @param document 文档
      * @return 切分后的文档块列表
      */
     public List<Document> chunkDocumentWithPPL(Document document) {
+        // 使用策略工厂进行分块
+        if (chunkingStrategyFactory != null) {
+            try {
+                // 获取配置的策略
+                ChunkingStrategy strategy =
+                    chunkingStrategyFactory.getStrategy(chunkingStrategy);
+
+                log.info("🔄 Starting chunking with strategy: {} for document: {}",
+                         strategy.getStrategyName(), document.getTitle());
+                long startTime = System.currentTimeMillis();
+
+                // 获取分块配置
+                ChunkConfig chunkConfig = getChunkConfig();
+
+                // 执行分块
+                List<DocumentChunk> chunks = strategy.chunk(
+                    document.getContent(),
+                    null,  // query 为 null，表示通用切分
+                    chunkConfig
+                );
+
+                long chunkTime = System.currentTimeMillis() - startTime;
+                log.info("✅ Chunking completed: {} chunks in {}ms using {}",
+                         chunks.size(), chunkTime, strategy.getStrategyName());
+
+                // 转换为 Document 列表
+                return convertChunksToDocuments(chunks, document);
+
+            } catch (Exception e) {
+                log.warn("⚠️ Strategy-based chunking failed: {}, falling back to original document",
+                         e.getMessage());
+                return List.of(document);
+            }
+        }
+
+        // 降级：使用传统 PPL 方式（兼容旧代码）
+        return chunkWithLegacyPPL(document);
+    }
+
+    /**
+     * 传统 PPL 分块方式（降级）
+     */
+    private List<Document> chunkWithLegacyPPL(Document document) {
         // 检查 PPL 服务是否可用
         if (pplConfig == null || pplServiceFacade == null) {
             log.debug("📦 PPL service not available, returning original document");
@@ -171,45 +227,66 @@ public class DocumentPreprocessingService {
         // 检查是否启用 PPL Chunking
         ChunkConfig chunkConfig = pplConfig.getChunking();
         if (chunkConfig == null || (!chunkConfig.isEnableCoarseChunking() && chunkConfig.getPplThreshold() <= 0)) {
-            // PPL Chunking 未启用，返回原文档
             return List.of(document);
         }
 
         try {
-            log.info("🔄 Starting PPL-based chunking for document: {}", document.getTitle());
+            log.info("🔄 Starting legacy PPL-based chunking for document: {}", document.getTitle());
             long startTime = System.currentTimeMillis();
 
-            // 使用 PPL 服务进行智能切分
-            // PPLServiceFacade.chunk 只需要 2 个参数: content, query
-            // ChunkConfig 会从内部的 PPLConfig 获取
             List<DocumentChunk> chunks = pplServiceFacade.chunk(
                 document.getContent(),
-                null  // query 为 null，表示通用切分
+                null
             );
 
             long chunkTime = System.currentTimeMillis() - startTime;
-            log.info("✅ PPL chunking completed: {} chunks in {}ms", chunks.size(), chunkTime);
+            log.info("✅ Legacy PPL chunking completed: {} chunks in {}ms", chunks.size(), chunkTime);
 
-            // 转换为 Document 列表
-            List<Document> documents = new ArrayList<>();
-            for (int i = 0; i < chunks.size(); i++) {
-                DocumentChunk chunk = chunks.get(i);
-
-                Document chunkDoc = Document.builder()
-                    .title(document.getTitle() + " (块" + (i + 1) + "/" + chunks.size() + ")")
-                    .content(chunk.getContent())
-                    .metadata(document.getMetadata())
-                    .build();
-
-                documents.add(chunkDoc);
-            }
-
-            return documents;
+            return convertChunksToDocuments(chunks, document);
 
         } catch (PPLException e) {
             log.warn("⚠️ PPL chunking failed, using original document: {}", e.getMessage());
             return List.of(document);
         }
+    }
+
+    /**
+     * 获取分块配置
+     */
+    private ChunkConfig getChunkConfig() {
+        if (pplConfig != null && pplConfig.getChunking() != null) {
+            return pplConfig.getChunking();
+        }
+
+        // 使用默认配置
+        ChunkConfig config = new ChunkConfig();
+        config.setMaxChunkSize(2500);
+        config.setMinChunkSize(300);
+        config.setOverlapSize(150);
+        config.setPplThreshold(20.0);
+        config.setEnableCoarseChunking(true);
+        return config;
+    }
+
+    /**
+     * 将 DocumentChunk 列表转换为 Document 列表
+     */
+    private List<Document> convertChunksToDocuments(List<DocumentChunk> chunks, Document originalDocument) {
+        List<Document> documents = new ArrayList<>();
+
+        for (int i = 0; i < chunks.size(); i++) {
+            DocumentChunk chunk = chunks.get(i);
+
+            Document chunkDoc = Document.builder()
+                .title(originalDocument.getTitle() + " (块" + (i + 1) + "/" + chunks.size() + ")")
+                .content(chunk.getContent())
+                .metadata(originalDocument.getMetadata())
+                .build();
+
+            documents.add(chunkDoc);
+        }
+
+        return documents;
     }
 
     /**
