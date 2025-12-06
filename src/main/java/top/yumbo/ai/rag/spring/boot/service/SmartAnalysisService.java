@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.strategy.*;
 
 import java.io.IOException;
@@ -138,7 +139,7 @@ public class SmartAnalysisService {
                     content = loadFromSlideCache(fullPath.toAbsolutePath().toString());
                     if (content != null && !content.trim().isEmpty()) {
                         fromCache = true;
-                        log.info(top.yumbo.ai.rag.i18n.LogMessageProvider.getMessage(
+                        log.info(I18N.get(
                                 "smart_analysis.log.loaded_from_slide_cache", fileName, content.length()));
                     }
                 }
@@ -203,7 +204,7 @@ public class SmartAnalysisService {
         try {
             SlideContentCacheService.PPTCache pptCache = slideContentCacheService.getPPTCache(pptPath);
             if (pptCache == null || pptCache.getSlides() == null || pptCache.getSlides().isEmpty()) {
-                log.debug(top.yumbo.ai.rag.i18n.LogMessageProvider.getMessage(
+                log.debug(I18N.get(
                         "smart_analysis.log.no_slide_cache", pptPath));
                 return null;
             }
@@ -236,7 +237,7 @@ public class SmartAnalysisService {
             return content.toString();
 
         } catch (Exception e) {
-            log.warn(top.yumbo.ai.rag.i18n.LogMessageProvider.getMessage(
+            log.warn(I18N.get(
                     "smart_analysis.log.load_slide_cache_failed", pptPath), e);
             return null;
         }

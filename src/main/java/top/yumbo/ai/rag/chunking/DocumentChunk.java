@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 文档块 (Document chunk)
@@ -62,7 +62,7 @@ public class DocumentChunk {
         if (title != null && !title.isEmpty()) {
             return title;
         }
-        return LogMessageProvider.getMessage("log.chunk.display_part", index + 1, totalChunks);
+        return I18N.get("log.chunk.display_part", index + 1, totalChunks);
     }
 
     /**

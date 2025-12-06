@@ -1,7 +1,7 @@
 package top.yumbo.ai.rag.chunking;
 
 import lombok.Data;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 文档切分配置 (Document chunking configuration)
@@ -85,15 +85,15 @@ public class ChunkingConfig {
      */
     public void validate() {
         if (chunkSize <= 0) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.chunk_size_positive"));
+            throw new IllegalArgumentException(I18N.get("error.chunk.chunk_size_positive"));
         }
 
         if (chunkOverlap < 0) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.overlap_non_negative"));
+            throw new IllegalArgumentException(I18N.get("error.chunk.overlap_non_negative"));
         }
 
         if (chunkOverlap >= chunkSize) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.overlap_less_than_size"));
+            throw new IllegalArgumentException(I18N.get("error.chunk.overlap_less_than_size"));
         }
     }
 }

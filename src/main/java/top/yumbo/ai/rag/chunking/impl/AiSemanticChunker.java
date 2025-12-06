@@ -7,7 +7,7 @@ import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class AiSemanticChunker implements DocumentChunker {
         config.validate();
 
         if (!config.getAiChunking().isEnabled()) {
-            log.warn(LogMessageProvider.getMessage("log.chunk.ai_not_enabled"));
+            log.warn(I18N.get("log.chunk.ai_not_enabled"));
         }
     }
 
@@ -56,7 +56,7 @@ public class AiSemanticChunker implements DocumentChunker {
         }
 
         try {
-            log.info(LogMessageProvider.getMessage("log.chunk.ai_start", content.length()));
+            log.info(I18N.get("log.chunk.ai_start", content.length()));
             long startTime = System.currentTimeMillis();
 
             // 构建 Prompt
@@ -69,12 +69,12 @@ public class AiSemanticChunker implements DocumentChunker {
             List<DocumentChunk> chunks = parseChunkingResponse(response, content);
 
             long duration = System.currentTimeMillis() - startTime;
-            log.info(LogMessageProvider.getMessage("log.chunk.ai_completed", content.length(), chunks.size(), duration));
+            log.info(I18N.get("log.chunk.ai_completed", content.length(), chunks.size(), duration));
 
             return chunks;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.chunk.ai_failed"), e);
+            log.error(I18N.get("log.chunk.ai_failed"), e);
             // 失败时降级到智能关键词切分
             return new SmartKeywordChunker(config).chunk(content, query);
         }
@@ -110,7 +110,7 @@ public class AiSemanticChunker implements DocumentChunker {
             return content;
         }
 
-        log.warn(LogMessageProvider.getMessage("log.chunk.truncate_warning", content.length(), maxLength));
+        log.warn(I18N.get("log.chunk.truncate_warning", content.length(), maxLength));
         return content.substring(0, maxLength) + "\n\n[内容过长已截断...]";
     }
 
@@ -126,7 +126,7 @@ public class AiSemanticChunker implements DocumentChunker {
             JsonNode root = objectMapper.readTree(jsonContent);
 
             if (!root.isArray()) {
-                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.expected_json_array", root.getNodeType()));
+                throw new IllegalArgumentException(I18N.get("error.chunk.expected_json_array", root.getNodeType()));
             }
 
             List<DocumentChunk> chunks = new ArrayList<>();
@@ -161,14 +161,14 @@ public class AiSemanticChunker implements DocumentChunker {
             }
 
             if (chunks.isEmpty()) {
-                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.no_valid_chunks"));
+                throw new IllegalArgumentException(I18N.get("error.chunk.no_valid_chunks"));
             }
 
             return chunks;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.chunk.ai_parse_failed", e.getMessage()));
-            throw new RuntimeException(LogMessageProvider.getMessage("log.chunk.ai_parse_failed", e.getMessage()), e);
+            log.error(I18N.get("log.chunk.ai_parse_failed", e.getMessage()));
+            throw new RuntimeException(I18N.get("log.chunk.ai_parse_failed", e.getMessage()), e);
         }
     }
 
@@ -186,7 +186,7 @@ public class AiSemanticChunker implements DocumentChunker {
             end = response.lastIndexOf('}');
 
             if (start == -1 || end == -1 || start >= end) {
-                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.chunk.no_valid_json"));
+                throw new IllegalArgumentException(I18N.get("error.chunk.no_valid_json"));
             }
         }
 

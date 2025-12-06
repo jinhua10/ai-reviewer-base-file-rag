@@ -3,10 +3,9 @@ package top.yumbo.ai.rag.spring.boot.service.parser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.stereotype.Component;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
 import top.yumbo.ai.rag.spring.boot.model.document.SegmentType;
@@ -46,7 +45,7 @@ public class PDFDocumentParser implements DocumentParser {
     public List<DocumentSegment> parse(String documentPath) throws IOException {
         File file = new File(documentPath);
         if (!file.exists()) {
-            throw new IOException(LogMessageProvider.getMessage("pdf_parser.error.file_not_found", documentPath));
+            throw new IOException(I18N.get("pdf_parser.error.file_not_found", documentPath));
         }
 
         List<DocumentSegment> segments = new ArrayList<>();
@@ -54,7 +53,7 @@ public class PDFDocumentParser implements DocumentParser {
         try (PDDocument document = Loader.loadPDF(file)) {
             int totalPages = document.getNumberOfPages();
 
-            log.info(LogMessageProvider.getMessage("pdf_parser.log.parse_file", file.getName(), totalPages));
+            log.info(I18N.get("pdf_parser.log.parse_file", file.getName(), totalPages));
 
             // 创建文档来源信息
             DocumentSource source = DocumentSource.builder()
@@ -81,7 +80,7 @@ public class PDFDocumentParser implements DocumentParser {
                 // 截断过长的内容
                 if (pageText.length() > MAX_CHARS_PER_PAGE) {
                     pageText = pageText.substring(0, MAX_CHARS_PER_PAGE) + "\n" +
-                            LogMessageProvider.getMessage("pdf_parser.error.content_truncated");
+                            I18N.get("pdf_parser.error.content_truncated");
                 }
 
                 DocumentSegment segment = DocumentSegment.builder()
@@ -95,12 +94,12 @@ public class PDFDocumentParser implements DocumentParser {
 
                 segments.add(segment);
 
-                log.debug(LogMessageProvider.getMessage("pdf_parser.log.parse_page", pageNum, title, pageText.length()));
+                log.debug(I18N.get("pdf_parser.log.parse_page", pageNum, title, pageText.length()));
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("pdf_parser.log.parse_failed", documentPath), e);
-            throw new IOException(LogMessageProvider.getMessage("pdf_parser.log.parse_failed", e.getMessage()), e);
+            log.error(I18N.get("pdf_parser.log.parse_failed", documentPath), e);
+            throw new IOException(I18N.get("pdf_parser.log.parse_failed", e.getMessage()), e);
         }
 
         return segments;
@@ -121,7 +120,7 @@ public class PDFDocumentParser implements DocumentParser {
      */
     private String extractPageTitle(String pageText, int pageNum) {
         if (pageText == null || pageText.trim().isEmpty()) {
-            return LogMessageProvider.getMessage("pdf_parser.title.default_page", pageNum);
+            return I18N.get("pdf_parser.title.default_page", pageNum);
         }
 
         // 取第一行非空文本作为标题
@@ -133,7 +132,7 @@ public class PDFDocumentParser implements DocumentParser {
             }
         }
 
-        return LogMessageProvider.getMessage("pdf_parser.title.default_page", pageNum);
+        return I18N.get("pdf_parser.title.default_page", pageNum);
     }
 }
 

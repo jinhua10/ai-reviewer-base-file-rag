@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.spring.boot.service;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 
 /**
@@ -78,7 +78,7 @@ public class SearchConfigService {
             throw new IllegalArgumentException("luceneTopK must be positive");
         }
         runtimeConfig.luceneTopK = luceneTopK;
-        log.info(LogMessageProvider.getMessage("search_config.log.lucene_updated", luceneTopK));
+        log.info(I18N.get("search_config.log.lucene_updated", luceneTopK));
     }
 
     /**
@@ -89,7 +89,7 @@ public class SearchConfigService {
             throw new IllegalArgumentException("vectorTopK must be positive");
         }
         runtimeConfig.vectorTopK = vectorTopK;
-        log.info(LogMessageProvider.getMessage("search_config.log.vector_updated", vectorTopK));
+        log.info(I18N.get("search_config.log.vector_updated", vectorTopK));
     }
 
     /**
@@ -100,7 +100,7 @@ public class SearchConfigService {
             throw new IllegalArgumentException("hybridTopK must be positive");
         }
         runtimeConfig.hybridTopK = hybridTopK;
-        log.info(LogMessageProvider.getMessage("search_config.log.hybrid_updated", hybridTopK));
+        log.info(I18N.get("search_config.log.hybrid_updated", hybridTopK));
     }
 
     /**
@@ -111,7 +111,7 @@ public class SearchConfigService {
             throw new IllegalArgumentException("documentsPerQuery must be positive");
         }
         runtimeConfig.documentsPerQuery = documentsPerQuery;
-        log.info(LogMessageProvider.getMessage("search_config.log.docs_per_query_updated", documentsPerQuery));
+        log.info(I18N.get("search_config.log.docs_per_query_updated", documentsPerQuery));
     }
 
     /**
@@ -122,7 +122,7 @@ public class SearchConfigService {
             throw new IllegalArgumentException("minScoreThreshold must be between 0 and 1");
         }
         runtimeConfig.minScoreThreshold = minScoreThreshold;
-        log.info(LogMessageProvider.getMessage("search_config.log.min_score_updated", minScoreThreshold));
+        log.info(I18N.get("search_config.log.min_score_updated", minScoreThreshold));
     }
 
     /**
@@ -144,7 +144,7 @@ public class SearchConfigService {
         if (update.getMinScoreThreshold() != null) {
             setMinScoreThreshold(update.getMinScoreThreshold());
         }
-        log.info(LogMessageProvider.getMessage("search_config.log.batch_update_complete"));
+        log.info(I18N.get("search_config.log.batch_update_complete"));
     }
 
     /**
@@ -152,7 +152,7 @@ public class SearchConfigService {
      */
     public void resetToDefault() {
         runtimeConfig = new RuntimeConfig();
-        log.info(LogMessageProvider.getMessage("search_config.log.reset_to_default"));
+        log.info(I18N.get("search_config.log.reset_to_default"));
     }
 
     /**

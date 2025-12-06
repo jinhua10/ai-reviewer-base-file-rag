@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.service.DocumentQAService;
 import top.yumbo.ai.rag.spring.boot.service.PPTProgressiveAnalysisService;
 
@@ -101,7 +101,7 @@ public class DocumentQAController {
 
         try {
             String filePath = resolveFilePath(request.getDocumentPath());
-            log.info(LogMessageProvider.getMessage("doc_qa.log.ppt_request",
+            log.info(I18N.get("doc_qa.log.ppt_request",
                 request.getDocumentPath(), filePath, request.getQuestion()));
 
             File pptFile = new File(filePath);
@@ -112,7 +112,7 @@ public class DocumentQAController {
             return ResponseEntity.ok(report);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.ppt_failed"), e);
+            log.error(I18N.get("doc_qa.log.ppt_failed"), e);
 
             PPTProgressiveAnalysisService.PPTAnalysisReport errorReport =
                 new PPTProgressiveAnalysisService.PPTAnalysisReport();
@@ -132,7 +132,7 @@ public class DocumentQAController {
             documentQAService.cleanupSession(sessionId);
             return ResponseEntity.ok("Session temp files cleaned: " + sessionId);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.cleanup_failed"), e);
+            log.error(I18N.get("doc_qa.log.cleanup_failed"), e);
             return ResponseEntity.internalServerError().body("Cleanup failed: " + e.getMessage());
         }
     }

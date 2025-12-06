@@ -11,7 +11,7 @@ import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
 import top.yumbo.ai.rag.model.ScoredDocument;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,7 +62,7 @@ public class HybridSearchService {
 
             // 1. Lucene 关键词检索（快速粗筛）
             String keywords = extractKeywords(expandedQuestion);
-            log.info(LogMessageProvider.getMessage("log.hybrid.extract_keywords", keywords));
+            log.info(I18N.get("log.hybrid.extract_keywords", keywords));
 
             int luceneLimit = configService.getLuceneTopK();
             SearchResult luceneResult = rag.search(Query.builder()
@@ -70,18 +70,18 @@ public class HybridSearchService {
                 .limit(luceneLimit)
                 .build());
 
-            log.info(LogMessageProvider.getMessage("log.hybrid.lucene_found", luceneResult.getDocuments().size(), luceneResult.getTotalHits(), luceneLimit));
+            log.info(I18N.get("log.hybrid.lucene_found", luceneResult.getDocuments().size(), luceneResult.getTotalHits(), luceneLimit));
 
             // 显示 Lucene Top-10（带评分）
             if (!luceneResult.getDocuments().isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.hybrid.lucene_top_header"));
+                log.info(I18N.get("log.hybrid.lucene_top_header"));
                 List<Document> luceneDocs = luceneResult.getDocuments().stream()
                     .map(ScoredDocument::getDocument)
                     .toList();
                 for (int i = 0; i < Math.min(10, luceneDocs.size()); i++) {
                     Document doc = luceneDocs.get(i);
                     double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
-                    log.info(LogMessageProvider.getMessage("log.hybrid.lucene_top_item", i + 1, doc.getTitle(), doc.getContent().length(), normalizedScore));
+                    log.info(I18N.get("log.hybrid.lucene_top_item", i + 1, doc.getTitle(), doc.getContent().length(), normalizedScore));
                 }
             }
 
@@ -93,14 +93,14 @@ public class HybridSearchService {
             List<SimpleVectorIndexEngine.VectorSearchResult> vectorResults =
                 vectorIndexEngine.search(queryVector, vectorLimit, threshold);
 
-            log.info(LogMessageProvider.getMessage("log.hybrid.vector_found", vectorResults.size(), vectorLimit));
+            log.info(I18N.get("log.hybrid.vector_found", vectorResults.size(), vectorLimit));
 
             if (!vectorResults.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.hybrid.vector_top_header"));
+                log.info(I18N.get("log.hybrid.vector_top_header"));
                 vectorResults.stream().limit(10).forEach(result -> {
                     Document doc = rag.getDocument(result.getDocId());
                     if (doc != null) {
-                        log.info(LogMessageProvider.getMessage("log.hybrid.vector_top_item", doc.getTitle(), result.getSimilarity()));
+                        log.info(I18N.get("log.hybrid.vector_top_item", doc.getTitle(), result.getSimilarity()));
                     }
                 });
             }
@@ -134,13 +134,13 @@ public class HybridSearchService {
                 .toList();
 
             if (!allSortedScores.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.hybrid.top5_header", minScore, topK));
+                log.info(I18N.get("log.hybrid.top5_header", minScore, topK));
                 for (int i = 0; i < Math.min(5, allSortedScores.size()); i++) {
                     var entry = allSortedScores.get(i);
                     Document doc = rag.getDocument(entry.getKey());
                     if (doc != null) {
                         String status = entry.getValue() >= minScore ? "✅" : "❌";
-                        log.info(LogMessageProvider.getMessage("log.hybrid.top5_item", status, i + 1, doc.getTitle(), entry.getValue()));
+                        log.info(I18N.get("log.hybrid.top5_item", status, i + 1, doc.getTitle(), entry.getValue()));
                     }
                 }
             }
@@ -151,10 +151,10 @@ public class HybridSearchService {
                 .toList();
 
             if (sortedScores.size() < hybridScores.size()) {
-                log.warn(LogMessageProvider.getMessage("log.hybrid.filtered", hybridScores.size() - sortedScores.size(), minScore, sortedScores.size()));
+                log.warn(I18N.get("log.hybrid.filtered", hybridScores.size() - sortedScores.size(), minScore, sortedScores.size()));
             }
 
-            log.info(LogMessageProvider.getMessage("log.hybrid.topk_header", sortedScores.size()));
+            log.info(I18N.get("log.hybrid.topk_header", sortedScores.size()));
             int displayCount = 0;
             for (int i = 0; i < Math.min(sortedScores.size(), 20); i++) {
                 var entry = sortedScores.get(i);
@@ -176,16 +176,16 @@ public class HybridSearchService {
                         }
                     }
 
-                    log.info(LogMessageProvider.getMessage("log.hybrid.detail_item", i + 1, doc.getTitle(), String.format("%.3f", entry.getValue()), luceneRank > 0 ? luceneRank : "N/A", String.format("%.3f", vectorScore)));
+                    log.info(I18N.get("log.hybrid.detail_item", i + 1, doc.getTitle(), String.format("%.3f", entry.getValue()), luceneRank > 0 ? luceneRank : "N/A", String.format("%.3f", vectorScore)));
                     displayCount++;
                 } else {
-                    log.warn(LogMessageProvider.getMessage("log.hybrid.could_not_get_doc", i + 1, entry.getKey(), String.format("%.3f", entry.getValue())));
+                    log.warn(I18N.get("log.hybrid.could_not_get_doc", i + 1, entry.getKey(), String.format("%.3f", entry.getValue())));
                 }
             }
 
             if (displayCount == 0 && !sortedScores.isEmpty()) {
-                log.error(LogMessageProvider.getMessage("log.hybrid.severe_no_docs", sortedScores.size()));
-                log.error(LogMessageProvider.getMessage("log.hybrid.doc_id_list", sortedScores.stream().limit(5).map(Map.Entry::getKey).collect(Collectors.joining(", "))));
+                log.error(I18N.get("log.hybrid.severe_no_docs", sortedScores.size()));
+                log.error(I18N.get("log.hybrid.doc_id_list", sortedScores.stream().limit(5).map(Map.Entry::getKey).collect(Collectors.joining(", "))));
             }
 
             // 5. 从 RAG 获取完整文档
@@ -198,22 +198,22 @@ public class HybridSearchService {
                 } else {
                     nullCount++;
                     if (nullCount <= 3) { // 只输出前3个null的详细信息
-                        log.warn(LogMessageProvider.getMessage("log.hybrid.cannot_get_doc", entry.getKey(), String.format("%.3f", entry.getValue())));
+                        log.warn(I18N.get("log.hybrid.cannot_get_doc", entry.getKey(), String.format("%.3f", entry.getValue())));
                     }
                 }
             }
 
             if (nullCount > 0) {
-                log.warn(LogMessageProvider.getMessage("log.hybrid.total_nulls", nullCount, sortedScores.size()));
+                log.warn(I18N.get("log.hybrid.total_nulls", nullCount, sortedScores.size()));
             }
 
             long elapsed = System.currentTimeMillis() - startTime;
-            log.info(LogMessageProvider.getMessage("log.hybrid.completed", finalDocs.size(), elapsed));
+            log.info(I18N.get("log.hybrid.completed", finalDocs.size(), elapsed));
 
             return finalDocs;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.hybrid.failed"), e);
+            log.error(I18N.get("log.hybrid.failed"), e);
             return fallbackToKeywordSearch(question, rag);
         }
     }
@@ -223,14 +223,14 @@ public class HybridSearchService {
      */
     public List<Document> keywordSearch(String question, LocalFileRAG rag) {
         String keywords = extractKeywords(question);
-        log.info(LogMessageProvider.getMessage("log.hybrid.keyword_search", keywords));
+        log.info(I18N.get("log.hybrid.keyword_search", keywords));
 
         SearchResult result = rag.search(Query.builder()
             .queryText(keywords)
             .limit(configService.getHybridTopK())
             .build());
 
-        log.info(LogMessageProvider.getMessage("log.hybrid.found_docs", result.getDocuments().size()));
+        log.info(I18N.get("log.hybrid.found_docs", result.getDocuments().size()));
         return result.getDocuments().stream()
             .map(ScoredDocument::getDocument)
             .collect(Collectors.toList());

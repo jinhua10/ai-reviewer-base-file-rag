@@ -1,7 +1,7 @@
 package top.yumbo.ai.rag.image.analyzer;
 
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
@@ -40,12 +40,12 @@ public class AIImageAnalyzer {
      */
     public ExtractedImage analyzeImage(ExtractedImage image) {
         if (!enabled || llmClient == null) {
-            log.debug(LogMessageProvider.getMessage("log.image.ai.disabled"));
+            log.debug(I18N.get("log.image.ai.disabled"));
             return image;
         }
 
         try {
-            log.info(LogMessageProvider.getMessage("log.image.ai.analyzing", image.getOriginalName()));
+            log.info(I18N.get("log.image.ai.analyzing", image.getOriginalName()));
 
             // 构建分析 Prompt（Build analysis prompt）
             String prompt = buildAnalysisPrompt(image);
@@ -57,13 +57,13 @@ public class AIImageAnalyzer {
             // 解析分析结果（Parse analysis results）
             parseAnalysisResult(image, analysis);
 
-            log.info(LogMessageProvider.getMessage("log.image.ai.completed", image.getImageType(),
+            log.info(I18N.get("log.image.ai.completed", image.getImageType(),
                     image.getAiDescription() != null ? image.getAiDescription().substring(0, Math.min(50, image.getAiDescription().length())) : "N/A"));
 
             return image;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.ai.failed", image.getOriginalName()), e);
+            log.error(I18N.get("log.image.ai.failed", image.getOriginalName()), e);
             // 返回原图片，不中断流程（Return original image, do not interrupt process）
             return image;
         }
@@ -77,7 +77,7 @@ public class AIImageAnalyzer {
             return images;
         }
 
-        log.info(LogMessageProvider.getMessage("log.image.ai.batch_start", images.size()));
+        log.info(I18N.get("log.image.ai.batch_start", images.size()));
 
         for (ExtractedImage image : images) {
             analyzeImage(image);
@@ -140,7 +140,7 @@ public class AIImageAnalyzer {
             return response;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.ai.llm_failed"), e);
+            log.error(I18N.get("log.image.ai.llm_failed"), e);
             throw e;
         }
     }
@@ -194,7 +194,7 @@ public class AIImageAnalyzer {
             }
 
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.image.ai.parse_failed"), e);
+            log.warn(I18N.get("log.image.ai.parse_failed"), e);
 
             // 使用原始响应（截断）（Use raw response (truncated)）
             String desc = analysis.length() > 200 ? analysis.substring(0, 200) : analysis;
@@ -235,7 +235,7 @@ public class AIImageAnalyzer {
             image.setAiDescription(desc);
 
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.image.ai.simple_failed"), e);
+            log.warn(I18N.get("log.image.ai.simple_failed"), e);
         }
 
         return image;

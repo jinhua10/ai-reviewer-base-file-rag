@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.service.LocalFileRAG;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * LocalFileRAG 自动配置（LocalFileRAG Auto-configuration）
@@ -43,10 +43,10 @@ public class LocalFileRAGAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public LocalFileRAG localFileRAG() {
-        log.info(LogMessageProvider.getMessage("log.rag.init"));
-        log.info(LogMessageProvider.getMessage("log.rag.storage", properties.getStoragePath()));
-        log.info(LogMessageProvider.getMessage("log.rag.enable_cache", properties.isEnableCache()));
-        log.info(LogMessageProvider.getMessage("log.rag.enable_compression", properties.isEnableCompression()));
+        log.info(I18N.get("log.rag.init"));
+        log.info(I18N.get("log.rag.storage", properties.getStoragePath()));
+        log.info(I18N.get("log.rag.enable_cache", properties.isEnableCache()));
+        log.info(I18N.get("log.rag.enable_compression", properties.isEnableCompression()));
 
         LocalFileRAG rag = LocalFileRAG.builder()
             .storagePath(properties.getStoragePath())
@@ -54,7 +54,7 @@ public class LocalFileRAGAutoConfiguration {
             .enableCompression(properties.isEnableCompression())
             .build();
 
-        log.info(LogMessageProvider.getMessage("log.rag.init_done"));
+        log.info(I18N.get("log.rag.init_done"));
 
         return rag;
     }
@@ -65,11 +65,11 @@ public class LocalFileRAGAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SimpleRAGService simpleRAGService(LocalFileRAG rag) {
-        log.info(LogMessageProvider.getMessage("log.rag.simple_init"));
+        log.info(I18N.get("log.rag.simple_init"));
 
         SimpleRAGService service = new SimpleRAGService(rag, properties);
 
-        log.info(LogMessageProvider.getMessage("log.rag.simple_init_done"));
+        log.info(I18N.get("log.rag.simple_init_done"));
 
         return service;
     }

@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.impl.parser.image;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 图片位置信息（Image Position Info）
@@ -71,32 +71,32 @@ public class ImagePositionInfo {
      */
     public String getPositionDescription() {
         if (width == 0 && height == 0) {
-            return LogMessageProvider.getMessage("log.imageproc.position.simple_desc",
+            return I18N.get("log.imageproc.position.simple_desc",
                 index + 1, imageName);
         }
 
         // 简化的位置描述
         String verticalPos;
         if (y < 200) {
-            verticalPos = LogMessageProvider.getMessage("log.imageproc.position.top");
+            verticalPos = I18N.get("log.imageproc.position.top");
         } else if (y > 400) {
-            verticalPos = LogMessageProvider.getMessage("log.imageproc.position.bottom");
+            verticalPos = I18N.get("log.imageproc.position.bottom");
         } else {
-            verticalPos = LogMessageProvider.getMessage("log.imageproc.position.middle");
+            verticalPos = I18N.get("log.imageproc.position.middle");
         }
 
         String horizontalPos;
         if (x < 200) {
-            horizontalPos = LogMessageProvider.getMessage("log.imageproc.position.left");
+            horizontalPos = I18N.get("log.imageproc.position.left");
         } else if (x > 400) {
-            horizontalPos = LogMessageProvider.getMessage("log.imageproc.position.right");
+            horizontalPos = I18N.get("log.imageproc.position.right");
         } else {
-            horizontalPos = LogMessageProvider.getMessage("log.imageproc.position.center");
+            horizontalPos = I18N.get("log.imageproc.position.center");
         }
 
         String position = verticalPos + horizontalPos;
 
-        return LogMessageProvider.getMessage("log.imageproc.position.full_desc",
+        return I18N.get("log.imageproc.position.full_desc",
             index + 1, imageName, position,
             String.format("%.0f", x), String.format("%.0f", y),
             String.format("%.0f", width), String.format("%.0f", height));
@@ -113,13 +113,13 @@ public class ImagePositionInfo {
         if (Math.abs(dx) > Math.abs(dy)) {
             // 水平关系更明显
             return dx > 0 ?
-                LogMessageProvider.getMessage("log.imageproc.position.right") :
-                LogMessageProvider.getMessage("log.imageproc.position.left");
+                I18N.get("log.imageproc.position.right") :
+                I18N.get("log.imageproc.position.left");
         } else {
             // 垂直关系更明显
             return dy > 0 ?
-                LogMessageProvider.getMessage("log.imageproc.position.bottom") :
-                LogMessageProvider.getMessage("log.imageproc.position.top");
+                I18N.get("log.imageproc.position.bottom") :
+                I18N.get("log.imageproc.position.top");
         }
     }
 }

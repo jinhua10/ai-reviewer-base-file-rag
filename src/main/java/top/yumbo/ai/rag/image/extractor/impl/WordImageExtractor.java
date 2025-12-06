@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class WordImageExtractor implements DocumentImageExtractor {
         List<ExtractedImage> images = new ArrayList<>();
 
         try (XWPFDocument document = new XWPFDocument(documentStream)) {
-            log.info(LogMessageProvider.getMessage("log.image.word.processing", documentName));
+            log.info(I18N.get("log.image.word.processing", documentName));
 
             int position = 1;
 
@@ -59,7 +59,7 @@ public class WordImageExtractor implements DocumentImageExtractor {
                 }
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.word.extracted", images.size(), documentName));
+            log.info(I18N.get("log.image.word.extracted", images.size(), documentName));
         }
 
         return images;
@@ -102,14 +102,14 @@ public class WordImageExtractor implements DocumentImageExtractor {
 
                         images.add(extractedImage);
 
-                        log.debug(LogMessageProvider.getMessage("log.image.word.found", pictureData.getFileName(), data.length / 1024));
+                        log.debug(I18N.get("log.image.word.found", pictureData.getFileName(), data.length / 1024));
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("log.image.word.extract_failed"), e);
+                        log.warn(I18N.get("log.image.word.extract_failed"), e);
                     }
                 }
             }
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.word.process_failed"), e);
+            log.error(I18N.get("log.image.word.process_failed"), e);
         }
 
         return images;

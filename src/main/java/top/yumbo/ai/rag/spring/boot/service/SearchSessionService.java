@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.model.Document;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -48,7 +48,7 @@ public class SearchSessionService {
 
         sessions.put(sessionId, session);
 
-        log.info(LogMessageProvider.getMessage("log.session.create", sessionId, allDocuments.size(), documentsPerQuery));
+        log.info(I18N.get("log.session.create", sessionId, allDocuments.size(), documentsPerQuery));
 
         // 清理过期会话
         cleanExpiredSessions();
@@ -78,14 +78,14 @@ public class SearchSessionService {
 
         int nextOffset = session.getCurrentOffset() + session.getDocumentsPerQuery();
         if (nextOffset >= session.getAllDocuments().size()) {
-            log.warn(LogMessageProvider.getMessage("log.session.no_next", sessionId));
+            log.warn(I18N.get("log.session.no_next", sessionId));
             return getDocumentsAtOffset(session, session.getCurrentOffset());
         }
 
         session.setCurrentOffset(nextOffset);
         session.setLastAccessTime(LocalDateTime.now());
 
-        log.info(LogMessageProvider.getMessage("log.session.next", sessionId, nextOffset));
+        log.info(I18N.get("log.session.next", sessionId, nextOffset));
 
         return getDocumentsAtOffset(session, nextOffset);
     }
@@ -101,14 +101,14 @@ public class SearchSessionService {
 
         int prevOffset = Math.max(0, session.getCurrentOffset() - session.getDocumentsPerQuery());
         if (prevOffset == session.getCurrentOffset()) {
-            log.warn(LogMessageProvider.getMessage("log.session.no_prev", sessionId));
+            log.warn(I18N.get("log.session.no_prev", sessionId));
             return getDocumentsAtOffset(session, session.getCurrentOffset());
         }
 
         session.setCurrentOffset(prevOffset);
         session.setLastAccessTime(LocalDateTime.now());
 
-        log.info(LogMessageProvider.getMessage("log.session.prev", sessionId, prevOffset));
+        log.info(I18N.get("log.session.prev", sessionId, prevOffset));
 
         return getDocumentsAtOffset(session, prevOffset);
     }
@@ -124,19 +124,19 @@ public class SearchSessionService {
         SearchSession session = getSession(sessionId);
 
         if (page < 1) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("log.session.invalid_page"));
+            throw new IllegalArgumentException(I18N.get("log.session.invalid_page"));
         }
 
         int offset = (page - 1) * session.getDocumentsPerQuery();
         if (offset >= session.getAllDocuments().size()) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("log.session.page_out_of_range",
+            throw new IllegalArgumentException(I18N.get("log.session.page_out_of_range",
                 page, getTotalPages(session)));
         }
 
         session.setCurrentOffset(offset);
         session.setLastAccessTime(LocalDateTime.now());
 
-        log.info(LogMessageProvider.getMessage("log.session.goto_page", page, sessionId, offset));
+        log.info(I18N.get("log.session.goto_page", page, sessionId, offset));
 
         return getDocumentsAtOffset(session, offset);
     }
@@ -168,7 +168,7 @@ public class SearchSessionService {
      */
     public void deleteSession(String sessionId) {
         sessions.remove(sessionId);
-        log.info(LogMessageProvider.getMessage("log.session.deleted", sessionId));
+        log.info(I18N.get("log.session.deleted", sessionId));
     }
 
     /**
@@ -186,11 +186,11 @@ public class SearchSessionService {
 
         expiredSessions.forEach(id -> {
             sessions.remove(id);
-            log.info(LogMessageProvider.getMessage("log.session.cleaned", id));
+            log.info(I18N.get("log.session.cleaned", id));
         });
 
         if (!expiredSessions.isEmpty()) {
-            log.info(LogMessageProvider.getMessage("log.session.cleaned_count", expiredSessions.size()));
+            log.info(I18N.get("log.session.cleaned_count", expiredSessions.size()));
         }
     }
 
@@ -199,7 +199,7 @@ public class SearchSessionService {
     private SearchSession getSession(String sessionId) {
         SearchSession session = sessions.get(sessionId);
         if (session == null) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("log.session.not_found", sessionId));
+            throw new IllegalArgumentException(I18N.get("log.session.not_found", sessionId));
         }
         return session;
     }

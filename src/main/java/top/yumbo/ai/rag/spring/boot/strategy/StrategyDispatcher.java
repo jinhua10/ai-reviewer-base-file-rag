@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.spring.boot.strategy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import jakarta.annotation.PostConstruct;
 import java.util.*;
@@ -45,16 +45,16 @@ public class StrategyDispatcher {
      */
     @PostConstruct
     public void init() {
-        log.info(LogMessageProvider.getMessage("strategy.dispatcher.log.init_start"));
+        log.info(I18N.get("strategy.dispatcher.log.init_start"));
 
         for (MultiDocAnalysisStrategy strategy : strategies) {
             strategyMap.put(strategy.getId(), strategy);
             strategyStats.put(strategy.getId(), new StrategyStats());
-            log.info(LogMessageProvider.getMessage("strategy.dispatcher.log.strategy_registered",
+            log.info(I18N.get("strategy.dispatcher.log.strategy_registered",
                     strategy.getId(), strategy.getName()));
         }
 
-        log.info(LogMessageProvider.getMessage("strategy.dispatcher.log.init_complete", strategyMap.size()));
+        log.info(I18N.get("strategy.dispatcher.log.init_complete", strategyMap.size()));
     }
 
     /**
@@ -74,11 +74,11 @@ public class StrategyDispatcher {
         List<MultiDocAnalysisStrategy> selectedStrategies = selectStrategies(context);
 
         if (selectedStrategies.isEmpty()) {
-            log.warn(LogMessageProvider.getMessage("strategy.dispatcher.log.no_suitable_strategy"));
-            return AnalysisResult.failure(LogMessageProvider.getMessage("strategy.dispatcher.log.no_suitable_strategy"));
+            log.warn(I18N.get("strategy.dispatcher.log.no_suitable_strategy"));
+            return AnalysisResult.failure(I18N.get("strategy.dispatcher.log.no_suitable_strategy"));
         }
 
-        log.info(LogMessageProvider.getMessage("strategy.dispatcher.log.selected_strategies",
+        log.info(I18N.get("strategy.dispatcher.log.selected_strategies",
                 selectedStrategies.stream().map(MultiDocAnalysisStrategy::getId).toList()));
 
         // 执行策略（Execute strategies）
@@ -117,8 +117,8 @@ public class StrategyDispatcher {
                 .collect(Collectors.toList());
 
         if (selectedStrategies.isEmpty()) {
-            log.warn(LogMessageProvider.getMessage("strategy.dispatcher.log.no_suitable_strategy") + ": {}", strategyIds);
-            return AnalysisResult.failure(LogMessageProvider.getMessage("strategy.dispatcher.log.no_suitable_strategy") + ": " + strategyIds);
+            log.warn(I18N.get("strategy.dispatcher.log.no_suitable_strategy") + ": {}", strategyIds);
+            return AnalysisResult.failure(I18N.get("strategy.dispatcher.log.no_suitable_strategy") + ": " + strategyIds);
         }
 
         if (selectedStrategies.size() == 1) {
@@ -152,7 +152,7 @@ public class StrategyDispatcher {
                     scores.add(new StrategyScore(strategy, adjustedScore));
                 }
             } catch (Exception e) {
-                log.warn(LogMessageProvider.getMessage("strategy.dispatcher.log.evaluate_failed",
+                log.warn(I18N.get("strategy.dispatcher.log.evaluate_failed",
                         strategy.getId(), e.getMessage()));
             }
         }
@@ -191,7 +191,7 @@ public class StrategyDispatcher {
             AnalysisContext context,
             ProgressCallback callback) {
 
-        log.info(LogMessageProvider.getMessage("strategy.dispatcher.log.executing_single", strategy.getId()));
+        log.info(I18N.get("strategy.dispatcher.log.executing_single", strategy.getId()));
         return strategy.analyze(context, callback);
     }
 
@@ -203,7 +203,7 @@ public class StrategyDispatcher {
             AnalysisContext context,
             ProgressCallback callback) {
 
-        log.info(LogMessageProvider.getMessage("strategy.dispatcher.log.executing_combined",
+        log.info(I18N.get("strategy.dispatcher.log.executing_combined",
                 strategies.stream().map(MultiDocAnalysisStrategy::getId).toList()));
 
         List<AnalysisResult> results = new ArrayList<>();
@@ -226,7 +226,7 @@ public class StrategyDispatcher {
         }
 
         // 合并结果（Merge results）
-        callback.onProgress(90, LogMessageProvider.getMessage("strategy.dispatcher.log.merging_results"));
+        callback.onProgress(90, I18N.get("strategy.dispatcher.log.merging_results"));
         return mergeResults(results, strategies);
     }
 

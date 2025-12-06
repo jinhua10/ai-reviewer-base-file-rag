@@ -4,7 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -50,11 +50,11 @@ public class FileTrackingService {
                     new com.alibaba.fastjson2.TypeReference<Map<String, FileInfo>>() {});
                 if (loaded != null) {
                     fileTracking.putAll(loaded);
-                    log.info(LogMessageProvider.getMessage("log.filetracking.loaded", fileTracking.size()));
+                    log.info(I18N.get("log.filetracking.loaded", fileTracking.size()));
                 }
             }
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.filetracking.load_failed", e.getMessage()));
+            log.warn(I18N.get("log.filetracking.load_failed", e.getMessage()));
         }
     }
 
@@ -67,9 +67,9 @@ public class FileTrackingService {
             Files.createDirectories(path.getParent());
             String content = JSON.toJSONString(fileTracking);
             Files.writeString(path, content);
-            log.debug(LogMessageProvider.getMessage("log.filetracking.saved", fileTracking.size()));
+            log.debug(I18N.get("log.filetracking.saved", fileTracking.size()));
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.filetracking.save_failed", e.getMessage()), e);
+            log.error(I18N.get("log.filetracking.save_failed", e.getMessage()), e);
         }
     }
 
@@ -96,7 +96,7 @@ public class FileTrackingService {
             return info.lastModified != lastModified || info.fileSize != fileSize;
 
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.filetracking.check_failed", file.getName()), e);
+            log.warn(I18N.get("log.filetracking.check_failed", file.getName()), e);
             return true; // 出错时默认更新
         }
     }
@@ -118,7 +118,7 @@ public class FileTrackingService {
 
             fileTracking.put(absolutePath, info);
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.filetracking.mark_failed", file.getName()), e);
+            log.warn(I18N.get("log.filetracking.mark_failed", file.getName()), e);
         }
     }
 
@@ -139,9 +139,9 @@ public class FileTrackingService {
         try {
             Path path = Paths.get(trackingFilePath);
             Files.deleteIfExists(path);
-            log.info(LogMessageProvider.getMessage("log.filetracking.cleared"));
+            log.info(I18N.get("log.filetracking.cleared"));
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.filetracking.clear_failed", e.getMessage()), e);
+            log.warn(I18N.get("log.filetracking.clear_failed", e.getMessage()), e);
         }
     }
 

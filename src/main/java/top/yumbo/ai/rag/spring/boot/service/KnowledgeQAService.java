@@ -13,7 +13,7 @@ import top.yumbo.ai.rag.impl.embedding.LocalEmbeddingEngine;
 import top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.optimization.SmartContextBuilder;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -87,9 +87,9 @@ public class KnowledgeQAService {
      */
     @PostConstruct
     public void initialize() {
-        log.info(LogMessageProvider.getMessage("log.kqa.sep"));
-        log.info(LogMessageProvider.getMessage("log.kqa.init_start"));
-        log.info(LogMessageProvider.getMessage("log.kqa.sep"));
+        log.info(I18N.get("log.kqa.sep"));
+        log.info(I18N.get("log.kqa.init_start"));
+        log.info(I18N.get("log.kqa.sep"));
 
         try {
             // 1. 初始化知识库
@@ -104,13 +104,13 @@ public class KnowledgeQAService {
             // 4. 创建问答系统
             createQASystem();
 
-            log.info(LogMessageProvider.getMessage("log.kqa.sep"));
-            log.info(LogMessageProvider.getMessage("log.kqa.init_done"));
-            log.info(LogMessageProvider.getMessage("log.kqa.sep"));
+            log.info(I18N.get("log.kqa.sep"));
+            log.info(I18N.get("log.kqa.init_done"));
+            log.info(I18N.get("log.kqa.sep"));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kqa.init_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.init_failed"), e);
+            log.error(I18N.get("log.kqa.init_failed"), e);
+            throw new RuntimeException(I18N.get("log.kqa.init_failed"), e);
         }
     }
 
@@ -118,29 +118,29 @@ public class KnowledgeQAService {
      * 初始化知识库
      */
     private void initializeKnowledgeBase() {
-        log.info(LogMessageProvider.getMessage("log.kqa.step", 1, LogMessageProvider.getMessage("log.kqa.init_kb")));
+        log.info(I18N.get("log.kqa.step", 1, I18N.get("log.kqa.init_kb")));
 
         String storagePath = properties.getKnowledgeBase().getStoragePath();
         String sourcePath = properties.getKnowledgeBase().getSourcePath();
         boolean rebuildOnStartup = properties.getKnowledgeBase().isRebuildOnStartup();
 
-        log.info(LogMessageProvider.getMessage("log.kqa.storage_path", storagePath));
-        log.info(LogMessageProvider.getMessage("log.kqa.source_path", sourcePath));
+        log.info(I18N.get("log.kqa.storage_path", storagePath));
+        log.info(I18N.get("log.kqa.source_path", sourcePath));
 
         BuildResult buildResult;
         if (rebuildOnStartup) {
-            log.info(LogMessageProvider.getMessage("log.kqa.rebuild_mode"));
+            log.info(I18N.get("log.kqa.rebuild_mode"));
             buildResult = buildKnowledgeBaseWithRebuild(sourcePath, storagePath);
         } else {
-            log.info(LogMessageProvider.getMessage("log.kqa.incremental_mode"));
+            log.info(I18N.get("log.kqa.incremental_mode"));
             buildResult = buildKnowledgeBaseIncremental(sourcePath, storagePath);
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.build_complete"));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.total_files", buildResult.getTotalFiles()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.processed_files", buildResult.getSuccessCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.failed_files", buildResult.getFailedCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.total_documents", buildResult.getTotalDocuments()));
+        log.info(I18N.get("knowledge_qa_service.log.build_complete"));
+        log.info(I18N.get("knowledge_qa_service.log.total_files", buildResult.getTotalFiles()));
+        log.info(I18N.get("knowledge_qa_service.log.processed_files", buildResult.getSuccessCount()));
+        log.info(I18N.get("knowledge_qa_service.log.failed_files", buildResult.getFailedCount()));
+        log.info(I18N.get("knowledge_qa_service.log.total_documents", buildResult.getTotalDocuments()));
 
         // 连接到知识库 / Connect to knowledge base
         rag = LocalFileRAG.builder()
@@ -149,21 +149,21 @@ public class KnowledgeQAService {
                 .build();
 
         var stats = rag.getStatistics();
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.kb_ready"));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.document_count", stats.getDocumentCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.index_count", stats.getIndexedDocumentCount()));
+        log.info(I18N.get("knowledge_qa_service.log.kb_ready"));
+        log.info(I18N.get("knowledge_qa_service.log.document_count", stats.getDocumentCount()));
+        log.info(I18N.get("knowledge_qa_service.log.index_count", stats.getIndexedDocumentCount()));
     }
 
     private BuildResult buildKnowledgeBaseWithRebuild(String sourcePath, String storagePath) {
         BuildResult buildResult = knowledgeBaseService.buildKnowledgeBase(sourcePath, storagePath, true);
         if (buildResult.getError() != null) {
-            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.build_failed", buildResult.getError()));
+            throw new RuntimeException(I18N.get("log.kqa.build_failed", buildResult.getError()));
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.total_files", buildResult.getTotalFiles()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.processed_files", buildResult.getSuccessCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.failed_files", buildResult.getFailedCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.total_documents", buildResult.getTotalDocuments()));
+        log.info(I18N.get("knowledge_qa_service.log.total_files", buildResult.getTotalFiles()));
+        log.info(I18N.get("knowledge_qa_service.log.processed_files", buildResult.getSuccessCount()));
+        log.info(I18N.get("knowledge_qa_service.log.failed_files", buildResult.getFailedCount()));
+        log.info(I18N.get("knowledge_qa_service.log.total_documents", buildResult.getTotalDocuments()));
 
         // RAG 实例将在 initializeKnowledgeBase() 方法末尾统一创建 / RAG instance will be created at the end of initializeKnowledgeBase() method
         return buildResult;
@@ -172,14 +172,14 @@ public class KnowledgeQAService {
     private BuildResult buildKnowledgeBaseIncremental(String sourcePath, String storagePath) {
         BuildResult buildResult = knowledgeBaseService.buildKnowledgeBaseWithIncrementalIndex(sourcePath, storagePath);
         if (buildResult.getError() != null) {
-            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.build_failed", buildResult.getError()));
+            throw new RuntimeException(I18N.get("log.kqa.build_failed", buildResult.getError()));
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.build_complete"));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.total_files", buildResult.getTotalFiles()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.processed_files", buildResult.getSuccessCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.failed_files", buildResult.getFailedCount()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.total_documents", buildResult.getTotalDocuments()));
+        log.info(I18N.get("knowledge_qa_service.log.build_complete"));
+        log.info(I18N.get("knowledge_qa_service.log.total_files", buildResult.getTotalFiles()));
+        log.info(I18N.get("knowledge_qa_service.log.processed_files", buildResult.getSuccessCount()));
+        log.info(I18N.get("knowledge_qa_service.log.failed_files", buildResult.getFailedCount()));
+        log.info(I18N.get("knowledge_qa_service.log.total_documents", buildResult.getTotalDocuments()));
 
         // RAG 实例将在 initializeKnowledgeBase() 方法末尾统一创建 / RAG instance will be created at the end of initializeKnowledgeBase() method
         return buildResult;
@@ -190,19 +190,19 @@ public class KnowledgeQAService {
      */
     private void initializeVectorSearch() {
         if (!properties.getVectorSearch().isEnabled()) {
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_disabled"));
+            log.info(I18N.get("knowledge_qa_service.log.vector_disabled"));
             return;
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.init_vector_engine", ""));
+        log.info(I18N.get("knowledge_qa_service.log.init_vector_engine", ""));
 
         try {
             // 初始化嵌入引擎 / Initialize embedding engine
             embeddingEngine = new LocalEmbeddingEngine(properties.getVectorSearch().getModel().getPath());
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_engine_loaded", embeddingEngine.getModelName()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_model", embeddingEngine.getModelName()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_dimension", embeddingEngine.getEmbeddingDim()));
+            log.info(I18N.get("knowledge_qa_service.log.vector_engine_loaded", embeddingEngine.getModelName()));
+            log.info(I18N.get("knowledge_qa_service.log.vector_model", embeddingEngine.getModelName()));
+            log.info(I18N.get("knowledge_qa_service.log.vector_dimension", embeddingEngine.getEmbeddingDim()));
 
             // 加载向量索引 / Load vector index
             String indexPath = properties.getVectorSearch().getIndexPath();
@@ -211,19 +211,19 @@ public class KnowledgeQAService {
                     embeddingEngine.getEmbeddingDim()
             );
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_index_loaded", vectorIndexEngine.size()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_index_path", indexPath));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.vector_count", vectorIndexEngine.size()));
+            log.info(I18N.get("knowledge_qa_service.log.vector_index_loaded", vectorIndexEngine.size()));
+            log.info(I18N.get("knowledge_qa_service.log.vector_index_path", indexPath));
+            log.info(I18N.get("knowledge_qa_service.log.vector_count", vectorIndexEngine.size()));
 
         } catch (OrtException | IOException e) {
-            log.error(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
+            log.error(I18N.get("log.kb.vector_init_failed"), e);
             log.warn("⚠️ 向量搜索初始化失败，系统将仅使用文本搜索功能（Vector search initialization failed, system will use text search only）");
             log.warn("💡 提示：embedding 模型文件不完整或损坏（Hint: embedding model file is incomplete or corrupted）");
             log.warn("📝 解决方案：");
             log.warn("   1. 在 application.yml 中设置 knowledge.qa.vector-search.enabled: false");
             log.warn("   2. 或下载完整的 ONNX 模型文件（包含 .onnx 和 .onnx_data 文件）");
-            log.warn(LogMessageProvider.getMessage("knowledge_qa_service.model_download_hint"));
-            log.warn(LogMessageProvider.getMessage("knowledge_qa_service.model_doc_hint"));
+            log.warn(I18N.get("knowledge_qa_service.model_download_hint"));
+            log.warn(I18N.get("knowledge_qa_service.model_doc_hint"));
             embeddingEngine = null;
             vectorIndexEngine = null;
             // 不抛出异常，允许系统继续运行（只使用文本搜索）
@@ -234,20 +234,20 @@ public class KnowledgeQAService {
      * 初始化LLM客户端 / Initialize LLM client
      */
     private void initializeLLMClient() {
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.init_llm"));
+        log.info(I18N.get("knowledge_qa_service.log.init_llm"));
 
         String provider = properties.getLlm().getProvider();
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.llm_provider", provider));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.llm_client_type", llmClient.getClass().getSimpleName()));
+        log.info(I18N.get("knowledge_qa_service.log.llm_provider", provider));
+        log.info(I18N.get("knowledge_qa_service.log.llm_client_type", llmClient.getClass().getSimpleName()));
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.llm_client_ready"));
+        log.info(I18N.get("knowledge_qa_service.log.llm_client_ready"));
     }
 
     /**
      * 创建问答系统 / Create QA system
      */
     private void createQASystem() {
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.create_qa_system"));
+        log.info(I18N.get("knowledge_qa_service.log.create_qa_system"));
 
         // 获取切分策略配置 / Get chunking strategy configuration
         String strategyName = properties.getLlm().getChunkingStrategy();
@@ -265,22 +265,22 @@ public class KnowledgeQAService {
             chunkStorageService  // 传递块存储服务 / Pass chunk storage service
         );
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.smart_context_initialized",
+        log.info(I18N.get("knowledge_qa_service.log.smart_context_initialized",
             properties.getLlm().getMaxContextLength(), properties.getLlm().getMaxDocLength()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.chunking_strategy", strategy, strategy.getDescription()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.chunk_size_chars", properties.getLlm().getChunking().getChunkSize()));
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.chunk_overlap_chars", properties.getLlm().getChunking().getChunkOverlap()));
+        log.info(I18N.get("knowledge_qa_service.log.chunking_strategy", strategy, strategy.getDescription()));
+        log.info(I18N.get("knowledge_qa_service.log.chunk_size_chars", properties.getLlm().getChunking().getChunkSize()));
+        log.info(I18N.get("knowledge_qa_service.log.chunk_overlap_chars", properties.getLlm().getChunking().getChunkOverlap()));
 
         if (strategy == top.yumbo.ai.rag.chunking.ChunkingStrategy.AI_SEMANTIC
             && properties.getLlm().getChunking().getAiChunking().isEnabled()) {
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.ai_chunking_enabled",
+            log.info(I18N.get("knowledge_qa_service.log.ai_chunking_enabled",
                 properties.getLlm().getChunking().getAiChunking().getModel()));
         }
 
         if (embeddingEngine != null && vectorIndexEngine != null) {
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.using_vector_enhancement"));
+            log.info(I18N.get("knowledge_qa_service.log.using_vector_enhancement"));
         } else {
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.log.using_keyword_mode"));
+            log.info(I18N.get("knowledge_qa_service.log.using_keyword_mode"));
         }
     }
 
@@ -292,25 +292,25 @@ public class KnowledgeQAService {
      */
     public AIAnswer ask(String question) {
         if (rag == null || llmClient == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.system_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.system_not_initialized"));
         }
 
         long startTime = System.currentTimeMillis();
 
         try {
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.question_separator"));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.question_prompt", question));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.separator"));
+            log.info(I18N.get("knowledge_qa_service.question_separator"));
+            log.info(I18N.get("knowledge_qa_service.question_prompt", question));
+            log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 步骤0: 搜索相似问题（在检索文档之前）/ Step 0: Search for similar questions (before retrieving documents)
             List<SimilarQAService.SimilarQA> similarQuestions = null;
             try {
                 similarQuestions = similarQAService.findSimilar(question, 30, 3);  // minScore=30, limit=3
                 if (!similarQuestions.isEmpty()) {
-                    log.info(LogMessageProvider.getMessage("knowledge_qa_service.similar_found", similarQuestions.size()));
+                    log.info(I18N.get("knowledge_qa_service.similar_found", similarQuestions.size()));
                 }
             } catch (Exception e) {
-                log.warn(LogMessageProvider.getMessage("knowledge_qa_service.similar_question_failed", e.getMessage()));
+                log.warn(I18N.get("knowledge_qa_service.similar_question_failed", e.getMessage()));
             }
 
             // 步骤1: 检索相关文档 / Step 1: Retrieve relevant documents
@@ -319,11 +319,11 @@ public class KnowledgeQAService {
             if (embeddingEngine != null && vectorIndexEngine != null) {
                 // 使用混合检索 / Use hybrid search
                 documents = hybridSearchService.hybridSearch(question, rag, embeddingEngine, vectorIndexEngine);
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.using_hybrid_search"));
+                log.info(I18N.get("knowledge_qa_service.using_hybrid_search"));
             } else {
                 // 使用纯关键词检索 / Use pure keyword search
                 documents = hybridSearchService.keywordSearch(question, rag);
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.using_keyword_search"));
+                log.info(I18N.get("knowledge_qa_service.using_keyword_search"));
             }
 
             // 步骤1.5: PPL Rerank（如果启用）/ Step 1.5: PPL Rerank (if enabled)
@@ -361,17 +361,17 @@ public class KnowledgeQAService {
                 documents = firstBatch.getDocuments();
                 hasMoreDocs = firstBatch.isHasNext();
 
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.create_session",
+                log.info(I18N.get("knowledge_qa_service.create_session",
                     sessionId, totalDocs, documents.size(), firstBatch.getRemainingDocuments()));
             }
 
             if (totalDocs > docsPerQuery) {
-                log.warn(LogMessageProvider.getMessage("knowledge_qa_service.too_many_docs_retrieved",
+                log.warn(I18N.get("knowledge_qa_service.too_many_docs_retrieved",
                         totalDocs, docsPerQuery));
 
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.remaining_docs_unprocessed", remainingDocs.size()));
+                log.info(I18N.get("knowledge_qa_service.remaining_docs_unprocessed", remainingDocs.size()));
             } else {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.retrieved_all", totalDocs));
+                log.info(I18N.get("knowledge_qa_service.retrieved_all", totalDocs));
             }
 
             // 步骤2: 构建智能上下文 / Step 2: Build smart context
@@ -382,7 +382,7 @@ public class KnowledgeQAService {
             }
 
             String context = contextBuilder.buildSmartContext(question, documents);
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
+            log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
             // 步骤3: 收集可用的图片信息
             List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
@@ -396,26 +396,26 @@ public class KnowledgeQAService {
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
 
-                        imageContext.append(LogMessageProvider.getMessage("knowledge_qa_service.available_images", doc.getTitle()));
+                        imageContext.append(I18N.get("knowledge_qa_service.available_images", doc.getTitle()));
                         for (int i = 0; i < Math.min(docImages.size(), 5); i++) { // 最多列出 5 张图片 / List up to 5 images
                             top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
-                                : LogMessageProvider.getMessage("knowledge_qa_service.related_image");
+                                : I18N.get("knowledge_qa_service.related_image");
                             // 格式：图片 1：描述（来源：URL）![描述](URL)
                             imageContext.append("\n  ")
-                                       .append(LogMessageProvider.getMessage("knowledge_qa_service.image_item",
+                                       .append(I18N.get("knowledge_qa_service.image_item",
                                            i + 1, imgDesc, img.getUrl()))
                                        .append(" ")
                                        .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
                         }
                         if (docImages.size() > 5) {
-                            imageContext.append("\n  ").append(LogMessageProvider.getMessage("knowledge_qa_service.more_images", docImages.size() - 5));
+                            imageContext.append("\n  ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - 5));
                         }
                         imageContext.append("\n");
                     }
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("knowledge_qa_service.image_not_found", doc.getTitle()), e);
+                    log.warn(I18N.get("knowledge_qa_service.image_not_found", doc.getTitle()), e);
                 }
             }
 
@@ -436,12 +436,12 @@ public class KnowledgeQAService {
             );
 
             if (!allImages.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.images_in_context", allImages.size()));
+                log.info(I18N.get("knowledge_qa_service.images_in_context", allImages.size()));
             }
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.using_docs", usedDocTitles.size()));
+            log.info(I18N.get("knowledge_qa_service.using_docs", usedDocTitles.size()));
             if (hasMoreDocs) {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.remaining_docs", remainingDocs.size()));
+                log.info(I18N.get("knowledge_qa_service.remaining_docs", remainingDocs.size()));
             }
 
             // 步骤5: 调用 LLM 生成答案 / Step 5: Call LLM to generate answer
@@ -464,9 +464,9 @@ public class KnowledgeQAService {
                     try {
                         chunks = chunkStorageService.listChunks(firstDocTitle);
                         images = imageStorageService.listImages(firstDocTitle);
-                        log.info(LogMessageProvider.getMessage("knowledge_qa_service.found_chunks_images", chunks.size(), images.size()));
+                        log.info(I18N.get("knowledge_qa_service.found_chunks_images", chunks.size(), images.size()));
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("knowledge_qa_service.load_chunk_failed"), e);
+                        log.warn(I18N.get("knowledge_qa_service.load_chunk_failed"), e);
                     }
                 }
             }
@@ -474,12 +474,12 @@ public class KnowledgeQAService {
             long totalTime = System.currentTimeMillis() - startTime;
 
             // 显示结果 / Display results
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.answer_label"));
+            log.info(I18N.get("knowledge_qa_service.answer_label"));
             log.info(answer);
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.sources_label", sources.size()));
+            log.info(I18N.get("knowledge_qa_service.sources_label", sources.size()));
              sources.forEach(source -> log.info("   - {}", source));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.response_time", totalTime));
-             log.info(LogMessageProvider.getMessage("knowledge_qa_service.separator"));
+            log.info(I18N.get("knowledge_qa_service.response_time", totalTime));
+             log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 保存问答记录（用于反馈和优化）/ Save QA record (for feedback and optimization)
             String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
@@ -512,7 +512,7 @@ public class KnowledgeQAService {
             log.error("❌ QA processing failed", e);
             long totalTime = System.currentTimeMillis() - startTime;
             return new AIAnswer(
-                    LogMessageProvider.getMessage("knowledge_qa_service.error_processing", e.getMessage()),
+                    I18N.get("knowledge_qa_service.error_processing", e.getMessage()),
                     List.of(),
                     totalTime
             );
@@ -529,7 +529,7 @@ public class KnowledgeQAService {
      */
     public String askWithContext(String prompt, String context) {
         if (llmClient == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.system_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.system_not_initialized"));
         }
 
         try {
@@ -561,7 +561,7 @@ public class KnowledgeQAService {
      */
     public AIAnswer askDirectly(String prompt) {
         if (llmClient == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.system_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.system_not_initialized"));
         }
 
         long startTime = System.currentTimeMillis();
@@ -602,15 +602,15 @@ public class KnowledgeQAService {
      */
     public AIAnswer askWithSessionDocuments(String question, String sessionId) {
         if (rag == null || llmClient == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.system_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.system_not_initialized"));
         }
 
         long startTime = System.currentTimeMillis();
 
         try {
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.question_separator"));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.question_label", question, sessionId));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.separator"));
+            log.info(I18N.get("knowledge_qa_service.question_separator"));
+            log.info(I18N.get("knowledge_qa_service.question_label", question, sessionId));
+            log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 从会话获取当前批次的文档 / Get current batch of documents from session
             SearchSessionService.SessionDocuments sessionDocs =
@@ -618,7 +618,7 @@ public class KnowledgeQAService {
 
             List<top.yumbo.ai.rag.model.Document> documents = sessionDocs.getDocuments();
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.using_session_docs",
+            log.info(I18N.get("knowledge_qa_service.using_session_docs",
                 sessionDocs.getTotalDocuments(),
                 sessionDocs.getCurrentPage(),
                 sessionDocs.getTotalPages(),
@@ -635,7 +635,7 @@ public class KnowledgeQAService {
             }
 
             String context = contextBuilder.buildSmartContext(question, documents);
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
+            log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
             // 步骤3: 收集可用的图片信息
             List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
@@ -649,26 +649,26 @@ public class KnowledgeQAService {
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
 
-                        imageContext.append(LogMessageProvider.getMessage("knowledge_qa_service.available_images", doc.getTitle()));
+                        imageContext.append(I18N.get("knowledge_qa_service.available_images", doc.getTitle()));
                         for (int i = 0; i < Math.min(docImages.size(), 5); i++) {
                             top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
-                                : LogMessageProvider.getMessage("knowledge_qa_service.related_image");
+                                : I18N.get("knowledge_qa_service.related_image");
                             // 格式：图片 1：描述（来源：URL）![描述](URL)
                             imageContext.append("\n  ")
-                                       .append(LogMessageProvider.getMessage("knowledge_qa_service.image_item",
+                                       .append(I18N.get("knowledge_qa_service.image_item",
                                            i + 1, imgDesc, img.getUrl()))
                                        .append(" ")
                                        .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
                         }
                         if (docImages.size() > 5) {
-                            imageContext.append("\n  ").append(LogMessageProvider.getMessage("knowledge_qa_service.more_images", docImages.size() - 5));
+                            imageContext.append("\n  ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - 5));
                         }
                         imageContext.append("\n");
                     }
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("knowledge_qa_service.image_not_found", doc.getTitle()), e);
+                    log.warn(I18N.get("knowledge_qa_service.image_not_found", doc.getTitle()), e);
                 }
             }
 
@@ -692,12 +692,12 @@ public class KnowledgeQAService {
             );
 
             if (!allImages.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.images_in_context", allImages.size()));
+                log.info(I18N.get("knowledge_qa_service.images_in_context", allImages.size()));
             }
 
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.using_docs", usedDocTitles.size()));
+            log.info(I18N.get("knowledge_qa_service.using_docs", usedDocTitles.size()));
             if (hasMoreDocs) {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.remaining_docs", remainingDocsCount));
+                log.info(I18N.get("knowledge_qa_service.remaining_docs", remainingDocsCount));
             }
 
             // 步骤5: 调用 LLM 生成答案 / Step 5: Call LLM to generate answer
@@ -719,9 +719,9 @@ public class KnowledgeQAService {
                     try {
                         chunks = chunkStorageService.listChunks(firstDocTitle);
                         images = imageStorageService.listImages(firstDocTitle);
-                        log.info(LogMessageProvider.getMessage("knowledge_qa_service.found_chunks_images", chunks.size(), images.size()));
+                        log.info(I18N.get("knowledge_qa_service.found_chunks_images", chunks.size(), images.size()));
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("knowledge_qa_service.load_chunk_failed"), e);
+                        log.warn(I18N.get("knowledge_qa_service.load_chunk_failed"), e);
                     }
                 }
             }
@@ -729,12 +729,12 @@ public class KnowledgeQAService {
             long totalTime = System.currentTimeMillis() - startTime;
 
             // 显示结果 / Display results
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.answer_label"));
+            log.info(I18N.get("knowledge_qa_service.answer_label"));
             log.info(answer);
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.sources_label", sources.size()));
+            log.info(I18N.get("knowledge_qa_service.sources_label", sources.size()));
              sources.forEach(source -> log.info("   - {}", source));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.response_time", totalTime));
-             log.info(LogMessageProvider.getMessage("knowledge_qa_service.separator"));
+            log.info(I18N.get("knowledge_qa_service.response_time", totalTime));
+             log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 保存问答记录 / Save QA record
             String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
@@ -756,10 +756,10 @@ public class KnowledgeQAService {
             return aiAnswer;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("knowledge_qa_service.qa_with_session_failed"), e);
+            log.error(I18N.get("knowledge_qa_service.qa_with_session_failed"), e);
             long totalTime = System.currentTimeMillis() - startTime;
             return new AIAnswer(
-                    LogMessageProvider.getMessage("knowledge_qa_service.error_processing", e.getMessage()),
+                    I18N.get("knowledge_qa_service.error_processing", e.getMessage()),
                     List.of(),
                     totalTime
             );
@@ -803,25 +803,25 @@ public class KnowledgeQAService {
         // 【重要】图片使用指南必须放在最前面，在基础提示词之前（Image guide must be at the very beginning, before base prompt）
         StringBuilder imageGuide = new StringBuilder();
         if (hasImages && !imageContext.isEmpty()) {
-            imageGuide.append(LogMessageProvider.getMessage("knowledge_qa_service.important_notice"));
-            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_1"));
-            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_2"));
-            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_3"));
-            imageGuide.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.image_guide_4"));
+            imageGuide.append(I18N.get("knowledge_qa_service.important_notice"));
+            imageGuide.append("\n").append(I18N.get("knowledge_qa_service.image_guide_1"));
+            imageGuide.append("\n").append(I18N.get("knowledge_qa_service.image_guide_2"));
+            imageGuide.append("\n").append(I18N.get("knowledge_qa_service.image_guide_3"));
+            imageGuide.append("\n").append(I18N.get("knowledge_qa_service.image_guide_4"));
             imageGuide.append("\n\n");
         }
 
         // 添加文档使用说明（Add document usage instructions）
         if (!usedDocuments.isEmpty()) {
-            enhancement.append("\n\n").append(LogMessageProvider.getMessage("knowledge_qa_service.referenced_docs"));
+            enhancement.append("\n\n").append(I18N.get("knowledge_qa_service.referenced_docs"));
             for (int i = 0; i < usedDocuments.size(); i++) {
-                enhancement.append("\n").append(LogMessageProvider.getMessage("knowledge_qa_service.doc_item", i + 1, usedDocuments.get(i)));
+                enhancement.append("\n").append(I18N.get("knowledge_qa_service.doc_item", i + 1, usedDocuments.get(i)));
             }
         }
 
         // 如果有更多未处理的文档，提示用户（If there are more unprocessed documents, prompt the user）
         if (hasMoreDocs && remainingCount > 0) {
-            enhancement.append("\n\n").append(LogMessageProvider.getMessage("knowledge_qa_service.more_docs_notice",
+            enhancement.append("\n\n").append(I18N.get("knowledge_qa_service.more_docs_notice",
                 usedDocuments.size(), remainingCount));
         }
 
@@ -843,7 +843,7 @@ public class KnowledgeQAService {
      */
     public LocalFileRAG.Statistics getStatistics() {
         if (rag == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.kb_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.kb_not_initialized"));
         }
         return rag.getStatistics();
     }
@@ -854,7 +854,7 @@ public class KnowledgeQAService {
      */
     public EnhancedStatistics getEnhancedStatistics() {
         if (rag == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.kb_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.kb_not_initialized"));
         }
 
         // 获取基础统计信息 / Get basic statistics
@@ -885,7 +885,7 @@ public class KnowledgeQAService {
         // 为了兼容性，设置 indexedDocumentCount 为唯一文档数
         stats.setIndexedDocumentCount(uniqueDocsCount);
 
-        log.debug(LogMessageProvider.getMessage("knowledge_qa_service.debug_enhanced_stats_v2",
+        log.debug(I18N.get("knowledge_qa_service.debug_enhanced_stats_v2",
             fileSystemDocCount, uniqueDocsCount, totalIndexedChunks,
             stats.getUnindexedCount(), stats.getIndexProgress()));
 
@@ -901,7 +901,7 @@ public class KnowledgeQAService {
             Path documentsPath;
 
             // 处理 classpath 路径 / Handle classpath path
-            if (sourcePath.startsWith(LogMessageProvider.getMessage("knowledge_qa_service.classpath_prefix"))) {
+            if (sourcePath.startsWith(I18N.get("knowledge_qa_service.classpath_prefix"))) {
                 String resourcePath = sourcePath.substring("classpath:".length());
                 try {
                     var resource = getClass().getClassLoader().getResource(resourcePath);
@@ -924,7 +924,7 @@ public class KnowledgeQAService {
 
             // 确保目录存在
             if (!Files.exists(documentsPath)) {
-                log.warn(LogMessageProvider.getMessage("log.kqa.docs_dir_missing", documentsPath.toString()));
+                log.warn(I18N.get("log.kqa.docs_dir_missing", documentsPath.toString()));
                 return 0;
             }
 
@@ -946,12 +946,12 @@ public class KnowledgeQAService {
                     })
                     .count();
 
-                log.debug(LogMessageProvider.getMessage("log.kqa.scanned_files_count", count));
+                log.debug(I18N.get("log.kqa.scanned_files_count", count));
                 return count;
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kqa.scan_failed"), e);
+            log.error(I18N.get("log.kqa.scan_failed"), e);
             // 出错时返回基础统计的数量
             return rag.getStatistics().getDocumentCount();
         }
@@ -974,17 +974,17 @@ public class KnowledgeQAService {
      * 重建知识库
      */
     public synchronized BuildResult rebuildKnowledgeBase() {
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.rebuild_start"));
+        log.info(I18N.get("knowledge_qa_service.rebuild_start"));
 
         try {
             // 1. 关闭现有的 RAG 实例，释放索引锁 / Close existing RAG instance and release index lock
             if (rag != null) {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.close_existing_kb"));
+                log.info(I18N.get("knowledge_qa_service.close_existing_kb"));
                 try {
                     rag.close();
-                    log.info(LogMessageProvider.getMessage("knowledge_qa_service.kb_closed"));
+                    log.info(I18N.get("knowledge_qa_service.kb_closed"));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("knowledge_qa_service.close_kb_warning", e.getMessage()));
+                    log.warn(I18N.get("knowledge_qa_service.close_kb_warning", e.getMessage()));
                 }
                 rag = null;
             }
@@ -997,36 +997,36 @@ public class KnowledgeQAService {
             var result = knowledgeBaseService.buildKnowledgeBase(sourcePath, storagePath, true);
 
             if (result.getError() != null) {
-                log.error(LogMessageProvider.getMessage("log.kqa.rebuild_failed", result.getError()));
-                throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.build_failed", result.getError()));
+                log.error(I18N.get("log.kqa.rebuild_failed", result.getError()));
+                throw new RuntimeException(I18N.get("log.kqa.build_failed", result.getError()));
             }
 
-            log.info(LogMessageProvider.getMessage("log.kqa.rebuild_complete"));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.success_files", result.getSuccessCount()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.failed_files", result.getFailedCount()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.total_documents", result.getTotalDocuments()));
+            log.info(I18N.get("log.kqa.rebuild_complete"));
+            log.info(I18N.get("knowledge_qa_service.success_files", result.getSuccessCount()));
+            log.info(I18N.get("knowledge_qa_service.failed_files", result.getFailedCount()));
+            log.info(I18N.get("knowledge_qa_service.total_documents", result.getTotalDocuments()));
 
             // 3. 重新初始化知识库实例 / Reinitialize knowledge base instance
-            log.info(LogMessageProvider.getMessage("log.kqa.reinit_kb"));
+            log.info(I18N.get("log.kqa.reinit_kb"));
             initializeKnowledgeBase();
-            log.info(LogMessageProvider.getMessage("log.kqa.reinit_complete"));
+            log.info(I18N.get("log.kqa.reinit_complete"));
 
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kqa.rebuild_error"), e);
+            log.error(I18N.get("log.kqa.rebuild_error"), e);
 
             // 尝试恢复知识库实例 / Try to recover knowledge base instance
             try {
                 if (rag == null) {
-                    log.info(LogMessageProvider.getMessage("log.kqa.recover_kb"));
+                    log.info(I18N.get("log.kqa.recover_kb"));
                     initializeKnowledgeBase();
                 }
             } catch (Exception ex) {
-                log.error(LogMessageProvider.getMessage("log.kqa.recover_failed"), ex);
+                log.error(I18N.get("log.kqa.recover_failed"), ex);
             }
 
-            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.build_failed", e.getMessage()), e);
+            throw new RuntimeException(I18N.get("log.kqa.build_failed", e.getMessage()), e);
         }
     }
 
@@ -1035,17 +1035,17 @@ public class KnowledgeQAService {
      * 只处理新增和修改的文档，性能更优
      */
     public synchronized BuildResult incrementalIndexKnowledgeBase() {
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.incremental_index_start"));
+        log.info(I18N.get("knowledge_qa_service.incremental_index_start"));
 
         try {
             // 1. 关闭现有的 RAG 实例，释放索引锁
             if (rag != null) {
-                log.info(LogMessageProvider.getMessage("knowledge_qa_service.closing_existing_kb"));
+                log.info(I18N.get("knowledge_qa_service.closing_existing_kb"));
                 try {
                     rag.close();
-                    log.info(LogMessageProvider.getMessage("knowledge_qa_service.existing_kb_closed"));
+                    log.info(I18N.get("knowledge_qa_service.existing_kb_closed"));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("knowledge_qa_service.close_kb_warning", e.getMessage()));
+                    log.warn(I18N.get("knowledge_qa_service.close_kb_warning", e.getMessage()));
                 }
                 rag = null;
             }
@@ -1057,36 +1057,36 @@ public class KnowledgeQAService {
             var result = knowledgeBaseService.incrementalIndex(sourcePath, storagePath);
 
             if (result.getError() != null) {
-                log.error(LogMessageProvider.getMessage("log.kqa.incremental_failed", result.getError()));
-                throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.build_failed", result.getError()));
+                log.error(I18N.get("log.kqa.incremental_failed", result.getError()));
+                throw new RuntimeException(I18N.get("log.kqa.build_failed", result.getError()));
             }
 
-            log.info(LogMessageProvider.getMessage("log.kqa.incremental_complete"));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.success_files", result.getSuccessCount()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.failed_files", result.getFailedCount()));
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.total_documents", result.getTotalDocuments()));
+            log.info(I18N.get("log.kqa.incremental_complete"));
+            log.info(I18N.get("knowledge_qa_service.success_files", result.getSuccessCount()));
+            log.info(I18N.get("knowledge_qa_service.failed_files", result.getFailedCount()));
+            log.info(I18N.get("knowledge_qa_service.total_documents", result.getTotalDocuments()));
 
             // 3. 重新初始化知识库实例 / Reinitialize knowledge base instance
-            log.info(LogMessageProvider.getMessage("log.kqa.reinit_kb"));
+            log.info(I18N.get("log.kqa.reinit_kb"));
             initializeKnowledgeBase();
-            log.info(LogMessageProvider.getMessage("log.kqa.reinit_complete"));
+            log.info(I18N.get("log.kqa.reinit_complete"));
 
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kqa.incremental_error"), e);
+            log.error(I18N.get("log.kqa.incremental_error"), e);
 
             // 尝试恢复知识库实例 / Try to recover knowledge base instance
             try {
                 if (rag == null) {
-                    log.info(LogMessageProvider.getMessage("log.kqa.recover_kb"));
+                    log.info(I18N.get("log.kqa.recover_kb"));
                     initializeKnowledgeBase();
                 }
             } catch (Exception ex) {
-                log.error(LogMessageProvider.getMessage("log.kqa.recover_failed"), ex);
+                log.error(I18N.get("log.kqa.recover_failed"), ex);
             }
 
-            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.build_failed", e.getMessage()), e);
+            throw new RuntimeException(I18N.get("log.kqa.build_failed", e.getMessage()), e);
         }
     }
 
@@ -1095,7 +1095,7 @@ public class KnowledgeQAService {
      */
     public List<Document> searchDocuments(String query, int limit) {
         if (rag == null) {
-            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.kb_not_initialized"));
+            throw new IllegalStateException(I18N.get("log.kqa.kb_not_initialized"));
         }
 
         var result = rag.search(top.yumbo.ai.rag.model.Query.builder()
@@ -1113,19 +1113,19 @@ public class KnowledgeQAService {
      */
     @PreDestroy
     public void destroy() {
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.destroy_start"));
+        log.info(I18N.get("knowledge_qa_service.destroy_start"));
 
         if (embeddingEngine != null) {
             embeddingEngine.close();
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.vector_engine_closed"));
+            log.info(I18N.get("knowledge_qa_service.vector_engine_closed"));
         }
 
         if (rag != null) {
             rag.close();
-            log.info(LogMessageProvider.getMessage("knowledge_qa_service.kb_closed_safe"));
+            log.info(I18N.get("knowledge_qa_service.kb_closed_safe"));
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa_service.system_closed"));
+        log.info(I18N.get("knowledge_qa_service.system_closed"));
     }
 
     /**
@@ -1144,10 +1144,10 @@ public class KnowledgeQAService {
                 .build();
 
             String recordId = qaRecordService.saveRecord(record);
-            log.debug(LogMessageProvider.getMessage("knowledge_qa_service.log.record_saved", recordId));
+            log.debug(I18N.get("knowledge_qa_service.log.record_saved", recordId));
             return recordId;
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("knowledge_qa_service.save_qa_failed", e));
+            log.warn(I18N.get("knowledge_qa_service.save_qa_failed", e));
             return null;
         }
     }

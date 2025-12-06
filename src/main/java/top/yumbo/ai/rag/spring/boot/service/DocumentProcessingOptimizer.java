@@ -9,7 +9,7 @@ import top.yumbo.ai.rag.impl.embedding.LocalEmbeddingEngine;
 import top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine;
 import top.yumbo.ai.rag.optimization.DocumentChunker;
 import top.yumbo.ai.rag.optimization.MemoryMonitor;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.IOException;
 
@@ -70,7 +70,7 @@ public class DocumentProcessingOptimizer {
         double memoryUsage = memoryMonitor.getMemoryUsagePercent();
 
         if (memoryUsage > GC_TRIGGER_THRESHOLD) {
-            log.warn(LogMessageProvider.getMessage("log.memory.gc_trigger", String.format("%.1f", memoryUsage)));
+            log.warn(I18N.get("log.memory.gc_trigger", String.format("%.1f", memoryUsage)));
             System.gc();
 
             try {
@@ -80,7 +80,7 @@ public class DocumentProcessingOptimizer {
             }
 
             double afterGC = memoryMonitor.getMemoryUsagePercent();
-            log.info(LogMessageProvider.getMessage("log.memory.gc_done", String.format("%.1f", memoryUsage), String.format("%.1f", afterGC)));
+            log.info(I18N.get("log.memory.gc_done", String.format("%.1f", memoryUsage), String.format("%.1f", afterGC)));
         }
     }
 
@@ -147,11 +147,11 @@ public class DocumentProcessingOptimizer {
     public void saveVectorIndex(SimpleVectorIndexEngine vectorIndexEngine) {
         if (vectorIndexEngine != null) {
             try {
-                log.info(LogMessageProvider.getMessage("log.optimizer.saving_vectors"));
+                log.info(I18N.get("log.optimizer.saving_vectors"));
                 vectorIndexEngine.saveIndex();
-                log.info(LogMessageProvider.getMessage("log.optimizer.vectors_saved"));
+                log.info(I18N.get("log.optimizer.vectors_saved"));
             } catch (IOException e) {
-                log.error(LogMessageProvider.getMessage("log.optimizer.save_failed"), e);
+                log.error(I18N.get("log.optimizer.save_failed"), e);
             }
         }
     }
@@ -162,7 +162,7 @@ public class DocumentProcessingOptimizer {
     public void closeEmbeddingEngine(LocalEmbeddingEngine embeddingEngine) {
         if (embeddingEngine != null) {
             embeddingEngine.close();
-            log.info(LogMessageProvider.getMessage("log.optimizer.embedding_closed"));
+            log.info(I18N.get("log.optimizer.embedding_closed"));
         }
     }
 
@@ -170,13 +170,13 @@ public class DocumentProcessingOptimizer {
      * 提交RAG更改并优化
      */
     public void commitAndOptimize(LocalFileRAG rag) {
-        log.info(LogMessageProvider.getMessage("log.optimizer.commit"));
+        log.info(I18N.get("log.optimizer.commit"));
         rag.commit();
 
-        log.info(LogMessageProvider.getMessage("log.optimizer.optimize"));
+        log.info(I18N.get("log.optimizer.optimize"));
         rag.optimizeIndex();
 
-        log.info(LogMessageProvider.getMessage("log.optimizer.done"));
+        log.info(I18N.get("log.optimizer.done"));
     }
 
     /**
@@ -187,6 +187,6 @@ public class DocumentProcessingOptimizer {
         long usedMB = memoryMonitor.getUsedMemoryMB();
         long maxMB = memoryMonitor.getMaxMemoryMB();
 
-        log.info(LogMessageProvider.getMessage("log.memory.usage_phase", context, usedMB, maxMB, String.format("%.1f", usage)));
+        log.info(I18N.get("log.memory.usage_phase", context, usedMB, maxMB, String.format("%.1f", usage)));
     }
 }

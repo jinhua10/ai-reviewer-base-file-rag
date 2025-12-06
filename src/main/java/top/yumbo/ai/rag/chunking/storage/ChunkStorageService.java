@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.chunking.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -43,10 +43,10 @@ public class ChunkStorageService {
             Path chunkPath = Paths.get(storageBasePath, CHUNK_DIR);
             if (!Files.exists(chunkPath)) {
                 Files.createDirectories(chunkPath);
-                log.info(LogMessageProvider.getMessage("log.chunk.storage.created", chunkPath.toString()));
+                log.info(I18N.get("log.chunk.storage.created", chunkPath.toString()));
             }
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.chunk.storage.init_failed"), e);
+            log.error(I18N.get("log.chunk.storage.init_failed"), e);
             throw new RuntimeException("Failed to initialize chunk storage", e);
         }
     }
@@ -69,11 +69,11 @@ public class ChunkStorageService {
                 ChunkStorageInfo info = saveChunk(cleanDocId, chunk);
                 storageInfos.add(info);
             } catch (Exception e) {
-                log.error(LogMessageProvider.getMessage("log.chunk.save_failed", documentId, chunk.getIndex()), e);
+                log.error(I18N.get("log.chunk.save_failed", documentId, chunk.getIndex()), e);
             }
         }
 
-        log.info(LogMessageProvider.getMessage("log.chunk.saved", storageInfos.size(), documentId));
+        log.info(I18N.get("log.chunk.saved", storageInfos.size(), documentId));
         return storageInfos;
     }
 
@@ -229,7 +229,7 @@ public class ChunkStorageService {
                         ChunkStorageInfo info = parseMetadata(metadata);
                         chunks.add(info);
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("log.chunk.read_meta_failed", metaPath.toString()), e);
+                        log.warn(I18N.get("log.chunk.read_meta_failed", metaPath.toString()), e);
                     }
                 });
         }
@@ -253,12 +253,12 @@ public class ChunkStorageService {
                         try {
                             Files.delete(path);
                         } catch (IOException e) {
-                            log.warn(LogMessageProvider.getMessage("log.chunk.delete_failed", path.toString()), e);
+                            log.warn(I18N.get("log.chunk.delete_failed", path.toString()), e);
                         }
                     });
             }
 
-            log.info(LogMessageProvider.getMessage("log.chunk.deleted_all", documentId));
+            log.info(I18N.get("log.chunk.deleted_all", documentId));
         }
     }
 

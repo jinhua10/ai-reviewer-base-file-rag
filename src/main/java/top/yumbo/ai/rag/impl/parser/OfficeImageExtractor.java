@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.apache.poi.xwpf.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.impl.parser.image.ImagePositionInfo;
 import top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor;
 import top.yumbo.ai.rag.impl.parser.image.VisionLLMStrategy;
@@ -66,8 +66,8 @@ public class OfficeImageExtractor {
              XMLSlideShow ppt = new XMLSlideShow(fis)) {
             
             List<XSLFSlide> allSlides = ppt.getSlides();
-            log.info(LogMessageProvider.getMessage("log.office.pptx_start", file.getName(), allSlides.size()));
-            log.info(LogMessageProvider.getMessage("log.office.batch_config", batchSize));
+            log.info(I18N.get("log.office.pptx_start", file.getName(), allSlides.size()));
+            log.info(I18N.get("log.office.batch_config", batchSize));
 
             // 检查是否支持批量处理
             boolean supportsBatch = imageExtractor.getActiveStrategy() instanceof VisionLLMStrategy;
@@ -80,11 +80,11 @@ public class OfficeImageExtractor {
                 content.append(extractWithSingleMode(allSlides, file));
             }
 
-            log.info(LogMessageProvider.getMessage("log.office.pptx_complete", file.getName()));
+            log.info(I18N.get("log.office.pptx_complete", file.getName()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.office.pptx_failed", file.getName()), e);
-            content.append(LogMessageProvider.getMessage("log.office.process_failed", e.getMessage()));
+            log.error(I18N.get("log.office.pptx_failed", file.getName()), e);
+            content.append(I18N.get("log.office.process_failed", e.getMessage()));
         }
 
         return content.toString();
@@ -124,7 +124,7 @@ public class OfficeImageExtractor {
             int endIndex = Math.min(processedSlides + batchSize, totalSlides);
             List<XSLFSlide> batchSlides = allSlides.subList(processedSlides, endIndex);
 
-            log.info(LogMessageProvider.getMessage("log.office.processing_slides",
+            log.info(I18N.get("log.office.processing_slides",
                 processedSlides + 1, endIndex, totalSlides));
 
             // 检查这批幻灯片是否需要处理
@@ -166,10 +166,10 @@ public class OfficeImageExtractor {
                             try {
                                 String docId = pptFile.getName(); // 使用 PPT 文件名作为文档 ID
                                 imageStorageService.saveImage(docId, imageData, imageName);
-                                log.debug(LogMessageProvider.getMessage("log.office.save_image",
+                                log.debug(I18N.get("log.office.save_image",
                                     imageName, docId, imageName));
                             } catch (Exception e) {
-                                log.warn(LogMessageProvider.getMessage("log.office.save_image_failed",
+                                log.warn(I18N.get("log.office.save_image_failed",
                                     imageName, e.getMessage()));
                             }
                         }
@@ -202,20 +202,20 @@ public class OfficeImageExtractor {
                 }
 
                 // 添加幻灯片标题
-                batchTextContent.append(LogMessageProvider.getMessage("log.office.slide_title", slideNumber));
+                batchTextContent.append(I18N.get("log.office.slide_title", slideNumber));
 
                 if (!slideText.isEmpty()) {
-                    batchTextContent.append(LogMessageProvider.getMessage("log.office.slide_text"))
+                    batchTextContent.append(I18N.get("log.office.slide_text"))
                                    .append(slideText);
                 }
 
                 if (useCache) {
                     // 使用缓存
-                    log.info(LogMessageProvider.getMessage("log.office.use_cache",
+                    log.info(I18N.get("log.office.use_cache",
                         slideNumber, cachedSlide.getImageCount()));
                     if (cachedSlide.getVisionLLMResult() != null && !cachedSlide.getVisionLLMResult().isEmpty()) {
                         batchTextContent.append("\n\n")
-                                       .append(LogMessageProvider.getMessage("log.office.image_section"))
+                                       .append(I18N.get("log.office.image_section"))
                                        .append(cachedSlide.getVisionLLMResult());
                     }
                     cachedCount++;
@@ -242,13 +242,13 @@ public class OfficeImageExtractor {
 
             // 批量处理需要更新的幻灯片图片
             if (!batchImages.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.office.need_process",
+                log.info(I18N.get("log.office.need_process",
                     batchImages.size(), slidesToProcess.size()));
                 String imageContent = visionStrategy.extractContentBatchWithPosition(batchImages);
 
                 if (imageContent != null && !imageContent.trim().isEmpty()) {
                     batchTextContent.append("\n\n")
-                                   .append(LogMessageProvider.getMessage("log.office.image_section"))
+                                   .append(I18N.get("log.office.image_section"))
                                    .append(imageContent);
 
                     // 更新缓存
@@ -263,7 +263,7 @@ public class OfficeImageExtractor {
                         }
                     }
 
-                    log.info(LogMessageProvider.getMessage("log.office.batch_complete",
+                    log.info(I18N.get("log.office.batch_complete",
                         batchImages.size(), imageContent.length()));
                     processedCount += slidesToProcess.size();
                 }
@@ -276,7 +276,7 @@ public class OfficeImageExtractor {
         // 保存 PPT 缓存
         if (cacheService != null && pptCache != null) {
             cacheService.savePPTCache(pptPath, pptCache);
-            log.info(LogMessageProvider.getMessage("log.office.cache_stats",
+            log.info(I18N.get("log.office.cache_stats",
                 cachedCount, processedCount, totalSlides));
         }
 
@@ -292,7 +292,7 @@ public class OfficeImageExtractor {
         int slideNumber = 0;
         for (XSLFSlide slide : allSlides) {
             slideNumber++;
-            content.append(LogMessageProvider.getMessage("log.office.slide_title", slideNumber));
+            content.append(I18N.get("log.office.slide_title", slideNumber));
 
             // 提取文本内容
             StringBuilder slideText = new StringBuilder();
@@ -306,7 +306,7 @@ public class OfficeImageExtractor {
             }
 
             if (!slideText.isEmpty()) {
-                content.append(LogMessageProvider.getMessage("log.office.slide_text")).append(slideText);
+                content.append(I18N.get("log.office.slide_text")).append(slideText);
             }
 
             // 提取图片
@@ -320,7 +320,7 @@ public class OfficeImageExtractor {
                     String imageName = String.format("slide%d_image%d.%s",
                         slideNumber, imageCount, getPPTExtension(pictureData.getType()));
 
-                    log.info(LogMessageProvider.getMessage("log.office.extract_image",
+                    log.info(I18N.get("log.office.extract_image",
                         imageName, imageData.length / 1024));
 
                     // 保存图片到 ImageStorageService（如果可用）
@@ -328,10 +328,10 @@ public class OfficeImageExtractor {
                         try {
                             String docId = pptFile.getName(); // 使用 PPT 文件名作为文档 ID
                             imageStorageService.saveImage(docId, imageData, imageName);
-                            log.debug(LogMessageProvider.getMessage("log.office.save_image",
+                            log.debug(I18N.get("log.office.save_image",
                                 imageName, docId, imageName));
                         } catch (Exception e) {
-                            log.warn(LogMessageProvider.getMessage("log.office.save_image_failed",
+                            log.warn(I18N.get("log.office.save_image_failed",
                                 imageName, e.getMessage()));
                         }
                     }
@@ -341,18 +341,18 @@ public class OfficeImageExtractor {
                         new ByteArrayInputStream(imageData), imageName);
 
                     if (extractedText != null && !extractedText.trim().isEmpty()) {
-                        log.info(LogMessageProvider.getMessage("log.office.extract_success",
+                        log.info(I18N.get("log.office.extract_success",
                             imageName, extractedText.length()));
-                        content.append(LogMessageProvider.getMessage("log.office.image_content"))
+                        content.append(I18N.get("log.office.image_content"))
                                .append(extractedText);
                     } else {
-                        log.warn(LogMessageProvider.getMessage("log.office.extract_empty", imageName));
+                        log.warn(I18N.get("log.office.extract_empty", imageName));
                     }
                 }
             }
 
             if (imageCount > 0) {
-                log.info(LogMessageProvider.getMessage("log.office.slide_images", slideNumber, imageCount));
+                log.info(I18N.get("log.office.slide_images", slideNumber, imageCount));
             }
         }
         
@@ -368,7 +368,7 @@ public class OfficeImageExtractor {
         try (FileInputStream fis = new FileInputStream(file);
              XWPFDocument doc = new XWPFDocument(fis)) {
             
-            log.info(LogMessageProvider.getMessage("log.office.docx_start", file.getName()));
+            log.info(I18N.get("log.office.docx_start", file.getName()));
 
             // 提取文本
             for (XWPFParagraph paragraph : doc.getParagraphs()) {
@@ -381,7 +381,7 @@ public class OfficeImageExtractor {
             // 提取图片
             List<XWPFPictureData> pictures = doc.getAllPictures();
             if (!pictures.isEmpty()) {
-                content.append(LogMessageProvider.getMessage("log.office.image_section"));
+                content.append(I18N.get("log.office.image_section"));
 
                 int imageCount = 0;
                 for (XWPFPictureData picture : pictures) {
@@ -390,29 +390,29 @@ public class OfficeImageExtractor {
                     String imageName = String.format("image%d.%s", 
                         imageCount, getExtension(picture.getPictureType()));
                     
-                    log.info(LogMessageProvider.getMessage("log.office.extract_image",
+                    log.info(I18N.get("log.office.extract_image",
                         imageName, imageData.length / 1024));
 
                     String extractedText = imageExtractor.extractContent(
                         new ByteArrayInputStream(imageData), imageName);
                     
                     if (extractedText != null && !extractedText.trim().isEmpty()) {
-                        log.info(LogMessageProvider.getMessage("log.office.extract_success",
+                        log.info(I18N.get("log.office.extract_success",
                             imageName, extractedText.length()));
                         content.append(extractedText);
                     } else {
-                        log.warn(LogMessageProvider.getMessage("log.office.extract_empty", imageName));
+                        log.warn(I18N.get("log.office.extract_empty", imageName));
                     }
                 }
                 
-                log.info(LogMessageProvider.getMessage("log.office.docx_images", imageCount));
+                log.info(I18N.get("log.office.docx_images", imageCount));
             }
 
-            log.info(LogMessageProvider.getMessage("log.office.docx_complete", file.getName()));
+            log.info(I18N.get("log.office.docx_complete", file.getName()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.office.docx_failed", file.getName()), e);
-            content.append(LogMessageProvider.getMessage("log.office.process_failed", e.getMessage()));
+            log.error(I18N.get("log.office.docx_failed", file.getName()), e);
+            content.append(I18N.get("log.office.process_failed", e.getMessage()));
         }
         
         return content.toString();
@@ -427,12 +427,12 @@ public class OfficeImageExtractor {
         try (FileInputStream fis = new FileInputStream(file);
              org.apache.poi.ss.usermodel.Workbook workbook = new XSSFWorkbook(fis)) {
             
-            log.info(LogMessageProvider.getMessage("log.office.xlsx_start",
+            log.info(I18N.get("log.office.xlsx_start",
                 file.getName(), workbook.getNumberOfSheets()));
 
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 org.apache.poi.ss.usermodel.Sheet sheet = workbook.getSheetAt(i);
-                content.append(LogMessageProvider.getMessage("log.office.sheet_title", sheet.getSheetName()));
+                content.append(I18N.get("log.office.sheet_title", sheet.getSheetName()));
 
                 // 提取单元格内容
                 for (org.apache.poi.ss.usermodel.Row row : sheet) {
@@ -454,11 +454,11 @@ public class OfficeImageExtractor {
                 }
             }
             
-            log.info(LogMessageProvider.getMessage("log.office.xlsx_complete", file.getName()));
+            log.info(I18N.get("log.office.xlsx_complete", file.getName()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.office.xlsx_failed", file.getName()), e);
-            content.append(LogMessageProvider.getMessage("log.office.process_failed", e.getMessage()));
+            log.error(I18N.get("log.office.xlsx_failed", file.getName()), e);
+            content.append(I18N.get("log.office.process_failed", e.getMessage()));
         }
         
         return content.toString();
@@ -486,30 +486,30 @@ public class OfficeImageExtractor {
                         String imageName = String.format("sheet%d_image%d.%s", 
                             sheetIndex + 1, imageCount, getExtension(pictureData.getPictureType()));
                         
-                        log.info(LogMessageProvider.getMessage("log.office.extract_image",
+                        log.info(I18N.get("log.office.extract_image",
                             imageName, imageData.length / 1024));
 
                         String extractedText = imageExtractor.extractContent(
                             new ByteArrayInputStream(imageData), imageName);
                         
                         if (extractedText != null && !extractedText.trim().isEmpty()) {
-                            log.info(LogMessageProvider.getMessage("log.office.extract_success",
+                            log.info(I18N.get("log.office.extract_success",
                                 imageName, extractedText.length()));
-                            content.append(LogMessageProvider.getMessage("log.office.image_content"))
+                            content.append(I18N.get("log.office.image_content"))
                                    .append(extractedText);
                         } else {
-                            log.warn(LogMessageProvider.getMessage("log.office.extract_empty", imageName));
+                            log.warn(I18N.get("log.office.extract_empty", imageName));
                         }
                     }
                 }
                 
                 if (imageCount > 0) {
-                    log.info(LogMessageProvider.getMessage("log.office.sheet_images",
+                    log.info(I18N.get("log.office.sheet_images",
                         sheetIndex + 1, imageCount));
                 }
             }
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.office.xlsx_extract_failed"), e);
+            log.error(I18N.get("log.office.xlsx_extract_failed"), e);
         }
     }
 

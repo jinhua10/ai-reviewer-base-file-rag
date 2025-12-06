@@ -7,7 +7,7 @@ import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
 import top.yumbo.ai.rag.image.extractor.impl.*;
 import top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class DocumentImageExtractionService {
         this.extractors.add(new PowerPointLegacyImageExtractor());
         this.extractors.add(new ExcelLegacyImageExtractor());
 
-        log.info(LogMessageProvider.getMessage("log.image.service.init", extractors.size(), aiAnalysisEnabled));
+        log.info(I18N.get("log.image.service.init", extractors.size(), aiAnalysisEnabled));
         log.info("   - SmartImageExtractor 策略: {}", smartImageExtractor.getActiveStrategy().getStrategyName());
     }
 
@@ -77,7 +77,7 @@ public class DocumentImageExtractionService {
         try (InputStream stream = new FileInputStream(documentFile)) {
             return extractAndSaveImages(stream, fileName, documentId);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.service.extract_failed", fileName), e);
+            log.error(I18N.get("log.image.service.extract_failed", fileName), e);
             return new ArrayList<>();
         }
     }
@@ -96,26 +96,26 @@ public class DocumentImageExtractionService {
         List<ImageInfo> savedImages = new ArrayList<>();
 
         try {
-            log.info(LogMessageProvider.getMessage("log.image.service.start", documentName));
+            log.info(I18N.get("log.image.service.start", documentName));
 
             // 1. 找到合适的提取器（Find suitable extractor）
             DocumentImageExtractor extractor = findExtractor(documentName);
             if (extractor == null) {
-                log.warn(LogMessageProvider.getMessage("log.image.service.no_extractor", documentName));
+                log.warn(I18N.get("log.image.service.no_extractor", documentName));
                 return savedImages;
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.service.using_extractor", extractor.getName()));
+            log.info(I18N.get("log.image.service.using_extractor", extractor.getName()));
 
             // 2. 提取图片（Extract images）
             List<ExtractedImage> extractedImages = extractor.extractImages(documentStream, documentName);
 
             if (extractedImages.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.image.service.no_images", documentName));
+                log.info(I18N.get("log.image.service.no_images", documentName));
                 return savedImages;
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.service.extracted", extractedImages.size()));
+            log.info(I18N.get("log.image.service.extracted", extractedImages.size()));
 
             // 3. 使用 SmartImageExtractor 理解图片含义（Use SmartImageExtractor to understand image content）
             // 这一步会执行 OCR 或 Vision LLM 分析，提取图片中的文字和语义
@@ -166,17 +166,17 @@ public class DocumentImageExtractionService {
 
                     savedImages.add(savedImage);
 
-                    log.info(LogMessageProvider.getMessage("log.image.service.saved", savedImage.getFilename(), extracted.getImageType(), extracted.getFileSize() / 1024));
+                    log.info(I18N.get("log.image.service.saved", savedImage.getFilename(), extracted.getImageType(), extracted.getFileSize() / 1024));
 
                 } catch (Exception e) {
-                    log.error(LogMessageProvider.getMessage("log.image.service.save_failed", extracted.getOriginalName()), e);
+                    log.error(I18N.get("log.image.service.save_failed", extracted.getOriginalName()), e);
                 }
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.service.success", savedImages.size(), documentName));
+            log.info(I18N.get("log.image.service.success", savedImages.size(), documentName));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.service.failed", documentName), e);
+            log.error(I18N.get("log.image.service.failed", documentName), e);
         }
 
         return savedImages;

@@ -8,7 +8,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.ppl.PPLException;
 import top.yumbo.ai.rag.ppl.PPLMetrics;
@@ -61,28 +61,28 @@ public class PPLOnnxService implements PPLService {
 
     @PostConstruct
     public void init() {
-        log.info(LogMessageProvider.getMessage("ppl_onnx.log.init_start"));
+        log.info(I18N.get("ppl_onnx.log.init_start"));
 
         try {
             PPLConfig.OnnxConfig onnxConfig = config.getOnnx();
 
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.model_path", onnxConfig.getModelPath()));
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.tokenizer_path", onnxConfig.getTokenizerPath()));
+            log.info(I18N.get("ppl_onnx.log.model_path", onnxConfig.getModelPath()));
+            log.info(I18N.get("ppl_onnx.log.tokenizer_path", onnxConfig.getTokenizerPath()));
 
             // 1. 初始化 ONNX Runtime 环境
             this.env = OrtEnvironment.getEnvironment();
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.env_created"));
+            log.info(I18N.get("ppl_onnx.log.env_created"));
 
             // 2. 加载 ONNX 模型
             OrtSession.SessionOptions sessionOptions = new OrtSession.SessionOptions();
             sessionOptions.setOptimizationLevel(OrtSession.SessionOptions.OptLevel.BASIC_OPT);
 
             this.session = env.createSession(onnxConfig.getModelPath(), sessionOptions);
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.model_loaded", onnxConfig.getModelPath()));
+            log.info(I18N.get("ppl_onnx.log.model_loaded", onnxConfig.getModelPath()));
 
             // 3. 加载 Tokenizer
             this.tokenizer = HuggingFaceTokenizer.newInstance(Paths.get(onnxConfig.getTokenizerPath()));
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.tokenizer_loaded", onnxConfig.getTokenizerPath()));
+            log.info(I18N.get("ppl_onnx.log.tokenizer_loaded", onnxConfig.getTokenizerPath()));
 
             // 4. 初始化缓存
             if (onnxConfig.isUseCache()) {
@@ -91,15 +91,15 @@ public class PPLOnnxService implements PPLService {
                         .expireAfterWrite(Duration.ofSeconds(onnxConfig.getCacheTtl()))
                         .recordStats()
                         .build();
-                log.info(LogMessageProvider.getMessage("ppl_onnx.log.cache_init",
+                log.info(I18N.get("ppl_onnx.log.cache_init",
                         onnxConfig.getCacheSize(), onnxConfig.getCacheTtl()));
             }
 
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.init_success"));
+            log.info(I18N.get("ppl_onnx.log.init_success"));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppl_onnx.log.init_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("ppl_onnx.error.init_failed"), e);
+            log.error(I18N.get("ppl_onnx.log.init_failed"), e);
+            throw new RuntimeException(I18N.get("ppl_onnx.error.init_failed"), e);
         }
     }
 
@@ -207,10 +207,10 @@ public class PPLOnnxService implements PPLService {
 
         } catch (Exception e) {
             metrics.recordFailure(System.currentTimeMillis() - startTime);
-            log.error(LogMessageProvider.getMessage("ppl_onnx.log.calc_ppl_failed",
+            log.error(I18N.get("ppl_onnx.log.calc_ppl_failed",
                     text.substring(0, Math.min(50, text.length()))), e);
             throw new PPLException(PPLProviderType.ONNX,
-                    LogMessageProvider.getMessage("ppl_onnx.error.calc_ppl_failed"), e);
+                    I18N.get("ppl_onnx.error.calc_ppl_failed"), e);
         }
     }
 
@@ -275,7 +275,7 @@ public class PPLOnnxService implements PPLService {
         } catch (Exception e) {
             metrics.recordFailure(System.currentTimeMillis() - startTime);
             throw new PPLException(PPLProviderType.ONNX,
-                    LogMessageProvider.getMessage("ppl_onnx.error.chunk_failed"), e);
+                    I18N.get("ppl_onnx.error.chunk_failed"), e);
         }
     }
 
@@ -693,7 +693,7 @@ public class PPLOnnxService implements PPLService {
         } catch (Exception e) {
             metrics.recordFailure(System.currentTimeMillis() - startTime);
             throw new PPLException(PPLProviderType.ONNX,
-                    LogMessageProvider.getMessage("ppl_onnx.error.rerank_failed"), e);
+                    I18N.get("ppl_onnx.error.rerank_failed"), e);
         }
     }
 
@@ -745,7 +745,7 @@ public class PPLOnnxService implements PPLService {
             return ppl > 0 && ppl < 10000;
 
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("ppl_onnx.log.health_check_failed"), e);
+            log.warn(I18N.get("ppl_onnx.log.health_check_failed"), e);
             return false;
         }
     }
@@ -765,31 +765,31 @@ public class PPLOnnxService implements PPLService {
      */
     @PreDestroy
     public void destroy() {
-        log.info(LogMessageProvider.getMessage("ppl_onnx.log.shutdown_start"));
+        log.info(I18N.get("ppl_onnx.log.shutdown_start"));
 
         try {
             // 释放 ONNX Session (Release ONNX Session)
             if (session != null) {
                 session.close();
-                log.info(LogMessageProvider.getMessage("ppl_onnx.log.session_closed"));
+                log.info(I18N.get("ppl_onnx.log.session_closed"));
             }
 
             // 关闭 Tokenizer (Close Tokenizer)
             if (tokenizer != null) {
                 tokenizer.close();
-                log.info(LogMessageProvider.getMessage("ppl_onnx.log.tokenizer_closed"));
+                log.info(I18N.get("ppl_onnx.log.tokenizer_closed"));
             }
 
             // 清理缓存 (Clear cache)
             if (pplCache != null) {
                 pplCache.invalidateAll();
-                log.info(LogMessageProvider.getMessage("ppl_onnx.log.cache_cleared"));
+                log.info(I18N.get("ppl_onnx.log.cache_cleared"));
             }
 
-            log.info(LogMessageProvider.getMessage("ppl_onnx.log.shutdown_success"));
+            log.info(I18N.get("ppl_onnx.log.shutdown_success"));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppl_onnx.log.shutdown_error"), e);
+            log.error(I18N.get("ppl_onnx.log.shutdown_error"), e);
         }
     }
 }

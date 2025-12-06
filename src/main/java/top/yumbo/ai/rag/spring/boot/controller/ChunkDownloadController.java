@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -41,7 +41,7 @@ public class ChunkDownloadController {
             List<ChunkStorageInfo> chunks = chunkStorageService.listChunks(documentId);
             return ResponseEntity.ok(chunks);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("chunk_download.log.list_failed", documentId), e);
+            log.error(I18N.get("chunk_download.log.list_failed", documentId), e);
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -73,7 +73,7 @@ public class ChunkDownloadController {
                     .body(resource);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("chunk_download.log.download_failed", documentId, chunkId), e);
+            log.error(I18N.get("chunk_download.log.download_failed", documentId, chunkId), e);
             return ResponseEntity.notFound().build();
         }
     }
@@ -92,7 +92,7 @@ public class ChunkDownloadController {
                     .contentType(MediaType.TEXT_PLAIN)
                     .body(content);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("chunk_download.log.content_failed", documentId, chunkId), e);
+            log.error(I18N.get("chunk_download.log.content_failed", documentId, chunkId), e);
             return ResponseEntity.notFound().build();
         }
     }

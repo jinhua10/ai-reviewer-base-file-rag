@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.io.InputStream;
@@ -110,7 +110,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
      */
     public static void setExtractionMode(ExtractionMode mode) {
         currentExtractionMode = mode != null ? mode : ExtractionMode.CONCISE;
-        log.info(LogMessageProvider.getMessage("log.imageproc.extraction_mode", currentExtractionMode.value));
+        log.info(I18N.get("log.imageproc.extraction_mode", currentExtractionMode.value));
     }
 
     /**
@@ -128,12 +128,12 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
                 ? "vision_llm.prompt.extract_text_concise"
                 : "vision_llm.prompt.extract_text";
 
-        String prompt = LogMessageProvider.getMessage(promptKey);
+        String prompt = I18N.get(promptKey);
 
         // 如果精简版提示词不存在，回退到详细版（Fallback to detailed if concise not found）
         if ((prompt == null || prompt.isEmpty() || prompt.equals(promptKey))
                 && currentExtractionMode == ExtractionMode.CONCISE) {
-            prompt = LogMessageProvider.getMessage("vision_llm.prompt.extract_text");
+            prompt = I18N.get("vision_llm.prompt.extract_text");
         }
 
         return prompt;
@@ -184,18 +184,18 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         if (lowerEndpoint.contains("/api/generate") ||
             lowerEndpoint.contains("/api/chat") ||
             lowerEndpoint.contains(":11434")) {
-            log.debug(LogMessageProvider.getMessage("vision_llm.log.api_format_detected", "Ollama"));
+            log.debug(I18N.get("vision_llm.log.api_format_detected", "Ollama"));
             return ApiFormat.OLLAMA;
         }
 
         // 检测 OpenAI Chat Completions 格式
         if (lowerEndpoint.contains("/chat/completions") || lowerEndpoint.contains("/v1/")) {
-            log.debug(LogMessageProvider.getMessage("vision_llm.log.api_format_detected", "OpenAI Chat Completions"));
+            log.debug(I18N.get("vision_llm.log.api_format_detected", "OpenAI Chat Completions"));
             return ApiFormat.OPENAI_CHAT;
         }
 
         // 默认使用 OpenAI Chat Completions 格式（最通用）
-        log.debug(LogMessageProvider.getMessage("vision_llm.log.api_format_default"));
+        log.debug(I18N.get("vision_llm.log.api_format_default"));
         return ApiFormat.OPENAI_CHAT;
     }
 
@@ -229,8 +229,8 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
                 // OpenAI Chat Completions：检查 API Key
                 if (apiKey == null || apiKey.isEmpty()) {
                     available = false;
-                    log.warn(LogMessageProvider.getMessage("vision_llm.log.unavailable_no_apikey"));
-                    log.warn(LogMessageProvider.getMessage("vision_llm.log.hint_set_apikey"));
+                    log.warn(I18N.get("vision_llm.log.unavailable_no_apikey"));
+                    log.warn(I18N.get("vision_llm.log.hint_set_apikey"));
                     return;
                 }
                 // 不实际测试连接（避免额外费用），假定配置正确
@@ -238,16 +238,16 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             }
 
             if (available) {
-                log.info(LogMessageProvider.getMessage("vision_llm.log.service_available"));
-                log.info(LogMessageProvider.getMessage("vision_llm.log.api_format", apiFormat));
-                log.info(LogMessageProvider.getMessage("vision_llm.log.model", model));
-                log.info(LogMessageProvider.getMessage("vision_llm.log.endpoint", apiEndpoint));
+                log.info(I18N.get("vision_llm.log.service_available"));
+                log.info(I18N.get("vision_llm.log.api_format", apiFormat));
+                log.info(I18N.get("vision_llm.log.model", model));
+                log.info(I18N.get("vision_llm.log.endpoint", apiEndpoint));
             }
 
         } catch (Exception e) {
             available = false;
-            log.warn(LogMessageProvider.getMessage("vision_llm.log.service_unavailable", e.getMessage()));
-            log.warn(LogMessageProvider.getMessage("vision_llm.log.check_service"));
+            log.warn(I18N.get("vision_llm.log.service_unavailable", e.getMessage()));
+            log.warn(I18N.get("vision_llm.log.check_service"));
         }
     }
 
@@ -268,7 +268,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
                 available = true;
             } else {
                 available = false;
-                log.warn(LogMessageProvider.getMessage("vision_llm.log.service_response_error", response.code()));
+                log.warn(I18N.get("vision_llm.log.service_response_error", response.code()));
             }
         }
     }
@@ -276,17 +276,17 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     @Override
     public String extractContent(InputStream imageStream, String imageName) {
         if (!available) {
-            return LogMessageProvider.getMessage("vision_llm.error.unavailable", imageName);
+            return I18N.get("vision_llm.error.unavailable", imageName);
         }
 
         // 检查图片格式是否支持
         if (!isSupportedImageFormat(imageName)) {
-            log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format", imageName, getFileExtension(imageName)));
-            return LogMessageProvider.getMessage("vision_llm.error.unsupported_format", imageName, getFileExtension(imageName));
+            log.warn(I18N.get("vision_llm.log.unsupported_format", imageName, getFileExtension(imageName)));
+            return I18N.get("vision_llm.error.unsupported_format", imageName, getFileExtension(imageName));
         }
 
         try {
-            log.debug(LogMessageProvider.getMessage("vision_llm.log.processing_image", imageName));
+            log.debug(I18N.get("vision_llm.log.processing_image", imageName));
 
             // 1. 读取图片并转为 base64
             byte[] imageBytes = imageStream.readAllBytes();
@@ -295,29 +295,29 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             // 2. 调用 Vision API
             String result = callVisionAPI(base64Image, imageName);
 
-            log.info(LogMessageProvider.getMessage("vision_llm.log.content_extracted", imageName, result.length()));
+            log.info(I18N.get("vision_llm.log.content_extracted", imageName, result.length()));
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("vision_llm.log.processing_failed", imageName), e);
-            return LogMessageProvider.getMessage("vision_llm.error.processing_failed", imageName, e.getMessage());
+            log.error(I18N.get("vision_llm.log.processing_failed", imageName), e);
+            return I18N.get("vision_llm.error.processing_failed", imageName, e.getMessage());
         }
     }
 
     @Override
     public String extractContent(File imageFile) {
         if (!available) {
-            return LogMessageProvider.getMessage("vision_llm.error.unavailable", imageFile.getName());
+            return I18N.get("vision_llm.error.unavailable", imageFile.getName());
         }
 
         // 检查图片格式是否支持
         if (!isSupportedImageFormat(imageFile.getName())) {
-            log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format", imageFile.getName(), getFileExtension(imageFile.getName())));
-            return LogMessageProvider.getMessage("vision_llm.error.unsupported_format", imageFile.getName(), getFileExtension(imageFile.getName()));
+            log.warn(I18N.get("vision_llm.log.unsupported_format", imageFile.getName(), getFileExtension(imageFile.getName())));
+            return I18N.get("vision_llm.error.unsupported_format", imageFile.getName(), getFileExtension(imageFile.getName()));
         }
 
         try {
-            log.debug(LogMessageProvider.getMessage("vision_llm.log.processing_image_file", imageFile.getName()));
+            log.debug(I18N.get("vision_llm.log.processing_image_file", imageFile.getName()));
 
             // 读取文件并转为 base64
             byte[] imageBytes = Files.readAllBytes(imageFile.toPath());
@@ -326,12 +326,12 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             // 调用 Vision API
             String result = callVisionAPI(base64Image, imageFile.getName());
 
-            log.info(LogMessageProvider.getMessage("vision_llm.log.content_extracted", imageFile.getName(), result.length()));
+            log.info(I18N.get("vision_llm.log.content_extracted", imageFile.getName(), result.length()));
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("vision_llm.log.processing_failed", imageFile.getName()), e);
-            return LogMessageProvider.getMessage("vision_llm.error.processing_failed", imageFile.getName(), e.getMessage());
+            log.error(I18N.get("vision_llm.log.processing_failed", imageFile.getName()), e);
+            return I18N.get("vision_llm.error.processing_failed", imageFile.getName(), e.getMessage());
         }
     }
 
@@ -345,7 +345,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
      */
     public String extractContentBatch(java.util.List<byte[]> imageDataList, java.util.List<String> imageNames) {
         if (!available) {
-            return LogMessageProvider.getMessage("vision_llm.error.unavailable", "batch images");
+            return I18N.get("vision_llm.error.unavailable", "batch images");
         }
 
         if (imageDataList == null || imageDataList.isEmpty()) {
@@ -362,13 +362,13 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
                 validImages.add(imageDataList.get(i));
                 validNames.add(imageName);
             } else {
-                log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format",
+                log.warn(I18N.get("vision_llm.log.unsupported_format",
                     imageName, getFileExtension(imageName)));
             }
         }
 
         if (validImages.isEmpty()) {
-            return LogMessageProvider.getMessage("vision_llm.error.no_valid_images");
+            return I18N.get("vision_llm.error.no_valid_images");
         }
 
         try {
@@ -389,7 +389,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
 
         } catch (Exception e) {
             log.error("批量 Vision LLM 处理失败", e);
-            return LogMessageProvider.getMessage("vision_llm.error.batch_processing_failed",
+            return I18N.get("vision_llm.error.batch_processing_failed",
                 validImages.size(), e.getMessage());
         }
     }
@@ -401,7 +401,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         // 根据 API 格式构建不同的请求体
         String requestBody = buildVisionRequest(base64Image);
 
-        log.debug(LogMessageProvider.getMessage("vision_llm.log.sending_request", model, apiFormat));
+        log.debug(I18N.get("vision_llm.log.sending_request", model, apiFormat));
 
         // 创建 HTTP 请求
         Request.Builder requestBuilder = new Request.Builder()
@@ -421,14 +421,14 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
 
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() :
-                    LogMessageProvider.getMessage("vision_llm.error.no_response_body");
-                log.error(LogMessageProvider.getMessage("vision_llm.error.api_error_with_body",
+                    I18N.get("vision_llm.error.no_response_body");
+                log.error(I18N.get("vision_llm.error.api_error_with_body",
                     response.code(), errorBody));
-                throw new Exception(LogMessageProvider.getMessage("vision_llm.error.api_error", response.code()));
+                throw new Exception(I18N.get("vision_llm.error.api_error", response.code()));
             }
 
             String responseBody = response.body().string();
-            log.debug(LogMessageProvider.getMessage("vision_llm.log.received_response", elapsed));
+            log.debug(I18N.get("vision_llm.log.received_response", elapsed));
 
             // 根据 API 格式解析响应
             return parseVisionResponse(responseBody);
@@ -442,7 +442,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         // 根据 API 格式构建不同的请求体
         String requestBody = buildVisionRequest(base64Images);
 
-        log.debug(LogMessageProvider.getMessage("vision_llm.log.sending_request_batch", model, apiFormat));
+        log.debug(I18N.get("vision_llm.log.sending_request_batch", model, apiFormat));
 
         // 创建 HTTP 请求
         Request.Builder requestBuilder = new Request.Builder()
@@ -462,14 +462,14 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
 
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() :
-                    LogMessageProvider.getMessage("vision_llm.error.no_response_body");
-                log.error(LogMessageProvider.getMessage("vision_llm.error.api_error_with_body",
+                    I18N.get("vision_llm.error.no_response_body");
+                log.error(I18N.get("vision_llm.error.api_error_with_body",
                     response.code(), errorBody));
-                throw new Exception(LogMessageProvider.getMessage("vision_llm.error.api_error", response.code()));
+                throw new Exception(I18N.get("vision_llm.error.api_error", response.code()));
             }
 
             String responseBody = response.body().string();
-            log.debug(LogMessageProvider.getMessage("vision_llm.log.received_response", elapsed));
+            log.debug(I18N.get("vision_llm.log.received_response", elapsed));
 
             // 根据 API 格式解析响应
             return parseVisionResponse(responseBody);
@@ -485,7 +485,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
      */
     public String extractContentBatchWithPosition(java.util.List<ImagePositionInfo> imagePositions) {
         if (!available) {
-            return LogMessageProvider.getMessage("vision_llm.error.unavailable", "batch images");
+            return I18N.get("vision_llm.error.unavailable", "batch images");
         }
 
         if (imagePositions == null || imagePositions.isEmpty()) {
@@ -499,13 +499,13 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             if (isSupportedImageFormat(imgPos.getImageName())) {
                 validImages.add(imgPos);
             } else {
-                log.warn(LogMessageProvider.getMessage("vision_llm.log.unsupported_format",
+                log.warn(I18N.get("vision_llm.log.unsupported_format",
                     imgPos.getImageName(), getFileExtension(imgPos.getImageName())));
             }
         }
 
         if (validImages.isEmpty()) {
-            return LogMessageProvider.getMessage("vision_llm.error.no_valid_images");
+            return I18N.get("vision_llm.error.no_valid_images");
         }
 
         try {
@@ -542,7 +542,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
 
         } catch (Exception e) {
             log.error("批量 Vision LLM 处理失败（含位置信息）", e);
-            return LogMessageProvider.getMessage("vision_llm.error.batch_processing_failed",
+            return I18N.get("vision_llm.error.batch_processing_failed",
                 validImages.size(), e.getMessage());
         }
     }
@@ -576,10 +576,10 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
 
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() :
-                    LogMessageProvider.getMessage("vision_llm.error.no_response_body");
-                log.error(LogMessageProvider.getMessage("vision_llm.error.api_error_with_body",
+                    I18N.get("vision_llm.error.no_response_body");
+                log.error(I18N.get("vision_llm.error.api_error_with_body",
                     response.code(), errorBody));
-                throw new Exception(LogMessageProvider.getMessage("vision_llm.error.api_error", response.code()));
+                throw new Exception(I18N.get("vision_llm.error.api_error", response.code()));
             }
 
             String responseBody = response.body().string();
@@ -928,7 +928,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
                         int completionTokens = usage.path("completion_tokens").asInt(0);
                         int totalTokens = usage.path("total_tokens").asInt(0);
 
-                        log.debug(LogMessageProvider.getMessage("vision_llm.log.token_usage",
+                        log.debug(I18N.get("vision_llm.log.token_usage",
                             promptTokens, completionTokens, totalTokens));
                     }
 
@@ -937,7 +937,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             }
         }
 
-        throw new Exception(LogMessageProvider.getMessage("vision_llm.error.parse_openai_failed", responseBody));
+        throw new Exception(I18N.get("vision_llm.error.parse_openai_failed", responseBody));
     }
 
     /**
@@ -956,7 +956,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
                 // 记录处理时间等信息
                 JsonNode done = root.get("done");
                 if (done != null && done.asBoolean()) {
-                    log.debug(LogMessageProvider.getMessage("vision_llm.log.ollama_complete_chat"));
+                    log.debug(I18N.get("vision_llm.log.ollama_complete_chat"));
                 }
 
                 return result;
@@ -971,13 +971,13 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             // 记录处理时间等信息
             JsonNode done = root.get("done");
             if (done != null && done.asBoolean()) {
-                log.debug(LogMessageProvider.getMessage("vision_llm.log.ollama_complete_generate"));
+                log.debug(I18N.get("vision_llm.log.ollama_complete_generate"));
             }
 
             return result;
         }
 
-        throw new Exception(LogMessageProvider.getMessage("vision_llm.error.parse_ollama_failed", responseBody));
+        throw new Exception(I18N.get("vision_llm.error.parse_ollama_failed", responseBody));
     }
 
     /**

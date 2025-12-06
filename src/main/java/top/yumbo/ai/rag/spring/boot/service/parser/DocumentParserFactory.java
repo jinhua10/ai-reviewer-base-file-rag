@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.spring.boot.service.parser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class DocumentParserFactory {
     @Autowired
     public DocumentParserFactory(List<DocumentParser> parsers) {
         this.parsers = parsers != null ? parsers : new ArrayList<>();
-        log.info(LogMessageProvider.getMessage("parser_factory.log.registered_parsers", this.parsers.size()));
+        log.info(I18N.get("parser_factory.log.registered_parsers", this.parsers.size()));
         for (DocumentParser parser : this.parsers) {
             log.info("  - {}: {}", parser.getParserName(), parser.getSupportedTypes());
         }
@@ -48,12 +48,12 @@ public class DocumentParserFactory {
     public DocumentParser getParser(String documentPath, String mimeType) {
         for (DocumentParser parser : parsers) {
             if (parser.supports(documentPath, mimeType)) {
-                log.debug(LogMessageProvider.getMessage("parser_factory.log.select_parser", parser.getParserName(), documentPath));
+                log.debug(I18N.get("parser_factory.log.select_parser", parser.getParserName(), documentPath));
                 return parser;
             }
         }
 
-        log.warn(LogMessageProvider.getMessage("parser_factory.log.no_parser_found", documentPath));
+        log.warn(I18N.get("parser_factory.log.no_parser_found", documentPath));
         return null;
     }
 
@@ -87,6 +87,6 @@ public class DocumentParserFactory {
      */
     public void registerParser(DocumentParser parser) {
         parsers.add(parser);
-        log.info(LogMessageProvider.getMessage("parser_factory.log.register_parser", parser.getParserName(), parser.getSupportedTypes()));
+        log.info(I18N.get("parser_factory.log.register_parser", parser.getParserName(), parser.getSupportedTypes()));
     }
 }

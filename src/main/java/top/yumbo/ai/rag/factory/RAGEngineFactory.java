@@ -8,7 +8,7 @@ import top.yumbo.ai.rag.core.StorageEngine;
 import top.yumbo.ai.rag.impl.cache.CaffeineCacheEngine;
 import top.yumbo.ai.rag.impl.index.LuceneIndexEngine;
 import top.yumbo.ai.rag.impl.storage.FileSystemStorageEngine;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * RAG引擎工厂 (RAG engine factory)
@@ -24,7 +24,7 @@ public class RAGEngineFactory {
      * 创建默认的存储引擎 (Create default storage engine)
      */
     public static StorageEngine createStorageEngine(RAGConfiguration config) {
-        log.info(LogMessageProvider.getMessage("log.factory.create_filesystem"));
+        log.info(I18N.get("log.factory.create_filesystem"));
         return new FileSystemStorageEngine(config.getStorage());
     }
 
@@ -32,7 +32,7 @@ public class RAGEngineFactory {
      * 创建默认的索引引擎 (Create default index engine)
      */
     public static IndexEngine createIndexEngine(RAGConfiguration config) {
-        log.info(LogMessageProvider.getMessage("log.factory.create_lucene"));
+        log.info(I18N.get("log.factory.create_lucene"));
         return new LuceneIndexEngine(config.getIndex(), config.getStorage().getBasePath());
     }
 
@@ -40,7 +40,7 @@ public class RAGEngineFactory {
      * 创建默认的缓存引擎 (Create default cache engine)
      */
     public static CacheEngine createCacheEngine(RAGConfiguration config) {
-        log.info(LogMessageProvider.getMessage("log.factory.create_caffeine"));
+        log.info(I18N.get("log.factory.create_caffeine"));
         return new CaffeineCacheEngine(config.getCache());
     }
 }

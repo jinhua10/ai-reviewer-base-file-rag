@@ -7,7 +7,7 @@ import java.util.List;
 import top.yumbo.ai.rag.chunking.impl.SimpleDocumentChunker;
 import top.yumbo.ai.rag.chunking.impl.SmartKeywordChunker;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 文档切分器工厂 (Document chunker factory)
@@ -31,7 +31,7 @@ public class DocumentChunkerFactory {
                                                  ChunkingConfig config,
                                                  LLMClient llmClient) {
 
-        log.info(LogMessageProvider.getMessage("log.chunker.creating", strategy, config.getChunkSize(), config.getChunkOverlap()));
+        log.info(I18N.get("log.chunker.creating", strategy, config.getChunkSize(), config.getChunkOverlap()));
 
         switch (strategy) {
             case NONE:
@@ -45,17 +45,17 @@ public class DocumentChunkerFactory {
 
             case AI_SEMANTIC:
                 if (llmClient == null) {
-                    log.warn(LogMessageProvider.getMessage("log.chunker.llm_null"));
+                    log.warn(I18N.get("log.chunker.llm_null"));
                     return new SmartKeywordChunker(config);
                 }
                 if (!config.getAiChunking().isEnabled()) {
-                    log.warn(LogMessageProvider.getMessage("log.chunker.ai_disabled"));
+                    log.warn(I18N.get("log.chunker.ai_disabled"));
                     return new SmartKeywordChunker(config);
                 }
                 return new AiSemanticChunker(config, llmClient);
 
             default:
-                log.warn(LogMessageProvider.getMessage("log.chunker.unknown_strategy", strategy));
+                log.warn(I18N.get("log.chunker.unknown_strategy", strategy));
                 return new SmartKeywordChunker(config);
         }
     }

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.controller.DocumentManagementController.DocumentInfo;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -55,33 +55,33 @@ public class DocumentManagementService {
                 var resource = getClass().getClassLoader().getResource(resourcePath);
                 if (resource != null) {
                     Path tempPath = Paths.get(resource.toURI());
-                    log.info(LogMessageProvider.getMessage("log.docs.classpath_resource_found", tempPath.toAbsolutePath()));
+                    log.info(I18N.get("log.docs.classpath_resource_found", tempPath.toAbsolutePath()));
 
                     // 检查是否在 JAR 内
                     if (tempPath.toString().contains(".jar!")) {
-                        log.warn(LogMessageProvider.getMessage("log.docs.classpath_in_jar"));
-                        log.warn(LogMessageProvider.getMessage("log.docs.upload_to_external"));
+                        log.warn(I18N.get("log.docs.classpath_in_jar"));
+                        log.warn(I18N.get("log.docs.upload_to_external"));
                         resolvedPath = Paths.get("./data/documents");
                     } else {
                         // 开发环境，使用 classpath 的实际路径
                         resolvedPath = tempPath;
-                        log.info(LogMessageProvider.getMessage("log.docs.classpath_realpath", resolvedPath.toAbsolutePath()));
+                        log.info(I18N.get("log.docs.classpath_realpath", resolvedPath.toAbsolutePath()));
                     }
                 } else {
                     // 如果 classpath 资源不存在，使用默认路径
-                    log.warn(LogMessageProvider.getMessage("log.docs.classpath_not_exists", resourcePath));
-                    log.info(LogMessageProvider.getMessage("log.docs.using_default_path"));
+                    log.warn(I18N.get("log.docs.classpath_not_exists", resourcePath));
+                    log.info(I18N.get("log.docs.using_default_path"));
                     resolvedPath = Paths.get("./data/documents");
                 }
             } catch (Exception e) {
-                log.warn(LogMessageProvider.getMessage("log.docs.classpath_load_failed", resourcePath, e.getMessage()));
-                log.info(LogMessageProvider.getMessage("log.docs.using_default_path"));
+                log.warn(I18N.get("log.docs.classpath_load_failed", resourcePath, e.getMessage()));
+                log.info(I18N.get("log.docs.using_default_path"));
                 resolvedPath = Paths.get("./data/documents");
             }
         } else {
             // 使用文件系统路径
             resolvedPath = Paths.get(sourcePath);
-            log.info(LogMessageProvider.getMessage("log.docs.using_filesystem", resolvedPath.toAbsolutePath()));
+            log.info(I18N.get("log.docs.using_filesystem", resolvedPath.toAbsolutePath()));
         }
 
         this.documentsPath = resolvedPath;
@@ -89,10 +89,10 @@ public class DocumentManagementService {
         // 确保目录存在
         try {
             Files.createDirectories(this.documentsPath);
-            log.info(LogMessageProvider.getMessage("log.docs.directory_ready", this.documentsPath.toAbsolutePath()));
+            log.info(I18N.get("log.docs.directory_ready", this.documentsPath.toAbsolutePath()));
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.docs.create_failed", e.getMessage()));
-            throw new RuntimeException(LogMessageProvider.getMessage("document_service.error.cannot_create_dir", e.getMessage()), e);
+            log.error(I18N.get("log.docs.create_failed", e.getMessage()));
+            throw new RuntimeException(I18N.get("document_service.error.cannot_create_dir", e.getMessage()), e);
         }
     }
 
@@ -106,13 +106,13 @@ public class DocumentManagementService {
         String originalFilename = file.getOriginalFilename();
 
         if (originalFilename == null || originalFilename.isEmpty()) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("document_service.error.filename_empty"));
+            throw new IllegalArgumentException(I18N.get("document_service.error.filename_empty"));
         }
 
         // 验证文件格式 / Validate file format
         String extension = getFileExtension(originalFilename);
         if (!SUPPORTED_EXTENSIONS.contains(extension.toLowerCase())) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("document_service.error.unsupported_format", extension));
+            throw new IllegalArgumentException(I18N.get("document_service.error.unsupported_format", extension));
         }
 
         // 验证文件大小 / Validate file size
@@ -120,7 +120,7 @@ public class DocumentManagementService {
         if (file.getSize() > maxSize) {
             double fileSizeMB = file.getSize() / 1024.0 / 1024.0;
             throw new IllegalArgumentException(
-                    LogMessageProvider.getMessage("document_service.error.file_too_large",
+                    I18N.get("document_service.error.file_too_large",
                             String.format("%.2f", fileSizeMB),
                             properties.getDocument().getMaxFileSizeMb())
             );
@@ -135,7 +135,7 @@ public class DocumentManagementService {
             String nameWithoutExt = originalFilename.substring(0, originalFilename.lastIndexOf('.'));
             String newFilename = nameWithoutExt + "_" + timestamp + "." + extension;
             targetPath = documentsPath.resolve(newFilename);
-            log.info(LogMessageProvider.getMessage("log.docs.file_exists_renamed", newFilename));
+            log.info(I18N.get("log.docs.file_exists_renamed", newFilename));
         }
 
         // 使用 try-with-resources 确保流被正确关闭
@@ -143,7 +143,7 @@ public class DocumentManagementService {
             Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
         }
 
-        log.info(LogMessageProvider.getMessage("log.docs.saved", targetPath.getFileName()));
+        log.info(I18N.get("log.docs.saved", targetPath.getFileName()));
 
         return targetPath.getFileName().toString();
     }
@@ -158,17 +158,17 @@ public class DocumentManagementService {
         Path filePath = documentsPath.resolve(fileName);
 
         if (!Files.exists(filePath)) {
-            log.warn(LogMessageProvider.getMessage("log.docs.not_found", fileName));
+            log.warn(I18N.get("log.docs.not_found", fileName));
             return false;
         }
 
         // 安全检查：确保文件在文档目录内 / Security check: ensure file is within document directory
         if (!filePath.normalize().startsWith(documentsPath.normalize())) {
-            throw new SecurityException(LogMessageProvider.getMessage("document_service.error.illegal_path"));
+            throw new SecurityException(I18N.get("document_service.error.illegal_path"));
         }
 
         Files.delete(filePath);
-        log.info(LogMessageProvider.getMessage("log.docs.deleted", fileName));
+        log.info(I18N.get("log.docs.deleted", fileName));
 
         return true;
     }
@@ -243,7 +243,7 @@ public class DocumentManagementService {
 
         // 安全检查：确保文件在文档目录内 / Security check: ensure file is within document directory
         if (!filePath.normalize().startsWith(documentsPath.normalize())) {
-            throw new SecurityException(LogMessageProvider.getMessage("document_service.error.illegal_path"));
+            throw new SecurityException(I18N.get("document_service.error.illegal_path"));
         }
 
         return filePath;
@@ -268,7 +268,7 @@ public class DocumentManagementService {
                     .collect(Collectors.toList());
         }
 
-        log.debug(LogMessageProvider.getMessage("document_service.log.scanned_types", fileTypes));
+        log.debug(I18N.get("document_service.log.scanned_types", fileTypes));
         return fileTypes;
     }
 }

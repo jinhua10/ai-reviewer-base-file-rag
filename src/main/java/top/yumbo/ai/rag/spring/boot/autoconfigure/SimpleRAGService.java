@@ -8,7 +8,7 @@ import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import jakarta.annotation.PreDestroy;
 import java.io.File;
@@ -59,7 +59,7 @@ public class SimpleRAGService {
             .build();
 
         String docId = rag.index(doc);
-        log.debug(LogMessageProvider.getMessage("log.simple.doc_indexed", title, docId));
+        log.debug(I18N.get("log.simple.doc_indexed", title, docId));
 
         return docId;
     }
@@ -69,11 +69,11 @@ public class SimpleRAGService {
      */
     public String indexFile(File file) {
         if (file == null || !file.exists()) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_exists", String.valueOf(file)));
+            throw new IllegalArgumentException(I18N.get("error.file.not_exists", String.valueOf(file)));
         }
 
         if (!file.isFile()) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_a_file", String.valueOf(file)));
+            throw new IllegalArgumentException(I18N.get("error.file.not_a_file", String.valueOf(file)));
         }
 
         try {
@@ -82,8 +82,8 @@ public class SimpleRAGService {
             String content = parser.parse(file);
 
             if (content == null || content.trim().isEmpty()) {
-                log.warn(LogMessageProvider.getMessage("log.simple.file_empty", file.getName()));
-                throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.empty", file.getName()));
+                log.warn(I18N.get("log.simple.file_empty", file.getName()));
+                throw new IllegalArgumentException(I18N.get("error.file.empty", file.getName()));
             }
 
             // 构建元数据
@@ -96,13 +96,13 @@ public class SimpleRAGService {
 
             // 索引文档
             String docId = index(file.getName(), content, metadata);
-            log.info(LogMessageProvider.getMessage("log.simple.index_file", file.getName(), docId, file.length()));
+            log.info(I18N.get("log.simple.index_file", file.getName(), docId, file.length()));
 
             return docId;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.simple.index_file_failed", file.getName()), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("error.file.index_failed", file.getName()), e);
+            log.error(I18N.get("log.simple.index_file_failed", file.getName()), e);
+            throw new RuntimeException(I18N.get("error.file.index_failed", file.getName()), e);
         }
     }
 
@@ -122,12 +122,12 @@ public class SimpleRAGService {
                 indexFile(file);
                 successCount++;
             } catch (Exception e) {
-                log.error(LogMessageProvider.getMessage("log.simple.index_file_failed", file.getName()), e);
+                log.error(I18N.get("log.simple.index_file_failed", file.getName()), e);
                 failCount++;
             }
         }
 
-        log.info(LogMessageProvider.getMessage("log.simple.batch_index_files_complete", successCount, failCount));
+        log.info(I18N.get("log.simple.batch_index_files_complete", successCount, failCount));
         return successCount;
     }
 
@@ -136,17 +136,17 @@ public class SimpleRAGService {
      */
     public int indexDirectory(File directory, boolean recursive) {
         if (directory == null || !directory.exists()) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.directory_not_exists", String.valueOf(directory)));
+            throw new IllegalArgumentException(I18N.get("error.file.directory_not_exists", String.valueOf(directory)));
         }
 
         if (!directory.isDirectory()) {
-            throw new IllegalArgumentException(LogMessageProvider.getMessage("error.file.not_a_directory", String.valueOf(directory)));
+            throw new IllegalArgumentException(I18N.get("error.file.not_a_directory", String.valueOf(directory)));
         }
 
         List<File> files = new ArrayList<>();
         collectFiles(directory, files, recursive);
 
-        log.info(LogMessageProvider.getMessage("log.simple.scanned_files", files.size()));
+        log.info(I18N.get("log.simple.scanned_files", files.size()));
         return indexFiles(files);
     }
 
@@ -182,7 +182,7 @@ public class SimpleRAGService {
      */
     public int indexBatch(List<Document> documents) {
         int count = rag.indexBatch(documents);
-        log.info(LogMessageProvider.getMessage("log.simple.batch_indexed", count));
+        log.info(I18N.get("log.simple.batch_indexed", count));
         return count;
     }
 
@@ -202,7 +202,7 @@ public class SimpleRAGService {
             .limit(Math.min(limit, properties.getSearch().getMaxLimit()))
             .build());
 
-        log.debug(LogMessageProvider.getMessage("log.simple.search_results", queryText, result.getDocuments().size()));
+        log.debug(I18N.get("log.simple.search_results", queryText, result.getDocuments().size()));
 
         // 从ScoredDocument中提取Document
         return result.getDocuments().stream()
@@ -229,7 +229,7 @@ public class SimpleRAGService {
      */
     public void commit() {
         rag.commit();
-        log.debug(LogMessageProvider.getMessage("log.simple.commit"));
+        log.debug(I18N.get("log.simple.commit"));
     }
 
     /**
@@ -237,7 +237,7 @@ public class SimpleRAGService {
      */
     public void optimize() {
         rag.optimizeIndex();
-        log.info(LogMessageProvider.getMessage("log.simple.optimized"));
+        log.info(I18N.get("log.simple.optimized"));
     }
 
     /**
@@ -249,7 +249,7 @@ public class SimpleRAGService {
 
     @PreDestroy
     public void cleanup() {
-        log.info(LogMessageProvider.getMessage("log.simple.shutdown"));
+        log.info(I18N.get("log.simple.shutdown"));
         rag.close();
     }
 }

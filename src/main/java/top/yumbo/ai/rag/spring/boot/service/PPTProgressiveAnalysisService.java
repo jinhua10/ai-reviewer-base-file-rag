@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
@@ -62,7 +62,7 @@ public class PPTProgressiveAnalysisService {
             List<XSLFSlide> slides = ppt.getSlides();
             int totalSlides = slides.size();
 
-            log.info(LogMessageProvider.getMessage("ppt_analysis.log.start_analysis", pptFile.getName(), totalSlides));
+            log.info(I18N.get("ppt_analysis.log.start_analysis", pptFile.getName(), totalSlides));
 
             // 创建文档来源并初始化备忘录管理器（Create document source and initialize memo manager）
             DocumentSource source = DocumentSource.fromPath(
@@ -74,7 +74,7 @@ public class PPTProgressiveAnalysisService {
                 XSLFSlide slide = slides.get(i);
                 int slideNumber = i + 1;
 
-                log.info(LogMessageProvider.getMessage("ppt_analysis.log.analyze_slide", slideNumber, totalSlides));
+                log.info(I18N.get("ppt_analysis.log.analyze_slide", slideNumber, totalSlides));
 
                 // 提取幻灯片内容
                 SlideContent slideContent = extractSlideContent(slide, slideNumber);
@@ -112,7 +112,7 @@ public class PPTProgressiveAnalysisService {
 
                 report.getSlideResults().add(result);
 
-                log.info(LogMessageProvider.getMessage("ppt_analysis.log.slide_complete", slideNumber,
+                log.info(I18N.get("ppt_analysis.log.slide_complete", slideNumber,
                     keyPoints.length() > 50 ? keyPoints.substring(0, 50) + "..." : keyPoints));
             }
 
@@ -125,11 +125,11 @@ public class PPTProgressiveAnalysisService {
             // 导出备忘录文档（Export memo document）
             report.setMemoDocument(memoManager.exportToMarkdown());
 
-            log.info(LogMessageProvider.getMessage("ppt_analysis.log.analysis_complete",
+            log.info(I18N.get("ppt_analysis.log.analysis_complete",
                 report.getEndTime() - report.getStartTime()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppt_analysis.log.analysis_failed"), e);
+            log.error(I18N.get("ppt_analysis.log.analysis_failed"), e);
             report.setSuccess(false);
             report.setErrorMessage(e.getMessage());
             report.setEndTime(System.currentTimeMillis());
@@ -403,7 +403,7 @@ public class PPTProgressiveAnalysisService {
             // 直接调用 LLM，不需要通过 RAG 搜索（Call LLM directly, no RAG search needed）
             return llmClient.generate(prompt.toString());
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppt_analysis.log.slide_failed", slideNumber), e);
+            log.error(I18N.get("ppt_analysis.log.slide_failed", slideNumber), e);
             return "Processing QA error: " + e.getMessage();
         }
     }
@@ -432,7 +432,7 @@ public class PPTProgressiveAnalysisService {
      */
     private void generateComprehensiveSummary(PPTAnalysisReport report, String question) {
         try {
-            log.info(LogMessageProvider.getMessage("ppt_analysis.log.generate_summary"));
+            log.info(I18N.get("ppt_analysis.log.generate_summary"));
 
             StringBuilder summaryPrompt = new StringBuilder();
 
@@ -465,14 +465,14 @@ public class PPTProgressiveAnalysisService {
 
             summaryPrompt.append("请生成最终总结报告:\n");
 
-            log.info(LogMessageProvider.getMessage("ppt_analysis.log.direct_llm_summary"));
+            log.info(I18N.get("ppt_analysis.log.direct_llm_summary"));
             String summary = llmClient.generate(summaryPrompt.toString());
             report.setComprehensiveSummary(summary);
 
-            log.info(LogMessageProvider.getMessage("ppt_analysis.log.summary_complete"));
+            log.info(I18N.get("ppt_analysis.log.summary_complete"));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppt_analysis.log.summary_failed"), e);
+            log.error(I18N.get("ppt_analysis.log.summary_failed"), e);
             report.setComprehensiveSummary(generateDefaultSummary(report));
         }
     }

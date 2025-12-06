@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.impl.index;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.*;
 import java.nio.file.*;
@@ -60,11 +60,11 @@ public class SimpleVectorIndexEngine {
             loadIndex();
         }
 
-        log.info(LogMessageProvider.getMessage("vector_index.log.init"));
-        log.info(LogMessageProvider.getMessage("vector_index.log.index_path", indexPath));
-        log.info(LogMessageProvider.getMessage("vector_index.log.dimension", dimension));
-        log.info(LogMessageProvider.getMessage("vector_index.log.current_count", size()));
-        log.info(LogMessageProvider.getMessage("vector_index.log.search_method"));
+        log.info(I18N.get("vector_index.log.init"));
+        log.info(I18N.get("vector_index.log.index_path", indexPath));
+        log.info(I18N.get("vector_index.log.dimension", dimension));
+        log.info(I18N.get("vector_index.log.current_count", size()));
+        log.info(I18N.get("vector_index.log.search_method"));
     }
 
     /**
@@ -73,13 +73,13 @@ public class SimpleVectorIndexEngine {
     public synchronized void addDocument(String docId, float[] vector) {
         if (vector == null || vector.length != dimension) {
             throw new IllegalArgumentException(
-                    LogMessageProvider.getMessage("vector_index.error.dimension_mismatch",
+                    I18N.get("vector_index.error.dimension_mismatch",
                             dimension, vector == null ? 0 : vector.length)
             );
         }
 
         vectorStore.put(docId, vector);
-        log.trace(LogMessageProvider.getMessage("vector_index.log.add_vector"),
+        log.trace(I18N.get("vector_index.log.add_vector"),
                 docId, vector.length);
     }
 
@@ -90,7 +90,7 @@ public class SimpleVectorIndexEngine {
         for (Map.Entry<String, float[]> entry : documents.entrySet()) {
             addDocument(entry.getKey(), entry.getValue());
         }
-        log.info(LogMessageProvider.getMessage("vector_index.log.batch_add"),
+        log.info(I18N.get("vector_index.log.batch_add"),
                 documents.size());
     }
 
@@ -107,13 +107,13 @@ public class SimpleVectorIndexEngine {
     public List<VectorSearchResult> search(float[] queryVector, int topK, float similarityThreshold) {
         if (queryVector == null || queryVector.length != dimension) {
             throw new IllegalArgumentException(
-                    LogMessageProvider.getMessage("vector_index.error.query_dimension_mismatch",
+                    I18N.get("vector_index.error.query_dimension_mismatch",
                             dimension, queryVector == null ? 0 : queryVector.length)
             );
         }
 
         if (vectorStore.isEmpty()) {
-            log.debug(LogMessageProvider.getMessage("vector_index.log.index_empty"));
+            log.debug(I18N.get("vector_index.log.index_empty"));
             return Collections.emptyList();
         }
 
@@ -160,7 +160,7 @@ public class SimpleVectorIndexEngine {
 
         long elapsedTime = System.currentTimeMillis() - startTime;
 
-        log.debug(LogMessageProvider.getMessage("vector_index.log.search_complete"),
+        log.debug(I18N.get("vector_index.log.search_complete"),
                 scanned, filtered, results.size(), elapsedTime);
 
         return results;
@@ -173,7 +173,7 @@ public class SimpleVectorIndexEngine {
     private float cosineSimilarity(float[] vec1, float[] vec2) {
         if (vec1.length != vec2.length) {
             throw new IllegalArgumentException(
-                    LogMessageProvider.getMessage("vector_index.error.vector_dimension_mismatch")
+                    I18N.get("vector_index.error.vector_dimension_mismatch")
             );
         }
 
@@ -192,7 +192,7 @@ public class SimpleVectorIndexEngine {
     public synchronized boolean deleteDocument(String docId) {
         float[] removed = vectorStore.remove(docId);
         if (removed != null) {
-            log.debug(LogMessageProvider.getMessage("vector_index.log.delete_vector"), docId);
+            log.debug(I18N.get("vector_index.log.delete_vector"), docId);
             return true;
         }
         return false;
@@ -202,7 +202,7 @@ public class SimpleVectorIndexEngine {
      * 持久化索引到本地文件（Persist index to local file）
      */
     public synchronized void saveIndex() throws IOException {
-        log.info(LogMessageProvider.getMessage("vector_index.log.save_start"));
+        log.info(I18N.get("vector_index.log.save_start"));
 
         Path vectorsFile = indexPath.resolve("vectors.dat");
 
@@ -226,7 +226,7 @@ public class SimpleVectorIndexEngine {
             }
         }
 
-        log.info(LogMessageProvider.getMessage("vector_index.log.save_complete"),
+        log.info(I18N.get("vector_index.log.save_complete"),
                 size(), Files.size(vectorsFile) / 1024);
     }
 
@@ -234,7 +234,7 @@ public class SimpleVectorIndexEngine {
      * 从本地文件加载索引（Load index from local file）
      */
     private void loadIndex() throws IOException {
-        log.info(LogMessageProvider.getMessage("vector_index.log.load_start"));
+        log.info(I18N.get("vector_index.log.load_start"));
 
         Path vectorsFile = indexPath.resolve("vectors.dat");
 
@@ -247,7 +247,7 @@ public class SimpleVectorIndexEngine {
 
             if (dim != this.dimension) {
                 throw new IOException(
-                        LogMessageProvider.getMessage("vector_index.error.index_dimension_mismatch",
+                        I18N.get("vector_index.error.index_dimension_mismatch",
                                 dim, this.dimension)
                 );
             }
@@ -267,7 +267,7 @@ public class SimpleVectorIndexEngine {
             }
         }
 
-        log.info(LogMessageProvider.getMessage("vector_index.log.load_complete", size()));
+        log.info(I18N.get("vector_index.log.load_complete", size()));
     }
 
     /**
@@ -279,7 +279,7 @@ public class SimpleVectorIndexEngine {
         // 删除本地文件（Delete local file）
         Files.deleteIfExists(indexPath.resolve("vectors.dat"));
 
-        log.info(LogMessageProvider.getMessage("vector_index.log.clear_complete"));
+        log.info(I18N.get("vector_index.log.clear_complete"));
     }
 
     /**

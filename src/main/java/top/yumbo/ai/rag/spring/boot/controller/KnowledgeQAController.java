@@ -5,8 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
 import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
@@ -47,7 +46,7 @@ public class KnowledgeQAController {
      */
     @PostMapping("/ask")
     public QuestionResponse ask(@RequestBody QuestionRequest request) {
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.received_question", request.getQuestion()));
+        log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()));
 
         AIAnswer answer = qaService.ask(request.getQuestion());
 
@@ -71,7 +70,7 @@ public class KnowledgeQAController {
      */
     @PostMapping("/ask-with-session")
     public QuestionResponse askWithSession(@RequestBody SessionQuestionRequest request) {
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.session_question",
+        log.info(I18N.get("knowledge_qa.log.session_question",
             request.getQuestion(), request.getSessionId()));
 
         AIAnswer answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
@@ -96,7 +95,7 @@ public class KnowledgeQAController {
     @GetMapping("/search")
     public SearchResponse search(@RequestParam String query,
                                  @RequestParam(defaultValue = "10") int limit) {
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.search_documents", query, limit));
+        log.info(I18N.get("knowledge_qa.log.search_documents", query, limit));
 
         List<Document> documents = qaService.searchDocuments(query, limit);
 
@@ -116,7 +115,7 @@ public class KnowledgeQAController {
      */
     @GetMapping("/statistics")
     public StatisticsResponse getStatistics(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.get_statistics"));
+        log.info(I18N.get("knowledge_qa.log.get_statistics"));
 
         KnowledgeQAService.EnhancedStatistics stats = qaService.getEnhancedStatistics();
 
@@ -128,16 +127,16 @@ public class KnowledgeQAController {
 
         // 添加提示信息 / Add hint message
         if (stats.getUnindexedCount() > 0) {
-            response.setMessage(LogMessageProvider.getMessage(
+            response.setMessage(I18N.get(
                 "knowledge_qa.api.message.needs_indexing", lang, stats.getUnindexedCount()));
             response.setNeedsIndexing(true);
         } else {
-            response.setMessage(LogMessageProvider.getMessage(
+            response.setMessage(I18N.get(
                 "knowledge_qa.api.message.all_indexed", lang));
             response.setNeedsIndexing(false);
         }
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.statistics_result",
+        log.info(I18N.get("knowledge_qa.log.statistics_result",
             stats.getDocumentCount(), stats.getIndexedDocumentCount(),
             stats.getUnindexedCount(), stats.getIndexProgress()));
 
@@ -150,8 +149,8 @@ public class KnowledgeQAController {
     @GetMapping("/health")
     public HealthResponse health(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
         HealthResponse response = new HealthResponse();
-        response.setStatus(LogMessageProvider.getMessage("knowledge_qa.api.status.up", lang));
-        response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.system_running", lang));
+        response.setStatus(I18N.get("knowledge_qa.api.status.up", lang));
+        response.setMessage(I18N.get("knowledge_qa.api.message.system_running", lang));
         return response;
     }
 
@@ -161,26 +160,26 @@ public class KnowledgeQAController {
     @PostMapping("/rebuild")
     public RebuildResponse rebuild(@RequestBody(required = false) Map<String, String> request) {
         String lang = request != null ? request.getOrDefault("lang", "zh") : "zh"; // 获取语言参数 / Get language parameter
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.rebuild_request"));
+        log.info(I18N.get("knowledge_qa.log.rebuild_request"));
 
         try {
             BuildResult result = qaService.rebuildKnowledgeBase();
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(true);
-            response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
+            response.setMessage(I18N.get("knowledge_qa.api.message.rebuild_complete", lang));
             response.setProcessedFiles(result.getSuccessCount());
             response.setTotalDocuments(result.getTotalDocuments());
             response.setDurationMs(result.getBuildTimeMs());
 
             return response;
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("knowledge_qa.log.rebuild_failed"), e);
+            log.error(I18N.get("knowledge_qa.log.rebuild_failed"), e);
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
-            response.setSuggestion(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
+            response.setMessage(I18N.get("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
+            response.setSuggestion(I18N.get("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
@@ -193,7 +192,7 @@ public class KnowledgeQAController {
     @PostMapping("/incremental-index")
     public RebuildResponse incrementalIndex(@RequestBody(required = false) Map<String, String> request) {
         String lang = request != null ? request.getOrDefault("lang", "zh") : "zh"; // 获取语言参数 / Get language parameter
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.incremental_request"));
+        log.info(I18N.get("knowledge_qa.log.incremental_request"));
 
         try {
             BuildResult result = qaService.incrementalIndexKnowledgeBase();
@@ -202,10 +201,10 @@ public class KnowledgeQAController {
             response.setSuccess(true);
 
             if (result.getSuccessCount() > 0) {
-                response.setMessage(LogMessageProvider.getMessage(
+                response.setMessage(I18N.get(
                     "knowledge_qa.api.message.incremental_complete", lang, result.getSuccessCount()));
             } else {
-                response.setMessage(LogMessageProvider.getMessage(
+                response.setMessage(I18N.get(
                     "knowledge_qa.api.message.all_up_to_date", lang));
             }
 
@@ -215,12 +214,12 @@ public class KnowledgeQAController {
 
             return response;
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("knowledge_qa.log.incremental_failed"), e);
+            log.error(I18N.get("knowledge_qa.log.incremental_failed"), e);
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
-            response.setSuggestion(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
+            response.setMessage(I18N.get("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
+            response.setSuggestion(I18N.get("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
@@ -236,7 +235,7 @@ public class KnowledgeQAController {
             @RequestParam(defaultValue = "30") int minScore,  // 最小相似度分数（0-100）/ Min similarity score (0-100)
             @RequestParam(defaultValue = "5") int limit) {
 
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.search_similar", question, minScore, limit));
+        log.info(I18N.get("knowledge_qa.log.search_similar", question, minScore, limit));
 
         List<SimilarQAService.SimilarQA> similar =
             similarQAService.findSimilar(question, minScore, limit);
@@ -254,7 +253,7 @@ public class KnowledgeQAController {
      */
     @GetMapping("/archive/statistics")
     public ResponseEntity<?> getArchiveStatistics() {
-        log.info(LogMessageProvider.getMessage("knowledge_qa.log.archive_stats"));
+        log.info(I18N.get("knowledge_qa.log.archive_stats"));
 
         var stats = qaArchiveService.getStatistics();
         return ResponseEntity.ok(stats);

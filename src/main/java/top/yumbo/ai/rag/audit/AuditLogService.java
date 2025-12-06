@@ -1,7 +1,7 @@
 package top.yumbo.ai.rag.audit;
 
 import lombok.extern.slf4j.Slf4j;
-import java.io.*;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import com.alibaba.fastjson2.JSON;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 审计日志服务 (Audit log service)
@@ -28,7 +28,7 @@ public class AuditLogService {
         initializeAuditLog();
     }
 
-    public AuditLogService(String auditLogPath, LogMessageProvider unused) {
+    public AuditLogService(String auditLogPath, I18N unused) {
         this.auditLogPath = auditLogPath;
         initializeAuditLog();
     }
@@ -48,9 +48,9 @@ public class AuditLogService {
                 StandardOpenOption.CREATE, 
                 StandardOpenOption.APPEND);
             
-            log.debug(LogMessageProvider.getMessage("log.audit.logged", event.getAction()));
+            log.debug(I18N.get("log.audit.logged", event.getAction()));
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.audit.write_failed"), e);
+            log.error(I18N.get("log.audit.write_failed"), e);
         }
     }
     
@@ -121,7 +121,7 @@ public class AuditLogService {
                 Files.createDirectories(path);
             }
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.audit.init_failed"), e);
+            log.error(I18N.get("log.audit.init_failed"), e);
         }
     }
 }

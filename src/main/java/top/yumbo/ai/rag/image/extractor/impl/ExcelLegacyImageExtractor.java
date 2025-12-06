@@ -5,7 +5,7 @@ import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class ExcelLegacyImageExtractor implements DocumentImageExtractor {
         List<ExtractedImage> images = new ArrayList<>();
 
         try (HSSFWorkbook workbook = new HSSFWorkbook(documentStream)) {
-            log.info(LogMessageProvider.getMessage("log.image.excel.legacy.processing", documentName, workbook.getNumberOfSheets()));
+            log.info(I18N.get("log.image.excel.legacy.processing", documentName, workbook.getNumberOfSheets()));
 
             int sheetNum = 1;
 
@@ -45,7 +45,7 @@ public class ExcelLegacyImageExtractor implements DocumentImageExtractor {
                 sheetNum++;
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.excel.legacy.extracted", images.size(), documentName));
+            log.info(I18N.get("log.image.excel.legacy.extracted", images.size(), documentName));
         }
 
         return images;
@@ -90,14 +90,14 @@ public class ExcelLegacyImageExtractor implements DocumentImageExtractor {
 
                         images.add(extractedImage);
 
-                        log.debug(LogMessageProvider.getMessage("log.image.excel.legacy.found", sheetNum, data.length / 1024));
+                        log.debug(I18N.get("log.image.excel.legacy.found", sheetNum, data.length / 1024));
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("log.image.excel.legacy.extract_failed", sheetNum), e);
+                        log.warn(I18N.get("log.image.excel.legacy.extract_failed", sheetNum), e);
                     }
                 }
             }
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.excel.legacy.process_failed", sheetNum), e);
+            log.error(I18N.get("log.image.excel.legacy.process_failed", sheetNum), e);
         }
 
         return images;
@@ -132,7 +132,7 @@ public class ExcelLegacyImageExtractor implements DocumentImageExtractor {
                 rowCount++;
             }
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.image.excel.legacy.text_failed"), e);
+            log.warn(I18N.get("log.image.excel.legacy.text_failed"), e);
         }
 
         String result = text.toString().trim();

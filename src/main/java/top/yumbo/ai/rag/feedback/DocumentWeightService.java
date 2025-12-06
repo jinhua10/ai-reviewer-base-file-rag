@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.config.FeedbackConfig;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class DocumentWeightService {
      */
     public void applyFeedback(String documentName, QARecord.FeedbackType feedbackType) {
         if (!feedbackConfig.isEnableDynamicWeighting()) {
-            log.debug(LogMessageProvider.getMessage("log.feedback.weight_disabled"));
+            log.debug(I18N.get("log.feedback.weight_disabled"));
             return;
         }
 
@@ -85,7 +85,7 @@ public class DocumentWeightService {
         // 保存权重（Save weights）
         saveWeights();
 
-        log.info(LogMessageProvider.getMessage("log.feedback.weight_updated",
+        log.info(I18N.get("log.feedback.weight_updated",
             documentName,
             String.format("%.2f", docWeight.getWeight()),
             docWeight.getLikeCount(),
@@ -135,7 +135,7 @@ public class DocumentWeightService {
             docWeight.setDislikeCount(0);
             docWeight.setLastUpdated(System.currentTimeMillis());
             saveWeights();
-            log.info(LogMessageProvider.getMessage("log.feedback.weight_reset", documentName, docWeight.getWeight()));
+            log.info(I18N.get("log.feedback.weight_reset", documentName, docWeight.getWeight()));
         }
     }
 
@@ -145,7 +145,7 @@ public class DocumentWeightService {
     public void clearAllWeights() {
         documentWeights.clear();
         saveWeights();
-        log.info(LogMessageProvider.getMessage("log.feedback.weights_cleared"));
+        log.info(I18N.get("log.feedback.weights_cleared"));
     }
 
     /**
@@ -159,9 +159,9 @@ public class DocumentWeightService {
             objectMapper.writerWithDefaultPrettyPrinter()
                 .writeValue(weightsPath.toFile(), documentWeights);
 
-            log.debug(LogMessageProvider.getMessage("log.feedback.weights_saved", documentWeights.size()));
+            log.debug(I18N.get("log.feedback.weights_saved", documentWeights.size()));
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.save_failed"), e);
+            log.error(I18N.get("log.feedback.save_failed"), e);
         }
     }
 
@@ -172,7 +172,7 @@ public class DocumentWeightService {
         try {
             File weightsFile = new File(WEIGHTS_FILE);
             if (!weightsFile.exists()) {
-                log.info(LogMessageProvider.getMessage("log.feedback.weights_file_not_exists"));
+                log.info(I18N.get("log.feedback.weights_file_not_exists"));
                 return;
             }
 
@@ -184,10 +184,10 @@ public class DocumentWeightService {
             );
 
             documentWeights.putAll(loaded);
-            log.info(LogMessageProvider.getMessage("log.feedback.weights_loaded", documentWeights.size()));
+            log.info(I18N.get("log.feedback.weights_loaded", documentWeights.size()));
 
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.load_failed"), e);
+            log.error(I18N.get("log.feedback.load_failed"), e);
         }
     }
 
@@ -228,7 +228,7 @@ public class DocumentWeightService {
      */
     public void applyRatingFeedback(String documentName, int rating, double weightAdjustment) {
         if (!feedbackConfig.isEnableDynamicWeighting()) {
-            log.debug(LogMessageProvider.getMessage("log.feedback.weight_disabled"));
+            log.debug(I18N.get("log.feedback.weight_disabled"));
             return;
         }
 
@@ -257,7 +257,7 @@ public class DocumentWeightService {
         saveWeights();
 
         String stars = "⭐".repeat(rating);
-        log.info(LogMessageProvider.getMessage("log.feedback.rating_updated",
+        log.info(I18N.get("log.feedback.rating_updated",
             documentName,
             String.format("%.2f", docWeight.getWeight()),
             stars,

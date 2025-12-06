@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.spring.boot.strategy;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
 
 import java.util.List;
@@ -31,10 +31,10 @@ public abstract class AbstractAnalysisStrategy implements MultiDocAnalysisStrate
         ProgressCallback callback = progressCallback != null ? progressCallback : ProgressCallback.empty();
 
         try {
-            log.info(LogMessageProvider.getMessage("strategy.abstract.log.analysis_start",
+            log.info(I18N.get("strategy.abstract.log.analysis_start",
                     getId(), context.getDocumentCount()));
 
-            callback.onProgress(0, LogMessageProvider.getMessage("strategy.abstract.log.analysis_start", getId(), ""));
+            callback.onProgress(0, I18N.get("strategy.abstract.log.analysis_start", getId(), ""));
 
             // 执行具体分析（Execute specific analysis）
             AnalysisResult result = doAnalyze(context, callback);
@@ -44,14 +44,14 @@ public abstract class AbstractAnalysisStrategy implements MultiDocAnalysisStrate
             result.setExecutionTimeMs(executionTime);
             result.setStrategiesUsed(List.of(getId()));
 
-            callback.onProgress(100, LogMessageProvider.getMessage("strategy.abstract.log.analysis_complete", getId(), executionTime));
+            callback.onProgress(100, I18N.get("strategy.abstract.log.analysis_complete", getId(), executionTime));
 
-            log.info(LogMessageProvider.getMessage("strategy.abstract.log.analysis_complete",
+            log.info(I18N.get("strategy.abstract.log.analysis_complete",
                     getId(), executionTime));
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("strategy.abstract.log.analysis_failed", getId()), e);
+            log.error(I18N.get("strategy.abstract.log.analysis_failed", getId()), e);
             return AnalysisResult.failure(e.getMessage());
         }
     }
@@ -76,8 +76,8 @@ public abstract class AbstractAnalysisStrategy implements MultiDocAnalysisStrate
         try {
             return knowledgeQAService.askWithContext(prompt, context);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("strategy.abstract.log.llm_call_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("strategy.abstract.log.llm_call_failed") + ": " + e.getMessage(), e);
+            log.error(I18N.get("strategy.abstract.log.llm_call_failed"), e);
+            throw new RuntimeException(I18N.get("strategy.abstract.log.llm_call_failed") + ": " + e.getMessage(), e);
         }
     }
 

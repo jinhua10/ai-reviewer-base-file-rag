@@ -25,7 +25,7 @@ import java.util.Map;
  * </p>
  */
 @Slf4j
-public final class LogMessageProvider {
+public final class I18N {
 
     // 静态加载的消息映射表 (Statically loaded message maps)
     private static final Map<String, String> messagesZh = new HashMap<>();
@@ -33,7 +33,7 @@ public final class LogMessageProvider {
 
     static {
         // 加载中文消息 (Load Chinese messages)
-        try (InputStream is = LogMessageProvider.class.getClassLoader()
+        try (InputStream is = I18N.class.getClassLoader()
                 .getResourceAsStream("messages_zh.yml")) {
             if (is != null) {
                 Yaml yaml = new Yaml();
@@ -48,7 +48,7 @@ public final class LogMessageProvider {
         }
 
         // 加载英文消息 (Load English messages)
-        try (InputStream is = LogMessageProvider.class.getClassLoader()
+        try (InputStream is = I18N.class.getClassLoader()
                 .getResourceAsStream("messages_en.yml")) {
             if (is != null) {
                 Yaml yaml = new Yaml();
@@ -122,7 +122,7 @@ public final class LogMessageProvider {
         }
     }
 
-    private LogMessageProvider() {
+    private I18N() {
         // utility class
     }
 
@@ -155,7 +155,7 @@ public final class LogMessageProvider {
      * 静态方法：在任何场景下直接调用以获取日志模板
      * (Static method: get log message template in any scenario)
      */
-    public static String getMessage(String key, Object... args) {
+    public static String get(String key, Object... args) {
         Locale locale = determineStaticLocale();
         return getMessageWithLocale(key, locale, args);
     }
@@ -169,7 +169,7 @@ public final class LogMessageProvider {
      * @param args 格式化参数 / Format arguments
      * @return 国际化消息 / Internationalized message
      */
-    public static String getMessage(String key, String lang, Object... args) {
+    public static String get(String key, String lang, Object... args) {
         Locale locale;
         if ("en".equalsIgnoreCase(lang)) {
             locale = Locale.ENGLISH;

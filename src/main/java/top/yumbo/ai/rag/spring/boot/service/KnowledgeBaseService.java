@@ -10,7 +10,7 @@ import top.yumbo.ai.rag.impl.parser.TikaDocumentParser;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.optimization.DocumentChunker;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.io.IOException;
@@ -95,7 +95,7 @@ public class KnowledgeBaseService {
     public BuildResult buildKnowledgeBaseWithIncrementalIndex(
             String sourcePath, String storagePath) {
 
-        log.info(LogMessageProvider.getMessage("log.kb.scanning", sourcePath));
+        log.info(I18N.get("log.kb.scanning", sourcePath));
 
         BuildResult result = new BuildResult();
 
@@ -108,7 +108,7 @@ public class KnowledgeBaseService {
             // 1.1 初始化幻灯片缓存服务（Initialize slide cache service）
             if (slideContentCacheService != null) {
                 slideContentCacheService.initialize(storagePath);
-                log.info(LogMessageProvider.getMessage("slide_cache.log.init_success"));
+                log.info(I18N.get("slide_cache.log.init_success"));
             }
 
             // 2. 扫描文件（Scan files）
@@ -116,15 +116,15 @@ public class KnowledgeBaseService {
             result.setTotalFiles(allFiles.size());
 
             if (allFiles.isEmpty()) {
-                log.warn(LogMessageProvider.getMessage("log.kb.no_documents"));
-                log.info(LogMessageProvider.getMessage("log.kb.hint_put_docs", sourcePath));
-                log.info(LogMessageProvider.getMessage("log.kb.supported_formats", properties.getDocument().getSupportedFormats()));
+                log.warn(I18N.get("log.kb.no_documents"));
+                log.info(I18N.get("log.kb.hint_put_docs", sourcePath));
+                log.info(I18N.get("log.kb.supported_formats", properties.getDocument().getSupportedFormats()));
 
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
                 return result;
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.found_files", allFiles.size()));
+            log.info(I18N.get("log.kb.found_files", allFiles.size()));
 
             // 3. 打开或创建知识库（Open or create knowledge base）
             LocalFileRAG rag = LocalFileRAG.builder()
@@ -135,9 +135,9 @@ public class KnowledgeBaseService {
             boolean knowledgeBaseExists = stats.getDocumentCount() > 0;
 
             if (knowledgeBaseExists) {
-                log.info(LogMessageProvider.getMessage("log.kb.exists", stats.getDocumentCount()));
+                log.info(I18N.get("log.kb.exists", stats.getDocumentCount()));
             } else {
-                log.info(LogMessageProvider.getMessage("log.kb.first_create"));
+                log.info(I18N.get("log.kb.first_create"));
             }
 
             // 4. 筛选需要更新的文件（Filter files that need updating）
@@ -148,10 +148,10 @@ public class KnowledgeBaseService {
                 }
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.files_to_index", filesToUpdate.size()));
+            log.info(I18N.get("log.kb.files_to_index", filesToUpdate.size()));
 
             if (filesToUpdate.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.kb.up_to_date"));
+                log.info(I18N.get("log.kb.up_to_date"));
                 result.setSuccessCount(0);
                 result.setFailedCount(0);
                 result.setTotalDocuments((int) stats.getDocumentCount());
@@ -172,14 +172,14 @@ public class KnowledgeBaseService {
                         properties.getVectorSearch().getIndexPath(),
                         embeddingEngine.getEmbeddingDim()
                     );
-                    log.info(LogMessageProvider.getMessage("log.kb.vector_enabled"));
+                    log.info(I18N.get("log.kb.vector_enabled"));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
+                    log.warn(I18N.get("log.kb.vector_init_failed"), e);
                 }
             }
 
             // 6. 处理需要更新的文档（Process documents that need updating）
-            log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
+            log.info(I18N.get("log.kb.processing_start"));
 
             // 检查是否启用并行处理（Check if parallel processing is enabled）
             boolean useParallel = properties.getDocument().isParallelProcessing()
@@ -190,15 +190,15 @@ public class KnowledgeBaseService {
                 if (threads == 0) {
                     threads = Runtime.getRuntime().availableProcessors();
                 }
-                log.info(LogMessageProvider.getMessage("log.kb.parallel_mode", threads));
+                log.info(I18N.get("log.kb.parallel_mode", threads));
             } else {
-                log.info(LogMessageProvider.getMessage("log.kb.serial_mode"));
+                log.info(I18N.get("log.kb.serial_mode"));
             }
 
             int successCount;
             int failedCount;
 
-            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.gc_before"));
+            optimizer.logMemoryUsage(I18N.get("log.kb.gc_before"));
 
             if (useParallel) {
                 // 并行处理（Parallel processing）
@@ -235,7 +235,7 @@ public class KnowledgeBaseService {
 
                             // 检查是否需要批处理或GC（Check if batch processing or GC is needed）
                             if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                                log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
+                                log.info(I18N.get("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
 
                                 rag.commit();
                                 batchDocuments.clear();
@@ -245,20 +245,20 @@ public class KnowledgeBaseService {
                         }
 
                     } catch (Exception e) {
-                        log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
+                        log.error(I18N.get("log.kb.file_process_failed", file.getName()), e);
                         failedCount++;
                     }
 
                     // 定期打印进度和内存状态（Print progress and memory status regularly）
                     if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
                         optimizer.logMemoryUsage(
-                            String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, filesToUpdate.size()));
+                            String.format("%s %d/%d", I18N.get("log.kb.progress"), i + 1, filesToUpdate.size()));
                     }
                 }
 
                 // 处理剩余的批次（Process remaining batches）
                 if (!batchDocuments.isEmpty()) {
-                    log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
+                    log.info(I18N.get("log.kb.final_batch", batchDocuments.size()));
                     rag.commit();
                 }
             }
@@ -276,13 +276,13 @@ public class KnowledgeBaseService {
             }
             rag.close();
 
-            log.info(LogMessageProvider.getMessage("log.kb.incremental_done"));
-            log.info(LogMessageProvider.getMessage("log.kb.incremental_stats", successCount, filesToUpdate.size(), failedCount, result.getTotalDocuments(), result.getBuildTimeMs() / 1000.0));
+            log.info(I18N.get("log.kb.incremental_done"));
+            log.info(I18N.get("log.kb.incremental_stats", successCount, filesToUpdate.size(), failedCount, result.getTotalDocuments(), result.getBuildTimeMs() / 1000.0));
 
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kb.incremental_failed"), e);
+            log.error(I18N.get("log.kb.incremental_failed"), e);
             result.setError(e.getMessage());
             return result;
         }
@@ -299,7 +299,7 @@ public class KnowledgeBaseService {
     public BuildResult buildKnowledgeBase(
             String sourcePath, String storagePath, boolean rebuild) {
 
-        log.info(LogMessageProvider.getMessage("log.kb.scanning", sourcePath));
+        log.info(I18N.get("log.kb.scanning", sourcePath));
 
         BuildResult result =
             new BuildResult();
@@ -312,15 +312,15 @@ public class KnowledgeBaseService {
             result.setTotalFiles(files.size());
 
             if (files.isEmpty()) {
-                log.warn(LogMessageProvider.getMessage("log.kb.no_documents"));
-                log.info(LogMessageProvider.getMessage("log.kb.hint_put_docs", sourcePath));
-                log.info(LogMessageProvider.getMessage("log.kb.supported_formats", properties.getDocument().getSupportedFormats()));
+                log.warn(I18N.get("log.kb.no_documents"));
+                log.info(I18N.get("log.kb.hint_put_docs", sourcePath));
+                log.info(I18N.get("log.kb.supported_formats", properties.getDocument().getSupportedFormats()));
 
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
                 return result;
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.found_files", files.size()));
+            log.info(I18N.get("log.kb.found_files", files.size()));
 
             // 2. 检查是否需要构建（Check if build is needed）
             LocalFileRAG rag = LocalFileRAG.builder()
@@ -331,8 +331,8 @@ public class KnowledgeBaseService {
             boolean knowledgeBaseExists = stats.getDocumentCount() > 0;
 
             if (knowledgeBaseExists && !rebuild) {
-                log.info(LogMessageProvider.getMessage("log.kb.exists", stats.getDocumentCount()));
-                log.info(LogMessageProvider.getMessage("log.kb.skip_build"));
+                log.info(I18N.get("log.kb.exists", stats.getDocumentCount()));
+                log.info(I18N.get("log.kb.skip_build"));
 
                 result.setSuccessCount(0);
                 result.setFailedCount(0);
@@ -344,19 +344,19 @@ public class KnowledgeBaseService {
             }
 
             if (knowledgeBaseExists && rebuild) {
-                log.info(LogMessageProvider.getMessage("log.kb.rebuild_prepare"));
+                log.info(I18N.get("log.kb.rebuild_prepare"));
                 // 清空知识库（Clear knowledge base）
                 rag.deleteAllDocuments();
-                log.info(LogMessageProvider.getMessage("log.kb.old_kb_cleared"));
+                log.info(I18N.get("log.kb.old_kb_cleared"));
 
                 // 清空文件追踪信息（Clear file tracking information）
                 fileTrackingService.initialize(storagePath);
                 fileTrackingService.clearAll();
-                log.info(LogMessageProvider.getMessage("log.kb.tracking_cleared"));
+                log.info(I18N.get("log.kb.tracking_cleared"));
             }
 
             // 3. 处理文档（Process documents）
-            log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
+            log.info(I18N.get("log.kb.processing_start"));
             long processStartTime = System.currentTimeMillis();
 
             // 初始化向量检索引擎（如果启用）（Initialize vector indexing engine if enabled）
@@ -370,9 +370,9 @@ public class KnowledgeBaseService {
                         properties.getVectorSearch().getIndexPath(),
                         embeddingEngine.getEmbeddingDim()
                     );
-                    log.info(LogMessageProvider.getMessage("log.kb.vector_enabled"));
+                    log.info(I18N.get("log.kb.vector_enabled"));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
+                    log.warn(I18N.get("log.kb.vector_init_failed"), e);
                 }
             }
 
@@ -385,16 +385,16 @@ public class KnowledgeBaseService {
                 if (threads == 0) {
                     threads = Runtime.getRuntime().availableProcessors();
                 }
-                log.info(LogMessageProvider.getMessage("log.kb.parallel_mode", threads));
+                log.info(I18N.get("log.kb.parallel_mode", threads));
             } else {
-                log.info(LogMessageProvider.getMessage("log.kb.serial_mode"));
+                log.info(I18N.get("log.kb.serial_mode"));
             }
 
             int successCount;
             int failedCount;
 
             // 记录初始内存（Record initial memory）
-            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_before"));
+            optimizer.logMemoryUsage(I18N.get("log.kb.memory_before"));
 
             if (useParallel) {
                 // 并行处理（Parallel processing）
@@ -440,7 +440,7 @@ public class KnowledgeBaseService {
 
                             // 检查是否需要批处理或GC（Check if batch processing or GC is needed）
                             if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                                log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, files.size()));
+                                log.info(I18N.get("log.kb.batch_processing", batchDocuments.size(), i + 1, files.size()));
 
                                 rag.commit();
                                 batchDocuments.clear();
@@ -450,20 +450,20 @@ public class KnowledgeBaseService {
                         }
 
                     } catch (Exception e) {
-                        log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
+                        log.error(I18N.get("log.kb.file_process_failed", file.getName()), e);
                         failedCount++;
                     }
 
                     // 定期打印进度和内存状态（Print progress and memory status regularly）
                     if ((i + 1) % 5 == 0 || i == files.size() - 1) {
                         optimizer.logMemoryUsage(
-                            String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, files.size()));
+                            String.format("%s %d/%d", I18N.get("log.kb.progress"), i + 1, files.size()));
                     }
                 }
 
                 // 处理剩余的批次（Process remaining batches）
                 if (!batchDocuments.isEmpty()) {
-                    log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
+                    log.info(I18N.get("log.kb.final_batch", batchDocuments.size()));
                     rag.commit();
                 }
             }
@@ -481,19 +481,19 @@ public class KnowledgeBaseService {
             result.setPeakMemoryMB(usedMemory / 1024 / 1024);
 
             // 5. 显示结果（Display results）
-            log.info(LogMessageProvider.getMessage("log.kb.build_complete"));
-            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
-            log.info(LogMessageProvider.getMessage("log.kb.build_success", result.getSuccessCount()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_failed", result.getFailedCount()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_total", result.getTotalDocuments()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_time", String.format("%.2f", result.getBuildTimeMs() / 1000.0)));
-            log.info(LogMessageProvider.getMessage("log.kb.build_memory", result.getPeakMemoryMB()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
+            log.info(I18N.get("log.kb.build_complete"));
+            log.info(I18N.get("log.kb.build_separator"));
+            log.info(I18N.get("log.kb.build_success", result.getSuccessCount()));
+            log.info(I18N.get("log.kb.build_failed", result.getFailedCount()));
+            log.info(I18N.get("log.kb.build_total", result.getTotalDocuments()));
+            log.info(I18N.get("log.kb.build_time", String.format("%.2f", result.getBuildTimeMs() / 1000.0)));
+            log.info(I18N.get("log.kb.build_memory", result.getPeakMemoryMB()));
+            log.info(I18N.get("log.kb.build_separator"));
 
             // 6. 保存文件追踪信息（用于增量索引）（Save file tracking information (for incremental indexing)）
             if (rebuild) {
                 fileTrackingService.saveTracking();
-                log.info(LogMessageProvider.getMessage("log.kb.tracking_saved"));
+                log.info(I18N.get("log.kb.tracking_saved"));
             }
 
             // 7. 优化和提交（Optimize and commit）
@@ -506,14 +506,14 @@ public class KnowledgeBaseService {
             optimizer.closeEmbeddingEngine(embeddingEngine);
 
             // 10. 最终内存状态（Final memory status）
-            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_after"));
+            optimizer.logMemoryUsage(I18N.get("log.kb.memory_after"));
 
             rag.close();
 
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kb.build_failed"), e);
+            log.error(I18N.get("log.kb.build_failed"), e);
 
             result.setError(e.getMessage());
             result.setBuildTimeMs(System.currentTimeMillis() - startTime);
@@ -533,8 +533,8 @@ public class KnowledgeBaseService {
     public BuildResult incrementalIndex(
             String sourcePath, String storagePath) {
 
-        log.info(LogMessageProvider.getMessage("log.kb.incremental_start"));
-        log.info(LogMessageProvider.getMessage("log.kb.scanning", sourcePath));
+        log.info(I18N.get("log.kb.incremental_start"));
+        log.info(I18N.get("log.kb.scanning", sourcePath));
 
         BuildResult result =
             new BuildResult();
@@ -555,12 +555,12 @@ public class KnowledgeBaseService {
             result.setTotalFiles(allFiles.size());
 
             if (allFiles.isEmpty()) {
-                log.warn(LogMessageProvider.getMessage("log.kb.no_documents"));
+                log.warn(I18N.get("log.kb.no_documents"));
                 result.setBuildTimeMs(System.currentTimeMillis() - startTime);
                 return result;
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.found_files", allFiles.size()));
+            log.info(I18N.get("log.kb.found_files", allFiles.size()));
 
             // 3. 筛选需要更新的文件（Filter files that need updating）
             List<File> filesToUpdate = new ArrayList<>();
@@ -570,10 +570,10 @@ public class KnowledgeBaseService {
                 }
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.files_to_update", filesToUpdate.size()));
+            log.info(I18N.get("log.kb.files_to_update", filesToUpdate.size()));
 
             if (filesToUpdate.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.kb.up_to_date"));
+                log.info(I18N.get("log.kb.up_to_date"));
                 LocalFileRAG rag = LocalFileRAG.builder()
                     .storagePath(storagePath)
                     .build();
@@ -603,19 +603,19 @@ public class KnowledgeBaseService {
                         properties.getVectorSearch().getIndexPath(),
                         embeddingEngine.getEmbeddingDim()
                     );
-                    log.info(LogMessageProvider.getMessage("log.kb.vector_enabled"));
+                    log.info(I18N.get("log.kb.vector_enabled"));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
+                    log.warn(I18N.get("log.kb.vector_init_failed"), e);
                 }
             }
 
             // 6. 处理需要更新的文档（Process documents that need updating）
-            log.info(LogMessageProvider.getMessage("log.kb.processing_start"));
+            log.info(I18N.get("log.kb.processing_start"));
             int successCount = 0;
             int failedCount = 0;
             List<Document> batchDocuments = new ArrayList<>();
 
-            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_before"));
+            optimizer.logMemoryUsage(I18N.get("log.kb.memory_before"));
 
             for (int i = 0; i < filesToUpdate.size(); i++) {
                 File file = filesToUpdate.get(i);
@@ -640,7 +640,7 @@ public class KnowledgeBaseService {
 
                         // 检查是否需要批处理或GC（Check if batch processing or GC is needed）
                         if (optimizer.shouldBatch(estimatedMemory) || (i + 1) % 10 == 0) {
-                            log.info(LogMessageProvider.getMessage("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
+                            log.info(I18N.get("log.kb.batch_processing", batchDocuments.size(), i + 1, filesToUpdate.size()));
 
                             rag.commit();
                             batchDocuments.clear();
@@ -650,20 +650,20 @@ public class KnowledgeBaseService {
                     }
 
                 } catch (Exception e) {
-                    log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
+                    log.error(I18N.get("log.kb.file_process_failed", file.getName()), e);
                     failedCount++;
                 }
 
                 // 定期打印进度（Print progress regularly）
                 if ((i + 1) % 5 == 0 || i == filesToUpdate.size() - 1) {
                     optimizer.logMemoryUsage(
-                        String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.progress"), i + 1, filesToUpdate.size()));
+                        String.format("%s %d/%d", I18N.get("log.kb.progress"), i + 1, filesToUpdate.size()));
                 }
             }
 
             // 处理剩余的批次（Process remaining batches）
             if (!batchDocuments.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.kb.final_batch", batchDocuments.size()));
+                log.info(I18N.get("log.kb.final_batch", batchDocuments.size()));
                 rag.commit();
             }
 
@@ -683,15 +683,15 @@ public class KnowledgeBaseService {
             result.setPeakMemoryMB(usedMemory / 1024 / 1024);
 
             // 9. 显示结果（Display results）
-            log.info(LogMessageProvider.getMessage("log.kb.incremental_complete"));
-            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
-            log.info(LogMessageProvider.getMessage("log.kb.incremental_files", filesToUpdate.size()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_success", result.getSuccessCount()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_failed", result.getFailedCount()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_total", result.getTotalDocuments()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_time", String.format("%.2f", result.getBuildTimeMs() / 1000.0)));
-            log.info(LogMessageProvider.getMessage("log.kb.build_memory", result.getPeakMemoryMB()));
-            log.info(LogMessageProvider.getMessage("log.kb.build_separator"));
+            log.info(I18N.get("log.kb.incremental_complete"));
+            log.info(I18N.get("log.kb.build_separator"));
+            log.info(I18N.get("log.kb.incremental_files", filesToUpdate.size()));
+            log.info(I18N.get("log.kb.build_success", result.getSuccessCount()));
+            log.info(I18N.get("log.kb.build_failed", result.getFailedCount()));
+            log.info(I18N.get("log.kb.build_total", result.getTotalDocuments()));
+            log.info(I18N.get("log.kb.build_time", String.format("%.2f", result.getBuildTimeMs() / 1000.0)));
+            log.info(I18N.get("log.kb.build_memory", result.getPeakMemoryMB()));
+            log.info(I18N.get("log.kb.build_separator"));
 
             // 10. 优化和提交（Optimize and commit）
             optimizer.commitAndOptimize(rag);
@@ -703,7 +703,7 @@ public class KnowledgeBaseService {
             optimizer.closeEmbeddingEngine(embeddingEngine);
 
             // 13. 最终内存状态（Final memory status）
-            optimizer.logMemoryUsage(LogMessageProvider.getMessage("log.kb.memory_after"));
+            optimizer.logMemoryUsage(I18N.get("log.kb.memory_after"));
 
             // 必须关闭 RAG 实例以释放 Lucene 写锁（Must close RAG instance to release Lucene write lock）
             rag.close();
@@ -711,7 +711,7 @@ public class KnowledgeBaseService {
             return result;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kb.incremental_failed"), e);
+            log.error(I18N.get("log.kb.incremental_failed"), e);
 
             result.setError(e.getMessage());
             result.setBuildTimeMs(System.currentTimeMillis() - startTime);
@@ -724,7 +724,7 @@ public class KnowledgeBaseService {
      * 扫描文档文件（Scan document files）
      */
     private List<File> scanDocuments(String sourcePath) throws IOException {
-        log.info(LogMessageProvider.getMessage("log.kb.source_path", sourcePath));
+        log.info(I18N.get("log.kb.source_path", sourcePath));
 
         // 处理 classpath: 前缀（Handle classpath: prefix）
         if (sourcePath.startsWith("classpath:")) {
@@ -735,7 +735,7 @@ public class KnowledgeBaseService {
         File sourceFile = new File(sourcePath);
 
         if (!sourceFile.exists()) {
-            log.warn(LogMessageProvider.getMessage("log.kb.path_not_exists", sourcePath));
+            log.warn(I18N.get("log.kb.path_not_exists", sourcePath));
             return Collections.emptyList();
         }
 
@@ -763,7 +763,7 @@ public class KnowledgeBaseService {
      * 扫描 classpath 资源（Scan classpath resources）
      */
     private List<File> scanClasspathResources(String resourcePath) throws IOException {
-        log.info(LogMessageProvider.getMessage("log.kb.scan_classpath", resourcePath));
+        log.info(I18N.get("log.kb.scan_classpath", resourcePath));
 
         List<File> files = new ArrayList<>();
 
@@ -772,46 +772,46 @@ public class KnowledgeBaseService {
             var resource = getClass().getClassLoader().getResource(resourcePath);
 
             if (resource == null) {
-                log.warn(LogMessageProvider.getMessage("log.kb.classpath_not_exists", resourcePath));
+                log.warn(I18N.get("log.kb.classpath_not_exists", resourcePath));
                 return files;
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.resource_found", resource));
+            log.info(I18N.get("log.kb.resource_found", resource));
 
             // 转换为 File 对象（Convert to File object）
             File resourceFile = new File(resource.toURI());
 
             if (!resourceFile.exists()) {
-                log.warn(LogMessageProvider.getMessage("log.kb.resource_file_not_exists", resourceFile.getAbsolutePath()));
+                log.warn(I18N.get("log.kb.resource_file_not_exists", resourceFile.getAbsolutePath()));
                 return files;
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.resource_path", resourceFile.getAbsolutePath()));
+            log.info(I18N.get("log.kb.resource_path", resourceFile.getAbsolutePath()));
 
             if (resourceFile.isFile()) {
                 // 单个文件（Single file）
                 if (isSupportedFile(resourceFile)) {
                     files.add(resourceFile);
-                    log.info(LogMessageProvider.getMessage("log.kb.add_file", resourceFile.getName()));
+                    log.info(I18N.get("log.kb.add_file", resourceFile.getName()));
                 }
             } else if (resourceFile.isDirectory()) {
                 // 目录 - 递归扫描（Directory - recursive scan）
-                log.info(LogMessageProvider.getMessage("log.kb.scan_directory"));
+                log.info(I18N.get("log.kb.scan_directory"));
                 try (var stream = Files.walk(resourceFile.toPath())) {
                     stream.filter(Files::isRegularFile)
                         .map(Path::toFile)
                         .filter(this::isSupportedFile)
                         .forEach(f -> {
                             files.add(f);
-                            log.debug(LogMessageProvider.getMessage("log.kb.file_item", f.getName()));
+                            log.debug(I18N.get("log.kb.file_item", f.getName()));
                         });
                 }
-                log.info(LogMessageProvider.getMessage("log.kb.files_found", files.size()));
+                log.info(I18N.get("log.kb.files_found", files.size()));
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kb.scan_classpath_failed", resourcePath), e);
-            throw new IOException(LogMessageProvider.getMessage("kb_service.error.scan_classpath_failed"), e);
+            log.error(I18N.get("log.kb.scan_classpath_failed", resourcePath), e);
+            throw new IOException(I18N.get("kb_service.error.scan_classpath_failed"), e);
         }
 
         return files;
@@ -881,24 +881,24 @@ public class KnowledgeBaseService {
                             }
 
                         } catch (Exception e) {
-                            log.error(LogMessageProvider.getMessage("log.kb.file_process_failed", file.getName()), e);
+                            log.error(I18N.get("log.kb.file_process_failed", file.getName()), e);
                             failedCount.incrementAndGet();
                         }
 
                         // 更新进度（Update progress）
                         int current = processedCount.incrementAndGet();
                         if (current % 10 == 0 || current == totalFiles) {
-                            log.info(LogMessageProvider.getMessage("log.kb.parallel_progress", current, totalFiles, successCount.get(), failedCount.get()));
+                            log.info(I18N.get("log.kb.parallel_progress", current, totalFiles, successCount.get(), failedCount.get()));
 
                             optimizer.logMemoryUsage(
-                                String.format("%s %d/%d", LogMessageProvider.getMessage("log.kb.parallel_memory"), current, totalFiles));
+                                String.format("%s %d/%d", I18N.get("log.kb.parallel_memory"), current, totalFiles));
                         }
                     }
 
                     // 批次提交（使用 RAG 的同步机制）（Batch commit (using RAG's synchronization mechanism)）
                     synchronized (rag) {
                         if (!threadDocuments.isEmpty()) {
-                            log.info(LogMessageProvider.getMessage("log.kb.batch_commit", threadDocuments.size()));
+                            log.info(I18N.get("log.kb.batch_commit", threadDocuments.size()));
                             rag.commit();
                         }
                     }
@@ -917,7 +917,7 @@ public class KnowledgeBaseService {
                 try {
                     future.get();
                 } catch (Exception e) {
-                    log.error(LogMessageProvider.getMessage("log.kb.batch_task_failed"), e);
+                    log.error(I18N.get("log.kb.batch_task_failed"), e);
                 }
             }
 
@@ -947,13 +947,13 @@ public class KnowledgeBaseService {
                                                      LocalEmbeddingEngine embeddingEngine,
                                                      SimpleVectorIndexEngine vectorIndexEngine) {
 
-        log.info(LogMessageProvider.getMessage("log.kb.processing_file", file.getName(), file.length() / 1024));
+        log.info(I18N.get("log.kb.processing_file", file.getName(), file.length() / 1024));
         List<Document> createdDocuments = new ArrayList<>();
 
         try {
             // 1. 检查文件大小（Check file size）
             if (!optimizer.checkFileSize(file.length())) {
-                log.warn(LogMessageProvider.getMessage("log.kb.file_too_large", file.length() / 1024 / 1024, properties.getDocument().getMaxFileSizeMb()));
+                log.warn(I18N.get("log.kb.file_too_large", file.length() / 1024 / 1024, properties.getDocument().getMaxFileSizeMb()));
                 return createdDocuments;
             }
 
@@ -961,7 +961,7 @@ public class KnowledgeBaseService {
             String content = documentParser.parse(file);
 
             if (content == null || content.trim().isEmpty()) {
-                log.warn(LogMessageProvider.getMessage("log.kb.content_empty"));
+                log.warn(I18N.get("log.kb.content_empty"));
                 return createdDocuments;
             }
 
@@ -971,22 +971,22 @@ public class KnowledgeBaseService {
             // 这是关键：在索引阶段就限制大小，而不是在问答时才处理（This is key: limit size at indexing stage, not at Q&A time）
             int maxContentLength = properties.getDocument().getMaxIndexContentLength();
             if (content.length() > maxContentLength) {
-                log.warn(LogMessageProvider.getMessage("log.kb.content_too_large", originalLength, originalLength / 512, maxContentLength));
+                log.warn(I18N.get("log.kb.content_too_large", originalLength, originalLength / 512, maxContentLength));
                 content = content.substring(0, maxContentLength);
-                log.info(LogMessageProvider.getMessage("log.kb.content_truncated", originalLength - maxContentLength, (originalLength - maxContentLength) * 100 / originalLength));
+                log.info(I18N.get("log.kb.content_truncated", originalLength - maxContentLength, (originalLength - maxContentLength) * 100 / originalLength));
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.content_extracted", content.length()));
+            log.info(I18N.get("log.kb.content_extracted", content.length()));
 
             // 2.5 使用预处理服务提取图片并文本化（整合了 OCR/Vision LLM 处理）
             // Extract images and convert to text using preprocessing service (integrated OCR/Vision LLM processing)
             if (preprocessingService != null) {
                 try {
-                    log.info(LogMessageProvider.getMessage("log.kb.preprocess_start"));
+                    log.info(I18N.get("log.kb.preprocess_start"));
                     content = preprocessingService.preprocessDocument(file, content);
-                    log.info(LogMessageProvider.getMessage("log.kb.preprocess_complete", content.length()));
+                    log.info(I18N.get("log.kb.preprocess_complete", content.length()));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.preprocess_failed", e.getMessage()));
+                    log.warn(I18N.get("log.kb.preprocess_failed", e.getMessage()));
                     // 不中断文档处理流程 / Do not interrupt document processing flow
                 }
             }
@@ -996,9 +996,9 @@ public class KnowledgeBaseService {
             boolean autoChunk = optimizer.shouldAutoChunk(content.length());
 
             if (forceChunk) {
-                log.warn(LogMessageProvider.getMessage("log.kb.force_chunk", content.length() / 1024 / 1024));
+                log.warn(I18N.get("log.kb.force_chunk", content.length() / 1024 / 1024));
             } else if (autoChunk) {
-                log.info(LogMessageProvider.getMessage("log.kb.auto_chunk", content.length() / 1024));
+                log.info(I18N.get("log.kb.auto_chunk", content.length() / 1024));
             }
 
             // 4. 创建文档（Create document）
@@ -1017,18 +1017,18 @@ public class KnowledgeBaseService {
                 if (preprocessingService != null && pplConfig != null &&
                     pplConfig.getChunking().isEnableCoarseChunking()) {
                     try {
-                        log.info(LogMessageProvider.getMessage("log.kb.ppl_chunking_start"));
+                        log.info(I18N.get("log.kb.ppl_chunking_start"));
                         documentsToIndex = preprocessingService.chunkDocumentWithPPL(document);
-                        log.info(LogMessageProvider.getMessage("log.kb.ppl_chunking_complete", documentsToIndex.size()));
+                        log.info(I18N.get("log.kb.ppl_chunking_complete", documentsToIndex.size()));
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("log.kb.ppl_chunking_failed", e.getMessage()));
+                        log.warn(I18N.get("log.kb.ppl_chunking_failed", e.getMessage()));
                         documentsToIndex = documentChunker.chunk(document);
-                        log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
+                        log.info(I18N.get("log.kb.chunked", documentsToIndex.size()));
                     }
                 } else {
                     // 使用传统切分 / Use traditional chunking
                     documentsToIndex = documentChunker.chunk(document);
-                    log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
+                    log.info(I18N.get("log.kb.chunked", documentsToIndex.size()));
                 }
 
                 // 将 Document 列表转换为 DocumentChunk 列表用于保存
@@ -1057,9 +1057,9 @@ public class KnowledgeBaseService {
             if (chunkStorageService != null && !chunksToSave.isEmpty()) {
                 try {
                     chunkStorageService.saveChunks(file.getName(), chunksToSave);
-                    log.info(LogMessageProvider.getMessage("log.kb.saved_chunks", chunksToSave.size(), file.getName()));
+                    log.info(I18N.get("log.kb.saved_chunks", chunksToSave.size(), file.getName()));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.save_chunks_failed", file.getName(), e.getMessage()));
+                    log.warn(I18N.get("log.kb.save_chunks_failed", file.getName(), e.getMessage()));
                 }
             }
 
@@ -1075,18 +1075,18 @@ public class KnowledgeBaseService {
                         float[] vector = embeddingEngine.embed(doc.getContent());
                         vectorIndexEngine.addDocument(docId, vector);
                     } catch (Exception e) {
-                        log.debug(LogMessageProvider.getMessage("log.kb.vector_generation_failed", e.getMessage()));
+                        log.debug(I18N.get("log.kb.vector_generation_failed", e.getMessage()));
                     }
                 }
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.indexing_complete", createdDocuments.size()));
+            log.info(I18N.get("log.kb.indexing_complete", createdDocuments.size()));
 
             return createdDocuments;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kb.processing_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("log.kqa.process_failed", file.getName()), e);
+            log.error(I18N.get("log.kb.processing_failed"), e);
+            throw new RuntimeException(I18N.get("log.kqa.process_failed", file.getName()), e);
         }
     }
 
@@ -1124,11 +1124,11 @@ public class KnowledgeBaseService {
             File file = filePath.toFile();
 
             if (!file.exists()) {
-                log.warn(LogMessageProvider.getMessage("log.kb.file_not_exists", filePath));
+                log.warn(I18N.get("log.kb.file_not_exists", filePath));
                 return;
             }
 
-            log.info(LogMessageProvider.getMessage("log.kb.index_single_file", file.getName()));
+            log.info(I18N.get("log.kb.index_single_file", file.getName()));
 
             // 打开知识库（Open knowledge base）
             LocalFileRAG rag = LocalFileRAG.builder()
@@ -1147,7 +1147,7 @@ public class KnowledgeBaseService {
                             embeddingEngine.getEmbeddingDim()
                     );
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.kb.vector_init_failed"), e);
+                    log.warn(I18N.get("log.kb.vector_init_failed"), e);
                 }
             }
 
@@ -1157,14 +1157,14 @@ public class KnowledgeBaseService {
 
             if (docs != null && !docs.isEmpty()) {
                 rag.commit();
-                log.info(LogMessageProvider.getMessage("log.kb.file_indexed", file.getName()));
+                log.info(I18N.get("log.kb.file_indexed", file.getName()));
             }
 
             // 必须关闭以释放锁（Must close to release lock）
             rag.close();
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.kb.index_file_failed", filePath), e);
+            log.error(I18N.get("log.kb.index_file_failed", filePath), e);
         }
     }
 }

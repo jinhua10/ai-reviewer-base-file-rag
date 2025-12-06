@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.ppl.PPLServiceFacade;
 import top.yumbo.ai.rag.ppl.config.PPLConfig;
 import top.yumbo.ai.rag.ppl.onnx.PPLOnnxService;
@@ -32,15 +32,15 @@ public class PPLConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "knowledge.qa.ppl.onnx", name = "enabled", havingValue = "true", matchIfMissing = true)
     public PPLOnnxService pplOnnxService(PPLConfig config) {
-        log.info(LogMessageProvider.getMessage("ppl.log.onnx_init_start"));
+        log.info(I18N.get("ppl.log.onnx_init_start"));
         PPLOnnxService service = new PPLOnnxService(config);
 
         // 初始化服务（Initialize service）
         try {
             service.init();
-            log.info(LogMessageProvider.getMessage("ppl.log.onnx_init_success"));
+            log.info(I18N.get("ppl.log.onnx_init_success"));
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppl.log.onnx_init_failed", e.getMessage()), e);
+            log.error(I18N.get("ppl.log.onnx_init_failed", e.getMessage()), e);
             throw new RuntimeException("Failed to initialize ONNX PPL service", e);
         }
 
@@ -52,7 +52,7 @@ public class PPLConfiguration {
      */
     @Bean
     public PPLServiceFacade pplServiceFacade(PPLConfig config, PPLOnnxService onnxService) {
-        log.info(LogMessageProvider.getMessage("ppl.log.facade_init_start"));
+        log.info(I18N.get("ppl.log.facade_init_start"));
 
         // 将可用的 PPL 服务放入列表（Put available PPL services into list）
         List<top.yumbo.ai.rag.ppl.PPLService> availableServices = new ArrayList<>();
@@ -61,7 +61,7 @@ public class PPLConfiguration {
         // 使用正确的构造函数（Use correct constructor）
         PPLServiceFacade facade = new PPLServiceFacade(config, availableServices);
         
-        log.info(LogMessageProvider.getMessage("ppl.log.facade_init_success", config.getDefaultProvider()));
+        log.info(I18N.get("ppl.log.facade_init_success", config.getDefaultProvider()));
 
         return facade;
     }

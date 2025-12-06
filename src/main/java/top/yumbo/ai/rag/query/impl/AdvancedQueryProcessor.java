@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.query.impl;
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.core.CacheEngine;
 import top.yumbo.ai.rag.core.IndexEngine;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
 import top.yumbo.ai.rag.model.ScoredDocument;
@@ -43,7 +43,7 @@ public class AdvancedQueryProcessor implements QueryProcessor {
         String cacheKey = request.getCacheKey();
         SearchResult cached = cacheEngine.getQueryResult(cacheKey);
         if (cached != null) {
-            log.debug(LogMessageProvider.getMessage("log.query.cache_hit", request.getQueryText()));
+            log.debug(I18N.get("log.query.cache_hit", request.getQueryText()));
             return cached;
         }
 
@@ -78,7 +78,7 @@ public class AdvancedQueryProcessor implements QueryProcessor {
         // 7. 缓存结果
         cacheEngine.putQueryResult(cacheKey, result);
 
-        log.info(LogMessageProvider.getMessage("log.query.processed", request.getQueryText(), result.getTotalHits(), queryTime));
+        log.info(I18N.get("log.query.processed", request.getQueryText(), result.getTotalHits(), queryTime));
 
         return result;
     }
@@ -94,7 +94,7 @@ public class AdvancedQueryProcessor implements QueryProcessor {
     public void clearCache() {
         // 清除查询缓存
         cacheEngine.clear();
-        log.info(LogMessageProvider.getMessage("log.query.cache_cleared"));
+        log.info(I18N.get("log.query.cache_cleared"));
     }
 
     @Override
@@ -152,7 +152,7 @@ public class AdvancedQueryProcessor implements QueryProcessor {
                 comparator = Comparator.comparing(doc -> doc.getDocument().getCreatedAt());
                 break;
             default:
-                log.warn(LogMessageProvider.getMessage("log.query.unknown_sort", sortField));
+                log.warn(I18N.get("log.query.unknown_sort", sortField));
                 return result;
         }
 

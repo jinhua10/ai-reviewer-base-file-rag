@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,14 +54,14 @@ public class SmartKeywordChunker implements DocumentChunker {
 
         if (positions.isEmpty()) {
             // 没有找到关键词，使用简单切分
-            log.debug(LogMessageProvider.getMessage("log.chunk.no_keywords_fallback"));
+            log.debug(I18N.get("log.chunk.no_keywords_fallback"));
             return new SimpleDocumentChunker(config).chunk(content, query);
         }
 
         // 基于关键词位置生成切分块
         List<DocumentChunk> chunks = generateChunksAroundKeywords(content, positions);
 
-        log.debug(LogMessageProvider.getMessage("log.chunk.smart_summary", content.length(), chunks.size(), keywords.size()));
+        log.debug(I18N.get("log.chunk.smart_summary", content.length(), chunks.size(), keywords.size()));
 
         return chunks;
     }
@@ -101,7 +101,7 @@ public class SmartKeywordChunker implements DocumentChunker {
                 .collect(Collectors.toList());
 
         if (!result.isEmpty()) {
-            log.debug(LogMessageProvider.getMessage("log.chunk.keywords_extracted", result.size(), query));
+            log.debug(I18N.get("log.chunk.keywords_extracted", result.size(), query));
         }
 
         return result;
@@ -187,7 +187,7 @@ public class SmartKeywordChunker implements DocumentChunker {
 
         // 如果切分后覆盖不全，补充剩余部分
         if (chunks.isEmpty() || getTotalCoverage(chunks) < content.length() * 0.5) {
-            log.debug(LogMessageProvider.getMessage("log.chunk.coverage_low"));
+            log.debug(I18N.get("log.chunk.coverage_low"));
             chunks.addAll(addSequentialChunks(content, chunks, chunkSize, overlap));
         }
 

@@ -7,7 +7,7 @@ import top.yumbo.ai.rag.core.CacheEngine;
 import top.yumbo.ai.rag.core.IndexEngine;
 import top.yumbo.ai.rag.core.StorageEngine;
 import top.yumbo.ai.rag.factory.RAGEngineFactory;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.ScoredDocument;
@@ -48,13 +48,13 @@ public class LocalFileRAG implements Closeable {
                          StorageEngine storageEngine,
                          IndexEngine indexEngine,
                          CacheEngine cacheEngine,
-                         LogMessageProvider unused) {
+                         I18N unused) {
         this.configuration = configuration;
         this.storageEngine = storageEngine;
         this.indexEngine = indexEngine;
         this.cacheEngine = cacheEngine;
 
-        log.info(LogMessageProvider.getMessage("log.rag.init_done", configuration.toString()));
+        log.info(I18N.get("log.rag.init_done", configuration.toString()));
     }
 
     /**
@@ -76,7 +76,7 @@ public class LocalFileRAG implements Closeable {
             cacheEngine.putDocument(docId, document);
         }
 
-        log.debug(LogMessageProvider.getMessage("log.rag.doc_indexed", docId));
+        log.debug(I18N.get("log.rag.doc_indexed", docId));
         return docId;
     }
 
@@ -93,7 +93,7 @@ public class LocalFileRAG implements Closeable {
         // 2. 批量索引
         indexEngine.indexBatch(documents);
 
-        log.info(LogMessageProvider.getMessage("log.rag.batch_indexed", count));
+        log.info(I18N.get("log.rag.batch_indexed", count));
         return count;
     }
 
@@ -110,7 +110,7 @@ public class LocalFileRAG implements Closeable {
         if (configuration.getCache().isEnabled()) {
             SearchResult cached = cacheEngine.getQueryResult(queryKey);
             if (cached != null) {
-                log.debug(LogMessageProvider.getMessage("log.rag.cache_hit", queryKey));
+                log.debug(I18N.get("log.rag.cache_hit", queryKey));
                 return cached;
             }
         }
@@ -124,9 +124,9 @@ public class LocalFileRAG implements Closeable {
                 if (fullDoc != null) {
                     scoredDoc.setDocument(fullDoc);
 
-                    log.trace(LogMessageProvider.getMessage("log.rag.loaded_content", doc.getId(), fullDoc.getContent() != null ? fullDoc.getContent().length() : 0));
+                    log.trace(I18N.get("log.rag.loaded_content", doc.getId(), fullDoc.getContent() != null ? fullDoc.getContent().length() : 0));
                 } else {
-                    log.warn(LogMessageProvider.getMessage("log.rag.load_content_failed", doc.getId()));
+                    log.warn(I18N.get("log.rag.load_content_failed", doc.getId()));
                 }
             }
         }
@@ -137,7 +137,7 @@ public class LocalFileRAG implements Closeable {
             cacheEngine.putQueryResult(queryKey, result);
         }
 
-        log.debug(LogMessageProvider.getMessage("log.rag.search_completed", result.getQueryTimeMs(), result.getTotalHits()));
+        log.debug(I18N.get("log.rag.search_completed", result.getQueryTimeMs(), result.getTotalHits()));
         return result;
     }
 
@@ -187,7 +187,7 @@ public class LocalFileRAG implements Closeable {
                 cacheEngine.invalidateDocument(docId);
             }
 
-            log.debug(LogMessageProvider.getMessage("log.rag.doc_updated", docId));
+            log.debug(I18N.get("log.rag.doc_updated", docId));
         }
 
         return updated;
@@ -212,7 +212,7 @@ public class LocalFileRAG implements Closeable {
                 cacheEngine.invalidateDocument(docId);
             }
 
-            log.debug(LogMessageProvider.getMessage("log.rag.doc_deleted", docId));
+            log.debug(I18N.get("log.rag.doc_deleted", docId));
         }
 
         return deleted;
@@ -222,18 +222,18 @@ public class LocalFileRAG implements Closeable {
      * 删除所有文档
      */
     public void deleteAllDocuments() {
-        log.info(LogMessageProvider.getMessage("log.rag.deleting_all"));
+        log.info(I18N.get("log.rag.deleting_all"));
 
         // 1. 获取所有文档ID
         List<String> allDocIds = storageEngine.getAllDocumentIds();
         int count = allDocIds.size();
 
         if (count == 0) {
-            log.info(LogMessageProvider.getMessage("log.rag.no_documents"));
+            log.info(I18N.get("log.rag.no_documents"));
             return;
         }
 
-        log.info(LogMessageProvider.getMessage("log.rag.found_to_delete", count));
+        log.info(I18N.get("log.rag.found_to_delete", count));
 
         // 2. 删除所有文档
         for (String docId : allDocIds) {
@@ -245,7 +245,7 @@ public class LocalFileRAG implements Closeable {
                     cacheEngine.invalidateDocument(docId);
                 }
             } catch (Exception e) {
-                log.warn(LogMessageProvider.getMessage("log.rag.delete_failed", docId), e);
+                log.warn(I18N.get("log.rag.delete_failed", docId), e);
             }
         }
 
@@ -257,16 +257,16 @@ public class LocalFileRAG implements Closeable {
         // 4. 提交更改
         commit();
 
-        log.info(LogMessageProvider.getMessage("log.rag.deleted_count", count));
+        log.info(I18N.get("log.rag.deleted_count", count));
     }
 
     /**
      * 优化索引
      */
     public void optimizeIndex() {
-        log.info(LogMessageProvider.getMessage("log.rag.optimizing"));
+        log.info(I18N.get("log.rag.optimizing"));
         indexEngine.optimize();
-        log.info(LogMessageProvider.getMessage("log.rag.optimized"));
+        log.info(I18N.get("log.rag.optimized"));
     }
 
     /**
@@ -295,14 +295,14 @@ public class LocalFileRAG implements Closeable {
      */
     @Override
     public void close() {
-        log.info(LogMessageProvider.getMessage("log.rag.closing"));
+        log.info(I18N.get("log.rag.closing"));
         try {
             indexEngine.commit();
             indexEngine.close();
             cacheEngine.clear();
-            log.info(LogMessageProvider.getMessage("log.rag.closed"));
+            log.info(I18N.get("log.rag.closed"));
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.rag.close_error"), e);
+            log.error(I18N.get("log.rag.close_error"), e);
         }
     }
 

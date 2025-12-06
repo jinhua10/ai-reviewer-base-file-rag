@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.util.DocumentUtils;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
@@ -55,10 +55,10 @@ public class DocumentQAService {
         try {
             if (!Files.exists(tempDirPath)) {
                 Files.createDirectories(tempDirPath);
-                log.info(LogMessageProvider.getMessage("doc_qa.log.create_temp_dir", tempDir));
+                log.info(I18N.get("doc_qa.log.create_temp_dir", tempDir));
             }
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.create_temp_dir_failed"), e);
+            log.error(I18N.get("doc_qa.log.create_temp_dir_failed"), e);
         }
     }
 
@@ -79,8 +79,8 @@ public class DocumentQAService {
         }
 
         String sessionId = UUID.randomUUID().toString();
-        log.info(LogMessageProvider.getMessage("doc_qa.log.start_qa", docFile.getName(), sessionId));
-        log.info(LogMessageProvider.getMessage("doc_qa.log.question", question));
+        log.info(I18N.get("doc_qa.log.start_qa", docFile.getName(), sessionId));
+        log.info(I18N.get("doc_qa.log.question", question));
 
         DocumentQAReport report = new DocumentQAReport();
         report.setSessionId(sessionId);
@@ -96,10 +96,10 @@ public class DocumentQAService {
             boolean needsChunking = shouldChunkDocument(docFile, maxChunkSize);
 
             if (needsChunking) {
-                log.info(LogMessageProvider.getMessage("doc_qa.log.batch_mode"));
+                log.info(I18N.get("doc_qa.log.batch_mode"));
                 processInChunks(docFile, question, sessionId, report);
             } else {
-                log.info(LogMessageProvider.getMessage("doc_qa.log.direct_mode"));
+                log.info(I18N.get("doc_qa.log.direct_mode"));
                 processDirectly(docFile, question, sessionId, report);
             }
 
@@ -109,11 +109,11 @@ public class DocumentQAService {
             report.setEndTime(System.currentTimeMillis());
             report.setSuccess(true);
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.qa_complete",
+            log.info(I18N.get("doc_qa.log.qa_complete",
                 docFile.getName(), report.getEndTime() - report.getStartTime()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.qa_error"), e);
+            log.error(I18N.get("doc_qa.log.qa_error"), e);
             report.setSuccess(false);
             report.setErrorMessage(e.getMessage());
             report.setEndTime(System.currentTimeMillis());
@@ -141,8 +141,8 @@ public class DocumentQAService {
         }
 
         String sessionId = UUID.randomUUID().toString();
-        log.info(LogMessageProvider.getMessage("doc_qa.log.direct_start", docFile.getName(), sessionId));
-        log.info(LogMessageProvider.getMessage("doc_qa.log.direct_question", question));
+        log.info(I18N.get("doc_qa.log.direct_start", docFile.getName(), sessionId));
+        log.info(I18N.get("doc_qa.log.direct_question", question));
 
         DocumentQAReport report = new DocumentQAReport();
         report.setSessionId(sessionId);
@@ -153,7 +153,7 @@ public class DocumentQAService {
         try {
             // 1. 读取文档内容 (Read document content)
             String content = readDocumentContent(docFile);
-            log.info(LogMessageProvider.getMessage("doc_qa.log.direct_content_length", content.length()));
+            log.info(I18N.get("doc_qa.log.direct_content_length", content.length()));
 
             // 2. 获取配置的最大内容长度（0 或负数表示不限制）
             // (Get configured max content length, 0 or negative means no limit)
@@ -166,23 +166,23 @@ public class DocumentQAService {
             if (needsBatchProcessing) {
                 // 使用渐进式备忘录机制分批处理
                 // (Use progressive memo mechanism for batch processing)
-                log.info(LogMessageProvider.getMessage("doc_qa.log.direct_exceed_limit", maxContentLength));
+                log.info(I18N.get("doc_qa.log.direct_exceed_limit", maxContentLength));
                 processDirectWithMemo(content, question, docFile.getName(), report);
             } else {
                 // 直接完整分析
                 // (Direct full analysis)
-                log.info(LogMessageProvider.getMessage("doc_qa.log.direct_full_analysis"));
+                log.info(I18N.get("doc_qa.log.direct_full_analysis"));
                 processDirectFully(content, question, docFile.getName(), report);
             }
 
             report.setEndTime(System.currentTimeMillis());
             report.setSuccess(true);
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.direct_complete",
+            log.info(I18N.get("doc_qa.log.direct_complete",
                 docFile.getName(), report.getEndTime() - report.getStartTime()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.direct_failed"), e);
+            log.error(I18N.get("doc_qa.log.direct_failed"), e);
             report.setSuccess(false);
             report.setErrorMessage(e.getMessage());
             report.setEndTime(System.currentTimeMillis());
@@ -199,7 +199,7 @@ public class DocumentQAService {
         String prompt = buildFullAnalysisPrompt(question, content, fileName);
 
         AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt);
-        String answer = aiAnswer != null ? aiAnswer.getAnswer() : LogMessageProvider.getMessage("doc_qa.log.analysis_failed");
+        String answer = aiAnswer != null ? aiAnswer.getAnswer() : I18N.get("doc_qa.log.analysis_failed");
 
         BatchResult result = new BatchResult();
         result.setBatchId(1);
@@ -220,7 +220,7 @@ public class DocumentQAService {
         int maxChunkSize = properties.getDocument().getMaxIndexContentLength();
         List<String> chunks = splitContent(content, maxChunkSize);
 
-        log.info(LogMessageProvider.getMessage("doc_qa.log.direct_split_batches", chunks.size()));
+        log.info(I18N.get("doc_qa.log.direct_split_batches", chunks.size()));
 
         // 使用渐进式记忆 (Use progressive memory)
         ProgressiveMemory memory = new ProgressiveMemory(3);
@@ -229,13 +229,13 @@ public class DocumentQAService {
             int batchId = i + 1;
             String chunk = chunks.get(i);
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.direct_process_batch", batchId, chunks.size(), chunk.length()));
+            log.info(I18N.get("doc_qa.log.direct_process_batch", batchId, chunks.size(), chunk.length()));
 
             // 构建带记忆的提示词 (Build prompt with memory)
             String prompt = buildDirectBatchPrompt(question, chunk, fileName, batchId, chunks.size(), memory);
 
             AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt);
-            String answer = aiAnswer != null ? aiAnswer.getAnswer() : LogMessageProvider.getMessage("doc_qa.log.analysis_failed");
+            String answer = aiAnswer != null ? aiAnswer.getAnswer() : I18N.get("doc_qa.log.analysis_failed");
 
             // 提取关键点并加入记忆 (Extract key points and add to memory)
             String keyPoints = extractKeyPointsFromAnswer(answer);
@@ -384,7 +384,7 @@ public class DocumentQAService {
         prompt.append("请生成最终综合分析报告：\n");
 
         AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt.toString());
-        return aiAnswer != null ? aiAnswer.getAnswer() : LogMessageProvider.getMessage("doc_qa.log.final_report_failed");
+        return aiAnswer != null ? aiAnswer.getAnswer() : I18N.get("doc_qa.log.final_report_failed");
     }
 
     /**
@@ -428,7 +428,7 @@ public class DocumentQAService {
             saveBatchResult(sessionId, result);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.direct_process_failed"), e);
+            log.error(I18N.get("doc_qa.log.direct_process_failed"), e);
             throw new RuntimeException("Processing failed: " + e.getMessage(), e);
         }
     }
@@ -450,7 +450,7 @@ public class DocumentQAService {
             int maxChunkSize = properties.getDocument().getMaxIndexContentLength() / 2;
             List<String> chunks = splitContent(content, maxChunkSize);
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.split_batches", chunks.size()));
+            log.info(I18N.get("doc_qa.log.split_batches", chunks.size()));
 
             // 初始化记忆管理器（Initialize memory manager）
             ProgressiveMemory memory = new ProgressiveMemory(3); // 保留最近3个批次的关键信息
@@ -460,7 +460,7 @@ public class DocumentQAService {
                 int batchId = i + 1;
                 String chunk = chunks.get(i);
 
-                log.info(LogMessageProvider.getMessage("doc_qa.log.process_batch", batchId, chunks.size(), chunk.length()));
+                log.info(I18N.get("doc_qa.log.process_batch", batchId, chunks.size(), chunk.length()));
 
                 // 构建带记忆的提示词（Build prompt with memory）
                 String batchPrompt = buildProgressivePrompt(
@@ -475,7 +475,7 @@ public class DocumentQAService {
                 String keyPoints = extractKeyPoints(aiAnswer, chunk, batchId);
                 memory.addMemory(batchId, keyPoints);
 
-                log.info(LogMessageProvider.getMessage("doc_qa.log.batch_key_points", batchId, keyPoints.length()));
+                log.info(I18N.get("doc_qa.log.batch_key_points", batchId, keyPoints.length()));
 
                 // 保存批次结果（Save batch result）
                 BatchResult batchResult = new BatchResult();
@@ -492,14 +492,14 @@ public class DocumentQAService {
                 // 临时持久化（Persist temporarily）
                 saveBatchResult(sessionId, batchResult);
 
-                log.info(LogMessageProvider.getMessage("doc_qa.log.batch_complete", batchId, chunks.size()));
+                log.info(I18N.get("doc_qa.log.batch_complete", batchId, chunks.size()));
             }
 
             // 最后，使用所有关键记忆生成总结（Finally, generate summary using all key memories）
             generateFinalSummary(report, memory, question);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.batch_process_failed"), e);
+            log.error(I18N.get("doc_qa.log.batch_process_failed"), e);
             throw new RuntimeException("Batch processing failed: " + e.getMessage(), e);
         }
     }
@@ -595,7 +595,7 @@ public class DocumentQAService {
      */
     private void generateFinalSummary(DocumentQAReport report, ProgressiveMemory memory, String question) {
         try {
-            log.info(LogMessageProvider.getMessage("doc_qa.log.generate_summary"));
+            log.info(I18N.get("doc_qa.log.generate_summary"));
 
             // 构建总结提示词（Build summary prompt）
             StringBuilder summaryPrompt = new StringBuilder();
@@ -630,10 +630,10 @@ public class DocumentQAService {
             // 保存到报告（Save to report）
             report.setFinalReport(summaryAnswer.getAnswer());
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.summary_complete", summaryAnswer.getAnswer().length()));
+            log.info(I18N.get("doc_qa.log.summary_complete", summaryAnswer.getAnswer().length()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.generate_summary_failed"), e);
+            log.error(I18N.get("doc_qa.log.generate_summary_failed"), e);
             // 使用默认合并方式（Use default merge method）
             report.setFinalReport(generateDefaultSummary(report));
         }
@@ -737,27 +737,27 @@ public class DocumentQAService {
         if (fileName.endsWith(".txt") || fileName.endsWith(".md") ||
             fileName.endsWith(".json") || fileName.endsWith(".xml") ||
             fileName.endsWith(".csv") || fileName.endsWith(".log")) {
-            log.debug(LogMessageProvider.getMessage("doc_qa.log.read_text_file", docFile.getName()));
+            log.debug(I18N.get("doc_qa.log.read_text_file", docFile.getName()));
             return new String(Files.readAllBytes(docFile.toPath()));
         }
 
         // 对于其他格式（Office, PDF等），使用 DocumentUtils 解析
         // (For other formats like Office, PDF, use DocumentUtils to parse)
         try {
-            log.debug(LogMessageProvider.getMessage("doc_qa.log.parse_with_utils", docFile.getName()));
+            log.debug(I18N.get("doc_qa.log.parse_with_utils", docFile.getName()));
             Document doc = DocumentUtils.fromFile(docFile);
             String content = doc.getContent();
 
             if (content == null || content.trim().isEmpty()) {
-                log.warn(LogMessageProvider.getMessage("doc_qa.log.parse_empty_fallback", docFile.getName()));
+                log.warn(I18N.get("doc_qa.log.parse_empty_fallback", docFile.getName()));
                 return new String(Files.readAllBytes(docFile.toPath()));
             }
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.parse_success", docFile.getName(), content.length()));
+            log.info(I18N.get("doc_qa.log.parse_success", docFile.getName(), content.length()));
             return content;
 
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("doc_qa.log.parse_failed_fallback", docFile.getName(), e.getMessage()));
+            log.warn(I18N.get("doc_qa.log.parse_failed_fallback", docFile.getName(), e.getMessage()));
             // 降级为直接读取（可能是纯文本）
             // (Fallback to direct read - might be plain text)
             return new String(Files.readAllBytes(docFile.toPath()));
@@ -801,10 +801,10 @@ public class DocumentQAService {
             objectMapper.writerWithDefaultPrettyPrinter()
                        .writeValue(filePath.toFile(), result);
 
-            log.debug(LogMessageProvider.getMessage("doc_qa.log.batch_result_saved", fileName));
+            log.debug(I18N.get("doc_qa.log.batch_result_saved", fileName));
 
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.save_batch_failed"), e);
+            log.error(I18N.get("doc_qa.log.save_batch_failed"), e);
         }
     }
 
@@ -865,10 +865,10 @@ public class DocumentQAService {
             objectMapper.writerWithDefaultPrettyPrinter()
                        .writeValue(filePath.toFile(), report);
 
-            log.info(LogMessageProvider.getMessage("doc_qa.log.report_saved", fileName));
+            log.info(I18N.get("doc_qa.log.report_saved", fileName));
 
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.save_report_failed"), e);
+            log.error(I18N.get("doc_qa.log.save_report_failed"), e);
         }
     }
 
@@ -884,14 +884,14 @@ public class DocumentQAService {
                      .forEach(path -> {
                          try {
                              Files.delete(path);
-                             log.debug(LogMessageProvider.getMessage("doc_qa.log.temp_file_deleted", path.getFileName()));
+                             log.debug(I18N.get("doc_qa.log.temp_file_deleted", path.getFileName()));
                          } catch (IOException e) {
-                             log.warn(LogMessageProvider.getMessage("doc_qa.log.delete_temp_failed", path.getFileName()));
+                             log.warn(I18N.get("doc_qa.log.delete_temp_failed", path.getFileName()));
                          }
                      });
             }
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("doc_qa.log.cleanup_failed"), e);
+            log.error(I18N.get("doc_qa.log.cleanup_failed"), e);
         }
     }
 

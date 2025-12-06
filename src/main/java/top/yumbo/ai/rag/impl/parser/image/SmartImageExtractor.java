@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.impl.parser.image;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.io.InputStream;
@@ -75,14 +75,14 @@ public class SmartImageExtractor {
         for (ImageContentExtractorStrategy strategy : strategies) {
             if (strategy.isAvailable()) {
                 activeStrategy = strategy;
-                log.info(LogMessageProvider.getMessage("log.imageproc.strategy_selected", strategy.getStrategyName()));
+                log.info(I18N.get("log.imageproc.strategy_selected", strategy.getStrategyName()));
                 return;
             }
         }
 
         // 兜底：使用占位符
         activeStrategy = new PlaceholderImageStrategy();
-        log.warn(LogMessageProvider.getMessage("log.imageproc.strategy_none"));
+        log.warn(I18N.get("log.imageproc.strategy_none"));
     }
 
     /**
@@ -90,14 +90,14 @@ public class SmartImageExtractor {
      */
     public String extractContent(InputStream imageStream, String imageName) {
         if (activeStrategy == null) {
-            return LogMessageProvider.getMessage("log.imageproc.image_placeholder", imageName);
+            return I18N.get("log.imageproc.image_placeholder", imageName);
         }
 
         try {
             return activeStrategy.extractContent(imageStream, imageName);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.imageproc.extract_failed", imageName), e);
-            return LogMessageProvider.getMessage("log.imageproc.extract_error", imageName);
+            log.error(I18N.get("log.imageproc.extract_failed", imageName), e);
+            return I18N.get("log.imageproc.extract_error", imageName);
         }
     }
 
@@ -106,14 +106,14 @@ public class SmartImageExtractor {
      */
     public String extractContent(File imageFile) {
         if (activeStrategy == null) {
-            return LogMessageProvider.getMessage("log.imageproc.image_placeholder", imageFile.getName());
+            return I18N.get("log.imageproc.image_placeholder", imageFile.getName());
         }
 
         try {
             return activeStrategy.extractContent(imageFile);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.imageproc.extract_failed", imageFile.getName()), e);
-            return LogMessageProvider.getMessage("log.imageproc.extract_error", imageFile.getName());
+            log.error(I18N.get("log.imageproc.extract_failed", imageFile.getName()), e);
+            return I18N.get("log.imageproc.extract_error", imageFile.getName());
         }
     }
 

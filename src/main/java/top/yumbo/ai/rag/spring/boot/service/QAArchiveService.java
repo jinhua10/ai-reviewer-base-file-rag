@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.feedback.QARecord;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.config.QAArchiveProperties;
 
 import java.io.IOException;
@@ -62,9 +62,9 @@ public class QAArchiveService {
             Files.createDirectories(archivePath.resolve("temp"));
             Files.createDirectories(archivePath.resolve("rejected"));
 
-            log.info(LogMessageProvider.getMessage("log.qa.archive.init", archivePath.toAbsolutePath()));
+            log.info(I18N.get("log.qa.archive.init", archivePath.toAbsolutePath()));
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.qa.archive.init_failed"), e);
+            log.error(I18N.get("log.qa.archive.init_failed"), e);
         }
     }
 
@@ -86,7 +86,7 @@ public class QAArchiveService {
             case "manual":
                 return false; // 手动模式不自动归档（Manual mode does not auto-archive）
             default:
-                log.warn(LogMessageProvider.getMessage("log.qa.archive.unknown_strategy", strategy));
+                log.warn(I18N.get("log.qa.archive.unknown_strategy", strategy));
                 return false;
         }
     }
@@ -166,22 +166,22 @@ public class QAArchiveService {
 
             // 5. 保存文件（Save file）
             Files.writeString(targetPath, content);
-            log.info(LogMessageProvider.getMessage("log.qa.archive.saved", targetPath.getFileName()));
+            log.info(I18N.get("log.qa.archive.saved", targetPath.getFileName()));
 
             // 6. 自动索引（如果配置了）（Auto index if configured）
             if (archiveProperties.isAutoIndex()) {
                 try {
                     knowledgeBaseService.incrementalIndexFile(targetPath);
-                    log.info(LogMessageProvider.getMessage("log.qa.archive.indexed", fileName));
+                    log.info(I18N.get("log.qa.archive.indexed", fileName));
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.qa.archive.index_failed", fileName, e.getMessage()));
+                    log.warn(I18N.get("log.qa.archive.index_failed", fileName, e.getMessage()));
                 }
             }
 
             return targetPath.toString();
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.qa.archive.failed", record.getId()), e);
+            log.error(I18N.get("log.qa.archive.failed", record.getId()), e);
             return null;
         }
     }
@@ -371,7 +371,7 @@ public class QAArchiveService {
                     .rejectedCount(rejectedCount)
                     .build();
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.qa.archive.stats_failed"), e);
+            log.error(I18N.get("log.qa.archive.stats_failed"), e);
             return ArchiveStatistics.builder().build();
         }
     }

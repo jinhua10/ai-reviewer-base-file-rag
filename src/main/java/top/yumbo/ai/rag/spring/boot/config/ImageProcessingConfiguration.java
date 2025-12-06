@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.impl.parser.image.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
 /**
@@ -36,18 +36,18 @@ public class ImageProcessingConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public SmartImageExtractor smartImageExtractor() {
-        log.info(LogMessageProvider.getMessage("log.imageproc.init"));
+        log.info(I18N.get("log.imageproc.init"));
 
         KnowledgeQAProperties.ImageProcessingConfig config = properties.getImageProcessing();
         String strategy = config.getStrategy();
 
-        log.info(LogMessageProvider.getMessage("log.imageproc.strategy", strategy));
+        log.info(I18N.get("log.imageproc.strategy", strategy));
 
         // 设置图片提取模式（Set image extraction mode）
         String extractionMode = config.getExtractionMode();
         if (extractionMode != null && !extractionMode.isEmpty()) {
             VisionLLMStrategy.setExtractionMode(extractionMode);
-            log.info(LogMessageProvider.getMessage("log.imageproc.extraction_mode", extractionMode));
+            log.info(I18N.get("log.imageproc.extraction_mode", extractionMode));
         }
 
         SmartImageExtractor extractor = new SmartImageExtractor();
@@ -74,7 +74,7 @@ public class ImageProcessingConfiguration {
                     addLLMClientVisionStrategy(extractor);
                 } else {
                     // 如果主 LLM 不支持图片，退回到 vision-llm 配置（If main LLM doesn't support images, fallback to vision-llm config）
-                    log.warn(LogMessageProvider.getMessage("log.imageproc.llm_fallback_vision"));
+                    log.warn(I18N.get("log.imageproc.llm_fallback_vision"));
                     addVisionLlmStrategy(extractor, config);
                 }
                 break;
@@ -91,13 +91,13 @@ public class ImageProcessingConfiguration {
 
             case "placeholder":
             default:
-                log.info(LogMessageProvider.getMessage("log.imageproc.placeholder"));
+                log.info(I18N.get("log.imageproc.placeholder"));
                 break;
         }
 
         // 显示激活的策略
         ImageContentExtractorStrategy activeStrategy = extractor.getActiveStrategy();
-        log.info(LogMessageProvider.getMessage("log.imageproc.activated", activeStrategy.getStrategyName()));
+        log.info(I18N.get("log.imageproc.activated", activeStrategy.getStrategyName()));
 
         return extractor;
     }
@@ -108,29 +108,29 @@ public class ImageProcessingConfiguration {
      */
     private void addLLMClientVisionStrategy(SmartImageExtractor extractor) {
         if (llmClient == null) {
-            log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_client"));
+            log.warn(I18N.get("log.imageproc.llm_vision_no_client"));
             return;
         }
 
-        log.debug(LogMessageProvider.getMessage("log.imageproc.check_llm_support",
+        log.debug(I18N.get("log.imageproc.check_llm_support",
                   llmClient.getModelName(), llmClient.supportsImageInput()));
 
         if (!llmClient.supportsImageInput()) {
-            log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_no_image_support", llmClient.getModelName()));
+            log.warn(I18N.get("log.imageproc.llm_vision_no_image_support", llmClient.getModelName()));
             return;
         }
 
-        log.info(LogMessageProvider.getMessage("log.imageproc.add_llm_vision"));
-        log.info(LogMessageProvider.getMessage("log.imageproc.llm_vision_model", llmClient.getModelName()));
-        log.info(LogMessageProvider.getMessage("log.imageproc.llm_vision_client_type", llmClient.getClass().getSimpleName()));
+        log.info(I18N.get("log.imageproc.add_llm_vision"));
+        log.info(I18N.get("log.imageproc.llm_vision_model", llmClient.getModelName()));
+        log.info(I18N.get("log.imageproc.llm_vision_client_type", llmClient.getClass().getSimpleName()));
 
         LLMClientVisionStrategy llmVisionStrategy = new LLMClientVisionStrategy(llmClient);
         extractor.addStrategy(llmVisionStrategy);
 
         if (llmVisionStrategy.isAvailable()) {
-            log.info(LogMessageProvider.getMessage("log.imageproc.llm_vision_available"));
+            log.info(I18N.get("log.imageproc.llm_vision_available"));
         } else {
-            log.warn(LogMessageProvider.getMessage("log.imageproc.llm_vision_unavailable"));
+            log.warn(I18N.get("log.imageproc.llm_vision_unavailable"));
         }
     }
 
@@ -143,18 +143,18 @@ public class ImageProcessingConfiguration {
             String tessdataPath = resolveEnvVariable(ocrConfig.getTessdataPath());
             String language = ocrConfig.getLanguage();
 
-            log.info(LogMessageProvider.getMessage("log.imageproc.add_ocr"));
-            log.info(LogMessageProvider.getMessage("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : LogMessageProvider.getMessage("log.imageproc.tessdata_default")));
-            log.info(LogMessageProvider.getMessage("log.imageproc.language", language));
+            log.info(I18N.get("log.imageproc.add_ocr"));
+            log.info(I18N.get("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : I18N.get("log.imageproc.tessdata_default")));
+            log.info(I18N.get("log.imageproc.language", language));
 
             TesseractOCRStrategy ocrStrategy = new TesseractOCRStrategy(tessdataPath, language);
             extractor.addStrategy(ocrStrategy);
 
             if (ocrStrategy.isAvailable()) {
-                log.info(LogMessageProvider.getMessage("log.imageproc.ocr_available"));
+                log.info(I18N.get("log.imageproc.ocr_available"));
             } else {
-                log.warn(LogMessageProvider.getMessage("log.imageproc.ocr_unavailable"));
-                log.warn(LogMessageProvider.getMessage("log.imageproc.ocr_hint"));
+                log.warn(I18N.get("log.imageproc.ocr_unavailable"));
+                log.warn(I18N.get("log.imageproc.ocr_hint"));
             }
         }
     }
@@ -171,23 +171,23 @@ public class ImageProcessingConfiguration {
             String endpoint = resolveEnvVariable(visionConfig.getEndpoint());
 
             if (apiKey != null && !apiKey.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.imageproc.add_vision"));
-                log.info(LogMessageProvider.getMessage("log.imageproc.vision_model", model));
+                log.info(I18N.get("log.imageproc.add_vision"));
+                log.info(I18N.get("log.imageproc.vision_model", model));
                 if (endpoint != null && !endpoint.isEmpty()) {
-                    log.info(LogMessageProvider.getMessage("log.imageproc.vision_endpoint", endpoint));
+                    log.info(I18N.get("log.imageproc.vision_endpoint", endpoint));
                 }
 
                 VisionLLMStrategy visionStrategy = new VisionLLMStrategy(apiKey, model, endpoint);
                 extractor.addStrategy(visionStrategy);
 
                 if (visionStrategy.isAvailable()) {
-                    log.info(LogMessageProvider.getMessage("log.imageproc.vision_available"));
+                    log.info(I18N.get("log.imageproc.vision_available"));
                 } else {
-                    log.warn(LogMessageProvider.getMessage("log.imageproc.vision_unavailable"));
+                    log.warn(I18N.get("log.imageproc.vision_unavailable"));
                 }
             } else {
-                log.warn(LogMessageProvider.getMessage("log.imageproc.vision_no_apikey"));
-                log.warn(LogMessageProvider.getMessage("log.imageproc.vision_apikey_hint"));
+                log.warn(I18N.get("log.imageproc.vision_no_apikey"));
+                log.warn(I18N.get("log.imageproc.vision_apikey_hint"));
             }
         }
     }

@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.ppl.PPLException;
 import top.yumbo.ai.rag.ppl.PPLServiceFacade;
@@ -49,9 +49,9 @@ public class DocumentPreprocessingService {
 
         // 记录PPL服务状态（Log PPL service status）
         if (pplServiceFacade == null || pplConfig == null) {
-            log.info(LogMessageProvider.getMessage("doc_preprocess.log.ppl_disabled"));
+            log.info(I18N.get("doc_preprocess.log.ppl_disabled"));
         } else {
-            log.info(LogMessageProvider.getMessage("doc_preprocess.log.ppl_enabled"));
+            log.info(I18N.get("doc_preprocess.log.ppl_enabled"));
         }
     }
 

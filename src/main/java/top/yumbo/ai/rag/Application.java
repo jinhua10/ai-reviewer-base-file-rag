@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.i18n.LogLocaleProperties;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * AI Reviewer RAG 系统 - Spring Boot 主入口 (AI Reviewer RAG System - Spring Boot Main Entry)
@@ -49,9 +49,9 @@ public class Application {
             app.setWebApplicationType(WebApplicationType.SERVLET);
             app.run(args);
 
-            log.info(LogMessageProvider.getMessage("log.app.started", "http://localhost:8080"));
+            log.info(I18N.get("log.app.started", "http://localhost:8080"));
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.app.start_failed"), e);
+            log.error(I18N.get("log.app.start_failed"), e);
             System.exit(1);
         }
     }
@@ -69,9 +69,9 @@ public class Application {
         System.out.println();
         System.out.println(" :: AI Reviewer RAG ::                                               (v1.0.0)");
         System.out.println();
-        System.out.println(LogMessageProvider.getMessage("banner.title"));
-        System.out.println(LogMessageProvider.getMessage("banner.version", "1.0.0"));
-        System.out.println(LogMessageProvider.getMessage("banner.supports", "Excel, Word, PowerPoint, PDF, TXT"));
+        System.out.println(I18N.get("banner.title"));
+        System.out.println(I18N.get("banner.version", "1.0.0"));
+        System.out.println(I18N.get("banner.supports", "Excel, Word, PowerPoint, PDF, TXT"));
         System.out.println();
     }
 }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -82,7 +82,7 @@ public class OpenAILLMClient implements LLMClient {
 
         this.objectMapper = new ObjectMapper();
 
-        log.info(LogMessageProvider.getMessage("llm.log.openai_init"));
+        log.info(I18N.get("llm.log.openai_init"));
         log.info("   - Model: {}", this.model);
         log.info("   - Endpoint: {}", this.apiUrl);
         log.info("   - Temperature: {}", this.temperature);
@@ -134,8 +134,8 @@ public class OpenAILLMClient implements LLMClient {
             return parseResponse(response);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
+            log.error(I18N.get("llm.log.openai_failed"), e);
+            throw new RuntimeException(I18N.get("llm.error.openai_failed", e.getMessage()), e);
         }
     }
 
@@ -161,8 +161,8 @@ public class OpenAILLMClient implements LLMClient {
             return parseResponse(response);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
+            log.error(I18N.get("llm.log.openai_failed"), e);
+            throw new RuntimeException(I18N.get("llm.error.openai_failed", e.getMessage()), e);
         }
     }
 
@@ -188,8 +188,8 @@ public class OpenAILLMClient implements LLMClient {
             return parseResponse(response);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("llm.log.openai_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("llm.error.openai_failed", e.getMessage()), e);
+            log.error(I18N.get("llm.log.openai_failed"), e);
+            throw new RuntimeException(I18N.get("llm.error.openai_failed", e.getMessage()), e);
         }
     }
 
@@ -326,7 +326,7 @@ public class OpenAILLMClient implements LLMClient {
     private String sendRequest(Map<String, Object> requestBody) throws IOException {
         String jsonBody = objectMapper.writeValueAsString(requestBody);
 
-        log.debug(LogMessageProvider.getMessage("llm.log.openai_request", model));
+        log.debug(I18N.get("llm.log.openai_request", model));
         log.debug("Request body: {}", jsonBody);
 
         Request request = new Request.Builder()
@@ -339,8 +339,8 @@ public class OpenAILLMClient implements LLMClient {
         try (Response response = httpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null ? response.body().string() : "No response body";
-                log.error(LogMessageProvider.getMessage("llm.log.openai_error", response.code(), errorBody));
-                throw new IOException(LogMessageProvider.getMessage("llm.error.openai_http_error", response.code(), errorBody));
+                log.error(I18N.get("llm.log.openai_error", response.code(), errorBody));
+                throw new IOException(I18N.get("llm.error.openai_http_error", response.code(), errorBody));
             }
 
             String responseBody = response.body().string();
@@ -365,14 +365,14 @@ public class OpenAILLMClient implements LLMClient {
                 JsonNode content = message.get("content");
                 if (content != null) {
                     String result = content.asText();
-                    log.debug(LogMessageProvider.getMessage("llm.log.openai_response",
+                    log.debug(I18N.get("llm.log.openai_response",
                         result.substring(0, Math.min(200, result.length()))));
                     return result;
                 }
             }
         }
 
-        throw new IOException(LogMessageProvider.getMessage("llm.error.parse_failed", responseBody));
+        throw new IOException(I18N.get("llm.error.parse_failed", responseBody));
     }
 }
 

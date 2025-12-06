@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.spring.boot.service.parser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
 import org.springframework.stereotype.Component;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
 import top.yumbo.ai.rag.spring.boot.model.document.SegmentType;
@@ -48,7 +48,7 @@ public class WordDocumentParser implements DocumentParser {
     public List<DocumentSegment> parse(String documentPath) throws IOException {
         File file = new File(documentPath);
         if (!file.exists()) {
-            throw new IOException(LogMessageProvider.getMessage("word_parser.error.file_not_found", documentPath));
+            throw new IOException(I18N.get("word_parser.error.file_not_found", documentPath));
         }
 
         List<DocumentSegment> segments = new ArrayList<>();
@@ -56,7 +56,7 @@ public class WordDocumentParser implements DocumentParser {
         try (FileInputStream fis = new FileInputStream(file);
              XWPFDocument document = new XWPFDocument(fis)) {
 
-            log.info(LogMessageProvider.getMessage("word_parser.log.parse_file", file.getName()));
+            log.info(I18N.get("word_parser.log.parse_file", file.getName()));
 
             // 提取所有段落
             List<XWPFParagraph> paragraphs = document.getParagraphs();
@@ -90,17 +90,17 @@ public class WordDocumentParser implements DocumentParser {
 
                 segments.add(segment);
 
-                log.debug(LogMessageProvider.getMessage("word_parser.log.parse_chapter", index, chapter.title, chapter.content.length()));
+                log.debug(I18N.get("word_parser.log.parse_chapter", index, chapter.title, chapter.content.length()));
             }
 
             // 更新总片段数
             source.setTotalSegments(segments.size());
 
-            log.info(LogMessageProvider.getMessage("word_parser.log.parse_complete", segments.size()));
+            log.info(I18N.get("word_parser.log.parse_complete", segments.size()));
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("word_parser.log.parse_failed", documentPath), e);
-            throw new IOException(LogMessageProvider.getMessage("word_parser.log.parse_failed", e.getMessage()), e);
+            log.error(I18N.get("word_parser.log.parse_failed", documentPath), e);
+            throw new IOException(I18N.get("word_parser.log.parse_failed", e.getMessage()), e);
         }
 
         return segments;
@@ -166,7 +166,7 @@ public class WordDocumentParser implements DocumentParser {
                     chapters.add(currentChapter);
 
                     currentChapter = new ChapterContent();
-                    currentChapter.title = LogMessageProvider.getMessage("word_parser.title.continued");
+                    currentChapter.title = I18N.get("word_parser.title.continued");
                     currentChapter.isHeading = false;
                     contentBuilder = new StringBuilder();
                 }
@@ -184,7 +184,7 @@ public class WordDocumentParser implements DocumentParser {
         // 如果没有章节，创建一个默认的
         if (chapters.isEmpty()) {
             ChapterContent defaultChapter = new ChapterContent();
-            defaultChapter.title = LogMessageProvider.getMessage("word_parser.title.default_content");
+            defaultChapter.title = I18N.get("word_parser.title.default_content");
             defaultChapter.content = "";
             defaultChapter.isHeading = false;
             chapters.add(defaultChapter);

@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.util;
 import java.util.*;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 /**
  * 批量处理器（Batch processor）
  * 用于批量处理数据，支持缓冲和分批执行（Used for batch processing data, supports buffering and batch execution）
@@ -37,7 +37,7 @@ public class BatchProcessor<T> {
                 processor.accept(new ArrayList<>(buffer));
                 buffer.clear();
             } catch (Exception e) {
-                log.error(LogMessageProvider.getMessage("log.batch.failed"), e);
+                log.error(I18N.get("log.batch.failed"), e);
             }
         }
     }

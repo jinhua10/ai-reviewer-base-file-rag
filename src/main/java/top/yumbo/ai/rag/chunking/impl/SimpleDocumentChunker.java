@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class SimpleDocumentChunker implements DocumentChunker {
         // 防止处理超大文档导致内存溢出（从配置读取）
         int maxContentLength = config.getMaxContentLength();
         if (content.length() > maxContentLength) {
-            log.warn(LogMessageProvider.getMessage("log.chunk.content_truncate", content.length(), maxContentLength));
+            log.warn(I18N.get("log.chunk.content_truncate", content.length(), maxContentLength));
             content = content.substring(0, maxContentLength);
         }
 
@@ -79,14 +79,14 @@ public class SimpleDocumentChunker implements DocumentChunker {
         }
 
         if (index >= maxChunks) {
-            log.warn(LogMessageProvider.getMessage("log.chunk.max_chunks_reached", maxChunks));
+            log.warn(I18N.get("log.chunk.max_chunks_reached", maxChunks));
         }
 
         // 更新总块数
         int totalChunks = chunks.size();
         chunks.forEach(chunk -> chunk.setTotalChunks(totalChunks));
 
-        log.debug(LogMessageProvider.getMessage("log.chunk.simple_summary", content.length(), totalChunks, chunkSize, overlap));
+        log.debug(I18N.get("log.chunk.simple_summary", content.length(), totalChunks, chunkSize, overlap));
 
         return chunks;
     }

@@ -6,7 +6,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.io.InputStream;
@@ -36,13 +36,13 @@ public class ModelCheckService {
     public void checkModelOnStartup() {
         // 如果未启用向量检索，跳过检查
         if (!properties.getVectorSearch().isEnabled()) {
-            log.info(LogMessageProvider.getMessage("log.model.vector_disabled"));
+            log.info(I18N.get("log.model.vector_disabled"));
             return;
         }
 
-        log.info(LogMessageProvider.getMessage("log.model.sep"));
-        log.info(LogMessageProvider.getMessage("log.model.checking"));
-        log.info(LogMessageProvider.getMessage("log.model.sep"));
+        log.info(I18N.get("log.model.sep"));
+        log.info(I18N.get("log.model.checking"));
+        log.info(I18N.get("log.model.sep"));
 
         boolean modelFound = checkModel();
 
@@ -53,9 +53,9 @@ public class ModelCheckService {
             System.exit(1);
         }
 
-        log.info(LogMessageProvider.getMessage("log.model.sep"));
-        log.info(LogMessageProvider.getMessage("log.model.passed"));
-        log.info(LogMessageProvider.getMessage("log.model.sep"));
+        log.info(I18N.get("log.model.sep"));
+        log.info(I18N.get("log.model.passed"));
+        log.info(I18N.get("log.model.sep"));
     }
 
     /**
@@ -75,8 +75,8 @@ public class ModelCheckService {
                 if (resourceStream != null) {
                     try {
                         resourceStream.close();
-                        log.info(LogMessageProvider.getMessage("log.model.found", resourcePath));
-                        log.info(LogMessageProvider.getMessage("log.model.dir_and_file", "models/" + modelDir, fileName));
+                        log.info(I18N.get("log.model.found", resourcePath));
+                        log.info(I18N.get("log.model.dir_and_file", "models/" + modelDir, fileName));
                         return true;
                     } catch (Exception e) {
                         // 忽略
@@ -87,8 +87,8 @@ public class ModelCheckService {
                 String fileSystemPath = "./models/" + modelDir + "/" + fileName;
                 File file = new File(fileSystemPath);
                 if (file.exists()) {
-                    log.info(LogMessageProvider.getMessage("log.model.found", file.getAbsolutePath()));
-                    log.info(LogMessageProvider.getMessage("log.model.dir_and_file", "models/" + modelDir, fileName));
+                    log.info(I18N.get("log.model.found", file.getAbsolutePath()));
+                    log.info(I18N.get("log.model.dir_and_file", "models/" + modelDir, fileName));
                     return true;
                 }
 
@@ -96,8 +96,8 @@ public class ModelCheckService {
                 String srcResourcePath = "src/main/resources/models/" + modelDir + "/" + fileName;
                 File srcFile = new File(srcResourcePath);
                 if (srcFile.exists()) {
-                    log.info(LogMessageProvider.getMessage("log.model.found", srcFile.getAbsolutePath()));
-                    log.info(LogMessageProvider.getMessage("log.model.dir_and_file", "models/" + modelDir, fileName));
+                    log.info(I18N.get("log.model.found", srcFile.getAbsolutePath()));
+                    log.info(I18N.get("log.model.dir_and_file", "models/" + modelDir, fileName));
                     return true;
                 }
             }
@@ -110,37 +110,37 @@ public class ModelCheckService {
      * 打印模型下载说明
      */
     private void printModelDownloadInstructions() {
-        log.error(LogMessageProvider.getMessage("log.model.not_found_title"));
-        log.error(LogMessageProvider.getMessage("log.model.list_header"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_1"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_1_link"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_1_path"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_2"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_2_link"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_2_path"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_3"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_3_link"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_3_path"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_4"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_4_link"));
-        log.error(LogMessageProvider.getMessage("log.model.recommendation_4_path"));
-        log.error(LogMessageProvider.getMessage("log.model.sep"));
-        log.error(LogMessageProvider.getMessage("log.model.download_quick"));
-        log.error(LogMessageProvider.getMessage("log.model.sep"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method1"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method1_code1"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method1_code2"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method1_code3"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method1_code4"));
-        log.error(LogMessageProvider.getMessage("log.model.sep"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method2"));
-        log.error(LogMessageProvider.getMessage("log.model.quick_method2_steps"));
-        log.error(LogMessageProvider.getMessage("log.model.sep"));
-        log.error(LogMessageProvider.getMessage("log.model.searched_locations"));
+        log.error(I18N.get("log.model.not_found_title"));
+        log.error(I18N.get("log.model.list_header"));
+        log.error(I18N.get("log.model.recommendation_1"));
+        log.error(I18N.get("log.model.recommendation_1_link"));
+        log.error(I18N.get("log.model.recommendation_1_path"));
+        log.error(I18N.get("log.model.recommendation_2"));
+        log.error(I18N.get("log.model.recommendation_2_link"));
+        log.error(I18N.get("log.model.recommendation_2_path"));
+        log.error(I18N.get("log.model.recommendation_3"));
+        log.error(I18N.get("log.model.recommendation_3_link"));
+        log.error(I18N.get("log.model.recommendation_3_path"));
+        log.error(I18N.get("log.model.recommendation_4"));
+        log.error(I18N.get("log.model.recommendation_4_link"));
+        log.error(I18N.get("log.model.recommendation_4_path"));
+        log.error(I18N.get("log.model.sep"));
+        log.error(I18N.get("log.model.download_quick"));
+        log.error(I18N.get("log.model.sep"));
+        log.error(I18N.get("log.model.quick_method1"));
+        log.error(I18N.get("log.model.quick_method1_code1"));
+        log.error(I18N.get("log.model.quick_method1_code2"));
+        log.error(I18N.get("log.model.quick_method1_code3"));
+        log.error(I18N.get("log.model.quick_method1_code4"));
+        log.error(I18N.get("log.model.sep"));
+        log.error(I18N.get("log.model.quick_method2"));
+        log.error(I18N.get("log.model.quick_method2_steps"));
+        log.error(I18N.get("log.model.sep"));
+        log.error(I18N.get("log.model.searched_locations"));
         var modelConfig = properties.getVectorSearch().getModel();
         for (String modelDir : modelConfig.getSearchPaths()) {
-            log.error(LogMessageProvider.getMessage("log.model.searched_path", modelDir));
+            log.error(I18N.get("log.model.searched_path", modelDir));
         }
-        log.error(LogMessageProvider.getMessage("log.model.docs"));
+        log.error(I18N.get("log.model.docs"));
     }
 }

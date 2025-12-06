@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.llm.MockLLMClient;
 import top.yumbo.ai.rag.spring.boot.llm.OpenAILLMClient;
@@ -56,11 +56,11 @@ public class LLMConfiguration {
         String apiUrl = properties.getLlm().getApiUrl();
 
         if (apiKey == null || apiKey.isEmpty()) {
-            log.warn(LogMessageProvider.getMessage("log.llm.api_key_missing"));
-            log.warn(LogMessageProvider.getMessage("log.llm.api_key_hint"));
-            log.warn(LogMessageProvider.getMessage("log.llm.api_key_deepseek"));
-            log.warn(LogMessageProvider.getMessage("log.llm.api_key_openai"));
-            log.warn(LogMessageProvider.getMessage("log.llm.fallback_mock"));
+            log.warn(I18N.get("log.llm.api_key_missing"));
+            log.warn(I18N.get("log.llm.api_key_hint"));
+            log.warn(I18N.get("log.llm.api_key_deepseek"));
+            log.warn(I18N.get("log.llm.api_key_openai"));
+            log.warn(I18N.get("log.llm.fallback_mock"));
             return new MockLLMClient();
         }
 
@@ -70,9 +70,9 @@ public class LLMConfiguration {
             serviceName = "DeepSeek";
         }
 
-        log.info(LogMessageProvider.getMessage("log.llm.client_created", serviceName));
-        log.info(LogMessageProvider.getMessage("log.llm.model", model));
-        log.info(LogMessageProvider.getMessage("log.llm.api_url", apiUrl));
+        log.info(I18N.get("log.llm.client_created", serviceName));
+        log.info(I18N.get("log.llm.model", model));
+        log.info(I18N.get("log.llm.api_url", apiUrl));
 
         return new OpenAILLMClient(apiKey, model, apiUrl);
     }
@@ -88,11 +88,11 @@ public class LLMConfiguration {
     )
     @ConditionalOnMissingBean
     public LLMClient mockLLMClient() {
-        log.info(LogMessageProvider.getMessage("log.llm.mock_created"));
-        log.info(LogMessageProvider.getMessage("log.llm.mock_warning"));
-        log.info(LogMessageProvider.getMessage("log.llm.mock_hint"));
-        log.info(LogMessageProvider.getMessage("log.llm.mock_provider"));
-        log.info(LogMessageProvider.getMessage("log.llm.mock_apikey"));
+        log.info(I18N.get("log.llm.mock_created"));
+        log.info(I18N.get("log.llm.mock_warning"));
+        log.info(I18N.get("log.llm.mock_hint"));
+        log.info(I18N.get("log.llm.mock_provider"));
+        log.info(I18N.get("log.llm.mock_apikey"));
         return new MockLLMClient();
     }
 

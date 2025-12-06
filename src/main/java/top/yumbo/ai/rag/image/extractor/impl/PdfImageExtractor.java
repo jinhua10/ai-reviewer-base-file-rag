@@ -9,7 +9,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.text.PDFTextStripper;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -34,7 +34,7 @@ public class PdfImageExtractor implements DocumentImageExtractor {
 
         try (PDDocument document = Loader.loadPDF(documentStream.readAllBytes())) {
             int totalPages = document.getNumberOfPages();
-            log.info(LogMessageProvider.getMessage("log.image.pdf.processing", documentName, totalPages));
+            log.info(I18N.get("log.image.pdf.processing", documentName, totalPages));
 
             for (int pageNum = 0; pageNum < totalPages; pageNum++) {
                 PDPage page = document.getPage(pageNum);
@@ -50,7 +50,7 @@ public class PdfImageExtractor implements DocumentImageExtractor {
                 images.addAll(pageImages);
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.pdf.extracted", images.size(), documentName));
+            log.info(I18N.get("log.image.pdf.extracted", images.size(), documentName));
         }
 
         return images;
@@ -100,14 +100,14 @@ public class PdfImageExtractor implements DocumentImageExtractor {
 
                         images.add(extractedImage);
 
-                        log.debug(LogMessageProvider.getMessage("log.image.pdf.found", pageNum, bufferedImage.getWidth(), bufferedImage.getHeight(), imageData.length / 1024));
+                        log.debug(I18N.get("log.image.pdf.found", pageNum, bufferedImage.getWidth(), bufferedImage.getHeight(), imageData.length / 1024));
                     }
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.image.pdf.extract_failed", cosName.getName()), e);
+                    log.warn(I18N.get("log.image.pdf.extract_failed", cosName.getName()), e);
                 }
             }
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.pdf.process_failed", pageNum), e);
+            log.error(I18N.get("log.image.pdf.process_failed", pageNum), e);
         }
 
         return images;
@@ -131,7 +131,7 @@ public class PdfImageExtractor implements DocumentImageExtractor {
 
             return text.trim();
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.image.pdf.text_failed", pageNum), e);
+            log.warn(I18N.get("log.image.pdf.text_failed", pageNum), e);
             return "";
         }
     }

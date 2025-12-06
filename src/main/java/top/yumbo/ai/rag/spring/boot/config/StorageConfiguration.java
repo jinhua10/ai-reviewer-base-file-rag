@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.image.DocumentImageExtractionService;
 import top.yumbo.ai.rag.image.ImageStorageService;
 import top.yumbo.ai.rag.image.analyzer.AIImageAnalyzer;
@@ -27,7 +27,7 @@ public class StorageConfiguration {
     @Bean
     public ChunkStorageService chunkStorageService(KnowledgeQAProperties properties) {
         String storagePath = properties.getKnowledgeBase().getStoragePath();
-        log.info(LogMessageProvider.getMessage("log.storage.chunk_storage_init", storagePath));
+        log.info(I18N.get("log.storage.chunk_storage_init", storagePath));
         return new ChunkStorageService(storagePath);
     }
 
@@ -37,7 +37,7 @@ public class StorageConfiguration {
     @Bean
     public ImageStorageService imageStorageService(KnowledgeQAProperties properties) {
         String storagePath = properties.getKnowledgeBase().getStoragePath();
-        log.info(LogMessageProvider.getMessage("log.storage.image_storage_init", storagePath));
+        log.info(I18N.get("log.storage.image_storage_init", storagePath));
         return new ImageStorageService(storagePath);
     }
 
@@ -49,7 +49,7 @@ public class StorageConfiguration {
         boolean enabled = properties.getLlm().getChunking().getAiChunking().isEnabled();
         String model = properties.getLlm().getChunking().getAiChunking().getModel();
 
-        log.info(LogMessageProvider.getMessage("log.storage.ai_image_analyzer_init", enabled, model));
+        log.info(I18N.get("log.storage.ai_image_analyzer_init", enabled, model));
         return new AIImageAnalyzer(llmClient, enabled, model);
     }
 
@@ -65,7 +65,7 @@ public class StorageConfiguration {
 
         boolean aiAnalysisEnabled = properties.getLlm().getChunking().getAiChunking().isEnabled();
 
-        log.info(LogMessageProvider.getMessage("log.storage.document_image_extraction_init", aiAnalysisEnabled));
+        log.info(I18N.get("log.storage.document_image_extraction_init", aiAnalysisEnabled));
         return new DocumentImageExtractionService(
                 imageStorageService,
                 aiImageAnalyzer,

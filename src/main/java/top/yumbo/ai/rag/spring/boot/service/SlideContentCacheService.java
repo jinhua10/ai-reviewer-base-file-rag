@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,13 +43,13 @@ public class SlideContentCacheService {
         try {
             if (!Files.exists(cacheDirPath)) {
                 Files.createDirectories(cacheDirPath);
-                log.info(LogMessageProvider.getMessage("slide_cache.log.create_cache_dir", cacheDir));
+                log.info(I18N.get("slide_cache.log.create_cache_dir", cacheDir));
             }
 
             loadCacheIndex();
 
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("slide_cache.log.init_failed"), e);
+            log.error(I18N.get("slide_cache.log.init_failed"), e);
             this.cacheIndex = new HashMap<>();
         }
     }
@@ -78,7 +78,7 @@ public class SlideContentCacheService {
         try {
             saveCacheIndex();
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("slide_cache.log.save_failed"), e);
+            log.error(I18N.get("slide_cache.log.save_failed"), e);
         }
     }
 
@@ -140,7 +140,7 @@ public class SlideContentCacheService {
             return sb.toString();
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("slide_cache.log.hash_failed"), e);
+            log.error(I18N.get("slide_cache.log.hash_failed"), e);
             return UUID.randomUUID().toString(); // 失败时返回随机值，强制重新处理（Return random value on failure, force reprocessing）
         }
     }
@@ -153,7 +153,7 @@ public class SlideContentCacheService {
         try {
             saveCacheIndex();
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("slide_cache.log.clear_failed"), e);
+            log.error(I18N.get("slide_cache.log.clear_failed"), e);
         }
     }
 
@@ -166,7 +166,7 @@ public class SlideContentCacheService {
             try {
                 saveCacheIndex();
             } catch (IOException e) {
-                log.error(LogMessageProvider.getMessage("slide_cache.log.delete_ppt_cache_failed"), e);
+                log.error(I18N.get("slide_cache.log.delete_ppt_cache_failed"), e);
             }
         }
     }
@@ -185,9 +185,9 @@ public class SlideContentCacheService {
         try {
             CacheIndex index = objectMapper.readValue(indexPath.toFile(), CacheIndex.class);
             this.cacheIndex = index.getPptCaches();
-            log.info(LogMessageProvider.getMessage("slide_cache.log.load_cache_index", cacheIndex.size()));
+            log.info(I18N.get("slide_cache.log.load_cache_index", cacheIndex.size()));
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("slide_cache.log.load_cache_index_failed"), e);
+            log.warn(I18N.get("slide_cache.log.load_cache_index_failed"), e);
             this.cacheIndex = new HashMap<>();
         }
     }
@@ -205,7 +205,7 @@ public class SlideContentCacheService {
         objectMapper.writerWithDefaultPrettyPrinter()
                    .writeValue(indexPath.toFile(), index);
 
-        log.debug(LogMessageProvider.getMessage("slide_cache.log.save_cache_index", cacheIndex.size()));
+        log.debug(I18N.get("slide_cache.log.save_cache_index", cacheIndex.size()));
     }
 
     /**

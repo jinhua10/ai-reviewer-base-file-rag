@@ -3,7 +3,7 @@ package top.yumbo.ai.rag.spring.boot.service.parser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xslf.usermodel.*;
 import org.springframework.stereotype.Component;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSegment;
 import top.yumbo.ai.rag.spring.boot.model.document.DocumentSource;
 import top.yumbo.ai.rag.spring.boot.model.document.SegmentType;
@@ -42,7 +42,7 @@ public class PPTDocumentParser implements DocumentParser {
     public List<DocumentSegment> parse(String documentPath) throws IOException {
         File file = new File(documentPath);
         if (!file.exists()) {
-            throw new IOException(LogMessageProvider.getMessage("ppt_parser.error.file_not_found", documentPath));
+            throw new IOException(I18N.get("ppt_parser.error.file_not_found", documentPath));
         }
 
         List<DocumentSegment> segments = new ArrayList<>();
@@ -53,7 +53,7 @@ public class PPTDocumentParser implements DocumentParser {
             List<XSLFSlide> slides = ppt.getSlides();
             int totalSlides = slides.size();
 
-            log.info(LogMessageProvider.getMessage("ppt_parser.log.parse_file", file.getName(), totalSlides));
+            log.info(I18N.get("ppt_parser.log.parse_file", file.getName(), totalSlides));
 
             // 创建文档来源信息
             DocumentSource source = DocumentSource.builder()
@@ -76,13 +76,13 @@ public class PPTDocumentParser implements DocumentParser {
                 // 记录每张幻灯片的内容情况（Log content info for each slide）
                 int textLen = segment.getTextContent() != null ? segment.getTextContent().length() : 0;
                 int imgCount = segment.getImages() != null ? segment.getImages().size() : 0;
-                log.debug(LogMessageProvider.getMessage("ppt_parser.log.parse_slide", slideNumber, segment.getTitle())
+                log.debug(I18N.get("ppt_parser.log.parse_slide", slideNumber, segment.getTitle())
                         + " (文本: " + textLen + " 字符, 图片: " + imgCount + " 张)");
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("ppt_parser.log.parse_failed", documentPath), e);
-            throw new IOException(LogMessageProvider.getMessage("ppt_parser.log.parse_failed", e.getMessage()), e);
+            log.error(I18N.get("ppt_parser.log.parse_failed", documentPath), e);
+            throw new IOException(I18N.get("ppt_parser.log.parse_failed", e.getMessage()), e);
         }
 
         return segments;
@@ -111,7 +111,7 @@ public class PPTDocumentParser implements DocumentParser {
                 .id("slide-" + slideNumber)
                 .index(slideNumber)
                 .type(SegmentType.SLIDE)
-                .title(title != null ? title : LogMessageProvider.getMessage("ppt_parser.title.default_slide", slideNumber))
+                .title(title != null ? title : I18N.get("ppt_parser.title.default_slide", slideNumber))
                 .textContent(content)
                 .images(images)
                 .tables(tables)
@@ -191,7 +191,7 @@ public class PPTDocumentParser implements DocumentParser {
                 XSLFPictureData pictureData = picture.getPictureData();
                 if (pictureData != null) {
                     // 记录图片信息（不存储实际数据，节省内存）
-                    String imageInfo = LogMessageProvider.getMessage("ppt_parser.content.image_info",
+                    String imageInfo = I18N.get("ppt_parser.content.image_info",
                             shape.getShapeName(),
                             pictureData.getContentType());
                     images.add(imageInfo);
@@ -212,7 +212,7 @@ public class PPTDocumentParser implements DocumentParser {
             if (shape instanceof XSLFTable) {
                 XSLFTable table = (XSLFTable) shape;
                 StringBuilder tableContent = new StringBuilder();
-                tableContent.append(LogMessageProvider.getMessage("ppt_parser.content.table_header")).append("\n");
+                tableContent.append(I18N.get("ppt_parser.content.table_header")).append("\n");
 
                 for (int row = 0; row < table.getNumberOfRows(); row++) {
                     XSLFTableRow tableRow = table.getRows().get(row);

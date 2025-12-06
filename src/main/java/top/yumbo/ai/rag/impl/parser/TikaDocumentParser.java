@@ -11,7 +11,7 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import top.yumbo.ai.rag.core.DocumentParser;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -112,11 +112,11 @@ public class TikaDocumentParser implements DocumentParser {
         this.imageStorageService = imageStorageService;
 
         // 显示解析器配置信息（Display parser configuration）
-        log.info(LogMessageProvider.getMessage("log.tika.init"));
-        log.info(LogMessageProvider.getMessage("log.tika.max_content", maxContentLength / 1024 / 1024));
-        log.info(LogMessageProvider.getMessage("log.tika.extract_image_metadata", extractImageMetadata));
-        log.info(LogMessageProvider.getMessage("log.tika.include_image_placeholders", includeImagePlaceholders));
-        log.info(LogMessageProvider.getMessage("log.tika.active_image_strategy", imageExtractor.getActiveStrategy().getStrategyName()));
+        log.info(I18N.get("log.tika.init"));
+        log.info(I18N.get("log.tika.max_content", maxContentLength / 1024 / 1024));
+        log.info(I18N.get("log.tika.extract_image_metadata", extractImageMetadata));
+        log.info(I18N.get("log.tika.include_image_placeholders", includeImagePlaceholders));
+        log.info(I18N.get("log.tika.active_image_strategy", imageExtractor.getActiveStrategy().getStrategyName()));
         log.info("Vision LLM 批量大小: {} 张幻灯片/批次", this.visionBatchSize);
         if (cacheService != null) {
             log.info("✅ 幻灯片缓存已启用");
@@ -175,14 +175,14 @@ public class TikaDocumentParser implements DocumentParser {
     @Override
     public String parse(File file) {
         if (file == null || !file.exists()) {
-            log.warn(LogMessageProvider.getMessage("log.tika.file_not_exists", String.valueOf(file)));
+            log.warn(I18N.get("log.tika.file_not_exists", String.valueOf(file)));
             return "";
         }
 
         try {
             // 检测MIME类型
             String mimeType = tika.detect(file);
-            log.debug(LogMessageProvider.getMessage("log.tika.detected_mime", mimeType, file.getName()));
+            log.debug(I18N.get("log.tika.detected_mime", mimeType, file.getName()));
 
             // 对于Office文档，使用专门的图片提取器
             String filename = file.getName().toLowerCase();
@@ -192,18 +192,18 @@ public class TikaDocumentParser implements DocumentParser {
 
                 String content = "";
                 if (filename.endsWith(".pptx")) {
-                    log.info(LogMessageProvider.getMessage("log.tika.office_pptx", file.getName()));
+                    log.info(I18N.get("log.tika.office_pptx", file.getName()));
                     content = officeExtractor.extractFromPPTX(file);
                 } else if (filename.endsWith(".docx")) {
-                    log.info(LogMessageProvider.getMessage("log.tika.office_docx", file.getName()));
+                    log.info(I18N.get("log.tika.office_docx", file.getName()));
                     content = officeExtractor.extractFromDOCX(file);
                 } else if (filename.endsWith(".xlsx")) {
-                    log.info(LogMessageProvider.getMessage("log.tika.office_xlsx", file.getName()));
+                    log.info(I18N.get("log.tika.office_xlsx", file.getName()));
                     content = officeExtractor.extractFromXLSX(file);
                 }
 
                 if (content != null && !content.trim().isEmpty()) {
-                    log.info(LogMessageProvider.getMessage("log.tika.office_done", file.getName(), content.length()));
+                    log.info(I18N.get("log.tika.office_done", file.getName(), content.length()));
                     return content;
                 }
             }
@@ -211,12 +211,12 @@ public class TikaDocumentParser implements DocumentParser {
             // 默认使用Tika解析
             try (InputStream stream = Files.newInputStream(file.toPath())) {
                 String content = parseWithMetadata(stream, file.getName(), mimeType);
-                log.debug(LogMessageProvider.getMessage("log.tika.parsed_file", file.getName(), content.length()));
+                log.debug(I18N.get("log.tika.parsed_file", file.getName(), content.length()));
                 return content;
             }
 
         } catch (IOException | TikaException | SAXException e) {
-            log.error(LogMessageProvider.getMessage("log.tika.parse_failed", file.getAbsolutePath()), e);
+            log.error(I18N.get("log.tika.parse_failed", file.getAbsolutePath()), e);
             return "";
         }
     }
@@ -283,9 +283,9 @@ public class TikaDocumentParser implements DocumentParser {
 
                     // 添加图片元数据信息
                     if (imageCount == 1) {
-                        enriched.append(LogMessageProvider.getMessage("log.tika.image_section_start"));
+                        enriched.append(I18N.get("log.tika.image_section_start"));
                     }
-                    enriched.append(String.format(LogMessageProvider.getMessage("log.tika.image_item", imageCount, name, value)));
+                    enriched.append(String.format(I18N.get("log.tika.image_item", imageCount, name, value)));
                 }
             }
         }
@@ -296,8 +296,8 @@ public class TikaDocumentParser implements DocumentParser {
 
             String embeddedCount = metadata.get("X-TIKA:embedded_resource_count");
             if (embeddedCount != null && Integer.parseInt(embeddedCount) > 0) {
-                enriched.append(LogMessageProvider.getMessage("log.tika.embedded_section"));
-                enriched.append(String.format(LogMessageProvider.getMessage("log.tika.embedded_item", embeddedCount)));
+                enriched.append(I18N.get("log.tika.embedded_section"));
+                enriched.append(String.format(I18N.get("log.tika.embedded_item", embeddedCount)));
             }
         }
 
@@ -325,7 +325,7 @@ public class TikaDocumentParser implements DocumentParser {
                 (text.contains("[embedded]") || text.contains("[image]"))) {
                 imageCounter++;
                 // 替换为更友好的占位符
-                String placeholder = String.format(LogMessageProvider.getMessage("log.tika.image_placeholder", imageCounter));
+                String placeholder = String.format(I18N.get("log.tika.image_placeholder", imageCounter));
                 super.characters(placeholder.toCharArray(), 0, placeholder.length());
             } else {
                 super.characters(ch, start, length);
@@ -336,7 +336,7 @@ public class TikaDocumentParser implements DocumentParser {
     @Override
     public String parse(byte[] bytes, String mimeType) {
         if (bytes == null || bytes.length == 0) {
-            log.warn(LogMessageProvider.getMessage("log.tika.empty_bytes"));
+            log.warn(I18N.get("log.tika.empty_bytes"));
             return "";
         }
 
@@ -344,11 +344,11 @@ public class TikaDocumentParser implements DocumentParser {
             // 使用Tika解析
             String content = tika.parseToString(new java.io.ByteArrayInputStream(bytes));
 
-            log.debug(LogMessageProvider.getMessage("log.tika.parsed_bytes", mimeType, content.length()));
+            log.debug(I18N.get("log.tika.parsed_bytes", mimeType, content.length()));
             return content;
 
         } catch (IOException | TikaException e) {
-            log.error(LogMessageProvider.getMessage("log.tika.parse_bytes_failed", mimeType), e);
+            log.error(I18N.get("log.tika.parse_bytes_failed", mimeType), e);
             return "";
         }
     }
@@ -386,7 +386,7 @@ public class TikaDocumentParser implements DocumentParser {
         try {
             return tika.detect(file);
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.tika.detect_failed", file.getAbsolutePath()), e);
+            log.error(I18N.get("log.tika.detect_failed", file.getAbsolutePath()), e);
             return "application/octet-stream";
         }
     }

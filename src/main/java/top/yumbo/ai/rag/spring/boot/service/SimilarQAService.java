@@ -6,11 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -103,12 +101,12 @@ public class SimilarQAService {
                 .limit(limit)
                 .collect(Collectors.toList());
 
-            log.info(LogMessageProvider.getMessage("log.similar.found", results.size(), queryKeywords));
+            log.info(I18N.get("log.similar.found", results.size(), queryKeywords));
 
             return results;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.similar.failed"), e);
+            log.error(I18N.get("log.similar.failed"), e);
             return Collections.emptyList();
         }
     }

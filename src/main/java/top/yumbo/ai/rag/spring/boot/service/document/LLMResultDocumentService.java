@@ -7,10 +7,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.IOException;
 import java.net.URL;
@@ -273,7 +272,7 @@ public class LLMResultDocumentService {
             // 添加到历史记录
             addToHistory(document);
 
-            log.info(LogMessageProvider.getMessage("llm_result.log.result_saved", docId, filePath));
+            log.info(I18N.get("llm_result.log.result_saved", docId, filePath));
 
             // 可选：自动添加到知识库
             if (autoAddToKnowledgeBase) {
@@ -283,8 +282,8 @@ public class LLMResultDocumentService {
             return document;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("llm_result.log.save_failed"), e);
-            throw new RuntimeException(LogMessageProvider.getMessage("llm_result.error.save_failed", e.getMessage()), e);
+            log.error(I18N.get("llm_result.log.save_failed"), e);
+            throw new RuntimeException(I18N.get("llm_result.error.save_failed", e.getMessage()), e);
         }
     }
 
@@ -300,7 +299,7 @@ public class LLMResultDocumentService {
         try {
             return Files.readString(Paths.get(doc.getFilePath()));
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("llm_result.log.read_failed", docId), e);
+            log.error(I18N.get("llm_result.log.read_failed", docId), e);
             return null;
         }
     }
@@ -380,11 +379,11 @@ public class LLMResultDocumentService {
             // 持久化到磁盘
             saveHistoryToDisk();
 
-            log.info(LogMessageProvider.getMessage("llm_result.log.document_deleted", docId));
+            log.info(I18N.get("llm_result.log.document_deleted", docId));
             return true;
 
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("llm_result.log.delete_failed", docId), e);
+            log.error(I18N.get("llm_result.log.delete_failed", docId), e);
             return false;
         }
     }
@@ -485,7 +484,7 @@ public class LLMResultDocumentService {
                 String replacement = "![" + altText + "](data:" + mimeType + ";base64," + base64 + ")";
                 urlMatcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
             } catch (Exception e) {
-                log.warn(LogMessageProvider.getMessage("llm_result.log.download_image_failed", imageUrl), e);
+                log.warn(I18N.get("llm_result.log.download_image_failed", imageUrl), e);
                 // 保持原样
                 urlMatcher.appendReplacement(sb, Matcher.quoteReplacement(urlMatcher.group()));
             }

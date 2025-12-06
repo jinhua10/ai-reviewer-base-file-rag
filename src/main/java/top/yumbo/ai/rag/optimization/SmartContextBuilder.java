@@ -6,7 +6,7 @@ import top.yumbo.ai.rag.chunking.ChunkingStrategy;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
 import top.yumbo.ai.rag.chunking.DocumentChunkerFactory;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
@@ -100,11 +100,11 @@ public class SmartContextBuilder {
             this.chunker = DocumentChunkerFactory.createChunker(
                 chunkingStrategy, chunkingConfig, llmClient
             );
-            log.info(LogMessageProvider.getMessage("log.optimization.context.initialized_with_chunker",
+            log.info(I18N.get("log.optimization.context.initialized_with_chunker",
                 chunkingStrategy, maxContextLength, maxDocLength, chunkStorageService != null ? "enabled" : "disabled"));
         } else {
             this.chunker = null;
-            log.info(LogMessageProvider.getMessage("log.optimization.context.initialized",
+            log.info(I18N.get("log.optimization.context.initialized",
                 maxContextLength, maxDocLength, preserveFullContent));
         }
     }
@@ -166,7 +166,7 @@ public class SmartContextBuilder {
         }
 
         String result = context.toString();
-        log.info(LogMessageProvider.getMessage("log.optimization.context.built",
+        log.info(I18N.get("log.optimization.context.built",
             result.length(), processedDocs, result.length() * 100 / maxContextLength));
 
         return result;
@@ -376,7 +376,7 @@ public class SmartContextBuilder {
         // 如果还有未处理的内容，添加剩余部分的摘要
         if (processedLength < content.length()) {
             int remaining = content.length() - processedLength;
-            result.append(LogMessageProvider.getMessage("log.optimization.context.remaining_chars", remaining));
+            result.append(I18N.get("log.optimization.context.remaining_chars", remaining));
         }
 
         String extracted = result.toString();
@@ -453,7 +453,7 @@ public class SmartContextBuilder {
 
         if (pos < content.length()) {
             int remaining = content.length() - pos;
-            result.append(LogMessageProvider.getMessage("log.optimization.context.remaining_chars", remaining));
+            result.append(I18N.get("log.optimization.context.remaining_chars", remaining));
         }
 
         return result.toString();

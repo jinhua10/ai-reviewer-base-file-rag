@@ -10,7 +10,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.service.DocumentManagementService;
 
 import java.io.*;
@@ -48,32 +48,32 @@ public class DocumentManagementController {
     public UploadResponse uploadDocument(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "lang", defaultValue = "zh") String lang) {
-        log.info(LogMessageProvider.getMessage("document_management.log.batch_upload", file.getOriginalFilename()));
+        log.info(I18N.get("document_management.log.batch_upload", file.getOriginalFilename()));
 
         UploadResponse response = new UploadResponse();
 
         try {
             if (file.isEmpty()) {
                 response.setSuccess(false);
-                response.setMessage(LogMessageProvider.getMessage("document_management.api.error.file_empty", lang));
+                response.setMessage(I18N.get("document_management.api.error.file_empty", lang));
                 return response;
             }
 
             String result = documentService.uploadDocument(file);
 
             response.setSuccess(true);
-            response.setMessage(LogMessageProvider.getMessage("document_management.api.success.upload", lang));
+            response.setMessage(I18N.get("document_management.api.success.upload", lang));
             response.setFileName(file.getOriginalFilename());
             response.setFileSize(file.getSize());
             response.setDocumentId(result);
 
-            log.info(LogMessageProvider.getMessage("document_management.log.upload_success", file.getOriginalFilename()));
+            log.info(I18N.get("document_management.log.upload_success", file.getOriginalFilename()));
             return response;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("document_management.log.upload_failed"), e);
+            log.error(I18N.get("document_management.log.upload_failed"), e);
             response.setSuccess(false);
-            response.setMessage(LogMessageProvider.getMessage("document_management.api.error.upload_failed", lang, e.getMessage()));
+            response.setMessage(I18N.get("document_management.api.error.upload_failed", lang, e.getMessage()));
             return response;
         }
     }
@@ -85,7 +85,7 @@ public class DocumentManagementController {
     public BatchUploadResponse uploadBatch(
             @RequestParam("files") MultipartFile[] files,
             @RequestParam(value = "lang", defaultValue = "zh") String lang) {
-        log.info(LogMessageProvider.getMessage("document_management.log.batch_upload", files.length));
+        log.info(I18N.get("document_management.log.batch_upload", files.length));
 
         BatchUploadResponse response = new BatchUploadResponse();
         response.setTotal(files.length);
@@ -101,7 +101,7 @@ public class DocumentManagementController {
                     response.getSuccessFiles().add(file.getOriginalFilename());
                 }
             } catch (Exception e) {
-                log.error(LogMessageProvider.getMessage("document_management.log.file_upload_failed", file.getOriginalFilename()), e);
+                log.error(I18N.get("document_management.log.file_upload_failed", file.getOriginalFilename()), e);
                 failureCount++;
                 response.getFailedFiles().add(file.getOriginalFilename());
             }
@@ -109,7 +109,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(LogMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
+        response.setMessage(I18N.get("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
@@ -147,7 +147,7 @@ public class DocumentManagementController {
             @RequestParam(defaultValue = "") String endDate,
             @RequestParam(defaultValue = "zh") String lang) {
 
-        log.info(LogMessageProvider.getMessage("document_management.log.list_documents",
+        log.info(I18N.get("document_management.log.list_documents",
             page, pageSize, sortBy, sortOrder));
 
         try {
@@ -184,7 +184,7 @@ public class DocumentManagementController {
                     paginatedDocuments = filteredDocuments.subList(startIndex, endIndex);
                 }
 
-                log.debug(LogMessageProvider.getMessage("doc_management.log.pagination",
+                log.debug(I18N.get("doc_management.log.pagination",
                         page, pageSize, totalPages, paginatedDocuments.size()));
             }
 
@@ -196,16 +196,16 @@ public class DocumentManagementController {
             response.setPageSize(pageSize);
             response.setTotalPages(totalPages);
 
-            log.info(LogMessageProvider.getMessage("document_management.api.success.list_loaded",
+            log.info(I18N.get("document_management.api.success.list_loaded",
                 paginatedDocuments.size(), totalCount));
             return response;
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("document_management.log.list_failed"), e);
+            log.error(I18N.get("document_management.log.list_failed"), e);
 
             ListResponse response = new ListResponse();
             response.setSuccess(false);
-            response.setMessage(LogMessageProvider.getMessage("document_management.api.error.list_failed", lang, e.getMessage()));
+            response.setMessage(I18N.get("document_management.api.error.list_failed", lang, e.getMessage()));
 
             return response;
         }
@@ -242,7 +242,7 @@ public class DocumentManagementController {
         }
 
         sorted.sort(comparator);
-        log.debug(LogMessageProvider.getMessage("doc_management.log.sort_complete", sortBy, sortOrder));
+        log.debug(I18N.get("doc_management.log.sort_complete", sortBy, sortOrder));
 
         return sorted;
     }
@@ -282,7 +282,7 @@ public class DocumentManagementController {
                             break;
                     }
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("doc_management.log.search_mode_failed", searchMode, e.getMessage()));
+                    log.warn(I18N.get("doc_management.log.search_mode_failed", searchMode, e.getMessage()));
                     matchName = doc.getFileName().toLowerCase().contains(search.toLowerCase());
                 }
                 if (!matchName) {
@@ -336,7 +336,7 @@ public class DocumentManagementController {
                         }
                     }
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("doc_management.log.date_filter_failed", e.getMessage()));
+                    log.warn(I18N.get("doc_management.log.date_filter_failed", e.getMessage()));
                 }
             }
 
@@ -351,7 +351,7 @@ public class DocumentManagementController {
     public DeleteResponse deleteDocument(
             @PathVariable String fileName,
             @RequestParam(value = "lang", defaultValue = "zh") String lang) {
-        log.info(LogMessageProvider.getMessage("doc_management.log.delete_document", fileName));
+        log.info(I18N.get("doc_management.log.delete_document", fileName));
 
         DeleteResponse response = new DeleteResponse();
 
@@ -360,18 +360,18 @@ public class DocumentManagementController {
 
             if (deleted) {
                 response.setSuccess(true);
-                response.setMessage(LogMessageProvider.getMessage("document_management.api.success.delete", lang));
+                response.setMessage(I18N.get("document_management.api.success.delete", lang));
                 response.setFileName(fileName);
             } else {
                 response.setSuccess(false);
-                response.setMessage(LogMessageProvider.getMessage("document_management.api.error.not_found", lang));
+                response.setMessage(I18N.get("document_management.api.error.not_found", lang));
             }
 
             return response;
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_management.log.delete_failed"), e);
+            log.error(I18N.get("doc_management.log.delete_failed"), e);
             response.setSuccess(false);
-            response.setMessage(LogMessageProvider.getMessage("document_management.api.error.delete_failed", lang, e.getMessage()));
+            response.setMessage(I18N.get("document_management.api.error.delete_failed", lang, e.getMessage()));
             return response;
         }
     }
@@ -386,7 +386,7 @@ public class DocumentManagementController {
         List<String> fileNames = (List<String>) request.get("fileNames");
         String lang = (String) request.getOrDefault("lang", "zh"); // 获取语言参数 / Get language parameter
 
-        log.info(LogMessageProvider.getMessage("document_management.log.batch_upload", fileNames.size()));
+        log.info(I18N.get("document_management.log.batch_upload", fileNames.size()));
 
         BatchDeleteResponse response = new BatchDeleteResponse();
         response.setTotal(fileNames.size());
@@ -404,7 +404,7 @@ public class DocumentManagementController {
                     response.getFailedFiles().add(fileName);
                 }
             } catch (Exception e) {
-                log.error(LogMessageProvider.getMessage("document_management.log.file_upload_failed", fileName), e);
+                log.error(I18N.get("document_management.log.file_upload_failed", fileName), e);
                 failureCount++;
                 response.getFailedFiles().add(fileName);
             }
@@ -412,7 +412,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(LogMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
+        response.setMessage(I18N.get("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
@@ -422,27 +422,27 @@ public class DocumentManagementController {
      */
     @GetMapping("/download")
     public ResponseEntity<Resource> downloadDocument(@RequestParam("fileName") String fileName) {
-        log.info(LogMessageProvider.getMessage("doc_management.log.download_document", fileName));
-        log.debug(LogMessageProvider.getMessage("doc_management.log.filename_bytes", java.util.Arrays.toString(fileName.getBytes(StandardCharsets.UTF_8))));
+        log.info(I18N.get("doc_management.log.download_document", fileName));
+        log.debug(I18N.get("doc_management.log.filename_bytes", java.util.Arrays.toString(fileName.getBytes(StandardCharsets.UTF_8))));
 
         try {
             // URL解码已由Spring自动处理（URL decoding is handled by Spring automatically）
             Path filePath = documentService.getDocumentPath(fileName);
-            log.debug(LogMessageProvider.getMessage("doc_management.log.find_path", filePath.toAbsolutePath()));
+            log.debug(I18N.get("doc_management.log.find_path", filePath.toAbsolutePath()));
 
             if (!Files.exists(filePath)) {
-                log.warn(LogMessageProvider.getMessage("doc_management.log.file_not_exists", fileName, filePath.toAbsolutePath()));
-                log.warn(LogMessageProvider.getMessage("doc_management.log.possible_reasons"));
-                log.warn(LogMessageProvider.getMessage("doc_management.log.reason_deleted"));
-                log.warn(LogMessageProvider.getMessage("doc_management.log.reason_special_chars"));
-                log.warn(LogMessageProvider.getMessage("doc_management.log.reason_not_uploaded"));
+                log.warn(I18N.get("doc_management.log.file_not_exists", fileName, filePath.toAbsolutePath()));
+                log.warn(I18N.get("doc_management.log.possible_reasons"));
+                log.warn(I18N.get("doc_management.log.reason_deleted"));
+                log.warn(I18N.get("doc_management.log.reason_special_chars"));
+                log.warn(I18N.get("doc_management.log.reason_not_uploaded"));
                 return ResponseEntity.notFound().build();
             }
 
             Resource resource = new UrlResource(filePath.toUri());
 
             if (!resource.exists() || !resource.isReadable()) {
-                log.warn(LogMessageProvider.getMessage("doc_management.log.file_not_readable", fileName));
+                log.warn(I18N.get("doc_management.log.file_not_readable", fileName));
                 return ResponseEntity.notFound().build();
             }
 
@@ -455,7 +455,7 @@ public class DocumentManagementController {
                     .body(resource);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_management.log.download_failed", fileName), e);
+            log.error(I18N.get("doc_management.log.download_failed", fileName), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -465,8 +465,8 @@ public class DocumentManagementController {
      */
     @PostMapping("/download-batch")
     public ResponseEntity<Resource> downloadBatch(@RequestBody List<String> fileNames) {
-        log.info(LogMessageProvider.getMessage("doc_management.log.batch_download", fileNames.size()));
-        log.debug(LogMessageProvider.getMessage("doc_management.log.filename_list", fileNames));
+        log.info(I18N.get("doc_management.log.batch_download", fileNames.size()));
+        log.debug(I18N.get("doc_management.log.filename_list", fileNames));
 
         try {
             // 创建临时ZIP文件（Create temp ZIP file）
@@ -476,7 +476,7 @@ public class DocumentManagementController {
                 for (String fileName : fileNames) {
                     try {
                         Path filePath = documentService.getDocumentPath(fileName);
-                        log.debug(LogMessageProvider.getMessage("doc_management.log.find_file", fileName, filePath.toAbsolutePath()));
+                        log.debug(I18N.get("doc_management.log.find_file", fileName, filePath.toAbsolutePath()));
 
                         if (Files.exists(filePath)) {
                             ZipEntry zipEntry = new ZipEntry(fileName);
@@ -485,12 +485,12 @@ public class DocumentManagementController {
                             Files.copy(filePath, zipOut);
                             zipOut.closeEntry();
                             
-                            log.debug(LogMessageProvider.getMessage("doc_management.log.added_to_zip", fileName));
+                            log.debug(I18N.get("doc_management.log.added_to_zip", fileName));
                         } else {
-                            log.warn(LogMessageProvider.getMessage("doc_management.log.file_not_exists_skip", fileName, filePath.toAbsolutePath()));
+                            log.warn(I18N.get("doc_management.log.file_not_exists_skip", fileName, filePath.toAbsolutePath()));
                         }
                     } catch (Exception e) {
-                        log.error(LogMessageProvider.getMessage("doc_management.log.add_to_zip_failed", fileName), e);
+                        log.error(I18N.get("doc_management.log.add_to_zip_failed", fileName), e);
                     }
                 }
             }
@@ -517,9 +517,9 @@ public class DocumentManagementController {
                                     super.close();
                                     try {
                                         Files.deleteIfExists(tempZipFile);
-                                        log.debug(LogMessageProvider.getMessage("doc_management.log.temp_zip_deleted", tempZipFile));
+                                        log.debug(I18N.get("doc_management.log.temp_zip_deleted", tempZipFile));
                                     } catch (IOException e) {
-                                        log.warn(LogMessageProvider.getMessage("doc_management.log.delete_temp_zip_failed", tempZipFile), e);
+                                        log.warn(I18N.get("doc_management.log.delete_temp_zip_failed", tempZipFile), e);
                                     }
                                 }
                             };
@@ -552,7 +552,7 @@ public class DocumentManagementController {
                     });
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_management.log.batch_download_failed"), e);
+            log.error(I18N.get("doc_management.log.batch_download_failed"), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -562,7 +562,7 @@ public class DocumentManagementController {
      */
     @GetMapping("/supported-types")
     public SupportedTypesResponse getSupportedTypes() {
-        log.info(LogMessageProvider.getMessage("doc_management.log.get_file_types"));
+        log.info(I18N.get("doc_management.log.get_file_types"));
 
         SupportedTypesResponse response = new SupportedTypesResponse();
 
@@ -570,12 +570,12 @@ public class DocumentManagementController {
             List<String> types = documentService.getSupportedTypes();
             response.setSuccess(true);
             response.setTypes(types);
-            response.setMessage(LogMessageProvider.getMessage("doc_management.log.get_file_types_success", types.size()));
+            response.setMessage(I18N.get("doc_management.log.get_file_types_success", types.size()));
             response.setCount(types.size());
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("doc_management.log.get_file_types_failed"), e);
+            log.error(I18N.get("doc_management.log.get_file_types_failed"), e);
             response.setSuccess(false);
-            response.setMessage(LogMessageProvider.getMessage("doc_management.log.get_file_types_error", e.getMessage()));
+            response.setMessage(I18N.get("doc_management.log.get_file_types_error", e.getMessage()));
             response.setTypes(new java.util.ArrayList<>());
             response.setCount(0);
         }

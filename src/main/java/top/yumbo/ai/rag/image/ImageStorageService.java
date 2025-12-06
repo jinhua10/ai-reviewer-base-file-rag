@@ -1,13 +1,12 @@
 package top.yumbo.ai.rag.image;
 
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,10 +38,10 @@ public class ImageStorageService {
             Path imagePath = Paths.get(storageBasePath, IMAGE_DIR);
             if (!Files.exists(imagePath)) {
                 Files.createDirectories(imagePath);
-                log.info(LogMessageProvider.getMessage("log.image.storage.created", imagePath.toString()));
+                log.info(I18N.get("log.image.storage.created", imagePath.toString()));
             }
         } catch (IOException e) {
-            log.error(LogMessageProvider.getMessage("log.image.storage.init_failed"), e);
+            log.error(I18N.get("log.image.storage.init_failed"), e);
             throw new RuntimeException("Failed to initialize image storage", e);
         }
     }
@@ -69,7 +68,7 @@ public class ImageStorageService {
         Path imagePath = docImageDir.resolve(filename);
         Files.write(imagePath, imageData);
 
-        log.info(LogMessageProvider.getMessage("log.image.saved", filename, documentId));
+        log.info(I18N.get("log.image.saved", filename, documentId));
 
         return ImageInfo.builder()
                 .imageId(imageId)
@@ -134,7 +133,7 @@ public class ImageStorageService {
 
                     images.add(info);
                 } catch (IOException e) {
-                    log.warn(LogMessageProvider.getMessage("log.image.read_info_failed", imagePath.toString()), e);
+                    log.warn(I18N.get("log.image.read_info_failed", imagePath.toString()), e);
                 }
             });
 
@@ -154,11 +153,11 @@ public class ImageStorageService {
                     try {
                         Files.delete(path);
                     } catch (IOException e) {
-                        log.warn(LogMessageProvider.getMessage("log.image.delete_failed", path.toString()), e);
+                        log.warn(I18N.get("log.image.delete_failed", path.toString()), e);
                     }
                 });
 
-            log.info(LogMessageProvider.getMessage("log.image.deleted_all", documentId));
+            log.info(I18N.get("log.image.deleted_all", documentId));
         }
     }
 

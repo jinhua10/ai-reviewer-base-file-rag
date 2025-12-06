@@ -1,7 +1,7 @@
 package top.yumbo.ai.rag.optimization;
 
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 内存监控工具
@@ -43,17 +43,17 @@ public class MemoryMonitor {
         double usagePercent = (double) usedMemory / maxMemory * 100;
 
         String message;
-        message = LogMessageProvider.getMessage("log.memory.usage", phase, usedMB, maxMB, String.format("%.1f", usagePercent));
+        message = I18N.get("log.memory.usage", phase, usedMB, maxMB, String.format("%.1f", usagePercent));
         log.info(message);
 
         // 内存使用超过80%时发出警告
         if (usagePercent > 80) {
-            log.warn(LogMessageProvider.getMessage("log.memory.warning", phase, String.format("%.1f", usagePercent)));
+            log.warn(I18N.get("log.memory.warning", phase, String.format("%.1f", usagePercent)));
         }
 
         // 内存使用超过90%时发出严重警告
         if (usagePercent > 90) {
-            log.error(LogMessageProvider.getMessage("log.memory.critical", phase, String.format("%.1f", usagePercent)));
+            log.error(I18N.get("log.memory.critical", phase, String.format("%.1f", usagePercent)));
         }
     }
 
@@ -99,7 +99,7 @@ public class MemoryMonitor {
      */
     public void suggestGC() {
         long beforeUsed = getUsedMemoryMB();
-        log.info(LogMessageProvider.getMessage("log.optimization.memory.suggest_gc", beforeUsed));
+        log.info(I18N.get("log.optimization.memory.suggest_gc", beforeUsed));
 
         System.gc();
 
@@ -114,9 +114,9 @@ public class MemoryMonitor {
         long freed = beforeUsed - afterUsed;
 
         if (freed > 0) {
-            log.info(LogMessageProvider.getMessage("log.optimization.memory.gc_freed", freed));
+            log.info(I18N.get("log.optimization.memory.gc_freed", freed));
         } else {
-            log.info(LogMessageProvider.getMessage("log.optimization.memory.gc_no_freed"));
+            log.info(I18N.get("log.optimization.memory.gc_no_freed"));
         }
     }
 

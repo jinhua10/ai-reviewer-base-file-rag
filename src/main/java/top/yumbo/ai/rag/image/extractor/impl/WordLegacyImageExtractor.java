@@ -6,7 +6,7 @@ import org.apache.poi.hwpf.usermodel.Picture;
 import org.apache.poi.hwpf.usermodel.PictureType;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -27,13 +27,13 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
         List<ExtractedImage> images = new ArrayList<>();
 
         try (HWPFDocument document = new HWPFDocument(documentStream)) {
-            log.info(LogMessageProvider.getMessage("log.image.word.legacy.processing", documentName));
+            log.info(I18N.get("log.image.word.legacy.processing", documentName));
 
             // 获取所有图片（Get all pictures）
             List<Picture> pictures = document.getPicturesTable().getAllPictures();
 
             if (pictures.isEmpty()) {
-                log.info(LogMessageProvider.getMessage("log.image.word.legacy.no_images", documentName));
+                log.info(I18N.get("log.image.word.legacy.no_images", documentName));
                 return images;
             }
 
@@ -65,15 +65,15 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
 
                     images.add(extractedImage);
 
-                    log.debug(LogMessageProvider.getMessage("log.image.word.legacy.found", picture.getWidth(), picture.getHeight(), data.length / 1024));
+                    log.debug(I18N.get("log.image.word.legacy.found", picture.getWidth(), picture.getHeight(), data.length / 1024));
 
                     position++;
                 } catch (Exception e) {
-                    log.warn(LogMessageProvider.getMessage("log.image.word.legacy.extract_failed", position), e);
+                    log.warn(I18N.get("log.image.word.legacy.extract_failed", position), e);
                 }
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.word.legacy.extracted", images.size(), documentName));
+            log.info(I18N.get("log.image.word.legacy.extracted", images.size(), documentName));
         }
 
         return images;
@@ -93,7 +93,7 @@ public class WordLegacyImageExtractor implements DocumentImageExtractor {
 
             return text.trim();
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.image.word.legacy.text_failed"), e);
+            log.warn(I18N.get("log.image.word.legacy.text_failed"), e);
             return "";
         }
     }

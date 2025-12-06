@@ -5,8 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.List;
 import java.util.Map;
@@ -44,37 +43,37 @@ public class FeedbackController {
             if (recordId == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.missing_params", lang, "recordId, rating")
+                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.invalid_rating", lang)
+                    "message", I18N.get("feedback.api.error.invalid_rating", lang)
                 ));
             }
 
             boolean success = qaRecordService.addOverallFeedback(recordId, rating, feedback);
 
             if (success) {
-                log.info(LogMessageProvider.getMessage("log.feedback.overall_received", recordId, rating));
+                log.info(I18N.get("log.feedback.overall_received", recordId, rating));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", LogMessageProvider.getMessage("feedback.api.success.feedback_received", lang)
+                    "message", I18N.get("feedback.api.success.feedback_received", lang)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.record_not_found", lang)
+                    "message", I18N.get("feedback.api.error.record_not_found", lang)
                 ));
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.overall_failed"), e);
+            log.error(I18N.get("log.feedback.overall_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -95,7 +94,7 @@ public class FeedbackController {
             if (recordId == null || documentName == null || feedbackType == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.missing_params", lang, "recordId, documentName, feedbackType")
+                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, documentName, feedbackType")
                 ));
             }
 
@@ -105,7 +104,7 @@ public class FeedbackController {
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.invalid_feedback_type", lang)
+                    "message", I18N.get("feedback.api.error.invalid_feedback_type", lang)
                 ));
             }
 
@@ -113,23 +112,23 @@ public class FeedbackController {
 
             if (success) {
                 String emoji = type == QARecord.FeedbackType.LIKE ? "👍" : "👎";
-                log.info(LogMessageProvider.getMessage("log.feedback.document_received", emoji, recordId, documentName));
+                log.info(I18N.get("log.feedback.document_received", emoji, recordId, documentName));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", LogMessageProvider.getMessage("feedback.api.success.feedback_received", lang)
+                    "message", I18N.get("feedback.api.success.feedback_received", lang)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.record_not_found", lang)
+                    "message", I18N.get("feedback.api.error.record_not_found", lang)
                 ));
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.document_failed"), e);
+            log.error(I18N.get("log.feedback.document_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -149,10 +148,10 @@ public class FeedbackController {
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.get_record_failed"), e);
+            log.error(I18N.get("log.feedback.get_record_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -166,10 +165,10 @@ public class FeedbackController {
             List<QARecord> records = qaRecordService.getRecentRecords(limit);
             return ResponseEntity.ok(records);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.get_recent_failed"), e);
+            log.error(I18N.get("log.feedback.get_recent_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -183,10 +182,10 @@ public class FeedbackController {
             List<QARecord> records = qaRecordService.getPendingRecords();
             return ResponseEntity.ok(records);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.get_pending_failed"), e);
+            log.error(I18N.get("log.feedback.get_pending_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -200,10 +199,10 @@ public class FeedbackController {
             var stats = qaRecordService.getStatistics();
             return ResponseEntity.ok(stats);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.get_statistics_failed"), e);
+            log.error(I18N.get("log.feedback.get_statistics_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -228,14 +227,14 @@ public class FeedbackController {
             if (recordId == null || documentName == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.missing_params", lang, "recordId, documentName, rating")
+                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, documentName, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.invalid_rating", lang)
+                    "message", I18N.get("feedback.api.error.invalid_rating", lang)
                 ));
             }
 
@@ -244,26 +243,26 @@ public class FeedbackController {
 
             if (success) {
                 String stars = "⭐".repeat(rating);
-                log.info(LogMessageProvider.getMessage("log.feedback.rating_submitted", stars, recordId, documentName, rating, String.format("%+.1f", 0.0)));
+                log.info(I18N.get("log.feedback.rating_submitted", stars, recordId, documentName, rating, String.format("%+.1f", 0.0)));
 
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", LogMessageProvider.getMessage("feedback.api.message.thank_you", lang),
+                    "message", I18N.get("feedback.api.message.thank_you", lang),
                     "rating", rating,
-                    "impact", LogMessageProvider.getMessage("feedback.api.message.document_impact", lang, rating)
+                    "impact", I18N.get("feedback.api.message.document_impact", lang, rating)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.record_not_found", lang)
+                    "message", I18N.get("feedback.api.error.record_not_found", lang)
                 ));
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.rating_failed"), e);
+            log.error(I18N.get("log.feedback.rating_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -286,14 +285,14 @@ public class FeedbackController {
             if (recordId == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.missing_params", lang, "recordId, rating")
+                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.invalid_rating", lang)
+                    "message", I18N.get("feedback.api.error.invalid_rating", lang)
                 ));
             }
 
@@ -302,28 +301,28 @@ public class FeedbackController {
 
             if (success) {
                 // 记录日志 / Log the rating
-                String emojiText = LogMessageProvider.getMessage("feedback.emoji.description", lang, rating);
-                log.info(LogMessageProvider.getMessage("log.feedback.overall_rating_submitted",
+                String emojiText = I18N.get("feedback.emoji.description", lang, rating);
+                log.info(I18N.get("log.feedback.overall_rating_submitted",
                     emojiText, recordId, rating));
 
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", LogMessageProvider.getMessage("feedback.api.message.thank_you", lang),
+                    "message", I18N.get("feedback.api.message.thank_you", lang),
                     "rating", rating,
-                    "impact", LogMessageProvider.getMessage("feedback.api.message.overall_impact", lang, rating)
+                    "impact", I18N.get("feedback.api.message.overall_impact", lang, rating)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", LogMessageProvider.getMessage("feedback.api.error.record_not_found", lang)
+                    "message", I18N.get("feedback.api.error.record_not_found", lang)
                 ));
             }
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.feedback.rating_failed"), e);
+            log.error(I18N.get("log.feedback.rating_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -360,7 +359,7 @@ public class FeedbackController {
             log.error("Failed to get prompt recommendations", e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", LogMessageProvider.getMessage("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }

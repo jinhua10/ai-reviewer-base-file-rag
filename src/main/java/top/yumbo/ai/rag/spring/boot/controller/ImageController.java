@@ -7,7 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.image.ImageInfo;
 import top.yumbo.ai.rag.image.ImageStorageService;
 
@@ -57,7 +57,7 @@ public class ImageController {
                     .body(resource);
 
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("image.log.get_failed", documentId, filename), e);
+            log.error(I18N.get("image.log.get_failed", documentId, filename), e);
             return ResponseEntity.notFound().build();
         }
     }
@@ -71,7 +71,7 @@ public class ImageController {
             List<ImageInfo> images = imageStorageService.listImages(documentId);
             return ResponseEntity.ok(images);
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("image.log.list_failed", documentId), e);
+            log.error(I18N.get("image.log.list_failed", documentId), e);
             return ResponseEntity.internalServerError().build();
         }
     }

@@ -1,7 +1,7 @@
 package top.yumbo.ai.rag.optimization;
 
 import lombok.extern.slf4j.Slf4j;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ public class DocumentChunker {
             throw new IllegalArgumentException("Chunk overlap must be less than chunk size");
         }
 
-        log.info(LogMessageProvider.getMessage("log.optimization.chunker.initialized",
+        log.info(I18N.get("log.optimization.chunker.initialized",
             chunkSize, chunkOverlap, smartSplit, maxContentLength, maxChunks));
     }
 
@@ -122,7 +122,7 @@ public class DocumentChunker {
             }
         }
 
-        log.info(LogMessageProvider.getMessage("log.optimization.chunker.chunked", document.getId(), chunks.size()));
+        log.info(I18N.get("log.optimization.chunker.chunked", document.getId(), chunks.size()));
         return chunks;
     }
 
@@ -205,7 +205,7 @@ public class DocumentChunker {
             allChunks.addAll(chunks);
         }
 
-        log.info(LogMessageProvider.getMessage("log.optimization.chunker.batch_completed", documents.size(), allChunks.size()));
+        log.info(I18N.get("log.optimization.chunker.batch_completed", documents.size(), allChunks.size()));
 
         return allChunks;
     }

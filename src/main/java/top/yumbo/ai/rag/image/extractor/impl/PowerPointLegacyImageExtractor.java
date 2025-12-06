@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hslf.usermodel.*;
 import top.yumbo.ai.rag.image.extractor.DocumentImageExtractor;
 import top.yumbo.ai.rag.image.extractor.ExtractedImage;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ public class PowerPointLegacyImageExtractor implements DocumentImageExtractor {
         List<ExtractedImage> images = new ArrayList<>();
 
         try (HSLFSlideShow ppt = new HSLFSlideShow(documentStream)) {
-            log.info(LogMessageProvider.getMessage("log.image.ppt.legacy.processing", documentName, ppt.getSlides().size()));
+            log.info(I18N.get("log.image.ppt.legacy.processing", documentName, ppt.getSlides().size()));
 
             int slideNum = 1;
 
@@ -42,7 +42,7 @@ public class PowerPointLegacyImageExtractor implements DocumentImageExtractor {
                 slideNum++;
             }
 
-            log.info(LogMessageProvider.getMessage("log.image.ppt.legacy.extracted", images.size(), documentName));
+            log.info(I18N.get("log.image.ppt.legacy.extracted", images.size(), documentName));
         }
 
         return images;
@@ -81,14 +81,14 @@ public class PowerPointLegacyImageExtractor implements DocumentImageExtractor {
 
                         images.add(extractedImage);
 
-                        log.debug(LogMessageProvider.getMessage("log.image.ppt.legacy.found", slideNum, picture.getShapeName(), data.length / 1024));
+                        log.debug(I18N.get("log.image.ppt.legacy.found", slideNum, picture.getShapeName(), data.length / 1024));
                     } catch (Exception e) {
-                        log.warn(LogMessageProvider.getMessage("log.image.ppt.legacy.extract_failed", slideNum), e);
+                        log.warn(I18N.get("log.image.ppt.legacy.extract_failed", slideNum), e);
                     }
                 }
             }
         } catch (Exception e) {
-            log.error(LogMessageProvider.getMessage("log.image.ppt.legacy.process_failed", slideNum), e);
+            log.error(I18N.get("log.image.ppt.legacy.process_failed", slideNum), e);
         }
 
         return images;
@@ -118,7 +118,7 @@ public class PowerPointLegacyImageExtractor implements DocumentImageExtractor {
                 }
             }
         } catch (Exception e) {
-            log.warn(LogMessageProvider.getMessage("log.image.ppt.legacy.text_failed"), e);
+            log.warn(I18N.get("log.image.ppt.legacy.text_failed"), e);
         }
 
         String result = text.toString().trim();

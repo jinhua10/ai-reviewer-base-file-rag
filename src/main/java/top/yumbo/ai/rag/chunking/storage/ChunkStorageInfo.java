@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.i18n.I18N;
 
 /**
  * 文档块存储信息 (Document chunk storage info)
@@ -66,7 +66,7 @@ public class ChunkStorageInfo {
         if (title != null && !title.isEmpty()) {
             return String.format("%s (块 %d)", title, chunkIndex + 1);
         }
-        return LogMessageProvider.getMessage("log.chunk.display_part", chunkIndex + 1, Integer.max(chunkIndex + 1, 1));
+        return I18N.get("log.chunk.display_part", chunkIndex + 1, Integer.max(chunkIndex + 1, 1));
     }
 
     /**
