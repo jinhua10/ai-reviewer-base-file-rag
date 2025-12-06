@@ -447,6 +447,25 @@ const api = {
     deleteLLMResult: async (docId) => {
         const response = await axios.delete(`${API_LLM_RESULTS_URL}/${docId}`);
         return response.data;
+    },
+
+    // ========== 高赞提示词推荐 (Prompt Recommendations) ==========
+
+    /**
+     * 获取高赞提示词推荐
+     * @param {string} strategy - 策略类型（如"快速总结"、"深度分析"等，默认"all"）
+     * @param {number} limit - 返回数量限制（默认10）
+     * @returns {Promise<Object>} 推荐列表
+     */
+    getPromptRecommendations: async (strategy = 'all', limit = 10) => {
+        const response = await axios.get(`${API_FEEDBACK_URL}/prompts/recommendations`, {
+            params: {
+                strategy,
+                limit,
+                lang: getCurrentLang()
+            }
+        });
+        return response.data;
     }
 };
 

@@ -487,6 +487,97 @@ public class QARecordService {
     }
 
     /**
+     * 获取高赞提示词推荐（Get highly rated prompt recommendations）
+     * 根据策略类型获取评分高的历史提示词
+     *
+     * @param strategyType 策略类型（可选，如"快速总结"、"深度分析"等）
+     * @param limit 返回数量限制
+     * @return 高赞提示词列表
+     */
+    public List<PromptRecommendation> getTopRatedPrompts(String strategyType, int limit) {
+        try {
+            List<PromptRecommendation> recommendations = new ArrayList<>();
+            
+            // 遍历所有记录
+            Files.walk(recordsPath, 2)
+                .filter(Files::isRegularFile)
+                .filter(p -> p.toString().endsWith(".json"))
+                .forEach(path -> {
+                    try {
+                        QARecord record = loadRecord(path);
+                        if (record != null && record.getOverallRating() != null && record.getOverallRating() >= 4) {
+                            // 高评分记录
+                            PromptRecommendation rec = new PromptRecommendation();
+                            rec.setPrompt(record.getQuestion());
+                            rec.setRating(record.getOverallRating());
+                            rec.setUsageCount(1); // 简化版，后续可以统计实际使用次数
+                            rec.setStrategy(detectStrategy(record.getQuestion()));
+                            rec.setTimestamp(record.getTimestamp());
+                            
+                            // 如果指定了策略类型，进行筛选
+                            if (strategyType == null || strategyType.isEmpty() || 
+                                rec.getStrategy().contains(strategyType) || strategyType.equals("all")) {
+                                recommendations.add(rec);
+                            }
+                        }
+                    } catch (Exception e) {
+                        log.warn("Failed to process record: {}", path, e);
+                    }
+                });
+
+            // 按评分和使用次数排序
+            return recommendations.stream()
+                .sorted((a, b) -> {
+                    int ratingCompare = Integer.compare(b.getRating(), a.getRating());
+                    if (ratingCompare != 0) return ratingCompare;
+                    return Integer.compare(b.getUsageCount(), a.getUsageCount());
+                })
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        } catch (IOException e) {
+            log.error("Failed to get top rated prompts", e);
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 检测提示词的策略类型（简单的关键词匹配）
+     */
+    private String detectStrategy(String question) {
+        if (question == null) return "通用";
+        
+        String lower = question.toLowerCase();
+        if (lower.contains("总结") || lower.contains("概括") || lower.contains("summarize")) {
+            return "快速总结";
+        } else if (lower.contains("分析") || lower.contains("analyze") || lower.contains("详细")) {
+            return "深度分析";
+        } else if (lower.contains("对比") || lower.contains("比较") || lower.contains("compare")) {
+            return "对比分析";
+        } else if (lower.contains("提取") || lower.contains("extract") || lower.contains("列出")) {
+            return "信息提取";
+        } else if (lower.contains("什么") || lower.contains("哪个") || lower.contains("what") || lower.contains("which")) {
+            return "精确查找";
+        } else {
+            return "通用";
+        }
+    }
+
+    /**
+     * 提示词推荐数据结构
+     */
+    @lombok.Data
+    @lombok.NoArgsConstructor
+    @lombok.AllArgsConstructor
+    public static class PromptRecommendation {
+        private String prompt;
+        private Integer rating;
+        private Integer usageCount;
+        private String strategy;
+        private LocalDateTime timestamp;
+    }
+
+    /**
      * 统计信息（Statistics）
      */
     @lombok.Data

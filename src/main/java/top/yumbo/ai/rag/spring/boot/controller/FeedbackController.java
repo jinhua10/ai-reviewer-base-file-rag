@@ -327,4 +327,41 @@ public class FeedbackController {
             ));
         }
     }
+
+    /**
+     * 获取高赞提示词推荐 / Get highly rated prompt recommendations
+     * 根据策略类型返回历史高评分提示词
+     */
+    @GetMapping("/prompts/recommendations")
+    public ResponseEntity<?> getPromptRecommendations(
+            @RequestParam(required = false, defaultValue = "all") String strategy,
+            @RequestParam(required = false, defaultValue = "10") int limit,
+            @RequestParam(required = false, defaultValue = "zh") String lang) {
+        
+        try {
+            if (limit < 1 || limit > 50) {
+                limit = 10; // 默认限制
+            }
+
+            List<QARecordService.PromptRecommendation> recommendations = 
+                qaRecordService.getTopRatedPrompts(strategy, limit);
+
+            log.info("Retrieved {} prompt recommendations for strategy: {}", 
+                recommendations.size(), strategy);
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "strategy", strategy,
+                "count", recommendations.size(),
+                "prompts", recommendations
+            ));
+
+        } catch (Exception e) {
+            log.error("Failed to get prompt recommendations", e);
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "message", ApiMessageProvider.getProcessingFailed(lang, e.getMessage())
+            ));
+        }
+    }
 }

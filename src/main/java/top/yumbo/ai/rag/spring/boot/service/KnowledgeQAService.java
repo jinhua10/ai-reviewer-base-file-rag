@@ -520,6 +520,36 @@ public class KnowledgeQAService {
     }
 
     /**
+     * 带上下文的问答（供策略层调用）
+     * (QA with context - for strategy layer)
+     *
+     * @param prompt 提示词/问题
+     * @param context 上下文内容（可以为空）
+     * @return 答案字符串
+     */
+    public String askWithContext(String prompt, String context) {
+        if (llmClient == null) {
+            throw new IllegalStateException(LogMessageProvider.getMessage("log.kqa.system_not_initialized"));
+        }
+
+        try {
+            String fullPrompt;
+            if (context != null && !context.trim().isEmpty()) {
+                fullPrompt = prompt + "\n\n上下文信息：\n" + context;
+            } else {
+                fullPrompt = prompt;
+            }
+
+            log.debug("🤖 调用 LLM，提示词长度: {} 字符", fullPrompt.length());
+            return llmClient.generate(fullPrompt);
+
+        } catch (Exception e) {
+            log.error("❌ LLM 调用失败", e);
+            throw new RuntimeException("LLM 调用失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * 直接问答（不使用知识库检索）
      * (Direct QA - without knowledge base retrieval)
      *

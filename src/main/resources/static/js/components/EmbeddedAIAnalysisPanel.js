@@ -90,6 +90,10 @@
         const [showStrategyMarket, setShowStrategyMarket] = useState(false);
         const [availableStrategies, setAvailableStrategies] = useState([]);
 
+        // 高赞提示词推荐
+        const [showPromptRecommendation, setShowPromptRecommendation] = useState(false);
+        const [currentStrategy, setCurrentStrategy] = useState('all');
+
         // ==================== 从后端加载配置 ====================
 
         useEffect(() => {
@@ -470,8 +474,30 @@
 
             // 自定义问题输入
             React.createElement('div', { className: 'ai-prompt-section' },
-                React.createElement('label', { className: 'ai-prompt-label' },
-                    t('yourQuestion') || '💬 您的问题（可选）'
+                React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' } },
+                    React.createElement('label', { className: 'ai-prompt-label', style: { margin: 0 } },
+                        t('yourQuestion') || '💬 您的问题（可选）'
+                    ),
+                    React.createElement('button', {
+                        onClick: () => {
+                            setCurrentStrategy(getStrategyFromGoal(analysisGoal));
+                            setShowPromptRecommendation(true);
+                        },
+                        disabled: analyzing,
+                        style: {
+                            padding: '6px 12px',
+                            fontSize: '13px',
+                            background: 'linear-gradient(135deg, #FFA726 0%, #FB8C00 100%)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            boxShadow: '0 2px 8px rgba(255, 167, 38, 0.4)',
+                            transition: 'all 0.3s ease'
+                        },
+                        title: '查看该策略下的高赞提示词'
+                    }, '💡 高赞提示词')
                 ),
                 React.createElement('textarea', {
                     value: customPrompt,
@@ -585,8 +611,32 @@
                 onClose: () => setShowStrategyMarket(false),
                 onInstall: handleStrategyInstall,
                 language: lang
+            }),
+
+            // 高赞提示词推荐面板
+            window.PromptRecommendationPanel && React.createElement(window.PromptRecommendationPanel, {
+                strategy: currentStrategy,
+                visible: showPromptRecommendation,
+                onSelectPrompt: (prompt) => {
+                    setCustomPrompt(prompt);
+                    setShowPromptRecommendation(false);
+                },
+                onClose: () => setShowPromptRecommendation(false)
             })
         );
+
+        // 根据目标获取策略类型
+        function getStrategyFromGoal(goalId) {
+            const goalToStrategyMap = {
+                'quick': '快速总结',
+                'precise': '精确查找',
+                'compare': '对比分析',
+                'causal': '深度分析',
+                'relation': '深度分析',
+                'comprehensive': '深度分析'
+            };
+            return goalToStrategyMap[goalId] || 'all';
+        }
 
         // 提交反馈
         async function submitFeedback(rating) {
