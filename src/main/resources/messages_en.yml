@@ -988,6 +988,24 @@ doc_qa:
     delete_temp_failed: "Failed to delete temporary file: {0}"
     file_process_failed: "File processing failed"
     doc_analysis_request: "📄 Received document analysis request: {0}, Question: {1}"
+    # Direct analysis (without knowledge base) related
+    direct_start: "📄 Starting direct document analysis (without knowledge base): Document={0}, Session ID={1}"
+    direct_question: "❓ Analysis question: {0}"
+    direct_content_length: "📏 Document content length: {0} characters"
+    direct_exceed_limit: "📦 Document content exceeds limit ({0}), using memo mechanism for batch processing"
+    direct_full_analysis: "📝 Performing full document analysis directly"
+    direct_split_batches: "📦 Document split into {0} batches for analysis"
+    direct_process_batch: "🔄 Processing batch {0}/{1}, content length: {2} characters"
+    direct_complete: "✅ Direct document analysis completed: Document={0}, Elapsed time={1}ms"
+    direct_failed: "❌ Direct document analysis failed"
+    # Document parsing related
+    read_text_file: "📝 Reading text file directly: {0}"
+    parse_with_utils: "🔍 Parsing document with DocumentUtils: {0}"
+    parse_empty_fallback: "⚠️ Document parsing result is empty, trying direct read: {0}"
+    parse_success: "✅ Document parsed successfully: {0}, content length: {1} characters"
+    parse_failed_fallback: "⚠️ DocumentUtils parsing failed, trying direct read: {0}, error: {1}"
+    analysis_failed: "Analysis failed"
+    final_report_failed: "Failed to generate final report"
 # ============================================================
 # DocumentProgressiveAnalysisController
 # ============================================================

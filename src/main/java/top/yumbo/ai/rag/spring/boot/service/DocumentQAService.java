@@ -141,8 +141,8 @@ public class DocumentQAService {
         }
 
         String sessionId = UUID.randomUUID().toString();
-        log.info("开始直接文档分析（不使用知识库）: 文档={}, 会话ID={}", docFile.getName(), sessionId);
-        log.info("分析问题: {}", question);
+        log.info(LogMessageProvider.getMessage("doc_qa.log.direct_start", docFile.getName(), sessionId));
+        log.info(LogMessageProvider.getMessage("doc_qa.log.direct_question", question));
 
         DocumentQAReport report = new DocumentQAReport();
         report.setSessionId(sessionId);
@@ -153,7 +153,7 @@ public class DocumentQAService {
         try {
             // 1. 读取文档内容 (Read document content)
             String content = readDocumentContent(docFile);
-            log.info("文档内容长度: {} 字符", content.length());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.direct_content_length", content.length()));
 
             // 2. 获取配置的最大内容长度（0 或负数表示不限制）
             // (Get configured max content length, 0 or negative means no limit)
@@ -166,23 +166,23 @@ public class DocumentQAService {
             if (needsBatchProcessing) {
                 // 使用渐进式备忘录机制分批处理
                 // (Use progressive memo mechanism for batch processing)
-                log.info("文档内容超过限制（{}），使用备忘录机制分批处理", maxContentLength);
+                log.info(LogMessageProvider.getMessage("doc_qa.log.direct_exceed_limit", maxContentLength));
                 processDirectWithMemo(content, question, docFile.getName(), report);
             } else {
                 // 直接完整分析
                 // (Direct full analysis)
-                log.info("直接完整分析文档");
+                log.info(LogMessageProvider.getMessage("doc_qa.log.direct_full_analysis"));
                 processDirectFully(content, question, docFile.getName(), report);
             }
 
             report.setEndTime(System.currentTimeMillis());
             report.setSuccess(true);
 
-            log.info("直接文档分析完成: 文档={}, 耗时={}ms",
-                docFile.getName(), report.getEndTime() - report.getStartTime());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.direct_complete",
+                docFile.getName(), report.getEndTime() - report.getStartTime()));
 
         } catch (Exception e) {
-            log.error("直接文档分析失败", e);
+            log.error(LogMessageProvider.getMessage("doc_qa.log.direct_failed"), e);
             report.setSuccess(false);
             report.setErrorMessage(e.getMessage());
             report.setEndTime(System.currentTimeMillis());
@@ -199,7 +199,7 @@ public class DocumentQAService {
         String prompt = buildFullAnalysisPrompt(question, content, fileName);
 
         AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt);
-        String answer = aiAnswer != null ? aiAnswer.getAnswer() : "分析失败";
+        String answer = aiAnswer != null ? aiAnswer.getAnswer() : LogMessageProvider.getMessage("doc_qa.log.analysis_failed");
 
         BatchResult result = new BatchResult();
         result.setBatchId(1);
@@ -220,24 +220,24 @@ public class DocumentQAService {
         int maxChunkSize = properties.getDocument().getMaxIndexContentLength();
         List<String> chunks = splitContent(content, maxChunkSize);
 
-        log.info("文档分割为 {} 个批次进行分析", chunks.size());
+        log.info(LogMessageProvider.getMessage("doc_qa.log.direct_split_batches", chunks.size()));
 
-        // 使用渐进式记忆
+        // 使用渐进式记忆 (Use progressive memory)
         ProgressiveMemory memory = new ProgressiveMemory(3);
 
         for (int i = 0; i < chunks.size(); i++) {
             int batchId = i + 1;
             String chunk = chunks.get(i);
 
-            log.info("处理第 {}/{} 批次，内容长度: {} 字符", batchId, chunks.size(), chunk.length());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.direct_process_batch", batchId, chunks.size(), chunk.length()));
 
-            // 构建带记忆的提示词
+            // 构建带记忆的提示词 (Build prompt with memory)
             String prompt = buildDirectBatchPrompt(question, chunk, fileName, batchId, chunks.size(), memory);
 
             AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt);
-            String answer = aiAnswer != null ? aiAnswer.getAnswer() : "分析失败";
+            String answer = aiAnswer != null ? aiAnswer.getAnswer() : LogMessageProvider.getMessage("doc_qa.log.analysis_failed");
 
-            // 提取关键点并加入记忆
+            // 提取关键点并加入记忆 (Extract key points and add to memory)
             String keyPoints = extractKeyPointsFromAnswer(answer);
             memory.addMemory(batchId, keyPoints);
 
@@ -252,7 +252,7 @@ public class DocumentQAService {
             report.getBatchResults().add(result);
         }
 
-        // 生成最终综合报告
+        // 生成最终综合报告 (Generate final comprehensive report)
         String finalReport = generateDirectFinalReport(question, fileName, report.getBatchResults(), memory);
         report.setFinalReport(finalReport);
     }
@@ -384,7 +384,7 @@ public class DocumentQAService {
         prompt.append("请生成最终综合分析报告：\n");
 
         AIAnswer aiAnswer = knowledgeQAService.askDirectly(prompt.toString());
-        return aiAnswer != null ? aiAnswer.getAnswer() : "生成最终报告失败";
+        return aiAnswer != null ? aiAnswer.getAnswer() : LogMessageProvider.getMessage("doc_qa.log.final_report_failed");
     }
 
     /**
@@ -737,28 +737,29 @@ public class DocumentQAService {
         if (fileName.endsWith(".txt") || fileName.endsWith(".md") ||
             fileName.endsWith(".json") || fileName.endsWith(".xml") ||
             fileName.endsWith(".csv") || fileName.endsWith(".log")) {
-            log.debug("直接读取文本文件: {}", docFile.getName());
+            log.debug(LogMessageProvider.getMessage("doc_qa.log.read_text_file", docFile.getName()));
             return new String(Files.readAllBytes(docFile.toPath()));
         }
 
         // 对于其他格式（Office, PDF等），使用 DocumentUtils 解析
         // (For other formats like Office, PDF, use DocumentUtils to parse)
         try {
-            log.debug("使用 DocumentUtils 解析文档: {}", docFile.getName());
+            log.debug(LogMessageProvider.getMessage("doc_qa.log.parse_with_utils", docFile.getName()));
             Document doc = DocumentUtils.fromFile(docFile);
             String content = doc.getContent();
 
             if (content == null || content.trim().isEmpty()) {
-                log.warn("文档解析结果为空，尝试直接读取: {}", docFile.getName());
+                log.warn(LogMessageProvider.getMessage("doc_qa.log.parse_empty_fallback", docFile.getName()));
                 return new String(Files.readAllBytes(docFile.toPath()));
             }
 
-            log.info("文档解析成功: {}, 内容长度: {} 字符", docFile.getName(), content.length());
+            log.info(LogMessageProvider.getMessage("doc_qa.log.parse_success", docFile.getName(), content.length()));
             return content;
 
         } catch (Exception e) {
-            log.warn("DocumentUtils 解析失败，尝试直接读取: {}, 错误: {}", docFile.getName(), e.getMessage());
+            log.warn(LogMessageProvider.getMessage("doc_qa.log.parse_failed_fallback", docFile.getName(), e.getMessage()));
             // 降级为直接读取（可能是纯文本）
+            // (Fallback to direct read - might be plain text)
             return new String(Files.readAllBytes(docFile.toPath()));
         }
     }
