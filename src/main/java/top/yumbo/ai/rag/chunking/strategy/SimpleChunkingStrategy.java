@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.chunking.strategy;
 
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.ppl.PPLException;
 import top.yumbo.ai.rag.ppl.config.ChunkConfig;
 
@@ -9,10 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 简单分块策略（降级方案）
- * Simple chunking strategy (fallback)
+ * 简单分块策略（降级方案）(Simple Chunking Strategy - Fallback)
  *
- * 使用固定大小和段落边界进行分块
+ * 使用固定大小和段落边界进行分块 (Uses fixed size and paragraph boundaries for chunking)
  *
  * @author AI Reviewer Team
  * @since 2025-12-07
@@ -21,7 +21,7 @@ import java.util.List;
 public class SimpleChunkingStrategy implements ChunkingStrategy {
 
     public SimpleChunkingStrategy() {
-        log.info("📝 使用简单分块策略（降级方案）");
+        log.info(I18N.get("chunking_strategy.simple.initialized"));
     }
 
     @Override
@@ -61,7 +61,7 @@ public class SimpleChunkingStrategy implements ChunkingStrategy {
                     .build());
         }
 
-        log.info("📄 简单分块完成：{} 块", chunks.size());
+        log.info(I18N.get("chunking_strategy.simple.completed", chunks.size()));
         return chunks;
     }
 

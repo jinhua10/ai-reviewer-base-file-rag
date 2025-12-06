@@ -6,12 +6,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import top.yumbo.ai.rag.ppl.PPLService;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
+import top.yumbo.ai.rag.util.I18N;
 
 /**
- * 分块策略工厂
- * Chunking strategy factory
- *
- * 根据配置创建和选择合适的分块策略
+ * 分块策略工厂 (Chunking strategy factory)
+ * 
+ * 根据配置创建和选择合适的分块策略 (Creates and selects appropriate chunking strategy based on configuration)
  *
  * @author AI Reviewer Team
  * @since 2025-12-07
@@ -39,9 +39,9 @@ public class ChunkingStrategyFactory {
         this.pplService = pplService;
         this.llmClient = llmClient;
 
-        log.info("📦 分块策略工厂初始化");
-        log.info("   - PPL Service: {}", pplService != null ? "可用" : "不可用");
-        log.info("   - LLM Client: {}", llmClient != null ? "可用" : "不可用");
+        log.info(I18N.get("chunking_strategy.factory.initialized"));
+        log.info(I18N.get(pplService != null ? "chunking_strategy.factory.ppl_available" : "chunking_strategy.factory.ppl_unavailable"));
+        log.info(I18N.get(llmClient != null ? "chunking_strategy.factory.llm_available" : "chunking_strategy.factory.llm_unavailable"));
     }
 
     /**
@@ -56,7 +56,7 @@ public class ChunkingStrategyFactory {
             case "llm" -> getLLMStrategy();
             case "auto" -> getAutoStrategy();
             default -> {
-                log.warn("⚠️ 未知的策略类型: {}，使用默认策略", strategyType);
+                log.warn(I18N.get("chunking_strategy.factory.unknown_strategy", strategyType));
                 yield getDefaultStrategy();
             }
         };
@@ -95,22 +95,22 @@ public class ChunkingStrategyFactory {
      * 3. 简单分块（降级）
      */
     public ChunkingStrategy getAutoStrategy() {
-        // 优先 LLM
+        // 优先 LLM (Priority: LLM)
         ChunkingStrategy llm = getLLMStrategy();
         if (llm.isAvailable()) {
-            log.info("🤖 自动选择：LLM 分块策略");
+            log.info(I18N.get("chunking_strategy.factory.auto_select_llm"));
             return llm;
         }
 
-        // 其次 PPL
+        // 其次 PPL (Next: PPL)
         ChunkingStrategy ppl = getPPLStrategy();
         if (ppl.isAvailable()) {
-            log.info("📊 自动选择：PPL 分块策略");
+            log.info(I18N.get("chunking_strategy.factory.auto_select_ppl"));
             return ppl;
         }
 
-        // 降级：简单分块
-        log.warn("⚠️ PPL 和 LLM 均不可用，使用简单分块策略");
+        // 降级：简单分块 (Fallback: Simple chunking)
+        log.warn(I18N.get("chunking_strategy.factory.fallback_simple"));
         return new SimpleChunkingStrategy();
     }
 

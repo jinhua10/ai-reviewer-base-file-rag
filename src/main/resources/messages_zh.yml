@@ -1423,3 +1423,41 @@ doc_parser_service:
     file_not_found: "文件不存在: {0}"
     binary_file: "二进制文件，无法解析文本内容"
     parse_failed: "无法解析文档: {0}"
+
+# ============================================================
+# 分块策略 (Chunking Strategy)
+# ============================================================
+chunking_strategy:
+  simple:
+    initialized: "📝 使用简单分块策略（降级方案）"
+    completed: "📝 简单分块完成：{0} 块"
+  ppl:
+    initialized: "✅ PPL Chunking Strategy 已启用"
+    unavailable: "PPL Chunking Strategy 不可用"
+  llm:
+    initialized: "✅ LLM Chunking Strategy 已启用"
+    using_custom_template: "   使用自定义提示词模板"
+    using_default_template: "   使用默认提示词模板"
+    unavailable: "LLM Chunking Strategy 不可用"
+    start: "🤖 开始 LLM 智能分块，文档长度: {0} 字符"
+    doc_small: "📝 文档较小，无需分块"
+    doc_large: "📚 超大文档，采用分段策略"
+    doc_medium: "📖 中等文档，直接 LLM 分块"
+    completed: "✅ LLM 分块完成：{0} 块，耗时: {1}ms"
+    failed: "❌ LLM 分块失败"
+    calling_llm: "🤖 调用 LLM 进行分块分析..."
+    no_valid_chunks: "⚠️ LLM 未返回有效分块，使用原文"
+    fallback_warning: "⚠️ LLM 分块失败，降级为简单分块: {0}"
+    coarse_split: "📑 超大文档粗分为 {0} 段"
+    processing_segment: "   处理第 {0}/{1} 段，长度: {2}"
+    using_fallback: "📝 使用降级分块策略"
+  factory:
+    initialized: "📦 分块策略工厂初始化"
+    ppl_available: "   - PPL Service: 可用"
+    ppl_unavailable: "   - PPL Service: 不可用"
+    llm_available: "   - LLM Client: 可用"
+    llm_unavailable: "   - LLM Client: 不可用"
+    unknown_strategy: "⚠️ 未知的策略类型: {0}，使用默认策略"
+    auto_select_llm: "🤖 自动选择：LLM 分块策略"
+    auto_select_ppl: "📊 自动选择：PPL 分块策略"
+    fallback_simple: "⚠️ PPL 和 LLM 均不可用，使用简单分块策略"

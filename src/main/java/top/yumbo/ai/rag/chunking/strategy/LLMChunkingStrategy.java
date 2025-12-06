@@ -14,19 +14,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 基于大语言模型的智能分块策略
- * LLM-based intelligent chunking strategy
+ * 基于大语言模型的智能分块策略 (LLM-based Intelligent Chunking Strategy)
  *
- * 优势：
- * - 理解文档语义和结构
- * - 在最佳位置切分（章节、段落、主题边界）
- * - 保持每个块的语义完整性
- * - 支持复杂文档结构（如技术文档、论文）
+ * 优势 (Advantages):
+ * - 理解文档语义和结构 (Understands document semantics and structure)
+ * - 在最佳位置切分（章节、段落、主题边界）(Splits at optimal boundaries: chapters, paragraphs, topic transitions)
+ * - 保持每个块的语义完整性 (Maintains semantic integrity of each chunk)
+ * - 支持复杂文档结构（如技术文档、论文）(Supports complex document structures like technical docs and papers)
  *
- * 适用场景：
- * - 大型文档的一次性索引（分块成本可接受）
- * - 对分块质量要求高的场景
- * - 复杂结构的技术文档
+ * 适用场景 (Use Cases):
+ * - 大型文档的一次性索引（分块成本可接受）(One-time indexing of large documents with acceptable cost)
+ * - 对分块质量要求高的场景 (Scenarios requiring high chunking quality)
+ * - 复杂结构的技术文档 (Complex structured technical documents)
  *
  * @author AI Reviewer Team
  * @since 2025-12-07
@@ -38,7 +37,7 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
     private final boolean enabled;
     private final String promptTemplate;
 
-    // 默认提示词模板（当配置未提供时使用）
+    // 默认提示词模板（当配置未提供时使用）(Default prompt template when not configured)
     private static final String DEFAULT_PROMPT_TEMPLATE = """
             你是一个文档分块专家。请将以下文档智能地分割成多个语义完整的块。
             
@@ -74,11 +73,11 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
                 : DEFAULT_PROMPT_TEMPLATE;
 
         if (enabled && llmClient != null) {
-            log.info("✅ LLM Chunking Strategy 已启用");
+            log.info(I18N.get("chunking_strategy.llm.initialized"));
             if (promptTemplate != null && !promptTemplate.trim().isEmpty()) {
-                log.info("   使用自定义提示词模板");
+                log.info(I18N.get("chunking_strategy.llm.using_custom_template"));
             } else {
-                log.info("   使用默认提示词模板");
+                log.info(I18N.get("chunking_strategy.llm.using_default_template"));
             }
         }
     }
@@ -86,7 +85,7 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
     @Override
     public List<DocumentChunk> chunk(String content, String query, ChunkConfig config) throws PPLException {
         if (!isAvailable()) {
-            throw new PPLException(PPLProviderType.ONNX, "LLM Chunking Strategy 不可用");
+            throw new PPLException(PPLProviderType.ONNX, I18N.get("chunking_strategy.llm.unavailable"));
         }
 
         if (content == null || content.trim().isEmpty()) {
@@ -94,69 +93,69 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
         }
 
         long startTime = System.currentTimeMillis();
-        log.info("🤖 开始 LLM 智能分块，文档长度: {} 字符", content.length());
+        log.info(I18N.get("chunking_strategy.llm.start", content.length()));
 
         try {
-            // 1. 如果文档较小，直接返回
+            // 1. 如果文档较小，直接返回 (If document is small, return directly)
             if (content.length() < config.getMaxChunkSize()) {
-                log.info("📄 文档较小，无需分块");
+                log.info(I18N.get("chunking_strategy.llm.doc_small"));
                 return List.of(DocumentChunk.builder()
                         .content(content)
                         .index(0)
                         .build());
             }
 
-            // 2. 对于大文档，分段处理
+            // 2. 对于大文档，分段处理 (For large documents, process in segments)
             List<DocumentChunk> chunks = new ArrayList<>();
 
             if (content.length() > config.getMaxChunkSize() * 3) {
-                // 超大文档：先粗分，再让 LLM 精细分块
-                log.info("📚 超大文档，采用分段策略");
+                // 超大文档：先粗分，再让 LLM 精细分块 (Very large docs: coarse split first, then LLM fine-grained chunking)
+                log.info(I18N.get("chunking_strategy.llm.doc_large"));
                 chunks = chunkLargeDocument(content, config);
             } else {
-                // 中等文档：直接用 LLM 分块
-                log.info("📖 中等文档，直接 LLM 分块");
+                // 中等文档：直接用 LLM 分块 (Medium docs: direct LLM chunking)
+                log.info(I18N.get("chunking_strategy.llm.doc_medium"));
                 chunks = chunkWithLLM(content, config);
             }
 
-            // 3. 设置索引
+            // 3. 设置索引 (Set indexes)
             for (int i = 0; i < chunks.size(); i++) {
                 chunks.get(i).setIndex(i);
             }
 
             long duration = System.currentTimeMillis() - startTime;
-            log.info("✅ LLM 分块完成：{} 块，耗时: {}ms", chunks.size(), duration);
+            log.info(I18N.get("chunking_strategy.llm.completed", chunks.size(), duration));
 
             return chunks;
 
         } catch (Exception e) {
-            log.error("❌ LLM 分块失败", e);
+            log.error(I18N.get("chunking_strategy.llm.failed"), e);
             throw new PPLException(PPLProviderType.ONNX,
                     "LLM chunking failed: " + e.getMessage(), e);
         }
     }
 
     /**
-     * 使用 LLM 对文档进行智能分块
+     * 使用 LLM 对文档进行智能分块 (Use LLM for intelligent document chunking)
      */
     private List<DocumentChunk> chunkWithLLM(String content, ChunkConfig config) {
         try {
-            // 构建提示词（使用配置的模板）
+            // 构建提示词（使用配置的模板）(Build prompt using configured template)
             String prompt = promptTemplate
                     .replace("{minSize}", String.valueOf(config.getMinChunkSize()))
                     .replace("{maxSize}", String.valueOf(config.getMaxChunkSize()))
                     .replace("{content}", content);
 
-            // 调用 LLM
-            log.debug("🤖 调用 LLM 进行分块分析...");
+            // 调用 LLM (Call LLM)
+            log.debug(I18N.get("chunking_strategy.llm.calling_llm"));
             String response = llmClient.generate(prompt);
 
-            // 解析 LLM 返回的结果
+            // 解析 LLM 返回的结果 (Parse LLM response)
             List<DocumentChunk> chunks = parseChunkResponse(response, content, config);
 
             if (chunks.isEmpty()) {
-                // LLM 未返回有效分块，使用原文
-                log.warn("⚠️ LLM 未返回有效分块，使用原文");
+                // LLM 未返回有效分块，使用原文 (LLM returned no valid chunks, use original text)
+                log.warn(I18N.get("chunking_strategy.llm.no_valid_chunks"));
                 return List.of(DocumentChunk.builder()
                         .content(content)
                         .build());
@@ -165,26 +164,26 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
             return chunks;
 
         } catch (Exception e) {
-            log.warn("⚠️ LLM 分块失败，降级为简单分块: {}", e.getMessage());
+            log.warn(I18N.get("chunking_strategy.llm.fallback_warning", e.getMessage()));
             return fallbackChunk(content, config);
         }
     }
 
     /**
-     * 超大文档的分段处理策略
+     * 超大文档的分段处理策略 (Segmented processing strategy for very large documents)
      */
     private List<DocumentChunk> chunkLargeDocument(String content, ChunkConfig config) {
         List<DocumentChunk> allChunks = new ArrayList<>();
 
-        // 1. 先按段落粗分
+        // 1. 先按段落粗分 (First, coarse split by paragraphs)
         List<String> coarseChunks = coarseChunkByParagraph(content, config.getMaxChunkSize() * 2);
 
-        log.info("📑 超大文档粗分为 {} 段", coarseChunks.size());
+        log.info(I18N.get("chunking_strategy.llm.coarse_split", coarseChunks.size()));
 
-        // 2. 对每段进行 LLM 精细分块
+        // 2. 对每段进行 LLM 精细分块 (Then, fine-grained LLM chunking for each segment)
         for (int i = 0; i < coarseChunks.size(); i++) {
             String chunk = coarseChunks.get(i);
-            log.debug("   处理第 {}/{} 段，长度: {}", i + 1, coarseChunks.size(), chunk.length());
+            log.debug(I18N.get("chunking_strategy.llm.processing_segment", i + 1, coarseChunks.size(), chunk.length()));
 
             List<DocumentChunk> subChunks = chunkWithLLM(chunk, config);
             allChunks.addAll(subChunks);
@@ -194,27 +193,27 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
     }
 
     /**
-     * 按段落进行粗分
+     * 按段落进行粗分 (Coarse split by paragraphs)
      */
     private List<String> coarseChunkByParagraph(String content, int maxSize) {
         List<String> chunks = new ArrayList<>();
 
-        // 按段落分割
-        String[] paragraphs = content.split("\n\n+");
+        // 按段落分割 (Split by paragraphs)
+        String[] paragraphs = content.split("\\n\\n+");
 
         StringBuilder currentChunk = new StringBuilder();
 
         for (String para : paragraphs) {
             if (currentChunk.length() + para.length() > maxSize && currentChunk.length() > 0) {
-                // 当前块已满，保存并开始新块
+                // 当前块已满，保存并开始新块 (Current chunk is full, save and start new)
                 chunks.add(currentChunk.toString());
                 currentChunk = new StringBuilder();
             }
 
-            currentChunk.append(para).append("\n\n");
+            currentChunk.append(para).append("\\n\\n");
         }
 
-        // 添加最后一块
+        // 添加最后一块 (Add last chunk)
         if (currentChunk.length() > 0) {
             chunks.add(currentChunk.toString().trim());
         }
@@ -223,18 +222,18 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
     }
 
     /**
-     * 解析 LLM 返回的分块结果
+     * 解析 LLM 返回的分块结果 (Parse LLM chunking response)
      */
     private List<DocumentChunk> parseChunkResponse(String response, String originalContent, ChunkConfig config) {
         List<DocumentChunk> chunks = new ArrayList<>();
 
-        // 检查响应中是否包含 [CHUNK_SPLIT] 标记
+        // 检查响应中是否包含 [CHUNK_SPLIT] 标记 (Check if response contains [CHUNK_SPLIT] marker)
         if (!response.contains("[CHUNK_SPLIT]")) {
-            // LLM 可能直接返回了分段的内容，尝试其他分隔符
+            // LLM 可能直接返回了分段的内容，尝试其他分隔符 (LLM may have returned segmented content directly, try alternative separators)
             return parseAlternativeFormat(response, config);
         }
 
-        // 按 [CHUNK_SPLIT] 分割
+        // 按 [CHUNK_SPLIT] 分割 (Split by [CHUNK_SPLIT])
         String[] parts = response.split("\\[CHUNK_SPLIT\\]");
 
         for (String part : parts) {
@@ -244,14 +243,14 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
                 continue;
             }
 
-            // 过滤掉提示词中的内容
+            // 过滤掉提示词中的内容 (Filter out prompt content)
             if (trimmed.contains("你是一个文档分块专家") ||
                 trimmed.contains("# 分块要求") ||
                 trimmed.contains("# 输出格式")) {
                 continue;
             }
 
-            // 检查大小限制
+            // 检查大小限制 (Check size limits)
             if (trimmed.length() >= config.getMinChunkSize() &&
                 trimmed.length() <= config.getMaxChunkSize() * 1.5) {
 
@@ -259,7 +258,7 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
                         .content(trimmed)
                         .build());
             } else if (trimmed.length() > config.getMaxChunkSize() * 1.5) {
-                // 太大，进一步分割
+                // 太大，进一步分割 (Too large, split further)
                 List<DocumentChunk> subChunks = splitLargeChunk(trimmed, config);
                 chunks.addAll(subChunks);
             }
@@ -269,13 +268,13 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
     }
 
     /**
-     * 解析其他格式的 LLM 响应
+     * 解析其他格式的 LLM 响应 (Parse alternative LLM response formats)
      */
     private List<DocumentChunk> parseAlternativeFormat(String response, ChunkConfig config) {
         List<DocumentChunk> chunks = new ArrayList<>();
 
-        // 尝试按编号分割（如：1. 2. 3.）
-        Pattern pattern = Pattern.compile("(?:^|\\n)\\d+\\.\\s*(.+?)(?=\\n\\d+\\.|$)", Pattern.DOTALL);
+        // 尝试按编号分割（如：1. 2. 3.）(Try splitting by numbered format like 1. 2. 3.)
+        Pattern pattern = Pattern.compile("(?:^|\\\\n)\\\\d+\\\\.\\\\s*(.+?)(?=\\\\n\\\\d+\\\\.|$)", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(response);
 
         while (matcher.find()) {
@@ -288,12 +287,12 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
             }
         }
 
-        // 如果没有找到编号格式，返回空（降级到 fallback）
+        // 如果没有找到编号格式，返回空（降级到 fallback）(If no numbered format found, return empty to fallback)
         return chunks;
     }
 
     /**
-     * 分割过大的块
+     * 分割过大的块 (Split chunks that are too large)
      */
     private List<DocumentChunk> splitLargeChunk(String content, ChunkConfig config) {
         List<DocumentChunk> chunks = new ArrayList<>();
@@ -317,14 +316,14 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
     }
 
     /**
-     * 降级分块策略（简单按段落分割）
+     * 降级分块策略（简单按段落分割）(Fallback chunking strategy - simple paragraph splitting)
      */
     private List<DocumentChunk> fallbackChunk(String content, ChunkConfig config) {
-        log.info("📝 使用降级分块策略");
+        log.info(I18N.get("chunking_strategy.llm.using_fallback"));
 
         List<DocumentChunk> chunks = new ArrayList<>();
 
-        // 按段落分割
+        // 按段落分割 (Split by paragraphs)
         String[] paragraphs = content.split("\n\n+");
 
         StringBuilder currentChunk = new StringBuilder();
@@ -342,7 +341,7 @@ public class LLMChunkingStrategy implements ChunkingStrategy {
             currentChunk.append(para).append("\n\n");
         }
 
-        // 添加最后一块
+        // 添加最后一块 (Add last chunk)
         if (currentChunk.length() > 0) {
             chunks.add(DocumentChunk.builder()
                     .content(currentChunk.toString().trim())
