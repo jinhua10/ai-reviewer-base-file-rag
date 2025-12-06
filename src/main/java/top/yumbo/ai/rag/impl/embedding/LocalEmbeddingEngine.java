@@ -395,28 +395,5 @@ public class LocalEmbeddingEngine implements AutoCloseable {
             log.error("关闭嵌入引擎失败", e);
         }
     }
-
-    /**
-     * 测试方法
-     */
-    public static void main(String[] args) {
-        try {
-            LocalEmbeddingEngine engine = new LocalEmbeddingEngine();
-
-            String text = "人工智能正在改变世界";
-            float[] vector = engine.embed(text);
-
-            System.out.println("文本: " + text);
-            System.out.println("向量维度: " + vector.length);
-            System.out.println("向量前10维: " + Arrays.toString(
-                    Arrays.copyOf(vector, Math.min(10, vector.length))
-            ));
-
-            engine.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }
 
