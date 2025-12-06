@@ -145,11 +145,9 @@ class LLMClientVisionStrategyTest {
         // 创建混合模式提取器
         SmartImageExtractor extractor = new SmartImageExtractor();
 
-        // 添加 LLMClient Vision 策略（优先级高）
+        // 添加 LLMClient Vision 策略
         extractor.addStrategy(new LLMClientVisionStrategy(llmClient));
 
-        // 添加 OCR 策略（备用）
-        extractor.addStrategy(new TesseractOCRStrategy());
 
         // 验证策略
         assertTrue(extractor.getStrategies().size() >= 1, "应该至少有一个策略");

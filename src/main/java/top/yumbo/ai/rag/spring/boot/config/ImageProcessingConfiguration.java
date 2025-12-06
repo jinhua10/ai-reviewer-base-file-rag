@@ -138,25 +138,7 @@ public class ImageProcessingConfiguration {
      * 添加 OCR 策略（Add OCR strategy）
      */
     private void addOcrStrategy(SmartImageExtractor extractor, KnowledgeQAProperties.ImageProcessingConfig config) {
-        if (config.isEnableOcr()) {
-            KnowledgeQAProperties.OcrConfig ocrConfig = config.getOcr();
-            String tessdataPath = resolveEnvVariable(ocrConfig.getTessdataPath());
-            String language = ocrConfig.getLanguage();
-
-            log.info(I18N.get("log.imageproc.add_ocr"));
-            log.info(I18N.get("log.imageproc.tessdata", tessdataPath != null ? tessdataPath : I18N.get("log.imageproc.tessdata_default")));
-            log.info(I18N.getLang("log.imageproc.language", language));
-
-            TesseractOCRStrategy ocrStrategy = new TesseractOCRStrategy(tessdataPath, language);
-            extractor.addStrategy(ocrStrategy);
-
-            if (ocrStrategy.isAvailable()) {
-                log.info(I18N.get("log.imageproc.ocr_available"));
-            } else {
-                log.warn(I18N.get("log.imageproc.ocr_unavailable"));
-                log.warn(I18N.get("log.imageproc.ocr_hint"));
-            }
-        }
+        // OCR 策略已移除，请使用 Vision LLM 策略获得更好的图片理解效果
     }
 
     /**

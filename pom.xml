@@ -213,14 +213,7 @@
         </dependency>
 
 
-        <!-- Tesseract OCR - 图片文字识别 -->
-        <dependency>
-            <groupId>net.sourceforge.tess4j</groupId>
-            <artifactId>tess4j</artifactId>
-            <version>5.16.0</version>
-        </dependency>
-
-        <!-- OkHttp - HTTP 客户端 (用于 OpenAI API 调用) -->
+        <!-- Spring Boot - Web 框架 -->
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>

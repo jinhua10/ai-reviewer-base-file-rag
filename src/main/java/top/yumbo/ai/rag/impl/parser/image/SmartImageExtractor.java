@@ -13,9 +13,8 @@ import java.util.List;
  * 智能图片内容提取器
  *
  * 支持多种策略，按优先级自动选择可用的策略:
- * 1. Vision LLM（语义理解）
- * 2. Tesseract OCR（文字识别）
- * 3. Placeholder（占位符，兜底）
+ * 1. Vision LLM（语义理解，推荐）- 使用 GPT-4o 等多模态 LLM
+ * 2. Placeholder（占位符，兜底）
  *
  * 使用方法:
  * <pre>
@@ -23,14 +22,11 @@ import java.util.List;
  * SmartImageExtractor extractor = new SmartImageExtractor();
  *
  * // 启用 OCR
- * SmartImageExtractor extractor = SmartImageExtractor.withOCR();
- *
- * // 启用 Vision LLM
+ * // 启用 Vision LLM（推荐）
  * SmartImageExtractor extractor = SmartImageExtractor.withVisionLLM(apiKey);
  *
  * // 自定义策略
  * SmartImageExtractor extractor = new SmartImageExtractor();
- * extractor.addStrategy(new TesseractOCRStrategy());
  * extractor.addStrategy(new VisionLLMStrategy(apiKey, model, endpoint));
  * </pre>
  *
@@ -133,23 +129,6 @@ public class SmartImageExtractor {
         return new SmartImageExtractor();
     }
 
-    /**
-     * 创建启用 OCR 的提取器
-     */
-    public static SmartImageExtractor withOCR() {
-        SmartImageExtractor extractor = new SmartImageExtractor();
-        extractor.addStrategy(new TesseractOCRStrategy());
-        return extractor;
-    }
-
-    /**
-     * 创建启用 OCR 的提取器（自定义配置）
-     */
-    public static SmartImageExtractor withOCR(String tessdataPath, String language) {
-        SmartImageExtractor extractor = new SmartImageExtractor();
-        extractor.addStrategy(new TesseractOCRStrategy(tessdataPath, language));
-        return extractor;
-    }
 
     /**
      * 创建启用 Vision LLM 的提取器
@@ -174,10 +153,8 @@ public class SmartImageExtractor {
      */
     public static SmartImageExtractor withHybrid(String visionApiKey) {
         SmartImageExtractor extractor = new SmartImageExtractor();
-        // 优先尝试 Vision LLM（语义理解）
+        // 使用 Vision LLM（语义理解）
         extractor.addStrategy(new VisionLLMStrategy(visionApiKey, null, null));
-        // 其次尝试 OCR（文字识别）
-        extractor.addStrategy(new TesseractOCRStrategy());
         return extractor;
     }
 
@@ -193,13 +170,6 @@ public class SmartImageExtractor {
             extractor.addStrategy(VisionLLMStrategy.fromEnv());
         }
 
-        // 尝试加载 OCR
-        String enableOCR = System.getenv("ENABLE_OCR");
-        if ("true".equalsIgnoreCase(enableOCR)) {
-            String tessdataPath = System.getenv("TESSDATA_PREFIX");
-            String language = System.getenv("OCR_LANGUAGE");
-            extractor.addStrategy(new TesseractOCRStrategy(tessdataPath, language));
-        }
 
         return extractor;
     }

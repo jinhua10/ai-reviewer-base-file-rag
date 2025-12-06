@@ -734,10 +734,8 @@ knowledge:
     image-processing:
       # 图片处理策略:
       #   - placeholder: 占位符（默认，零依赖）
-      #   - ocr: OCR 文字识别（需要 Tesseract）
       #   - vision-llm: Vision LLM 语义理解（使用独立配置的 vision-llm）
       #   - llm-vision: 使用主 LLM 客户端的图片识别功能（仅当主 LLM 支持图片时有效）
-      #   - hybrid: 混合模式（LLM Vision + OCR，推荐）
       #
       # 💡 重要说明：
       #   - llm-vision 策略要求主 LLM 模型支持图片（如 gpt-4o、qwen-vl-plus）
@@ -753,37 +751,6 @@ knowledge:
       #   - concise: 精简模式，提取关键信息，避免冗余但不遗漏重要内容（节省 token）
       #   - detailed: 详细模式，完整分析图片内容（推荐用于需要详细描述的场景）
       extraction-mode: concise
-
-      # 是否启用 OCR
-      # 设置为 true 启用 OCR 图片文字识别功能
-      # 需要安装 Tesseract OCR 软件
-      enable-ocr: true
-
-      # OCR 配置
-      ocr:
-        # Tesseract 数据路径
-        # 方式1（推荐）：直接指定绝对路径
-        #   Windows 示例: C:/Program Files/Tesseract-OCR/tessdata
-        #   Linux/Mac 示例: /usr/share/tesseract-ocr/4.00/tessdata
-        #
-        # 方式2：使用环境变量（兼容旧版本）
-        #   Linux/Mac: export TESSDATA_PREFIX=/path/to/tessdata
-        #   Windows: set TESSDATA_PREFIX=C:\path\to\tessdata
-        #
-        # 方式3：使用项目内置路径（默认）
-        #   如果未配置，将使用: release/tessdata
-        #
-        # 当前配置: 优先使用环境变量 TESSDATA_PREFIX，如果未设置则使用 release/tessdata
-        tessdata-path: ${TESSDATA_PREFIX:release/tessdata}
-
-        # 💡 提示：如果要直接配置路径，替换上面一行为:
-        # tessdata-path: C:/Program Files/Tesseract-OCR/tessdata
-
-        # 识别语言
-        # chi_sim: 简体中文
-        # eng: 英文
-        # chi_sim+eng: 中英文混合（推荐）
-        language: chi_sim+eng
 
       # Vision LLM 配置
       vision-llm:
