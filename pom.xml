@@ -613,76 +613,12 @@
                             <target>
                                 <echo message="[INFO] 删除 target/classes/simpleExcel 目录（打包时不包含）"/>
                                 <delete dir="${project.build.outputDirectory}/simpleExcel" quiet="true"/>
-
-                                <echo message="[INFO] 删除 target/classes/models 目录下的模型文件（保留脚本文件）"/>
-                                <delete quiet="true">
-                                    <fileset dir="${project.build.outputDirectory}/models" erroronmissingdir="false">
-                                        <include name="**/*.onnx"/>
-                                        <include name="**/*.bin"/>
-                                        <include name="**/*.safetensors"/>
-                                        <include name="**/*.pt"/>
-                                        <include name="**/*.pth"/>
-                                    </fileset>
-                                </delete>
+                                <delete dir="${project.build.outputDirectory}/**/*.md" quiet="true"/>
                             </target>
                         </configuration>
                     </execution>
 
-                    <!-- 步骤2: 打包后复制模型到 release 目录 -->
-                    <execution>
-                        <id>copy-models-to-release</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target>
-                                <echo message="[INFO] 检查并复制模型文件到 release 目录"/>
-
-                                <!-- 检查模型文件是否已存在 -->
-                                <available
-                                    file="${project.basedir}/release/models/paraphrase-multilingual/model.onnx"
-                                    property="model.exists"/>
-
-                                <!-- 如果模型不存在，则需要复制 -->
-                                <condition property="should.copy.model">
-                                    <not>
-                                        <isset property="model.exists"/>
-                                    </not>
-                                </condition>
-
-                                <!-- 显示模型已存在或将要复制的消息 -->
-                                <echo message="[INFO] Model file check completed"/>
-
-                                <!-- 创建目录（如果需要） -->
-                                <mkdir dir="${project.basedir}/release/models"/>
-
-                                <!-- 复制模型文件（failonerror=false 允许源文件不存在） -->
-                                <copy
-                                    todir="${project.basedir}/release/models"
-                                    failonerror="false"
-                                    preservelastmodified="true"
-                                    verbose="false"
-                                    overwrite="false">
-                                    <fileset dir="${project.basedir}/src/main/resources/models" erroronmissingdir="false">
-                                        <include name="**/*.onnx"/>
-                                        <include name="**/*.txt"/>
-                                        <include name="**/*.json"/>
-                                    </fileset>
-                                </copy>
-
-                                <!-- 验证最终结果 -->
-                                <available
-                                    file="${project.basedir}/release/models/paraphrase-multilingual/model.onnx"
-                                    property="model.final.exists"/>
-
-                                <echo message="[INFO] ✅ Model files are ready in release/models/"/>
-                                <echo message="[INFO] 💡 If models are missing, run: cd release/models/paraphrase-multilingual &amp;&amp; download-model.bat"/>
-                            </target>
-                        </configuration>
-                    </execution>
-
-                    <!-- 步骤3: 打包后立即复制 JAR 到 release 目录 -->
+                    <!-- 步骤2: 打包后立即复制 JAR 到 release 目录 -->
                     <execution>
                         <id>copy-jar-to-release</id>
                         <phase>install</phase>
