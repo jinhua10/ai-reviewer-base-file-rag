@@ -66,6 +66,12 @@ knowledge:
       # 是否启用缓存
       enable-cache: true
 
+      # 自动索引配置
+      # 上传文件后是否自动触发增量索引
+      # true: 上传完成后自动后台索引（推荐）
+      # false: 需要手动点击"增量索引"按钮
+      auto-index-after-upload: true
+
     # 向量检索配置
     vector-search:
       # 是否启用向量检索
@@ -73,39 +79,23 @@ knowledge:
       # false: 使用纯关键词检索（推荐，开箱即用）
       enabled: true
 
-      # 模型配置
-      # ⚠️ 启用向量检索前，请确保已下载模型文件
-      # 📥 模型下载：
-      #    1. 访问 https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-      #    2. 下载 model.onnx 文件
-      #    3. 放置到 models/paraphrase-multilingual/ 目录
-      #
-      # 📁 模型目录结构：
-      #    ./models/
-      #      ├── paraphrase-multilingual/
-      #      │   └── model.onnx
-      #      ├── bge-m3/
-      #      │   └── model.onnx
-      #      └── text2vec-base-chinese/
-      #          └── model.onnx
+      # 模型配置（已更新为国产模型）
       model:
         # 模型名称（用于日志显示）
-        name: paraphrase-multilingual
+        # 推荐使用国产 BGE 系列，与 Qwen 配套效果更好
+        name: bge-base-zh
 
-        # 模型文件路径（外部路径，相对于应用目录）
-        # 优先级：
-        #   1. 绝对路径: D:/models/xxx/model.onnx
-        #   2. 相对路径: ./models/paraphrase-multilingual/model.onnx
-        #   3. classpath: models/paraphrase-multilingual/model.onnx
-        path: ./models/paraphrase-multilingual/model.onnx
+        # 模型文件路径（相对于 resources）
+        # BGE-Base-ZH: 智源研究院开发，中文效果优秀，兼容性好
+        path: ./models/bge-base-zh/model.onnx
 
-        # 模型搜索路径（按优先级排序）
+        # 模型搜索路径（按优先级排序，已调整为国产优先）
         search-paths:
-          - bge-m3                      # BGE-M3 (推荐, 2024最新)
-          - multilingual-e5-large       # Multilingual E5 Large
-          - bge-large-zh                # BGE Large ZH (中文)
-          - paraphrase-multilingual     # Paraphrase Multilingual
-          - text2vec-base-chinese       # Text2Vec (旧版)
+          - bge-base-zh                 # BGE-Base-ZH (推荐, 智源, 兼容性好) ✅
+          - bge-large-zh                # BGE Large ZH (智源, 中文优化)
+          - bge-base-zh-v1.5            # BGE Base ZH v1.5 (智源, 轻量级)
+          - bge-m3                      # BGE-M3 (智源, 2024最新, 需要更新的 ONNX Runtime)
+          - text2vec-base-chinese       # Text2Vec (阿里, 经典)
 
         # 模型文件名（按优先级排序）
         file-names:
@@ -118,10 +108,26 @@ knowledge:
       index-path: ./data/vector-index
 
       # 检索相似度阈值 (0.0-1.0)
-      similarity-threshold: 0.4
+      similarity-threshold: 0.5
 
-      # 检索返回的文档数量
+      # === 混合检索配置（Lucene + 向量） ===
+      # Lucene 检索返回的候选文档数
+      lucene-top-k: 100
+
+      # 向量检索返回的候选文档数
+      vector-top-k: 50
+
+      # 混合检索最终返回的文档数（去重后）
+      hybrid-top-k: 30
+
+      # 每次问答引用的文档数
+      documents-per-query: 5
+
+      # 检索返回的文档数量上限（已废弃，使用 hybrid-top-k 替代）
       top-k: 20
+
+      # 文档相关性评分阈值
+      min-score-threshold: 0.06
 
     # ============================================================
     # 搜索配置（停用词、关键词提取）
@@ -203,6 +209,37 @@ knowledge:
       # 单文档最大长度（字符数）
       max-doc-length: 5000
 
+      # 单次问答最大处理文档数
+      max-documents-per-query: 5
+
+      # 是否启用分批处理模式
+      enable-batch-processing: true
+
+      # 文档切分策略: SIMPLE, SMART_KEYWORD, AI_SEMANTIC, NONE
+      chunking-strategy: SMART_KEYWORD
+
+      # 文档切分配置
+      chunking:
+        chunk-size: 4000
+        chunk-overlap: 400
+        split-on-sentence: true
+
+        # AI 语义切分配置
+        ai-chunking:
+          enabled: false
+          model: deepseek-chat
+          prompt: |
+            请将以下文档智能切分成多个语义完整的段落。
+            
+            要求：
+            1. 每个段落应该是一个完整的主题或概念
+            2. 保持段落之间的逻辑连贯性
+            3. 每个段落大小在 {chunk_size} 字符左右
+            4. 返回 JSON 格式：[{"content": "段落1内容", "title": "段落1标题"}, ...]
+            
+            文档内容：
+            {content}
+
       # Prompt 提示词模板
       # 支持两个占位符：
       #   - {question}: 用户问题
@@ -217,6 +254,7 @@ knowledge:
         3. 回答要清晰、准确、有条理
         4. 可以引用文档名称作为信息来源
         5. 保持专业友好的语气
+        6. 如果提示词中有图片URL链接则以markdown展示图片
         
         # 用户问题
         {question}
@@ -266,113 +304,133 @@ knowledge:
       # 批处理大小（文档数）
       batch-size: 10
 
-    # ============================================================
-    # 智能分析配置
-    # ============================================================
-    smart-analysis:
-      # 是否启用智能分析
-      enabled: false
+      # ============================================================
+      # 内容长度限制配置（影响内存占用和性能）
+      # ============================================================
 
-      # LLM 配置（用于智能分析）
-      llm:
-        api-key: ${ANALYSIS_API_KEY:${AI_API_KEY:}}
-        api-url: https://api.deepseek.com/v1/chat/completions
-        model: deepseek-chat
+      # 索引时单个文档最大内容长度（字符数）
+      max-index-content-length: 50000
 
-    # ============================================================
-    # 分块优化配置（PPL - Perplexity Based Chunking）
-    # ============================================================
-    chunking:
-      # 是否启用 PPL 优化分块
-      # true: 启用（需要配置 PPL 服务）
-      # false: 使用固定长度分块（默认，推荐）
-      ppl-enabled: false
+      # 问答时文档切分最大内容长度（字符数）
+      max-chunk-content-length: 100000
 
-      # PPL 服务配置
-      ppl:
-        # PPL 服务类型:
-        #   - ollama: Ollama 本地服务（推荐）
-        #   - openai: OpenAI 兼容 API
-        provider: ollama
+      # 问答时单次切分最大块数
+      max-chunks-per-document: 50
 
-        # API 端点
-        # Ollama: http://localhost:11434/api/generate
-        # OpenAI: https://api.openai.com/v1/completions
-        api-url: http://localhost:11434/api/generate
-
-        # 模型名称
-        # Ollama: qwen2.5:7b, llama3.2:3b 等
-        # OpenAI: gpt-3.5-turbo-instruct 等
-        model: qwen2.5:7b
-
-        # API Key（OpenAI 需要）
-        api-key: ${PPL_API_KEY:}
-
-        # 最大序列长度
-        max-sequence-length: 512
-
-        # PPL 分块阈值
-        # 当连续句子的困惑度变化超过此阈值时切分
-        threshold: 1.5
 
     # ============================================================
-    # 反馈系统配置
+    # PPL 服务配置（Perplexity-based Chunking & Reranking）
     # ============================================================
-    feedback:
-      # 反馈模式:
-      #   - star: 星级评价（1-5 星）
-      #   - emoji: 表情评价（😀😊😐😞😢）
-      #   - like: 点赞/点踩（👍👎）
-      mode: star
+    ppl:
+      # PPL 功能总开关
+      enabled: true
 
-      # 是否启用文档级反馈
-      document-feedback-enabled: true
+      # 默认提供商：ollama, onnx, openai
+      default-provider: onnx
 
-      # 反馈权重衰减因子（0.0-1.0）
-      # 控制历史反馈对当前检索的影响程度
-      # 0.0: 不使用历史反馈
-      # 1.0: 完全信任历史反馈
-      # 推荐: 0.1-0.3
-      weight-decay: 0.2
+      # 启用降级策略
+      enable-fallback: true
 
-      # 最小反馈次数阈值
-      # 文档至少需要多少次反馈才会影响排序
-      min-feedback-count: 3
+      # 降级顺序
+      fallback-order:
+        - onnx
+        - ollama
+        - openai
 
-    # ============================================================
-    # PPL 优化分块配置（详细）
-    # ============================================================
-    ppl-chunking:
-      # 是否启用（生产环境建议关闭，仅在需要时启用）
-      enabled: false
+      # ONNX 配置
+      onnx:
+        enabled: true
+        model-path: ./models/qwen2.5-0.5b-instruct/model.onnx
+        tokenizer-path: ./models/qwen2.5-0.5b-instruct/tokenizer.json
+        max-batch-size: 8
+        use-cache: true
+        cache-size: 10000
+        cache-ttl: 3600
 
-      # PPL 模型配置
-      model:
-        # 模型类型: ollama, openai
-        type: ollama
+      # Ollama 配置（推荐）
+      ollama:
+        enabled: true
+        base-url: http://localhost:11434
+        model: qwen2.5:0.5b
+        timeout: 30000
+        max-retries: 3
+        connection-pool-size: 10
 
-        # 模型名称
-        name: qwen2.5:7b
+      # OpenAI 配置
+      openai:
+        enabled: false
+        api-key: ${QW_API_KEY:}
+        model: qwen-turbo
+        api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+        timeout: 60000
+        use-logprobs: false
 
-        # API 端点
-        endpoint: http://localhost:11434/api/generate
+      # Chunking 配置（智能文档分块）
+      chunking:
+        # 分块策略选择: ppl, llm, auto
+        strategy: ppl
 
-      # 分块参数
-      chunk:
-        # 最小块大小（字符）
-        min-size: 500
+        # LLM 分块配置
+        llm-chunking:
+          enabled: false
+          use-main-llm: true
+          api-key: ${CHUNKING_API_KEY:${AI_API_KEY:}}
+          api-url: https://api.deepseek.com/v1/chat/completions
+          model: deepseek-chat
 
-        # 最大块大小（字符）
-        max-size: 3000
+          prompt-template: |
+            你是一个文档分块专家。请将以下文档智能地分割成多个语义完整的块。
+            
+            # 分块要求
+            1. 每个块应该是一个完整的语义单元（如：一个章节、一个主题、一个完整的论述）
+            2. 在自然的边界处切分（章节标题、段落分隔、主题转换）
+            3. 每个块大小控制在 {minSize}-{maxSize} 字符之间
+            4. 保持图片标记（[图片-xxx：...]）与相关文本在同一块中
+            5. 不要破坏列表、表格、代码块等结构
+            
+            # 输出格式
+            请使用以下格式标记切分点：
+            
+            [CHUNK_SPLIT]
+            
+            在需要切分的位置插入 [CHUNK_SPLIT] 标记。不要修改原文内容，只添加标记。
+            
+            # 文档内容
+            {content}
+            
+            # 请在合适的位置插入 [CHUNK_SPLIT] 标记：
 
         # PPL 阈值
-        threshold: 1.5
+        ppl-threshold: 20.0
+        target-chunk-size: 1500
+        max-chunk-size: 2500
+        min-chunk-size: 300
+        overlap-size: 150
+        overlap-sentences: 2
+        enable-coarse-chunking: true
+        semantic-aware: true
+        detect-paragraph: true
+        detect-chapter: true
+        detect-list-end: true
+        use-dynamic-threshold: false
 
-        # 窗口大小（句子数）
-        window-size: 3
+      # Reranking 配置
+      reranking:
+        enabled: true
+        weight: 0.25
+        top-k: 8
+        async: true
+        timeout: 5000
+        content-truncate-length: 500
 
-      # 每个文档最大块数
-      max-chunks-per-document: 50
+    # ============================================================
+    # 查询扩展配置（中期优化）
+    # ============================================================
+    query-expansion:
+      enabled: true
+      use-llm-rewrite: false
+      use-synonym: true
+      synonym-file: ./data/synonyms.txt
 
     # 图片处理配置
     image-processing:
@@ -444,6 +502,53 @@ knowledge:
           # - Claude-3: 可以处理 5-10 张
           size: 4
 
+          # 图片压缩配置
+          compress:
+            enabled: true
+            quality: 0.8
+            max-size-kb: 300
+            max-width: 1920
+            max-height: 1080
+
+    # 问答归档配置
+    qa-archive:
+      enabled: true
+      strategy: feedback-based
+      min-rating: 4
+      min-question-length: 5
+      min-answer-length: 20
+      archive-path: ./data/rag
+      auto-index: true
+      temp-document-expiry-days: 30
+
+    # ============================================================
+    # LLM 结果文档化配置
+    # ============================================================
+    llm-result:
+      storage-path: ./data/llm-results
+      auto-add-to-knowledge-base: false
+      max-history: 100
+      auto-save: true
+      min-content-length: 100
+
+    # 渐进式文档分析配置
+    progressive-analysis:
+      enabled: true
+      memory-window-size: 3
+      key-point-extraction: structured
+      generate-intermediate-summary: false
+      intermediate-summary-interval: 5
+
+  # 反馈系统配置
+  feedback:
+    require-approval: false
+    auto-apply: true
+    like-weight-increment: 0.1
+    dislike-weight-decrement: -0.15
+    min-weight: 0.1
+    max-weight: 2.0
+    enable-dynamic-weighting: true
+
 # 日志配置
 logging:
   level:
@@ -452,6 +557,45 @@ logging:
     org.springframework: WARN
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# 日志国际化配置: auto | zh | en
+log:
+  locale: auto
+---
+# 开发环境配置
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    top.yumbo.ai.rag: DEBUG
+
+knowledge:
+  qa:
+    knowledge-base:
+      rebuild-on-startup: true  # 开发时每次重建
+    vector-search:
+      enabled: true
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  level:
+    top.yumbo.ai.rag: INFO
+
+knowledge:
+  qa:
+    knowledge-base:
+      rebuild-on-startup: false  # 生产环境使用已有知识库
+    vector-search:
+      enabled: true
   file:
     name: ./logs/knowledge-qa-system.log
 
