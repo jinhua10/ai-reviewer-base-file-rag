@@ -772,25 +772,40 @@ function QATab() {
                                                             className="qa-chunk-add-btn"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                if (window.addDocumentsToAIAnalysis) {
-                                                                    const doc = {
-                                                                        id: source,
-                                                                        name: source,
-                                                                        title: source,
-                                                                        fileName: source
-                                                                    };
-                                                                    const added = window.addDocumentsToAIAnalysis(doc);
-                                                                    if (added > 0) {
-                                                                        showToast(`✅ ${t('documentAdded')}`, 'success');
-                                                                    } else {
-                                                                        showToast(`ℹ️ ${t('documentAlreadyAdded')}`, 'info');
+                                                                const doc = {
+                                                                    id: source,
+                                                                    name: source,
+                                                                    title: source,
+                                                                    fileName: source
+                                                                };
+                                                                
+                                                                if (window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)) {
+                                                                    // 已添加，执行移除
+                                                                    if (window.removeDocumentsFromAIAnalysis) {
+                                                                        const removed = window.removeDocumentsFromAIAnalysis(doc);
+                                                                        if (removed > 0) {
+                                                                            showToast(`✖️ ${t('documentRemoved') || '已移除'}`, 'info');
+                                                                        }
+                                                                    }
+                                                                } else {
+                                                                    // 未添加，执行添加
+                                                                    if (window.addDocumentsToAIAnalysis) {
+                                                                        const added = window.addDocumentsToAIAnalysis(doc);
+                                                                        if (added > 0) {
+                                                                            showToast(`✅ ${t('documentAdded')}`, 'success');
+                                                                        }
                                                                     }
                                                                 }
                                                             }}
-                                                            title={t('addToAIAnalysis')}
-                                                            style={{ position: 'relative', marginRight: '8px' }}
+                                                            title={window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: source }) ? (t('removeFromAIAnalysis') || '移除') : t('addToAIAnalysis')}
+                                                            style={{ 
+                                                                position: 'relative', 
+                                                                marginRight: '8px',
+                                                                opacity: window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: source }) ? 0.6 : 1,
+                                                                filter: window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: source }) ? 'grayscale(50%)' : 'none'
+                                                            }}
                                                         >
-                                                            🤖
+                                                            {window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: source }) ? '✔️' : '🤖'}
                                                         </button>
                                                         <button
                                                             className="qa-source-download-btn-inline"
@@ -922,25 +937,39 @@ function QATab() {
                                                         className="qa-chunk-add-btn"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            if (window.addDocumentsToAIAnalysis) {
-                                                                const doc = {
-                                                                    id: chunk.documentId,
-                                                                    name: chunk.title || chunk.fileName || `文档_${chunk.documentId}`,
-                                                                    title: chunk.title,
-                                                                    fileName: chunk.fileName,
-                                                                    chunkId: chunk.chunkId
-                                                                };
-                                                                const added = window.addDocumentsToAIAnalysis(doc);
-                                                                if (added > 0) {
-                                                                    showToast(`✅ ${t('documentAdded')}`, 'success');
-                                                                } else {
-                                                                    showToast(`ℹ️ ${t('documentAlreadyAdded')}`, 'info');
+                                                            const doc = {
+                                                                id: chunk.documentId,
+                                                                name: chunk.title || chunk.fileName || `文档_${chunk.documentId}`,
+                                                                title: chunk.title,
+                                                                fileName: chunk.fileName,
+                                                                chunkId: chunk.chunkId
+                                                            };
+                                                            
+                                                            if (window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis(doc)) {
+                                                                // 已添加，执行移除
+                                                                if (window.removeDocumentsFromAIAnalysis) {
+                                                                    const removed = window.removeDocumentsFromAIAnalysis(doc);
+                                                                    if (removed > 0) {
+                                                                        showToast(`✖️ ${t('documentRemoved') || '已移除'}`, 'info');
+                                                                    }
+                                                                }
+                                                            } else {
+                                                                // 未添加，执行添加
+                                                                if (window.addDocumentsToAIAnalysis) {
+                                                                    const added = window.addDocumentsToAIAnalysis(doc);
+                                                                    if (added > 0) {
+                                                                        showToast(`✅ ${t('documentAdded')}`, 'success');
+                                                                    }
                                                                 }
                                                             }
                                                         }}
-                                                        title={t('addToAIAnalysis')}
+                                                        title={window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: chunk.title || chunk.fileName || `文档_${chunk.documentId}` }) ? (t('removeFromAIAnalysis') || '移除') : t('addToAIAnalysis')}
+                                                        style={{
+                                                            opacity: window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: chunk.title || chunk.fileName || `文档_${chunk.documentId}` }) ? 0.6 : 1,
+                                                            filter: window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: chunk.title || chunk.fileName || `文档_${chunk.documentId}` }) ? 'grayscale(50%)' : 'none'
+                                                        }}
                                                     >
-                                                        🤖
+                                                        {window.isDocumentInAIAnalysis && window.isDocumentInAIAnalysis({ name: chunk.title || chunk.fileName || `文档_${chunk.documentId}` }) ? '✔️' : '🤖'}
                                                     </button>
                                                 </div>
                                             ))}
