@@ -1298,3 +1298,84 @@ ppl_onnx:
     calc_ppl_failed: "计算困惑度失败"
     chunk_failed: "文档分块失败"
     rerank_failed: "文档重排序失败"
+# ============================================================
+# 策略模块 (Strategy Module)
+# ============================================================
+strategy:
+  dispatcher:
+    log:
+      init_start: "📦 初始化策略调度器..."
+      strategy_registered: "  ✅ 注册策略: {0} - {1}"
+      init_complete: "✅ 策略调度器初始化完成，共 {0} 个策略"
+      no_suitable_strategy: "未找到合适的策略"
+      selected_strategies: "🎯 选择的策略: {0}"
+      executing_single: "执行单个策略: {0}"
+      executing_combined: "执行组合策略: {0}"
+      merging_results: "合并分析结果..."
+      evaluate_failed: "评估策略失败 {0}: {1}"
+  abstract:
+    log:
+      analysis_start: "🚀 开始分析，策略: {0}，文档数: {1}"
+      analysis_complete: "✅ 分析完成，策略: {0}，耗时: {1}ms"
+      analysis_failed: "❌ 分析失败，策略: {0}"
+      llm_call_failed: "LLM 调用失败"
+  parallel_summary:
+    log:
+      generating_summaries: "并行生成文档摘要..."
+      summary_progress: "已完成 {0}/{1} 文档摘要"
+      generating_report: "综合分析生成报告..."
+      summary_failed: "生成文档摘要失败: {0}"
+      parallel_failed: "并行摘要生成失败"
+    error:
+      no_documents: "没有可分析的文档内容"
+      summary_failed: "摘要生成失败"
+      document_empty: "文档内容为空"
+  structured_compare:
+    log:
+      preparing_content: "准备文档内容..."
+      executing_comparison: "执行对比分析..."
+      extracting_results: "提取对比结果..."
+    error:
+      min_documents: "对比分析至少需要2个文档"
+  entity_relation:
+    log:
+      extracting_entities: "提取文档实体..."
+      analyzing_relations: "分析实体关联..."
+      building_graph: "构建关系图谱..."
+    error:
+      min_documents: "关联分析至少需要2个文档"
+  question_driven:
+    log:
+      retrieving_content: "检索相关内容..."
+      generating_answer: "生成回答..."
+      organizing_results: "整理结果..."
+    error:
+      no_documents: "没有可分析的文档"
+# ============================================================
+# 智能分析服务 (Smart Analysis Service)
+# ============================================================
+smart_analysis:
+  log:
+    start: "📊 开始智能分析，文档数: {0}，目标: {1}"
+    complete: "✅ 智能分析完成，成功: {0}，耗时: {1}ms"
+    failed: "❌ 智能分析失败"
+    loading_documents: "加载文档内容..."
+    document_loaded: "已加载文档: {0} ({1} 字符)"
+    document_not_found: "文档未找到: {0}"
+    document_load_failed: "加载文档失败: {0}"
+    document_truncated: "文档 {0} 内容已截断: {1} -> {2} 字符"
+    no_documents_loaded: "无法加载任何文档内容"
+  error:
+    file_not_found: "文件不存在: {0}"
+    binary_file: "二进制文件，无法解析文本内容"
+    parse_failed: "无法解析文档: {0}"
+# ============================================================
+# 文档解析服务 (Document Parser Service)
+# ============================================================
+doc_parser_service:
+  log:
+    parse_failed: "文档解析失败 {0}: {1}"
+  error:
+    file_not_found: "文件不存在: {0}"
+    binary_file: "二进制文件，无法解析文本内容"
+    parse_failed: "无法解析文档: {0}"

@@ -1298,3 +1298,84 @@ ppl_onnx:
     calc_ppl_failed: "Failed to calculate perplexity"
     chunk_failed: "Failed to chunk document"
     rerank_failed: "Failed to rerank documents"
+# ============================================================
+# Strategy Module
+# ============================================================
+strategy:
+  dispatcher:
+    log:
+      init_start: "📦 Initializing Strategy Dispatcher..."
+      strategy_registered: "  ✅ Registered strategy: {0} - {1}"
+      init_complete: "✅ Strategy Dispatcher initialized with {0} strategies"
+      no_suitable_strategy: "No suitable strategy found"
+      selected_strategies: "🎯 Selected strategies: {0}"
+      executing_single: "Executing single strategy: {0}"
+      executing_combined: "Executing combined strategies: {0}"
+      merging_results: "Merging analysis results..."
+      evaluate_failed: "Failed to evaluate strategy {0}: {1}"
+  abstract:
+    log:
+      analysis_start: "🚀 Starting analysis, strategy: {0}, documents: {1}"
+      analysis_complete: "✅ Analysis completed, strategy: {0}, time: {1}ms"
+      analysis_failed: "❌ Analysis failed, strategy: {0}"
+      llm_call_failed: "LLM call failed"
+  parallel_summary:
+    log:
+      generating_summaries: "Generating document summaries in parallel..."
+      summary_progress: "Completed {0}/{1} document summaries"
+      generating_report: "Generating comprehensive analysis report..."
+      summary_failed: "Failed to generate document summary: {0}"
+      parallel_failed: "Parallel summary generation failed"
+    error:
+      no_documents: "No document content to analyze"
+      summary_failed: "Summary generation failed"
+      document_empty: "Document content is empty"
+  structured_compare:
+    log:
+      preparing_content: "Preparing document contents..."
+      executing_comparison: "Executing comparison analysis..."
+      extracting_results: "Extracting comparison results..."
+    error:
+      min_documents: "Comparison analysis requires at least 2 documents"
+  entity_relation:
+    log:
+      extracting_entities: "Extracting document entities..."
+      analyzing_relations: "Analyzing entity relationships..."
+      building_graph: "Building relationship graph..."
+    error:
+      min_documents: "Relationship analysis requires at least 2 documents"
+  question_driven:
+    log:
+      retrieving_content: "Retrieving relevant content..."
+      generating_answer: "Generating answer..."
+      organizing_results: "Organizing results..."
+    error:
+      no_documents: "No documents to analyze"
+# ============================================================
+# Smart Analysis Service
+# ============================================================
+smart_analysis:
+  log:
+    start: "📊 Starting smart analysis, documents: {0}, goal: {1}"
+    complete: "✅ Smart analysis completed, success: {0}, time: {1}ms"
+    failed: "❌ Smart analysis failed"
+    loading_documents: "Loading document contents..."
+    document_loaded: "Loaded document: {0} ({1} characters)"
+    document_not_found: "Document not found: {0}"
+    document_load_failed: "Failed to load document: {0}"
+    document_truncated: "Document {0} content truncated: {1} -> {2} characters"
+    no_documents_loaded: "Unable to load any document content"
+  error:
+    file_not_found: "File not found: {0}"
+    binary_file: "Binary file, cannot parse text content"
+    parse_failed: "Cannot parse document: {0}"
+# ============================================================
+# Document Parser Service
+# ============================================================
+doc_parser_service:
+  log:
+    parse_failed: "Document parsing failed {0}: {1}"
+  error:
+    file_not_found: "File not found: {0}"
+    binary_file: "Binary file, cannot parse text content"
+    parse_failed: "Cannot parse document: {0}"
