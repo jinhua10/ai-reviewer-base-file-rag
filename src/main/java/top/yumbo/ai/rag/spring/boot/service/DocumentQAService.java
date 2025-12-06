@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
+import top.yumbo.ai.rag.model.Document;
+import top.yumbo.ai.rag.util.DocumentUtils;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 
@@ -17,8 +19,9 @@ import java.util.*;
 
 /**
  * 完整文档AI问答服务
+ * (Complete Document AI QA Service)
  *
- * 功能：
+ * 功能 (Features):
  * 1. 对完整文档进行AI问答
  * 2. 支持大文档分批处理
  * 3. 临时持久化每批结果
@@ -713,16 +716,56 @@ public class DocumentQAService {
     }
 
     /**
-     * 读取文档内容
+     * 读取文档内容（支持多种格式）
+     * (Read document content - supports multiple formats)
+     *
+     * 支持的格式包括 (Supported formats include):
+     * - 文本文件: .txt, .md, .json, .xml, .csv
+     * - Office 文档: .doc, .docx, .xls, .xlsx, .ppt, .pptx
+     * - PDF 文档: .pdf
+     * - 其他 Tika 支持的格式
+     *
+     * @param docFile 文档文件 (document file)
+     * @return 解析后的文本内容 (parsed text content)
+     * @throws Exception 解析异常 (parsing exception)
      */
     private String readDocumentContent(File docFile) throws Exception {
-        // 这里应该使用 TikaDocumentParser 解析文档
-        // 为简化，假设直接读取文本
-        return new String(Files.readAllBytes(docFile.toPath()));
+        String fileName = docFile.getName().toLowerCase();
+
+        // 对于纯文本文件，直接读取
+        // (For plain text files, read directly)
+        if (fileName.endsWith(".txt") || fileName.endsWith(".md") ||
+            fileName.endsWith(".json") || fileName.endsWith(".xml") ||
+            fileName.endsWith(".csv") || fileName.endsWith(".log")) {
+            log.debug("直接读取文本文件: {}", docFile.getName());
+            return new String(Files.readAllBytes(docFile.toPath()));
+        }
+
+        // 对于其他格式（Office, PDF等），使用 DocumentUtils 解析
+        // (For other formats like Office, PDF, use DocumentUtils to parse)
+        try {
+            log.debug("使用 DocumentUtils 解析文档: {}", docFile.getName());
+            Document doc = DocumentUtils.fromFile(docFile);
+            String content = doc.getContent();
+
+            if (content == null || content.trim().isEmpty()) {
+                log.warn("文档解析结果为空，尝试直接读取: {}", docFile.getName());
+                return new String(Files.readAllBytes(docFile.toPath()));
+            }
+
+            log.info("文档解析成功: {}, 内容长度: {} 字符", docFile.getName(), content.length());
+            return content;
+
+        } catch (Exception e) {
+            log.warn("DocumentUtils 解析失败，尝试直接读取: {}, 错误: {}", docFile.getName(), e.getMessage());
+            // 降级为直接读取（可能是纯文本）
+            return new String(Files.readAllBytes(docFile.toPath()));
+        }
     }
 
     /**
      * 分割内容为多个块
+     * (Split content into multiple chunks)
      */
     private List<String> splitContent(String content, int maxChunkSize) {
         List<String> chunks = new ArrayList<>();
