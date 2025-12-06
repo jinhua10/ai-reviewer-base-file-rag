@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.i18n.ApiMessageProvider;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
@@ -128,11 +128,11 @@ public class KnowledgeQAController {
 
         // 添加提示信息 / Add hint message
         if (stats.getUnindexedCount() > 0) {
-            response.setMessage(ApiMessageProvider.getMessage(
+            response.setMessage(LogMessageProvider.getMessage(
                 "knowledge_qa.api.message.needs_indexing", lang, stats.getUnindexedCount()));
             response.setNeedsIndexing(true);
         } else {
-            response.setMessage(ApiMessageProvider.getMessage(
+            response.setMessage(LogMessageProvider.getMessage(
                 "knowledge_qa.api.message.all_indexed", lang));
             response.setNeedsIndexing(false);
         }
@@ -150,8 +150,8 @@ public class KnowledgeQAController {
     @GetMapping("/health")
     public HealthResponse health(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
         HealthResponse response = new HealthResponse();
-        response.setStatus(ApiMessageProvider.getMessage("knowledge_qa.api.status.up", lang));
-        response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.system_running", lang));
+        response.setStatus(LogMessageProvider.getMessage("knowledge_qa.api.status.up", lang));
+        response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.system_running", lang));
         return response;
     }
 
@@ -168,7 +168,7 @@ public class KnowledgeQAController {
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(true);
-            response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
+            response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
             response.setProcessedFiles(result.getSuccessCount());
             response.setTotalDocuments(result.getTotalDocuments());
             response.setDurationMs(result.getBuildTimeMs());
@@ -179,8 +179,8 @@ public class KnowledgeQAController {
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
-            response.setSuggestion(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
+            response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
+            response.setSuggestion(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
@@ -202,10 +202,10 @@ public class KnowledgeQAController {
             response.setSuccess(true);
 
             if (result.getSuccessCount() > 0) {
-                response.setMessage(ApiMessageProvider.getMessage(
+                response.setMessage(LogMessageProvider.getMessage(
                     "knowledge_qa.api.message.incremental_complete", lang, result.getSuccessCount()));
             } else {
-                response.setMessage(ApiMessageProvider.getMessage(
+                response.setMessage(LogMessageProvider.getMessage(
                     "knowledge_qa.api.message.all_up_to_date", lang));
             }
 
@@ -219,8 +219,8 @@ public class KnowledgeQAController {
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage(ApiMessageProvider.getMessage("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
-            response.setSuggestion(ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
+            response.setMessage(LogMessageProvider.getMessage("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
+            response.setSuggestion(LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
@@ -346,4 +346,5 @@ public class KnowledgeQAController {
         return info;
     }
 }
+
 

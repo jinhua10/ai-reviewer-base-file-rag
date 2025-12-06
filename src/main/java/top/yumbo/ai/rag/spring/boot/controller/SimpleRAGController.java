@@ -2,7 +2,7 @@ package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.Data;
 import org.springframework.web.bind.annotation.*;
-import top.yumbo.ai.rag.i18n.ApiMessageProvider;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.spring.boot.autoconfigure.SimpleRAGService;
 
@@ -42,7 +42,7 @@ public class SimpleRAGController {
         );
         ragService.commit();
 
-        return new IndexResponse(docId, ApiMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
+        return new IndexResponse(docId, LogMessageProvider.getMessage("knowledge_qa.api.message.rebuild_complete", lang));
     }
 
     /**
@@ -99,4 +99,5 @@ public class SimpleRAGController {
         private final long indexedCount;
     }
 }
+
 

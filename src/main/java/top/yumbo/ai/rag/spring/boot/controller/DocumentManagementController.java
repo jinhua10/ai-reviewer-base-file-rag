@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import top.yumbo.ai.rag.i18n.ApiMessageProvider;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.spring.boot.service.DocumentManagementService;
 
@@ -56,14 +55,14 @@ public class DocumentManagementController {
         try {
             if (file.isEmpty()) {
                 response.setSuccess(false);
-                response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.file_empty", lang));
+                response.setMessage(LogMessageProvider.getMessage("document_management.api.error.file_empty", lang));
                 return response;
             }
 
             String result = documentService.uploadDocument(file);
 
             response.setSuccess(true);
-            response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.upload", lang));
+            response.setMessage(LogMessageProvider.getMessage("document_management.api.success.upload", lang));
             response.setFileName(file.getOriginalFilename());
             response.setFileSize(file.getSize());
             response.setDocumentId(result);
@@ -74,7 +73,7 @@ public class DocumentManagementController {
         } catch (Exception e) {
             log.error(LogMessageProvider.getMessage("document_management.log.upload_failed"), e);
             response.setSuccess(false);
-            response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.upload_failed", lang, e.getMessage()));
+            response.setMessage(LogMessageProvider.getMessage("document_management.api.error.upload_failed", lang, e.getMessage()));
             return response;
         }
     }
@@ -110,7 +109,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
+        response.setMessage(LogMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
@@ -206,7 +205,7 @@ public class DocumentManagementController {
 
             ListResponse response = new ListResponse();
             response.setSuccess(false);
-            response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.list_failed", lang, e.getMessage()));
+            response.setMessage(LogMessageProvider.getMessage("document_management.api.error.list_failed", lang, e.getMessage()));
 
             return response;
         }
@@ -361,18 +360,18 @@ public class DocumentManagementController {
 
             if (deleted) {
                 response.setSuccess(true);
-                response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.delete", lang));
+                response.setMessage(LogMessageProvider.getMessage("document_management.api.success.delete", lang));
                 response.setFileName(fileName);
             } else {
                 response.setSuccess(false);
-                response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.not_found", lang));
+                response.setMessage(LogMessageProvider.getMessage("document_management.api.error.not_found", lang));
             }
 
             return response;
         } catch (Exception e) {
             log.error(LogMessageProvider.getMessage("doc_management.log.delete_failed"), e);
             response.setSuccess(false);
-            response.setMessage(ApiMessageProvider.getMessage("document_management.api.error.delete_failed", lang, e.getMessage()));
+            response.setMessage(LogMessageProvider.getMessage("document_management.api.error.delete_failed", lang, e.getMessage()));
             return response;
         }
     }
@@ -413,7 +412,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(ApiMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
+        response.setMessage(LogMessageProvider.getMessage("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
@@ -650,4 +649,5 @@ public class DocumentManagementController {
         private int count;  // 文件类型数量
     }
 }
+
 

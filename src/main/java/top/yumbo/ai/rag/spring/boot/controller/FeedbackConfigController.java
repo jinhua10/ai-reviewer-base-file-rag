@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.config.FeedbackConfig;
 import top.yumbo.ai.rag.feedback.DocumentWeightService;
-import top.yumbo.ai.rag.i18n.ApiMessageProvider;
+import top.yumbo.ai.rag.i18n.LogMessageProvider;
 import top.yumbo.ai.rag.i18n.LogMessageProvider;
 
 import java.util.HashMap;
@@ -89,7 +89,7 @@ public class FeedbackConfigController {
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", ApiMessageProvider.getMessage("feedback_config.api.success.config_updated", lang),
+                "message", LogMessageProvider.getMessage("feedback_config.api.success.config_updated", lang),
                 "config", getConfig(lang).getBody()
             ));
 
@@ -97,7 +97,7 @@ public class FeedbackConfigController {
             log.error("Configuration update failed", e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", ApiMessageProvider.getMessage("feedback_config.api.error.update_failed", lang, e.getMessage())
+                "message", LogMessageProvider.getMessage("feedback_config.api.error.update_failed", lang, e.getMessage())
             ));
         }
     }
@@ -112,12 +112,12 @@ public class FeedbackConfigController {
         feedbackConfig.setRequireApproval(requireApproval);
 
         String modeKey = requireApproval ? "feedback_config.api.mode.require_approval" : "feedback_config.api.mode.auto_apply";
-        String mode = ApiMessageProvider.getMessage(modeKey, lang);
+        String mode = LogMessageProvider.getMessage(modeKey, lang);
         log.info(LogMessageProvider.getMessage("feedback_config.log.toggle_mode", lang, mode));
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", ApiMessageProvider.getMessage("feedback_config.api.success.mode_switched", lang, mode),
+            "message", LogMessageProvider.getMessage("feedback_config.api.success.mode_switched", lang, mode),
             "requireApproval", requireApproval
         ));
     }
@@ -152,7 +152,7 @@ public class FeedbackConfigController {
         if (documentName == null || documentName.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
-                "message", ApiMessageProvider.getMessage("feedback_config.api.error.document_name_empty", lang)
+                "message", LogMessageProvider.getMessage("feedback_config.api.error.document_name_empty", lang)
             ));
         }
 
@@ -160,7 +160,7 @@ public class FeedbackConfigController {
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", ApiMessageProvider.getMessage("feedback_config.api.success.weight_reset", lang, documentName)
+            "message", LogMessageProvider.getMessage("feedback_config.api.success.weight_reset", lang, documentName)
         ));
     }
 
@@ -175,8 +175,9 @@ public class FeedbackConfigController {
 
         return ResponseEntity.ok(Map.of(
             "success", true,
-            "message", ApiMessageProvider.getMessage("feedback_config.api.success.weights_cleared", lang)
+            "message", LogMessageProvider.getMessage("feedback_config.api.success.weights_cleared", lang)
         ));
     }
 }
+
 

@@ -157,6 +157,36 @@ public final class LogMessageProvider {
      */
     public static String getMessage(String key, Object... args) {
         Locale locale = determineStaticLocale();
+        return getMessageWithLocale(key, locale, args);
+    }
+
+    /**
+     * 根据指定语言获取消息（用于 API 响应）
+     * (Get message with specified language for API responses)
+     *
+     * @param key 消息键 / Message key
+     * @param lang 语言参数 (zh/en/null) / Language parameter (zh/en/null)
+     * @param args 格式化参数 / Format arguments
+     * @return 国际化消息 / Internationalized message
+     */
+    public static String getMessage(String key, String lang, Object... args) {
+        Locale locale;
+        if ("en".equalsIgnoreCase(lang)) {
+            locale = Locale.ENGLISH;
+        } else if ("zh".equalsIgnoreCase(lang)) {
+            locale = Locale.SIMPLIFIED_CHINESE;
+        } else {
+            // 如果lang为null或其他值，使用默认行为（自动检测）
+            locale = determineStaticLocale();
+        }
+        return getMessageWithLocale(key, locale, args);
+    }
+
+    /**
+     * 内部方法：根据 Locale 获取消息
+     * (Internal method: get message with Locale)
+     */
+    private static String getMessageWithLocale(String key, Locale locale, Object... args) {
         String pattern = null;
 
         // 根据语言环境选择消息源 (Select message source based on locale)
