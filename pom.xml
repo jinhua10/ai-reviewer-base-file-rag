@@ -565,7 +565,6 @@
                             <target>
                                 <echo message="[INFO] 删除 target/classes/simpleExcel 目录（打包时不包含）"/>
                                 <delete dir="${project.build.outputDirectory}/simpleExcel" quiet="true"/>
-                                <delete dir="${project.build.outputDirectory}/**/*.md" quiet="true"/>
                             </target>
                         </configuration>
                     </execution>
@@ -573,14 +572,23 @@
                     <!-- 步骤2: 打包后立即复制 JAR 到 release 目录 -->
                     <execution>
                         <id>copy-jar-to-release</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
                         <configuration>
                             <target>
-                                <echo message="[INFO] 📦 复制 JAR 包到 release 目录..."/>
+                                <echo message="[INFO] 📦 准备复制 JAR 包到 release 目录..."/>
                                 <mkdir dir="${project.basedir}/release"/>
+
+                                <!-- 清理旧的 JAR 包（如果存在） -->
+                                <echo message="[INFO] 🗑️  清理旧的 JAR 包..."/>
+                                <delete failonerror="false" quiet="true">
+                                    <fileset dir="${project.basedir}/release" includes="*.jar"/>
+                                </delete>
+
+                                <!-- 复制新的 JAR 包 -->
+                                <echo message="[INFO] 📦 复制新的 JAR 包..."/>
                                 <copy
                                     file="${project.build.directory}/${project.artifactId}-${project.version}-jar-with-dependencies.jar"
                                     todir="${project.basedir}/release"
