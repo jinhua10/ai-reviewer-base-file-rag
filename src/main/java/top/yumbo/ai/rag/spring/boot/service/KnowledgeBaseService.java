@@ -42,8 +42,9 @@ public class KnowledgeBaseService {
     private final FileTrackingService fileTrackingService;
     private final top.yumbo.ai.rag.image.DocumentImageExtractionService imageExtractionService;
     private final SlideContentCacheService slideContentCacheService;
-    private final DocumentPreprocessingService preprocessingService;  // 新增：文档预处理服务
-    private final top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig;  // 新增：PPL 配置
+    private final DocumentPreprocessingService preprocessingService;  // 文档预处理服务（Document preprocessing service）
+    private final top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig;  // PPL 配置（PPL configuration）
+    private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;  // Chunk 存储服务（Chunk storage service）
 
     public KnowledgeBaseService(KnowledgeQAProperties properties,
                                 DocumentProcessingOptimizer optimizer,
@@ -52,13 +53,15 @@ public class KnowledgeBaseService {
                                 top.yumbo.ai.rag.impl.parser.image.SmartImageExtractor imageExtractor,
                                 SlideContentCacheService slideContentCacheService,
                                 DocumentPreprocessingService preprocessingService,
-                                top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig) {  // 新增参数
+                                top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig,
+                                top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService) {  // 新增 ChunkStorageService 参数
         this.properties = properties;
         this.optimizer = optimizer;
         this.fileTrackingService = fileTrackingService;
         this.imageExtractionService = imageExtractionService;
         this.slideContentCacheService = slideContentCacheService;
-        this.preprocessingService = preprocessingService;  // 初始化预处理服务
+        this.preprocessingService = preprocessingService;
+        this.chunkStorageService = chunkStorageService;  // 初始化 Chunk 存储服务
         this.pplConfig = pplConfig;  // 初始化 PPL 配置
 
         // 获取批量大小配置
@@ -800,7 +803,7 @@ public class KnowledgeBaseService {
                         .filter(this::isSupportedFile)
                         .forEach(f -> {
                             files.add(f);
-                            log.debug("   - {}", f.getName());
+                            log.debug(LogMessageProvider.getMessage("log.kb.file_item", f.getName()));
                         });
                 }
                 log.info(LogMessageProvider.getMessage("log.kb.files_found", files.size()));
@@ -979,11 +982,11 @@ public class KnowledgeBaseService {
             // Extract images and convert to text using preprocessing service (integrated OCR/Vision LLM processing)
             if (preprocessingService != null) {
                 try {
-                    log.info("🔄 Starting document preprocessing (image extraction + text conversion)...");
+                    log.info(LogMessageProvider.getMessage("log.kb.preprocess_start"));
                     content = preprocessingService.preprocessDocument(file, content);
-                    log.info("✅ Document preprocessing completed, final content length: {}", content.length());
+                    log.info(LogMessageProvider.getMessage("log.kb.preprocess_complete", content.length()));
                 } catch (Exception e) {
-                    log.warn("⚠️ Document preprocessing failed: {}", e.getMessage());
+                    log.warn(LogMessageProvider.getMessage("log.kb.preprocess_failed", e.getMessage()));
                     // 不中断文档处理流程 / Do not interrupt document processing flow
                 }
             }
@@ -1007,17 +1010,18 @@ public class KnowledgeBaseService {
 
             // 5. 判断是否需要分块（Determine if chunking is needed）
             List<Document> documentsToIndex;
+            List<top.yumbo.ai.rag.chunking.DocumentChunk> chunksToSave = new ArrayList<>();
 
             if (forceChunk || autoChunk) {
                 // 尝试使用 PPL 智能切分 / Try using PPL smart chunking
                 if (preprocessingService != null && pplConfig != null &&
                     pplConfig.getChunking().isEnableCoarseChunking()) {
                     try {
-                        log.info("🧠 Using PPL-based intelligent chunking...");
+                        log.info(LogMessageProvider.getMessage("log.kb.ppl_chunking_start"));
                         documentsToIndex = preprocessingService.chunkDocumentWithPPL(document);
-                        log.info("✅ PPL chunking completed: {} chunks", documentsToIndex.size());
+                        log.info(LogMessageProvider.getMessage("log.kb.ppl_chunking_complete", documentsToIndex.size()));
                     } catch (Exception e) {
-                        log.warn("⚠️ PPL chunking failed, falling back to traditional chunking: {}", e.getMessage());
+                        log.warn(LogMessageProvider.getMessage("log.kb.ppl_chunking_failed", e.getMessage()));
                         documentsToIndex = documentChunker.chunk(document);
                         log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
                     }
@@ -1026,8 +1030,37 @@ public class KnowledgeBaseService {
                     documentsToIndex = documentChunker.chunk(document);
                     log.info(LogMessageProvider.getMessage("log.kb.chunked", documentsToIndex.size()));
                 }
+
+                // 将 Document 列表转换为 DocumentChunk 列表用于保存
+                // Convert Document list to DocumentChunk list for saving
+                for (int i = 0; i < documentsToIndex.size(); i++) {
+                    Document doc = documentsToIndex.get(i);
+                    chunksToSave.add(top.yumbo.ai.rag.chunking.DocumentChunk.builder()
+                            .index(i + 1)
+                            .title(doc.getTitle())
+                            .content(doc.getContent())
+                            .totalChunks(documentsToIndex.size())
+                            .build());
+                }
             } else {
                 documentsToIndex = List.of(document);
+                // 单文档也保存为一个 chunk
+                chunksToSave.add(top.yumbo.ai.rag.chunking.DocumentChunk.builder()
+                        .index(1)
+                        .title(document.getTitle())
+                        .content(document.getContent())
+                        .totalChunks(1)
+                        .build());
+            }
+
+            // 5.5 保存 chunks 到文件系统（Save chunks to file system）
+            if (chunkStorageService != null && !chunksToSave.isEmpty()) {
+                try {
+                    chunkStorageService.saveChunks(file.getName(), chunksToSave);
+                    log.info(LogMessageProvider.getMessage("log.kb.saved_chunks", chunksToSave.size(), file.getName()));
+                } catch (Exception e) {
+                    log.warn(LogMessageProvider.getMessage("log.kb.save_chunks_failed", file.getName(), e.getMessage()));
+                }
             }
 
             // 6. 索引文档（Index documents）
