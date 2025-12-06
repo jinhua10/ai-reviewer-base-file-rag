@@ -127,11 +127,11 @@ public class KnowledgeQAController {
 
         // 添加提示信息 / Add hint message
         if (stats.getUnindexedCount() > 0) {
-            response.setMessage(I18N.get(
+            response.setMessage(I18N.getLang(
                 "knowledge_qa.api.message.needs_indexing", lang, stats.getUnindexedCount()));
             response.setNeedsIndexing(true);
         } else {
-            response.setMessage(I18N.get(
+            response.setMessage(I18N.getLang(
                 "knowledge_qa.api.message.all_indexed", lang));
             response.setNeedsIndexing(false);
         }
@@ -149,8 +149,8 @@ public class KnowledgeQAController {
     @GetMapping("/health")
     public HealthResponse health(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
         HealthResponse response = new HealthResponse();
-        response.setStatus(I18N.get("knowledge_qa.api.status.up", lang));
-        response.setMessage(I18N.get("knowledge_qa.api.message.system_running", lang));
+        response.setStatus(I18N.getLang("knowledge_qa.api.status.up", lang));
+        response.setMessage(I18N.getLang("knowledge_qa.api.message.system_running", lang));
         return response;
     }
 
@@ -167,7 +167,7 @@ public class KnowledgeQAController {
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(true);
-            response.setMessage(I18N.get("knowledge_qa.api.message.rebuild_complete", lang));
+            response.setMessage(I18N.getLang("knowledge_qa.api.message.rebuild_complete", lang));
             response.setProcessedFiles(result.getSuccessCount());
             response.setTotalDocuments(result.getTotalDocuments());
             response.setDurationMs(result.getBuildTimeMs());
@@ -178,8 +178,8 @@ public class KnowledgeQAController {
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage(I18N.get("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
-            response.setSuggestion(I18N.get("knowledge_qa.api.message.rebuild_suggestion", lang));
+            response.setMessage(I18N.getLang("knowledge_qa.api.message.rebuild_failed", lang, e.getMessage()));
+            response.setSuggestion(I18N.getLang("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }
@@ -201,10 +201,10 @@ public class KnowledgeQAController {
             response.setSuccess(true);
 
             if (result.getSuccessCount() > 0) {
-                response.setMessage(I18N.get(
+                response.setMessage(I18N.getLang(
                     "knowledge_qa.api.message.incremental_complete", lang, result.getSuccessCount()));
             } else {
-                response.setMessage(I18N.get(
+                response.setMessage(I18N.getLang(
                     "knowledge_qa.api.message.all_up_to_date", lang));
             }
 
@@ -218,8 +218,8 @@ public class KnowledgeQAController {
 
             RebuildResponse response = new RebuildResponse();
             response.setSuccess(false);
-            response.setMessage(I18N.get("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
-            response.setSuggestion(I18N.get("knowledge_qa.api.message.rebuild_suggestion", lang));
+            response.setMessage(I18N.getLang("knowledge_qa.api.message.incremental_failed", lang, e.getMessage()));
+            response.setSuggestion(I18N.getLang("knowledge_qa.api.message.rebuild_suggestion", lang));
 
             return response;
         }

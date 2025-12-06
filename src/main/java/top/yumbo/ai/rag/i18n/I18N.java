@@ -169,7 +169,7 @@ public final class I18N {
      * @param args 格式化参数 / Format arguments
      * @return 国际化消息 / Internationalized message
      */
-    public static String get(String key, String lang, Object... args) {
+    public static String getLang(String key, String lang, Object... args) {
         Locale locale;
         if ("en".equalsIgnoreCase(lang)) {
             locale = Locale.ENGLISH;

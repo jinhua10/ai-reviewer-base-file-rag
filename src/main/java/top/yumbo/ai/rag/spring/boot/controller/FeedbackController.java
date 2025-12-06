@@ -43,14 +43,14 @@ public class FeedbackController {
             if (recordId == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, rating")
+                    "message", I18N.getLang("feedback.api.error.missing_params", lang, "recordId, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.invalid_rating", lang)
+                    "message", I18N.getLang("feedback.api.error.invalid_rating", lang)
                 ));
             }
 
@@ -60,12 +60,12 @@ public class FeedbackController {
                 log.info(I18N.get("log.feedback.overall_received", recordId, rating));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", I18N.get("feedback.api.success.feedback_received", lang)
+                    "message", I18N.getLang("feedback.api.success.feedback_received", lang)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.record_not_found", lang)
+                    "message", I18N.getLang("feedback.api.error.record_not_found", lang)
                 ));
             }
 
@@ -73,7 +73,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.overall_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -94,7 +94,7 @@ public class FeedbackController {
             if (recordId == null || documentName == null || feedbackType == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, documentName, feedbackType")
+                    "message", I18N.getLang("feedback.api.error.missing_params", lang, "recordId, documentName, feedbackType")
                 ));
             }
 
@@ -104,7 +104,7 @@ public class FeedbackController {
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.invalid_feedback_type", lang)
+                    "message", I18N.getLang("feedback.api.error.invalid_feedback_type", lang)
                 ));
             }
 
@@ -115,7 +115,7 @@ public class FeedbackController {
                 log.info(I18N.get("log.feedback.document_received", emoji, recordId, documentName));
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", I18N.get("feedback.api.success.feedback_received", lang)
+                    "message", I18N.getLang("feedback.api.success.feedback_received", lang)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -128,7 +128,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.document_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -151,7 +151,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.get_record_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -168,7 +168,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.get_recent_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -185,7 +185,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.get_pending_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -202,7 +202,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.get_statistics_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -227,14 +227,14 @@ public class FeedbackController {
             if (recordId == null || documentName == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, documentName, rating")
+                    "message", I18N.getLang("feedback.api.error.missing_params", lang, "recordId, documentName, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.invalid_rating", lang)
+                    "message", I18N.getLang("feedback.api.error.invalid_rating", lang)
                 ));
             }
 
@@ -247,14 +247,14 @@ public class FeedbackController {
 
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", I18N.get("feedback.api.message.thank_you", lang),
+                    "message", I18N.getLang("feedback.api.message.thank_you", lang),
                     "rating", rating,
-                    "impact", I18N.get("feedback.api.message.document_impact", lang, rating)
+                    "impact", I18N.getLang("feedback.api.message.document_impact", lang, rating)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.record_not_found", lang)
+                    "message", I18N.getLang("feedback.api.error.record_not_found", lang)
                 ));
             }
 
@@ -262,7 +262,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.rating_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -285,14 +285,14 @@ public class FeedbackController {
             if (recordId == null || rating == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.missing_params", lang, "recordId, rating")
+                    "message", I18N.getLang("feedback.api.error.missing_params", lang, "recordId, rating")
                 ));
             }
 
             if (rating < 1 || rating > 5) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.invalid_rating", lang)
+                    "message", I18N.getLang("feedback.api.error.invalid_rating", lang)
                 ));
             }
 
@@ -301,20 +301,20 @@ public class FeedbackController {
 
             if (success) {
                 // 记录日志 / Log the rating
-                String emojiText = I18N.get("feedback.emoji.description", lang, rating);
+                String emojiText = I18N.getLang("feedback.emoji.description", lang, rating);
                 log.info(I18N.get("log.feedback.overall_rating_submitted",
                     emojiText, recordId, rating));
 
                 return ResponseEntity.ok(Map.of(
                     "success", true,
-                    "message", I18N.get("feedback.api.message.thank_you", lang),
+                    "message", I18N.getLang("feedback.api.message.thank_you", lang),
                     "rating", rating,
-                    "impact", I18N.get("feedback.api.message.overall_impact", lang, rating)
+                    "impact", I18N.getLang("feedback.api.message.overall_impact", lang, rating)
                 ));
             } else {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
-                    "message", I18N.get("feedback.api.error.record_not_found", lang)
+                    "message", I18N.getLang("feedback.api.error.record_not_found", lang)
                 ));
             }
 
@@ -322,7 +322,7 @@ public class FeedbackController {
             log.error(I18N.get("log.feedback.rating_failed"), e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }
@@ -359,7 +359,7 @@ public class FeedbackController {
             log.error("Failed to get prompt recommendations", e);
             return ResponseEntity.internalServerError().body(Map.of(
                 "success", false,
-                "message", I18N.get("feedback.api.error.processing_failed", lang, e.getMessage())
+                "message", I18N.getLang("feedback.api.error.processing_failed", lang, e.getMessage())
             ));
         }
     }

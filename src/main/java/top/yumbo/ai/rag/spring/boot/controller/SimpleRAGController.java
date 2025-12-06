@@ -42,7 +42,7 @@ public class SimpleRAGController {
         );
         ragService.commit();
 
-        return new IndexResponse(docId, I18N.get("knowledge_qa.api.message.rebuild_complete", lang));
+        return new IndexResponse(docId, I18N.getLang("knowledge_qa.api.message.rebuild_complete", lang));
     }
 
     /**

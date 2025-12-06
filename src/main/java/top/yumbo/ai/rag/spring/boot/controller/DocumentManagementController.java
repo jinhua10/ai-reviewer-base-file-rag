@@ -55,14 +55,14 @@ public class DocumentManagementController {
         try {
             if (file.isEmpty()) {
                 response.setSuccess(false);
-                response.setMessage(I18N.get("document_management.api.error.file_empty", lang));
+                response.setMessage(I18N.getLang("document_management.api.error.file_empty", lang));
                 return response;
             }
 
             String result = documentService.uploadDocument(file);
 
             response.setSuccess(true);
-            response.setMessage(I18N.get("document_management.api.success.upload", lang));
+            response.setMessage(I18N.getLang("document_management.api.success.upload", lang));
             response.setFileName(file.getOriginalFilename());
             response.setFileSize(file.getSize());
             response.setDocumentId(result);
@@ -73,7 +73,7 @@ public class DocumentManagementController {
         } catch (Exception e) {
             log.error(I18N.get("document_management.log.upload_failed"), e);
             response.setSuccess(false);
-            response.setMessage(I18N.get("document_management.api.error.upload_failed", lang, e.getMessage()));
+            response.setMessage(I18N.getLang("document_management.api.error.upload_failed", lang, e.getMessage()));
             return response;
         }
     }
@@ -109,7 +109,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(I18N.get("document_management.api.success.batch_result", lang, successCount, failureCount));
+        response.setMessage(I18N.getLang("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
@@ -205,7 +205,7 @@ public class DocumentManagementController {
 
             ListResponse response = new ListResponse();
             response.setSuccess(false);
-            response.setMessage(I18N.get("document_management.api.error.list_failed", lang, e.getMessage()));
+            response.setMessage(I18N.getLang("document_management.api.error.list_failed", lang, e.getMessage()));
 
             return response;
         }
@@ -360,18 +360,18 @@ public class DocumentManagementController {
 
             if (deleted) {
                 response.setSuccess(true);
-                response.setMessage(I18N.get("document_management.api.success.delete", lang));
+                response.setMessage(I18N.getLang("document_management.api.success.delete", lang));
                 response.setFileName(fileName);
             } else {
                 response.setSuccess(false);
-                response.setMessage(I18N.get("document_management.api.error.not_found", lang));
+                response.setMessage(I18N.getLang("document_management.api.error.not_found", lang));
             }
 
             return response;
         } catch (Exception e) {
             log.error(I18N.get("doc_management.log.delete_failed"), e);
             response.setSuccess(false);
-            response.setMessage(I18N.get("document_management.api.error.delete_failed", lang, e.getMessage()));
+            response.setMessage(I18N.getLang("document_management.api.error.delete_failed", lang, e.getMessage()));
             return response;
         }
     }
@@ -412,7 +412,7 @@ public class DocumentManagementController {
 
         response.setSuccessCount(successCount);
         response.setFailureCount(failureCount);
-        response.setMessage(I18N.get("document_management.api.success.batch_result", lang, successCount, failureCount));
+        response.setMessage(I18N.getLang("document_management.api.success.batch_result", lang, successCount, failureCount));
 
         return response;
     }
