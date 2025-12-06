@@ -863,16 +863,30 @@ public class KnowledgeQAService {
         // 扫描文件系统获取实际文件数量
         long fileSystemDocCount = scanFileSystemDocuments();
 
+        // 获取存储引擎中的唯一文档数（不含分块）
+        long uniqueDocsCount = basicStats.getDocumentCount();
+
+        // 获取索引引擎中的总块数（含分块）
+        long totalIndexedChunks = basicStats.getIndexedDocumentCount();
+
         // 构建增强的统计信息
         EnhancedStatistics stats = new EnhancedStatistics();
-        stats.setDocumentCount(fileSystemDocCount);  // 使用文件系统的实际数量
-        stats.setIndexedDocumentCount(basicStats.getIndexedDocumentCount());
-        stats.setUnindexedCount(fileSystemDocCount - basicStats.getIndexedDocumentCount());
-        stats.setIndexProgress(fileSystemDocCount > 0 ?
-            (int) Math.round((double) basicStats.getIndexedDocumentCount() / fileSystemDocCount * 100) : 100);
+        stats.setDocumentCount(fileSystemDocCount);  // 文件系统中的原始文件数
+        stats.setUniqueDocumentsIndexed(uniqueDocsCount); // 已索引的唯一文档数（存储引擎）
+        stats.setIndexedChunksCount(totalIndexedChunks);  // 索引的总块数（索引引擎）
 
-        log.debug(LogMessageProvider.getMessage("knowledge_qa_service.debug_enhanced_stats",
-            fileSystemDocCount, basicStats.getIndexedDocumentCount(),
+        // 计算未索引的文档数：文件系统文件数 - 存储引擎中的唯一文档数
+        stats.setUnindexedCount(Math.max(0, fileSystemDocCount - uniqueDocsCount));
+
+        // 计算索引完成度：基于唯一文档数而非块数
+        stats.setIndexProgress(fileSystemDocCount > 0 ?
+            (int) Math.round((double) Math.min(uniqueDocsCount, fileSystemDocCount) / fileSystemDocCount * 100) : 100);
+
+        // 为了兼容性，设置 indexedDocumentCount 为唯一文档数
+        stats.setIndexedDocumentCount(uniqueDocsCount);
+
+        log.debug(LogMessageProvider.getMessage("knowledge_qa_service.debug_enhanced_stats_v2",
+            fileSystemDocCount, uniqueDocsCount, totalIndexedChunks,
             stats.getUnindexedCount(), stats.getIndexProgress()));
 
         return stats;
@@ -948,10 +962,12 @@ public class KnowledgeQAService {
      */
     @lombok.Data
     public static class EnhancedStatistics {
-        private long documentCount;          // 文件系统中的文档数量
-        private long indexedDocumentCount;   // 已索引的文档数量
+        private long documentCount;          // 文件系统中的文档数量（原始文件数）
+        private long indexedDocumentCount;   // 已索引的文档块数量（包含分块）
         private long unindexedCount;         // 未索引的文档数量
         private int indexProgress;           // 索引完成度百分比
+        private long indexedChunksCount;     // 索引的文档块总数（用于显示）
+        private long uniqueDocumentsIndexed; // 已索引的唯一文档数（不含分块）
     }
 
     /**
