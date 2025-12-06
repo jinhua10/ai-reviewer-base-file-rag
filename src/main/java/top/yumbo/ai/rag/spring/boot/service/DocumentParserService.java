@@ -13,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 文档解析服务（Document Parser Service）
@@ -86,6 +85,9 @@ public class DocumentParserService {
     /**
      * 合并文档片段为单个字符串（Merge document segments into a single string）
      *
+     * <p>使用 getFullContent() 获取完整内容，包括标题、文本、图片和表格信息</p>
+     * <p>Use getFullContent() to get complete content, including title, text, images and table information</p>
+     *
      * @param segments 文档片段列表（List of document segments）
      * @return 合并后的文本（Merged text）
      */
@@ -94,10 +96,42 @@ public class DocumentParserService {
             return "";
         }
 
-        return segments.stream()
-                .map(DocumentSegment::getTextContent)
-                .filter(content -> content != null && !content.trim().isEmpty())
-                .collect(Collectors.joining("\n\n"));
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < segments.size(); i++) {
+            DocumentSegment segment = segments.get(i);
+
+            // 添加分隔符（Add separator）
+            if (i > 0) {
+                result.append("\n\n---\n\n");
+            }
+
+            // 使用 getFullContent() 获取完整内容（Use getFullContent() to get complete content）
+            String fullContent = segment.getFullContent();
+            if (fullContent != null && !fullContent.trim().isEmpty()) {
+                result.append(fullContent);
+            } else {
+                // 如果 fullContent 也为空，至少显示片段信息（If fullContent is also empty, at least show segment info）
+                result.append("## ").append(segment.getBriefDescription()).append("\n");
+
+                // 检查是否有图片（Check for images）
+                if (segment.getImages() != null && !segment.getImages().isEmpty()) {
+                    result.append("\n包含 ").append(segment.getImages().size()).append(" 张图片\n");
+                    for (String img : segment.getImages()) {
+                        result.append("- ").append(img).append("\n");
+                    }
+                }
+
+                // 检查是否有表格（Check for tables）
+                if (segment.getTables() != null && !segment.getTables().isEmpty()) {
+                    result.append("\n包含 ").append(segment.getTables().size()).append(" 个表格\n");
+                    for (String table : segment.getTables()) {
+                        result.append(table).append("\n");
+                    }
+                }
+            }
+        }
+
+        return result.toString();
     }
 
     /**

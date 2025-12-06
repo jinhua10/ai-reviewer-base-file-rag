@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
 import top.yumbo.ai.rag.spring.boot.strategy.*;
 
 import java.io.IOException;
@@ -14,10 +15,13 @@ import java.nio.file.Paths;
 import java.util.*;
 
 /**
- * 智能多文档分析服务
- * (Smart Multi-Document Analysis Service)
+ * 智能多文档分析服务（Smart Multi-Document Analysis Service）
  *
- * 提供智能的多文档联合分析功能
+ * <p>提供智能的多文档联合分析功能</p>
+ * <p>Provides smart multi-document joint analysis capabilities</p>
+ *
+ * <p>优先使用索引阶段已经生成的文本化内容（chunks），避免重复解析原始文件</p>
+ * <p>Prefer using text content generated during indexing (chunks), avoid re-parsing original files</p>
  */
 @Service
 @Slf4j
@@ -26,11 +30,17 @@ public class SmartAnalysisService {
     @Autowired
     private StrategyDispatcher strategyDispatcher;
 
-    @Autowired
+    @Autowired(required = false)
     private DocumentParserService documentParserService;
+
+    @Autowired(required = false)
+    private ChunkStorageService chunkStorageService;
 
     @Value("${file.upload.path:./data/documents}")
     private String documentBasePath;
+
+    @Value("${knowledge.qa.documents-path:./data/knowledge-base}")
+    private String knowledgeBasePath;
 
     @Value("${analysis.max.content.length:100000}")
     private int maxContentLength;
@@ -95,8 +105,10 @@ public class SmartAnalysisService {
     }
 
     /**
-     * 加载文档内容
-     * (Load document contents)
+     * 加载文档内容（Load document contents）
+     *
+     * <p>优先从已索引的 chunks 中加载内容（已经过 Vision LLM 文本化处理）</p>
+     * <p>Prefer loading from indexed chunks (already processed by Vision LLM for text conversion)</p>
      */
     private List<AnalysisContext.DocumentContent> loadDocumentContents(List<String> documentPaths) {
         List<AnalysisContext.DocumentContent> contents = new ArrayList<>();
@@ -104,14 +116,22 @@ public class SmartAnalysisService {
         for (String docPath : documentPaths) {
             try {
                 Path fullPath = resolveDocumentPath(docPath);
+                String fileName = fullPath.getFileName().toString();
 
                 if (!Files.exists(fullPath)) {
                     log.warn("Document not found: {}", fullPath);
                     continue;
                 }
 
-                String content = parseDocument(fullPath);
-                String fileName = fullPath.getFileName().toString();
+                // 1. 优先尝试从 chunks 加载已文本化的内容
+                String content = loadFromChunks(fileName);
+
+                // 2. 如果没有 chunks，尝试使用文档解析服务
+                if (content == null || content.trim().isEmpty()) {
+                    log.debug("No chunks found for {}, trying document parser", fileName);
+                    content = parseDocument(fullPath);
+                }
+
                 String fileType = getFileType(fileName);
 
                 // 限制内容长度
@@ -127,7 +147,7 @@ public class SmartAnalysisService {
                         .content(content)
                         .type(fileType)
                         .size(Files.size(fullPath))
-                        .metadata(Map.of("originalPath", docPath))
+                        .metadata(Map.of("originalPath", docPath, "fromChunks", content != null && content.contains("文档块")))
                         .build());
 
                 log.debug("Loaded document: {} ({} chars)", fileName,
@@ -139,6 +159,57 @@ public class SmartAnalysisService {
         }
 
         return contents;
+    }
+
+    /**
+     * 从已索引的 chunks 加载文档内容（Load document content from indexed chunks）
+     *
+     * <p>chunks 已经过 Vision LLM 处理，包含图片的文本化内容</p>
+     * <p>Chunks have been processed by Vision LLM, containing text conversion of images</p>
+     *
+     * @param fileName 文件名（File name）
+     * @return 合并后的 chunks 内容，如果没有 chunks 则返回 null
+     */
+    private String loadFromChunks(String fileName) {
+        try {
+            // 构建 chunks 目录路径
+            Path chunksDir = Paths.get(knowledgeBasePath, "chunks", fileName);
+
+            if (!Files.exists(chunksDir) || !Files.isDirectory(chunksDir)) {
+                log.debug("Chunks directory not found: {}", chunksDir);
+                return null;
+            }
+
+            // 读取所有 .md 文件并按文件名排序
+            List<Path> chunkFiles = Files.list(chunksDir)
+                    .filter(p -> p.toString().endsWith(".md"))
+                    .sorted(Comparator.comparing(Path::getFileName))
+                    .toList();
+
+            if (chunkFiles.isEmpty()) {
+                log.debug("No chunk files found in: {}", chunksDir);
+                return null;
+            }
+
+            // 合并所有 chunks 内容
+            StringBuilder content = new StringBuilder();
+            for (Path chunkFile : chunkFiles) {
+                String chunkContent = Files.readString(chunkFile, StandardCharsets.UTF_8);
+                if (content.length() > 0) {
+                    content.append("\n\n---\n\n");
+                }
+                content.append(chunkContent);
+            }
+
+            log.info("📦 Loaded {} chunks for document: {} ({} chars)",
+                    chunkFiles.size(), fileName, content.length());
+
+            return content.toString();
+
+        } catch (Exception e) {
+            log.warn("Failed to load chunks for {}: {}", fileName, e.getMessage());
+            return null;
+        }
     }
 
     /**

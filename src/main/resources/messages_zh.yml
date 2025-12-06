@@ -232,6 +232,37 @@ vision_llm:
     processing_failed: "[图片: {0} - Vision LLM处理失败: {1}]"
     unsupported_format: "[图片: {0} - 不支持的格式 .{1}，Vision API 仅支持 jpg/png/gif/webp/bmp]"
   prompt:
+    # 精简版提示词：提取关键信息，避免冗余（Concise prompt: extract key information, avoid redundancy）
+    extract_text_concise: |
+      请分析这张图片，提取**关键信息**，要求精简但不遗漏重要内容：
+
+      1. **图片主题**：一句话概括图片的核心内容和用途
+
+      2. **核心文字**：提取所有重要的文字内容
+         - 标题、主要标签、关键注释
+         - 重要数据/数值/参数
+         - 核心结论或要点
+
+      3. **关键结构信息**（根据图片类型，只保留核心内容）：
+         【架构图/系统图】：
+         - 所有组件/模块名称
+         - 组件间的连接关系和数据流向
+         - 技术栈、协议（如有）
+
+         【流程图】：关键步骤和分支逻辑
+
+         【图表/统计图】：核心数据点、趋势结论
+
+         【表格】：表头和关键数据
+
+         【其他】：主要内容要素
+
+      **输出要求**：
+      - 精简扼要，不添加冗余描述和主观评价
+      - 但必须保留所有关键信息，不遗漏重要内容
+      - 对于架构图等复杂图片，完整保留组件和关系信息
+
+    # 详细版提示词：完整分析（Detailed prompt: full analysis）
     extract_text: |
       请全面分析这张图片，按以下结构输出：
       
@@ -497,6 +528,7 @@ log:
     add_vision: "   添加 Vision LLM 策略："
     add_llm_vision: "✅ 添加 LLM Vision 策略（复用主 LLM 客户端）"
     init: "🖼️  正在初始化图片处理功能..."
+    extraction_mode: "📸 图片提取模式：{0}"
     language: "      - 识别语言：{0}"
     llm_vision_client_type: "   - 客户端类型：{0}"
     llm_vision_model: "   - 模型：{0}"

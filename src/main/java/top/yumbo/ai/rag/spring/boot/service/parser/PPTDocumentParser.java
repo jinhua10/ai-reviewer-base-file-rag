@@ -73,7 +73,11 @@ public class PPTDocumentParser implements DocumentParser {
                 DocumentSegment segment = parseSlide(slide, slideNumber, source);
                 segments.add(segment);
 
-                log.debug(LogMessageProvider.getMessage("ppt_parser.log.parse_slide", slideNumber, segment.getTitle()));
+                // 记录每张幻灯片的内容情况（Log content info for each slide）
+                int textLen = segment.getTextContent() != null ? segment.getTextContent().length() : 0;
+                int imgCount = segment.getImages() != null ? segment.getImages().size() : 0;
+                log.debug(LogMessageProvider.getMessage("ppt_parser.log.parse_slide", slideNumber, segment.getTitle())
+                        + " (文本: " + textLen + " 字符, 图片: " + imgCount + " 张)");
             }
 
         } catch (Exception e) {

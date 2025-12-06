@@ -339,27 +339,35 @@ public class KnowledgeQAProperties {
     }
 
     /**
-     * 图片处理配置
+     * 图片处理配置（Image processing configuration）
      */
     @Data
     public static class ImageProcessingConfig {
         /**
          * 图片处理策略: placeholder, ocr, vision-llm, hybrid
+         * (Image processing strategy)
          */
         private String strategy = "placeholder";
 
         /**
-         * 是否启用 OCR
+         * 图片文本提取模式（Image text extraction mode）
+         * - concise: 精简模式，提取关键信息，避免冗余但不遗漏重要内容
+         * - detailed: 详细模式，完整分析图片内容（包含结构化描述）
+         */
+        private String extractionMode = "concise";
+
+        /**
+         * 是否启用 OCR (Whether to enable OCR)
          */
         private boolean enableOcr = false;
 
         /**
-         * OCR 配置
+         * OCR 配置 (OCR configuration)
          */
         private OcrConfig ocr = new OcrConfig();
 
         /**
-         * Vision LLM 配置
+         * Vision LLM 配置 (Vision LLM configuration)
          */
         private VisionLlmConfig visionLlm = new VisionLlmConfig();
     }

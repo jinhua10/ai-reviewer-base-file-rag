@@ -232,6 +232,37 @@ vision_llm:
     processing_failed: "[Image: {0} - Vision LLM processing failed: {1}]"
     unsupported_format: "[Image: {0} - Unsupported format .{1}, Vision API only supports jpg/png/gif/webp/bmp]"
   prompt:
+    # Concise prompt: extract key information, avoid redundancy
+    extract_text_concise: |
+      Please analyze this image and extract **key information**. Be concise but don't miss important content:
+
+      1. **Image Theme**: One sentence summarizing core content and purpose
+
+      2. **Core Text**: Extract all important text content
+         - Titles, main labels, key annotations
+         - Important data/numbers/parameters
+         - Core conclusions or key points
+
+      3. **Key Structural Information** (based on image type, keep only essential content):
+         【Architecture/System Diagrams】:
+         - All component/module names
+         - Connections between components and data flow
+         - Tech stack, protocols (if any)
+
+         【Flowcharts】: Key steps and branch logic
+
+         【Charts/Graphs】: Core data points, trend conclusions
+
+         【Tables】: Headers and key data
+
+         【Others】: Main content elements
+
+      **Output Requirements**:
+      - Be concise, avoid redundant descriptions and subjective comments
+      - But must retain all key information, don't miss important content
+      - For complex diagrams like architecture, preserve complete component and relationship information
+
+    # Detailed prompt: full analysis
     extract_text: |
       Please comprehensively analyze this image and provide output in the following structure:
       
@@ -497,6 +528,7 @@ log:
     add_vision: "   Adding Vision LLM strategy:"
     add_llm_vision: "✅ Adding LLM Vision strategy (reusing main LLM client)"
     init: "🖼️  Initializing image processing functionality..."
+    extraction_mode: "📸 Image extraction mode: {0}"
     language: "      - Recognition language: {0}"
     llm_vision_client_type: "   - Client type: {0}"
     llm_vision_model: "   - Model: {0}"

@@ -73,6 +73,73 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     /**
+     * 图片文本提取模式（Image text extraction mode）
+     */
+    public enum ExtractionMode {
+        /** 精简模式：只提取关键信息，节省 token（Concise mode: key info only, save tokens） */
+        CONCISE("concise"),
+        /** 详细模式：完整分析图片内容（Detailed mode: full analysis） */
+        DETAILED("detailed");
+
+        private final String value;
+
+        ExtractionMode(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public static ExtractionMode fromString(String value) {
+            if (value == null) return CONCISE;
+            for (ExtractionMode mode : values()) {
+                if (mode.value.equalsIgnoreCase(value)) {
+                    return mode;
+                }
+            }
+            return CONCISE;
+        }
+    }
+
+    // 当前提取模式（默认精简）
+    private static ExtractionMode currentExtractionMode = ExtractionMode.CONCISE;
+
+    /**
+     * 设置全局提取模式（Set global extraction mode）
+     */
+    public static void setExtractionMode(ExtractionMode mode) {
+        currentExtractionMode = mode != null ? mode : ExtractionMode.CONCISE;
+        log.info(LogMessageProvider.getMessage("log.imageproc.extraction_mode", currentExtractionMode.value));
+    }
+
+    /**
+     * 设置全局提取模式（从字符串）（Set global extraction mode from string）
+     */
+    public static void setExtractionMode(String mode) {
+        setExtractionMode(ExtractionMode.fromString(mode));
+    }
+
+    /**
+     * 获取当前使用的提示词（Get current prompt based on extraction mode）
+     */
+    private String getExtractionPrompt() {
+        String promptKey = currentExtractionMode == ExtractionMode.CONCISE
+                ? "vision_llm.prompt.extract_text_concise"
+                : "vision_llm.prompt.extract_text";
+
+        String prompt = LogMessageProvider.getMessage(promptKey);
+
+        // 如果精简版提示词不存在，回退到详细版（Fallback to detailed if concise not found）
+        if ((prompt == null || prompt.isEmpty() || prompt.equals(promptKey))
+                && currentExtractionMode == ExtractionMode.CONCISE) {
+            prompt = LogMessageProvider.getMessage("vision_llm.prompt.extract_text");
+        }
+
+        return prompt;
+    }
+
+    /**
      * API 格式枚举（API Format Enum）
      */
     private enum ApiFormat {
@@ -561,11 +628,12 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         // 构建 content 数组（包含文本和图片）
         ArrayNode content = message.putArray("content");
 
-        // 添加文本提示
+        // 添加文本提示（使用配置的提取模式）
         ObjectNode textContent = content.addObject();
         textContent.put("type", "text");
-        textContent.put("text", LogMessageProvider.getMessage("vision_llm.prompt.extract_text"));
-        log.debug("Prompt Text: {}", LogMessageProvider.getMessage("vision_llm.prompt.extract_text"));
+        String prompt = getExtractionPrompt();
+        textContent.put("text", prompt);
+        log.debug("Prompt Text (mode={}): {}", currentExtractionMode.getValue(), prompt.substring(0, Math.min(100, prompt.length())));
 
         // 添加图片
         ObjectNode imageContent = content.addObject();
@@ -605,7 +673,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             "4. 如果图片之间有关联，请在分析时说明它们的关系\n\n" +
             "%s",
             base64Images.size(),
-            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+            getExtractionPrompt()
         );
         textContent.put("text", batchPrompt);
 
@@ -636,7 +704,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("model", model);
 
-        String promptText = LogMessageProvider.getMessage("vision_llm.prompt.extract_text");
+        String promptText = getExtractionPrompt();
 
         // 检查端点类型，使用不同的请求格式
         if (apiEndpoint.contains("/api/chat")) {
@@ -681,7 +749,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             "4. 如果图片之间有关联，请在分析时说明它们的关系\n\n" +
             "%s",
             base64Images.size(),
-            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+            getExtractionPrompt()
         );
 
         // 检查端点类型，使用不同的请求格式
@@ -756,7 +824,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             "%s",
             base64Images.size(),
             positionDescription,
-            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+            getExtractionPrompt()
         );
         textContent.put("text", enhancedPrompt);
 
@@ -797,7 +865,7 @@ public class VisionLLMStrategy implements ImageContentExtractorStrategy {
             "%s",
             base64Images.size(),
             positionDescription,
-            LogMessageProvider.getMessage("vision_llm.prompt.extract_text")
+            getExtractionPrompt()
         );
 
         if (apiEndpoint.contains("/api/chat")) {

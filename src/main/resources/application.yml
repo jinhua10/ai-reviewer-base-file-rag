@@ -749,6 +749,11 @@ knowledge:
       #   - 主 LLM 不支持图片（deepseek-chat）→ 使用 vision-llm
       strategy: vision-llm
 
+      # 图片文本化提取模式（Image text extraction mode）
+      #   - concise: 精简模式，提取关键信息，避免冗余但不遗漏重要内容（节省 token）
+      #   - detailed: 详细模式，完整分析图片内容（推荐用于需要详细描述的场景）
+      extraction-mode: concise
+
       # 是否启用 OCR
       # 设置为 true 启用 OCR 图片文字识别功能
       # 需要安装 Tesseract OCR 软件

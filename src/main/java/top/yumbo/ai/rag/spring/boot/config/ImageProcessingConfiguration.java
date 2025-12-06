@@ -43,6 +43,13 @@ public class ImageProcessingConfiguration {
 
         log.info(LogMessageProvider.getMessage("log.imageproc.strategy", strategy));
 
+        // 设置图片提取模式（Set image extraction mode）
+        String extractionMode = config.getExtractionMode();
+        if (extractionMode != null && !extractionMode.isEmpty()) {
+            VisionLLMStrategy.setExtractionMode(extractionMode);
+            log.info(LogMessageProvider.getMessage("log.imageproc.extraction_mode", extractionMode));
+        }
+
         SmartImageExtractor extractor = new SmartImageExtractor();
 
         // 根据配置添加策略
