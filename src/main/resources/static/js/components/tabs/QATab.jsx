@@ -35,6 +35,9 @@ function QATab() {
     const [showHierarchicalFeedback, setShowHierarchicalFeedback] = useState(false);
     const [selectedDocForFeedback, setSelectedDocForFeedback] = useState(null);
     const [retrievedDocs, setRetrievedDocs] = useState([]); // 用于主动学习推荐
+    
+    // 追踪已添加到AI分析的文档，用于更新按钮状态
+    const [addedDocsVersion, setAddedDocsVersion] = useState(0);
 
     // ============================================================================
     // 副作用 / Effects
@@ -476,7 +479,7 @@ function QATab() {
 
         toast.style.cssText = `
             position: fixed;
-            top: 20px;
+            top: 70px;
             right: 20px;
             padding: 12px 20px;
             background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
@@ -769,6 +772,7 @@ function QATab() {
                                                     <span className="qa-source-name">{source}</span>
                                                     <div style={{ display: 'flex', gap: '8px' }}>
                                                         <button
+                                                            key={`add-btn-${source}-${addedDocsVersion}`}
                                                             className="qa-chunk-add-btn"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
@@ -785,6 +789,7 @@ function QATab() {
                                                                         const removed = window.removeDocumentsFromAIAnalysis(doc);
                                                                         if (removed > 0) {
                                                                             showToast(`✖️ ${t('documentRemoved') || '已移除'}`, 'info');
+                                                                            setAddedDocsVersion(v => v + 1);
                                                                         }
                                                                     }
                                                                 } else {
@@ -793,6 +798,7 @@ function QATab() {
                                                                         const added = window.addDocumentsToAIAnalysis(doc);
                                                                         if (added > 0) {
                                                                             showToast(`✅ ${t('documentAdded')}`, 'success');
+                                                                            setAddedDocsVersion(v => v + 1);
                                                                         }
                                                                     }
                                                                 }
@@ -934,6 +940,7 @@ function QATab() {
                                                         </div>
                                                     </button>
                                                     <button
+                                                        key={`add-btn-chunk-${chunk.chunkId}-${addedDocsVersion}`}
                                                         className="qa-chunk-add-btn"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -951,6 +958,7 @@ function QATab() {
                                                                     const removed = window.removeDocumentsFromAIAnalysis(doc);
                                                                     if (removed > 0) {
                                                                         showToast(`✖️ ${t('documentRemoved') || '已移除'}`, 'info');
+                                                                        setAddedDocsVersion(v => v + 1);
                                                                     }
                                                                 }
                                                             } else {
@@ -959,6 +967,7 @@ function QATab() {
                                                                     const added = window.addDocumentsToAIAnalysis(doc);
                                                                     if (added > 0) {
                                                                         showToast(`✅ ${t('documentAdded')}`, 'success');
+                                                                        setAddedDocsVersion(v => v + 1);
                                                                     }
                                                                 }
                                                             }
