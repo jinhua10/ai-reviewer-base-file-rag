@@ -1,6 +1,7 @@
 /**
  * 高赞提示词推荐浮动面板
  * 当用户选择策略时，在右侧显示该策略下的高评分历史提示词
+ * JSX 版本 - 使用 Babel 转译
  */
 (function() {
     'use strict';
@@ -13,7 +14,7 @@
         onSelectPrompt,
         onClose
     }) {
-        const { t } = window.LanguageModule.useTranslation();
+        const { t, language } = window.LanguageModule.useTranslation();
 
         const [prompts, setPrompts] = useState([]);
         const [loading, setLoading] = useState(false);
@@ -35,11 +36,11 @@
                 if (response.success) {
                     setPrompts(response.prompts || []);
                 } else {
-                    setError('加载失败');
+                    setError(t('loadFailed') || '加载失败');
                 }
             } catch (err) {
                 console.error('Failed to load prompt recommendations:', err);
-                setError('加载失败: ' + err.message);
+                setError((t('loadFailed') || '加载失败') + ': ' + err.message);
             } finally {
                 setLoading(false);
             }
@@ -55,104 +56,146 @@
             return '⭐'.repeat(rating);
         };
 
-        const getStrategyColor = (strategy) => {
-            const colors = {
-                '快速总结': '#42A5F5',
-                '深度分析': '#FF9800',
-                '对比分析': '#66BB6A',
-                '信息提取': '#AB47BC',
-                '精确查找': '#26C6DA',
-                '通用': '#78909C'
+        // 策略标识符映射（统一处理中英文）
+        const normalizeStrategy = (strategy) => {
+            const strategyNormalizeMap = {
+                '快速总结': 'quickSummary',
+                'Quick Summary': 'quickSummary',
+                '深度分析': 'deepAnalysis',
+                'Deep Analysis': 'deepAnalysis',
+                '对比分析': 'compareAnalysis',
+                'Comparison': 'compareAnalysis',
+                '信息提取': 'infoExtraction',
+                'Info Extraction': 'infoExtraction',
+                '精确查找': 'preciseSearch',
+                'Precise Search': 'preciseSearch',
+                '通用': 'general',
+                'General': 'general',
+                'all': 'all'
             };
-            return colors[strategy] || '#78909C';
+            return strategyNormalizeMap[strategy] || strategy;
+        };
+
+        const getStrategyColor = (strategy) => {
+            const normalized = normalizeStrategy(strategy);
+            const colors = {
+                'quickSummary': '#42A5F5',
+                'deepAnalysis': '#FF9800',
+                'compareAnalysis': '#66BB6A',
+                'infoExtraction': '#AB47BC',
+                'preciseSearch': '#26C6DA',
+                'general': '#78909C'
+            };
+            return colors[normalized] || '#78909C';
+        };
+
+        const getStrategyDisplayName = (strategy) => {
+            const normalized = normalizeStrategy(strategy);
+            
+            if (normalized === 'all') {
+                return t('allStrategies') || '全部策略';
+            }
+            
+            const strategyKeyMap = {
+                'quickSummary': 'quickSummaryStrategy',
+                'deepAnalysis': 'deepAnalysisStrategy',
+                'compareAnalysis': 'compareAnalysisStrategy',
+                'infoExtraction': 'infoExtractionStrategy',
+                'preciseSearch': 'preciseSearchStrategy',
+                'general': 'generalStrategy'
+            };
+            
+            const translationKey = strategyKeyMap[normalized];
+            return translationKey ? (t(translationKey) || strategy) : strategy;
         };
 
         if (!visible) return null;
 
-        return React.createElement('div', {
-            style: styles.overlay,
-            onClick: onClose
-        },
-            React.createElement('div', {
-                style: styles.panel,
-                onClick: (e) => e.stopPropagation()
-            },
-                // 标题栏
-                React.createElement('div', { style: styles.header },
-                    React.createElement('h3', { style: styles.title },
-                        '💡 ' + (t('promptRecommendations') || '高赞提示词推荐')
-                    ),
-                    React.createElement('button', {
-                        style: styles.closeButton,
-                        onClick: onClose
-                    }, '✕')
-                ),
+        return (
+            <div style={styles.overlay} onClick={onClose}>
+                <div style={styles.panel} onClick={(e) => e.stopPropagation()}>
+                    {/* 标题栏 */}
+                    <div style={styles.header}>
+                        <h3 style={styles.title}>
+                            {t('promptRecommendationsTitle') || '💡 高赞提示词推荐'}
+                        </h3>
+                        <button style={styles.closeButton} onClick={onClose}>
+                            ✕
+                        </button>
+                    </div>
 
-                // 策略标签
-                React.createElement('div', { style: styles.strategyTag },
-                    React.createElement('span', {
-                        style: {
+                    {/* 策略标签 */}
+                    <div style={styles.strategyTag}>
+                        <span style={{
                             ...styles.strategyBadge,
                             backgroundColor: getStrategyColor(strategy)
-                        }
-                    }, strategy === 'all' ? '全部策略' : strategy)
-                ),
+                        }}>
+                            {getStrategyDisplayName(strategy)}
+                        </span>
+                    </div>
 
-                // 内容区域
-                React.createElement('div', { style: styles.content },
-                    loading && React.createElement('div', { style: styles.loading },
-                        React.createElement('div', { style: styles.spinner }),
-                        React.createElement('p', null, '加载中...')
-                    ),
+                    {/* 内容区域 */}
+                    <div style={styles.content}>
+                        {loading && (
+                            <div style={styles.loading}>
+                                <div style={styles.spinner} />
+                                <p>{t('loading') || '加载中...'}</p>
+                            </div>
+                        )}
 
-                    error && React.createElement('div', { style: styles.error },
-                        '❌ ' + error
-                    ),
+                        {error && (
+                            <div style={styles.error}>
+                                ❌ {error}
+                            </div>
+                        )}
 
-                    !loading && !error && prompts.length === 0 && 
-                        React.createElement('div', { style: styles.empty },
-                            React.createElement('div', { style: styles.emptyIcon }, '📝'),
-                            React.createElement('p', null, '暂无高赞提示词'),
-                            React.createElement('p', { style: styles.emptyHint }, 
-                                '使用AI分析后，给予高评分的提示词会出现在这里'
-                            )
-                        ),
+                        {!loading && !error && prompts.length === 0 && (
+                            <div style={styles.empty}>
+                                <div style={styles.emptyIcon}>📝</div>
+                                <p>{t('noPrompts') || '暂无高赞提示词'}</p>
+                                <p style={styles.emptyHint}>
+                                    {t('noPromptsHint') || '使用AI分析后，给予高评分的提示词会出现在这里'}
+                                </p>
+                            </div>
+                        )}
 
-                    !loading && !error && prompts.length > 0 &&
-                        React.createElement('div', { style: styles.promptList },
-                            prompts.map((prompt, index) =>
-                                React.createElement('div', {
-                                    key: index,
-                                    style: styles.promptItem,
-                                    onClick: () => handleSelectPrompt(prompt)
-                                },
-                                    React.createElement('div', { style: styles.promptHeader },
-                                        React.createElement('span', { 
-                                            style: styles.rating 
-                                        }, getRatingStars(prompt.rating)),
-                                        React.createElement('span', {
-                                            style: {
+                        {!loading && !error && prompts.length > 0 && (
+                            <div style={styles.promptList}>
+                                {prompts.map((prompt, index) => (
+                                    <div
+                                        key={index}
+                                        style={styles.promptItem}
+                                        onClick={() => handleSelectPrompt(prompt)}
+                                    >
+                                        <div style={styles.promptHeader}>
+                                            <span style={styles.rating}>
+                                                {getRatingStars(prompt.rating)}
+                                            </span>
+                                            <span style={{
                                                 ...styles.strategyLabel,
                                                 color: getStrategyColor(prompt.strategy)
-                                            }
-                                        }, prompt.strategy)
-                                    ),
-                                    React.createElement('div', { style: styles.promptText },
-                                        prompt.prompt
-                                    ),
-                                    React.createElement('div', { style: styles.promptFooter },
-                                        React.createElement('span', { style: styles.usageCount },
-                                            '🔥 使用 ' + prompt.usageCount + ' 次'
-                                        ),
-                                        React.createElement('span', { style: styles.clickHint },
-                                            '点击使用 →'
-                                        )
-                                    )
-                                )
-                            )
-                        )
-                )
-            )
+                                            }}>
+                                                {getStrategyDisplayName(prompt.strategy)}
+                                            </span>
+                                        </div>
+                                        <div style={styles.promptText}>
+                                            {prompt.prompt}
+                                        </div>
+                                        <div style={styles.promptFooter}>
+                                            <span style={styles.usageCount}>
+                                                🔥 {(t('usageTimes') || '使用 {0} 次').replace('{0}', prompt.usageCount)}
+                                            </span>
+                                            <span style={styles.clickHint}>
+                                                {t('clickToUse') || '点击使用 →'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         );
     };
 
@@ -345,5 +388,5 @@
     `;
     document.head.appendChild(styleSheet);
 
-    console.log('✅ PromptRecommendationPanel component loaded');
+    console.log('✅ PromptRecommendationPanel component loaded (JSX)');
 })();

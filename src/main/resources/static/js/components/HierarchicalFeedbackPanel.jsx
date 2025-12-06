@@ -1,5 +1,6 @@
 /**
  * 分层反馈组件 / Hierarchical Feedback Component
+ * JSX 版本 - 使用 Babel 转译
  * 支持文档级、段落级、句子级反馈
  * (Supports document-level, paragraph-level, and sentence-level feedback)
  *
@@ -791,6 +792,11 @@
             borderRadius: '3px',
             color: '#fff',
             fontSize: '11px'
+        },
+        loadingText: {
+            textAlign: 'center',
+            color: '#666',
+            padding: '20px'
         }
     };
 
@@ -799,4 +805,3 @@
 
     console.log('✅ HierarchicalFeedbackPanel loaded');
 })();
-

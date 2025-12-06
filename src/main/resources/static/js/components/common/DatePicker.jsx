@@ -1,6 +1,7 @@
 /**
  * 日期选择器组件 - 全新版本
  * DatePicker Component - Redesigned
+ * JSX 版本 - 使用 Babel 转译
  *
  * 特性 Features:
  * - 现代化UI设计 Modern UI Design
@@ -223,10 +224,10 @@ function DatePicker({ value, onChange, placeholder, language = 'zh' }) {
         // 空白单元格
         for (let i = 0; i < firstDay; i++) {
             days.push(
-                React.createElement('div', {
-                    key: `empty-${i}`,
-                    className: 'date-picker-day empty'
-                })
+                <div
+                    key={`empty-${i}`}
+                    className="date-picker-day empty"
+                />
             );
         }
 
@@ -243,11 +244,13 @@ function DatePicker({ value, onChange, placeholder, language = 'zh' }) {
             }
 
             days.push(
-                React.createElement('div', {
-                    key: `day-${day}`,
-                    className: classes.join(' '),
-                    onClick: () => selectDate(viewYear, viewMonth, day)
-                }, day)
+                <div
+                    key={`day-${day}`}
+                    className={classes.join(' ')}
+                    onClick={() => selectDate(viewYear, viewMonth, day)}
+                >
+                    {day}
+                </div>
             );
         }
 
@@ -258,79 +261,83 @@ function DatePicker({ value, onChange, placeholder, language = 'zh' }) {
     // 主渲染 Main Render
     // ============================================================================
 
-    return React.createElement('div', {
-        className: 'date-picker-wrapper',
-        ref: wrapperRef
-    },
-        // 输入框
-        React.createElement('input', {
-            type: 'text',
-            className: `date-picker-input ${isOpen ? 'active' : ''}`,
-            placeholder: placeholder || t.placeholder,
-            value: displayDate(value),
-            readOnly: true,
-            onClick: toggleCalendar
-        }),
+    return (
+        <div
+            className="date-picker-wrapper"
+            ref={wrapperRef}
+        >
+            {/* 输入框 */}
+            <input
+                type="text"
+                className={`date-picker-input ${isOpen ? 'active' : ''}`}
+                placeholder={placeholder || t.placeholder}
+                value={displayDate(value)}
+                readOnly
+                onClick={toggleCalendar}
+            />
 
-        // 日历图标
-        React.createElement('span', {
-            className: 'date-picker-icon'
-        }, '📅'),
+            {/* 日历图标 */}
+            <span className="date-picker-icon">📅</span>
 
-        // 日历弹窗
-        isOpen && React.createElement('div', {
-            className: 'date-picker-popup'
-        },
-            // 头部
-            React.createElement('div', {
-                className: 'date-picker-header'
-            },
-                React.createElement('div', {
-                    className: 'date-picker-nav'
-                },
-                    React.createElement('button', {
-                        className: 'date-picker-nav-btn',
-                        onClick: prevMonth
-                    }, '‹'),
-                    React.createElement('button', {
-                        className: 'date-picker-nav-btn',
-                        onClick: nextMonth
-                    }, '›')
-                ),
-                React.createElement('div', {
-                    className: 'date-picker-current'
-                }, `${t.months[viewMonth]} ${viewYear}`)
-            ),
+            {/* 日历弹窗 */}
+            {isOpen && (
+                <div className="date-picker-popup">
+                    {/* 头部 */}
+                    <div className="date-picker-header">
+                        <div className="date-picker-nav">
+                            <button
+                                className="date-picker-nav-btn"
+                                onClick={prevMonth}
+                            >
+                                ‹
+                            </button>
+                            <button
+                                className="date-picker-nav-btn"
+                                onClick={nextMonth}
+                            >
+                                ›
+                            </button>
+                        </div>
+                        <div className="date-picker-current">
+                            {t.months[viewMonth]} {viewYear}
+                        </div>
+                    </div>
 
-            // 星期标题
-            React.createElement('div', {
-                className: 'date-picker-weekdays'
-            }, ...t.weekdays.map((day, idx) =>
-                React.createElement('div', {
-                    key: `weekday-${idx}`,
-                    className: 'date-picker-weekday'
-                }, day)
-            )),
+                    {/* 星期标题 */}
+                    <div className="date-picker-weekdays">
+                        {t.weekdays.map((day, idx) =>
+                            <div
+                                key={`weekday-${idx}`}
+                                className="date-picker-weekday"
+                            >
+                                {day}
+                            </div>
+                        )}
+                    </div>
 
-            // 日期网格
-            React.createElement('div', {
-                className: 'date-picker-days'
-            }, ...renderCalendar()),
+                    {/* 日期网格 */}
+                    <div className="date-picker-days">
+                        {renderCalendar()}
+                    </div>
 
-            // 底部操作栏
-            React.createElement('div', {
-                className: 'date-picker-footer'
-            },
-                React.createElement('button', {
-                    className: 'date-picker-today-btn',
-                    onClick: selectToday
-                }, t.today),
-                React.createElement('button', {
-                    className: 'date-picker-clear-btn',
-                    onClick: clearDate
-                }, t.clear)
-            )
-        )
+                    {/* 底部操作栏 */}
+                    <div className="date-picker-footer">
+                        <button
+                            className="date-picker-today-btn"
+                            onClick={selectToday}
+                        >
+                            {t.today}
+                        </button>
+                        <button
+                            className="date-picker-clear-btn"
+                            onClick={clearDate}
+                        >
+                            {t.clear}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -345,4 +352,3 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof window !== 'undefined') {
     window.DatePicker = DatePicker;
 }
-

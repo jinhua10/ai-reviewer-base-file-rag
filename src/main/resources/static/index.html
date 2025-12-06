@@ -55,13 +55,13 @@
 
     <!-- 4. 公共组件 -->
     <script src="js/components/common/LanguageContext.js"></script>
-    <script src="js/components/common/DatePicker.js"></script>
-    <script src="js/components/PromptRecommendationPanel.js"></script>
-    <script src="js/components/EmbeddedAIAnalysisPanel.js"></script>
+    <script type="text/babel" src="js/components/common/DatePicker.jsx"></script>
+    <script type="text/babel" src="js/components/PromptRecommendationPanel.jsx"></script>
+    <script type="text/babel" src="js/components/EmbeddedAIAnalysisPanel.jsx"></script>
 
     <!-- 4.1 分层反馈和主动学习组件 -->
-    <script src="js/components/HierarchicalFeedbackPanel.js"></script>
-    <script src="js/components/ActiveLearningPanel.js"></script>
+    <script type="text/babel" src="js/components/HierarchicalFeedbackPanel.jsx"></script>
+    <script type="text/babel" src="js/components/ActiveLearningPanel.jsx"></script>
 
     <!-- 5. UI组件库 -->
     <script type="text/babel" src="js/components/tabs/DocumentsTabComponents.jsx"></script>
@@ -330,7 +330,7 @@
                                         width: '6px',
                                         backgroundColor: isDragging ? '#2196F3' : '#e0e0e0',
                                         cursor: 'ew-resize',
-                                        zIndex: 1000,
+                                        zIndex: 998,
                                         transition: isDragging ? 'none' : 'background-color 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',

@@ -1,5 +1,6 @@
 /**
  * 主动学习推荐组件 / Active Learning Recommendation Component
+ * JSX 版本 - 使用 Babel 转译
  * 显示系统推荐的可能相关文档，让用户确认/否认
  *
  * @author AI Reviewer Team
@@ -86,6 +87,38 @@
                 console.error(t('activeLearningLogFeedbackError'), err);
             }
         };
+
+        // 渲染反馈按钮
+        function renderFeedbackButtons(documentName) {
+            const feedback = feedbackGiven[documentName];
+
+            if (feedback) {
+                return (
+                    <div style={styles.feedbackGiven}>
+                        {feedback === 'relevant' ? t('activeLearningMarkedRelevant') : t('activeLearningMarkedIrrelevant')}
+                    </div>
+                );
+            }
+
+            return (
+                <div style={styles.feedbackBtns}>
+                    <button
+                        style={{...styles.feedbackBtn, ...styles.relevantBtn}}
+                        onClick={() => submitFeedback(documentName, true)}
+                        title={t('activeLearningRelevantTitle')}
+                    >
+                        {t('activeLearningRelevant')}
+                    </button>
+                    <button
+                        style={{...styles.feedbackBtn, ...styles.irrelevantBtn}}
+                        onClick={() => submitFeedback(documentName, false)}
+                        title={t('activeLearningIrrelevantTitle')}
+                    >
+                        {t('activeLearningIrrelevant')}
+                    </button>
+                </div>
+            );
+        }
 
         // 如果没有推荐或正在加载，显示简单状态
         if (loading) {
@@ -214,38 +247,6 @@
                 )}
             </div>
         );
-
-        // 渲染反馈按钮
-        function renderFeedbackButtons(documentName) {
-            const feedback = feedbackGiven[documentName];
-
-            if (feedback) {
-                return (
-                    <div style={styles.feedbackGiven}>
-                        {feedback === 'relevant' ? t('activeLearningMarkedRelevant') : t('activeLearningMarkedIrrelevant')}
-                    </div>
-                );
-            }
-
-            return (
-                <div style={styles.feedbackBtns}>
-                    <button
-                        style={{...styles.feedbackBtn, ...styles.relevantBtn}}
-                        onClick={() => submitFeedback(documentName, true)}
-                        title={t('activeLearningRelevantTitle')}
-                    >
-                        {t('activeLearningRelevant')}
-                    </button>
-                    <button
-                        style={{...styles.feedbackBtn, ...styles.irrelevantBtn}}
-                        onClick={() => submitFeedback(documentName, false)}
-                        title={t('activeLearningIrrelevantTitle')}
-                    >
-                        {t('activeLearningIrrelevant')}
-                    </button>
-                </div>
-            );
-        }
     }
 
     // 获取置信度颜色
@@ -392,4 +393,3 @@
     const getT = () => window.LanguageModule ? window.LanguageModule.useTranslation().t : (k) => k;
     console.log(getT()('activeLearningLogComponentLoaded'));
 })();
-
