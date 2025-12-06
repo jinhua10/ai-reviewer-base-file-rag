@@ -36,6 +36,9 @@ public class SmartAnalysisService {
     @Autowired(required = false)
     private ChunkStorageService chunkStorageService;
 
+    @Autowired(required = false)
+    private SlideContentCacheService slideContentCacheService;
+
     @Value("${file.upload.path:./data/documents}")
     private String documentBasePath;
 
@@ -108,7 +111,9 @@ public class SmartAnalysisService {
      * 加载文档内容（Load document contents）
      *
      * <p>优先从已索引的 chunks 中加载内容（已经过 Vision LLM 文本化处理）</p>
+     * <p>对于 PPT 文件，优先从 SlideContentCache 加载（包含 Vision LLM 处理结果）</p>
      * <p>Prefer loading from indexed chunks (already processed by Vision LLM for text conversion)</p>
+     * <p>For PPT files, prefer loading from SlideContentCache (containing Vision LLM results)</p>
      */
     private List<AnalysisContext.DocumentContent> loadDocumentContents(List<String> documentPaths) {
         List<AnalysisContext.DocumentContent> contents = new ArrayList<>();
@@ -123,10 +128,27 @@ public class SmartAnalysisService {
                     continue;
                 }
 
-                // 1. 优先尝试从 chunks 加载已文本化的内容
-                String content = loadFromChunks(fileName);
+                String content = null;
+                boolean fromCache = false;
 
-                // 2. 如果没有 chunks，尝试使用文档解析服务
+                // 1. 对于 PPT 文件，优先从 SlideContentCache 加载（包含 Vision LLM 处理结果）
+                //    For PPT files, first try loading from SlideContentCache (containing Vision LLM results)
+                String fileNameLower = fileName.toLowerCase();
+                if (fileNameLower.endsWith(".pptx") || fileNameLower.endsWith(".ppt")) {
+                    content = loadFromSlideCache(fullPath.toAbsolutePath().toString());
+                    if (content != null && !content.trim().isEmpty()) {
+                        fromCache = true;
+                        log.info(top.yumbo.ai.rag.i18n.LogMessageProvider.getMessage(
+                                "smart_analysis.log.loaded_from_slide_cache", fileName, content.length()));
+                    }
+                }
+
+                // 2. 如果没有从缓存加载到，尝试从 chunks 加载已文本化的内容
+                if (content == null || content.trim().isEmpty()) {
+                    content = loadFromChunks(fileName);
+                }
+
+                // 3. 如果没有 chunks，尝试使用文档解析服务
                 if (content == null || content.trim().isEmpty()) {
                     log.debug("No chunks found for {}, trying document parser", fileName);
                     content = parseDocument(fullPath);
@@ -147,7 +169,10 @@ public class SmartAnalysisService {
                         .content(content)
                         .type(fileType)
                         .size(Files.size(fullPath))
-                        .metadata(Map.of("originalPath", docPath, "fromChunks", content != null && content.contains("文档块")))
+                        .metadata(Map.of(
+                                "originalPath", docPath,
+                                "fromChunks", content != null && content.contains("文档块"),
+                                "fromSlideCache", fromCache))
                         .build());
 
                 log.debug("Loaded document: {} ({} chars)", fileName,
@@ -159,6 +184,62 @@ public class SmartAnalysisService {
         }
 
         return contents;
+    }
+
+    /**
+     * 从 SlideContentCache 加载 PPT 内容（Load PPT content from SlideContentCache）
+     *
+     * <p>SlideContentCache 存储了 Vision LLM 对幻灯片图片的处理结果</p>
+     * <p>SlideContentCache stores Vision LLM processing results for slide images</p>
+     *
+     * @param pptPath PPT 文件的绝对路径（Absolute path of PPT file）
+     * @return 组合后的 PPT 内容，包含文字和图片 Vision LLM 分析结果（Combined PPT content with text and Vision LLM image analysis）
+     */
+    private String loadFromSlideCache(String pptPath) {
+        if (slideContentCacheService == null) {
+            return null;
+        }
+
+        try {
+            SlideContentCacheService.PPTCache pptCache = slideContentCacheService.getPPTCache(pptPath);
+            if (pptCache == null || pptCache.getSlides() == null || pptCache.getSlides().isEmpty()) {
+                log.debug(top.yumbo.ai.rag.i18n.LogMessageProvider.getMessage(
+                        "smart_analysis.log.no_slide_cache", pptPath));
+                return null;
+            }
+
+            StringBuilder content = new StringBuilder();
+            Map<Integer, SlideContentCacheService.SlideCache> slides = pptCache.getSlides();
+
+            // 按幻灯片序号排序
+            List<Integer> slideNumbers = new ArrayList<>(slides.keySet());
+            Collections.sort(slideNumbers);
+
+            for (Integer slideNum : slideNumbers) {
+                SlideContentCacheService.SlideCache slideCache = slides.get(slideNum);
+                if (slideCache == null) continue;
+
+                // 添加幻灯片标题
+                content.append("\n\n========== 幻灯片 ").append(slideNum).append(" ==========\n");
+
+                // 添加幻灯片文字内容
+                if (slideCache.getSlideText() != null && !slideCache.getSlideText().trim().isEmpty()) {
+                    content.append("【文字内容】\n").append(slideCache.getSlideText()).append("\n");
+                }
+
+                // 添加 Vision LLM 分析结果（图片文本化内容）
+                if (slideCache.getVisionLLMResult() != null && !slideCache.getVisionLLMResult().trim().isEmpty()) {
+                    content.append("\n【图片分析】\n").append(slideCache.getVisionLLMResult()).append("\n");
+                }
+            }
+
+            return content.toString();
+
+        } catch (Exception e) {
+            log.warn(top.yumbo.ai.rag.i18n.LogMessageProvider.getMessage(
+                    "smart_analysis.log.load_slide_cache_failed", pptPath), e);
+            return null;
+        }
     }
 
     /**

@@ -1096,7 +1096,6 @@ slide_cache:
     load_cache_index: "Loading slide cache index: {0} PPT files"
     load_cache_index_failed: "Failed to load cache index, new index will be created"
     save_cache_index: "Saving slide cache index: {0} PPT files"
-# ============================================================
 # SimilarQAService
 # ============================================================
 similar_qa:
@@ -1397,6 +1396,9 @@ strategy:
 # ============================================================
 smart_analysis:
   log:
+    loaded_from_slide_cache: "📦 Loaded PPT content from slide cache: {0} ({1} chars)"
+    no_slide_cache: "No slide cache found for: {0}"
+    load_slide_cache_failed: "Failed to load from slide cache: {0}"
     start: "📊 Starting smart analysis, documents: {0}, goal: {1}"
     complete: "✅ Smart analysis completed, success: {0}, time: {1}ms"
     failed: "❌ Smart analysis failed"
