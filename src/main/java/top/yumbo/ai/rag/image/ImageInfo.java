@@ -58,6 +58,32 @@ public class ImageInfo {
     private String description;
 
     /**
+     * 图片在文档中的位置（字符偏移量）
+     * Position in document (character offset)
+     * 用于将提取的图片文本插入到正确位置
+     * Used to insert extracted image text at the correct position
+     */
+    private Integer positionInDocument;
+
+    /**
+     * 图片前的上下文文本（用于 Vision LLM 理解图片）
+     * Context text before the image (for Vision LLM understanding)
+     */
+    private String contextBefore;
+
+    /**
+     * 图片后的上下文文本（用于 Vision LLM 理解图片）
+     * Context text after the image (for Vision LLM understanding)
+     */
+    private String contextAfter;
+
+    /**
+     * Vision LLM 提取的图片文本内容
+     * Extracted image text content by Vision LLM
+     */
+    private String extractedText;
+
+    /**
      * 获取访问 URL（Get access URL）
      */
     public String getUrl() {

@@ -67,8 +67,6 @@ public class DocumentPreprocessingService {
             return originalContent;
         }
 
-        StringBuilder enhancedContent = new StringBuilder(originalContent);
-
         // 1. 提取图片并进行 OCR/Vision LLM 处理
         if (imageExtractionService != null && imageExtractionService.supportsDocument(file.getName())) {
             try {
@@ -80,18 +78,75 @@ public class DocumentPreprocessingService {
                 if (!images.isEmpty()) {
                     log.info("✅ Extracted {} images from {}", images.size(), file.getName());
 
-                    // 构建图片信息文本
-                    String imageText = buildImageTextContent(images, file.getName());
+                    // 2. 将图片文本插入到原始位置（而不是末尾）
+                    String enhancedContent = insertImageTextAtOriginalPositions(
+                        originalContent, images, file.getName());
 
-                    // 将图片信息添加到文档内容中
-                    enhancedContent.append("\n\n").append(imageText);
-
-                    log.info("✅ Image information added to document content ({} characters)",
-                            imageText.length());
+                    log.info("✅ Image information inserted at original positions");
+                    return enhancedContent;
                 }
             } catch (Exception e) {
                 log.warn("⚠️ Image extraction failed for {}: {}", file.getName(), e.getMessage());
             }
+        }
+
+        return originalContent;
+    }
+
+    /**
+     * 将图片文本插入到原始位置
+     * Insert image text at original positions
+     *
+     * @param originalContent 原始内容
+     * @param images 图片列表
+     * @param documentName 文档名称
+     * @return 增强后的内容
+     */
+    private String insertImageTextAtOriginalPositions(
+            String originalContent,
+            List<top.yumbo.ai.rag.image.ImageInfo> images,
+            String documentName) {
+
+        // 1. 过滤出有位置信息和提取文本的图片
+        List<top.yumbo.ai.rag.image.ImageInfo> validImages = images.stream()
+            .filter(img -> img.getPositionInDocument() != null &&
+                          img.getExtractedText() != null &&
+                          !img.getExtractedText().trim().isEmpty())
+            .toList();
+
+        if (validImages.isEmpty()) {
+            // 如果没有有效的图片位置信息，使用旧的方式（追加到末尾）
+            log.debug("No valid image position info, appending to end");
+            return originalContent + "\n\n" + buildImageTextContent(images, documentName);
+        }
+
+        // 2. 按位置倒序排序（避免插入时位置偏移）
+        List<top.yumbo.ai.rag.image.ImageInfo> sortedImages = validImages.stream()
+            .sorted((a, b) -> Integer.compare(
+                b.getPositionInDocument(),
+                a.getPositionInDocument()))
+            .toList();
+
+        // 3. 在原始位置插入图片文本
+        StringBuilder enhancedContent = new StringBuilder(originalContent);
+
+        for (top.yumbo.ai.rag.image.ImageInfo img : sortedImages) {
+            // 构建图片文本标记（精简格式）
+            String imageMarker = String.format(
+                "\n\n[图片-%s：%s]\n\n",
+                img.getFilename(),
+                img.getExtractedText()
+            );
+
+            // 在原始位置插入（限制位置不超过当前长度）
+            int insertPos = Math.min(
+                img.getPositionInDocument(),
+                enhancedContent.length());
+
+            enhancedContent.insert(insertPos, imageMarker);
+
+            log.debug("📍 Inserted image text at position {} for image: {}",
+                     insertPos, img.getFilename());
         }
 
         return enhancedContent.toString();
