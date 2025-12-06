@@ -156,18 +156,18 @@ knowledge:
 
       # 英文停用词列表（可自定义）
       english-stop-words:
-        - the
-        - a
-        - an
-        - in
-        - on
-        - at
-        - of
-        - for
-        - to
-        - and
-        - or
-        - but
+        - "the"
+        - "a"
+        - "an"
+        - "in"
+        - "on"
+        - "at"
+        - "of"
+        - "for"
+        - "to"
+        - "and"
+        - "or"
+        - "but"
 
     # LLM 配置
     llm:
