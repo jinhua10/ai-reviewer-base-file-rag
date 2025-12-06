@@ -225,6 +225,12 @@ const translations = {
         // 文档选择 (Document selection)
         removeDocument: '移除此文档',
         noDocumentsSelected: '请在左侧列表中勾选要分析的文档',
+        toggleAIPanel: '切换AI分析面板',
+        openAIPanel: '打开AI分析面板',
+        closeAIPanel: '关闭AI分析面板',
+        addToAIAnalysis: '加入AI分析',
+        documentAdded: '文档已添加',
+        documentAlreadyAdded: '文档已存在',
 
         // 用户友好的分析目标选择 (User-friendly analysis goal selection)
         whatDoYouWant: '📋 您想要什么样的分析？',
@@ -823,6 +829,12 @@ const translations = {
         // Document selection
         removeDocument: 'Remove this document',
         noDocumentsSelected: 'Please check documents to analyze from the left list',
+        toggleAIPanel: 'Toggle AI Analysis Panel',
+        openAIPanel: 'Open AI Analysis Panel',
+        closeAIPanel: 'Close AI Analysis Panel',
+        addToAIAnalysis: 'Add to AI Analysis',
+        documentAdded: 'Document Added',
+        documentAlreadyAdded: 'Document Already Added',
 
         // User-friendly analysis goal selection
         whatDoYouWant: '📋 What kind of analysis do you need?',

@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="assets/css/statistics-tab.css">
     <link rel="stylesheet" href="assets/css/ai-analysis.css">
     <link rel="stylesheet" href="assets/css/llm-results-tab.css">
+    <link rel="stylesheet" href="assets/css/ai-panel-float.css">
 
     <!-- React 库 (使用 CDN 或本地文件) -->
     <script crossorigin src="js/lib/react.production.min.js"></script>
@@ -164,6 +165,51 @@
                     });
                     const [isDragging, setIsDragging] = useState(false);
 
+                    // 添加文档到AI分析（带去重）- 暴露给全局供其他组件调用
+                    const addDocumentsToAIAnalysis = React.useCallback((docs) => {
+                        const docsArray = Array.isArray(docs) ? docs : [docs];
+                        let addedCount = 0;
+                        let duplicateCount = 0;
+
+                        docsArray.forEach(doc => {
+                            const docName = doc.name || doc.title || doc.fileName;
+                            
+                            // 检查是否已存在（根据文档名称去重）
+                            const exists = selectedDocsData.some(d => 
+                                (d.name || d.title || d.fileName) === docName
+                            );
+
+                            if (!exists) {
+                                const docId = doc.id || docName;
+                                setSelectedDocs(prev => new Set([...prev, docId]));
+                                setSelectedDocsData(prev => [...prev, doc]);
+                                addedCount++;
+                            } else {
+                                duplicateCount++;
+                            }
+                        });
+
+                        // 显示提示
+                        if (addedCount > 0) {
+                            console.log(`✅ ${t('documentAdded')}: ${addedCount} 个文档`);
+                        }
+                        if (duplicateCount > 0) {
+                            console.log(`ℹ️ ${t('documentAlreadyAdded')}: ${duplicateCount} 个文档`);
+                        }
+
+                        // 如果添加了文档且面板未打开，则打开面板
+                        if (addedCount > 0 && !showAIAnalysis) {
+                            setShowAIAnalysis(true);
+                        }
+
+                        return addedCount;
+                    }, [selectedDocsData, showAIAnalysis, t]);
+
+                    // 将函数暴露到全局供其他组件使用
+                    React.useEffect(() => {
+                        window.addDocumentsToAIAnalysis = addDocumentsToAIAnalysis;
+                    }, [addDocumentsToAIAnalysis]);
+
                     useEffect(() => {
                         console.log('📡 App mounted, checking health...');
                         checkHealth();
@@ -231,21 +277,13 @@
                     };
 
                     return (
-                        <div style={{ position: 'relative', width: '100%', minHeight: '100vh' }}>
+                        <div className="app-layout-container">
                             {/* 左侧主内容区域 */}
-                            <div style={{
-                                width: showAIAnalysis ? `${splitPosition}%` : '100%',
-                                minHeight: '100vh',
-                                overflow: 'auto',
-                                transition: showAIAnalysis ? 'none' : 'width 0.3s',
-                                display: 'flex',
-                                justifyContent: 'center'
-                            }}>
-                                <div style={{
-                                    width: '100%',
-                                    maxWidth: showAIAnalysis ? '100%' : '1200px',
-                                    padding: showAIAnalysis ? '0 10px' : '0'
-                                }}>
+                            <div 
+                                className={`main-content-area ${showAIAnalysis ? 'with-ai-panel' : 'without-ai-panel'}`}
+                                style={{ width: showAIAnalysis ? `${splitPosition}%` : '100%' }}
+                            >
+                                <div className={`main-content-wrapper ${showAIAnalysis ? 'with-ai-panel' : 'without-ai-panel'}`}>
                                     <div className="app-container">
                                         <div className="language-toggle">
                                             <button onClick={toggleLanguage}>{t('langToggle')}</button>
@@ -255,7 +293,7 @@
                                             <h1>{t('title')}</h1>
                                             <p className="subtitle">{t('subtitle')}</p>
                                             {health && (
-                                                <div style={{ marginTop: '10px', fontSize: '14px' }}>
+                                                <div className="health-status">
                                                     {t('status')}: {getStatusWithIcon(health.status)}
                                                 </div>
                                             )}
@@ -290,10 +328,10 @@
                                             </div>
 
                                             <div className="tab-content">
-                                                <div style={{ display: activeTab === 'qa' ? 'block' : 'none' }}>
+                                                <div className={`tab-content-panel ${activeTab === 'qa' ? '' : 'hidden'}`}>
                                                     <QATab />
                                                 </div>
-                                                <div style={{ display: activeTab === 'documents' ? 'block' : 'none' }}>
+                                                <div className={`tab-content-panel ${activeTab === 'documents' ? '' : 'hidden'}`}>
                                                     <DocumentsTab
                                                         showAIAnalysis={showAIAnalysis}
                                                         setShowAIAnalysis={setShowAIAnalysis}
@@ -303,10 +341,10 @@
                                                         setSelectedDocsData={setSelectedDocsData}
                                                     />
                                                 </div>
-                                                <div style={{ display: activeTab === 'llm-results' ? 'block' : 'none' }}>
-                                                    {window.LLMResultsTab && <LLMResultsTab />}
+                                                <div className={`tab-content-panel ${activeTab === 'llm-results' ? '' : 'hidden'}`}>
+                                                    <LLMResultsTab />
                                                 </div>
-                                                <div style={{ display: activeTab === 'stats' ? 'block' : 'none' }}>
+                                                <div className={`tab-content-panel ${activeTab === 'stats' ? '' : 'hidden'}`}>
                                                     <StatisticsTab />
                                                 </div>
                                             </div>
@@ -322,34 +360,11 @@
                             {/* 拖拽分隔线 */}
                             {showAIAnalysis && (
                                 <div
-                                    style={{
-                                        position: 'fixed',
-                                        left: `${splitPosition}%`,
-                                        top: 0,
-                                        bottom: 0,
-                                        width: '6px',
-                                        backgroundColor: isDragging ? '#2196F3' : '#e0e0e0',
-                                        cursor: 'ew-resize',
-                                        zIndex: 998,
-                                        transition: isDragging ? 'none' : 'background-color 0.2s',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center'
-                                    }}
+                                    className={`drag-divider ${isDragging ? 'dragging' : ''}`}
+                                    style={{ left: `${splitPosition}%` }}
                                     onMouseDown={() => setIsDragging(true)}
                                 >
-                                    <div style={{
-                                        width: '20px',
-                                        height: '60px',
-                                        backgroundColor: isDragging ? '#2196F3' : '#999',
-                                        borderRadius: '4px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        color: 'white',
-                                        fontSize: '16px',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-                                    }}>
+                                    <div className="drag-divider-handle">
                                         ⋮
                                     </div>
                                 </div>
@@ -357,36 +372,15 @@
 
                             {/* AI分析右侧面板 */}
                             {showAIAnalysis && (
-                                <div style={{
-                                    position: 'fixed',
-                                    left: `calc(${splitPosition}% + 6px)`,
-                                    top: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    overflowY: 'auto',
-                                    boxShadow: '-2px 0 12px rgba(0,0,0,0.3)',
-                                    zIndex: 999,
-                                    padding: '20px'
-                                }}>
-                                    <div style={{
-                                        marginBottom: '20px',
-                                        paddingBottom: '15px',
-                                        borderBottom: '2px solid rgba(255,255,255,0.3)'
-                                    }}>
-                                        <h2 style={{
-                                            margin: 0,
-                                            color: '#ffffff',
-                                            fontSize: '24px',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                        }}>
+                                <div 
+                                    className="ai-analysis-panel"
+                                    style={{ left: `calc(${splitPosition}% + 6px)` }}
+                                >
+                                    <div className="ai-analysis-header">
+                                        <h2 className="ai-analysis-title">
                                             🤖 {t('aiAnalysis') || 'AI分析'}
                                         </h2>
-                                        <p style={{
-                                            margin: '8px 0 0 0',
-                                            color: 'rgba(255,255,255,0.9)',
-                                            fontSize: '14px'
-                                        }}>
+                                        <p className="ai-analysis-subtitle">
                                             {selectedDocs.size > 0
                                                 ? t('selectedDocumentsCount').replace('{0}', selectedDocs.size)
                                                 : t('pleaseCheckDocumentsOnLeft')}
@@ -411,6 +405,25 @@
                                     })}
                                 </div>
                             )}
+
+                            {/* 右侧悬浮快速切换按钮 */}
+                            <div
+                                className="ai-panel-float-button-container"
+                                style={{ right: showAIAnalysis ? `calc(${100 - splitPosition}% + 10px)` : '10px' }}
+                            >
+                                <button
+                                    onClick={() => setShowAIAnalysis(!showAIAnalysis)}
+                                    title={showAIAnalysis ? t('closeAIPanel') : t('openAIPanel')}
+                                    className={`ai-panel-float-button ${showAIAnalysis ? 'opened' : 'closed'}`}
+                                >
+                                    {showAIAnalysis ? '✕' : '🤖'}
+                                </button>
+                                {selectedDocs.size > 0 && (
+                                    <div className="ai-panel-doc-badge">
+                                        {selectedDocs.size}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     );
                 }

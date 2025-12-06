@@ -815,34 +815,93 @@ function QATab() {
                                             <h5 className="qa-chunks-subtitle">
                                                 {t('qaChunksTitle')} ({answer.chunks.length})
                                             </h5>
-                                            <button
-                                                className="qa-chunks-download-all-btn"
-                                                onClick={handleBatchDownloadChunks}
-                                                title={t('qaChunksDownloadAll')}
-                                            >
-                                                {t('qaChunksDownloadAll')}
-                                            </button>
+                                            <div className="qa-chunks-header-actions">
+                                                <button
+                                                    className="qa-add-to-ai-btn"
+                                                    onClick={() => {
+                                                        // 提取唯一的文档并添加到AI分析
+                                                        const uniqueDocs = [];
+                                                        const docNames = new Set();
+                                                        
+                                                        answer.chunks.forEach(chunk => {
+                                                            const docName = chunk.title || chunk.fileName || `文档_${chunk.documentId}`;
+                                                            if (!docNames.has(docName)) {
+                                                                docNames.add(docName);
+                                                                uniqueDocs.push({
+                                                                    id: chunk.documentId,
+                                                                    name: docName,
+                                                                    title: chunk.title,
+                                                                    fileName: chunk.fileName,
+                                                                    chunkId: chunk.chunkId
+                                                                });
+                                                            }
+                                                        });
+
+                                                        if (window.addDocumentsToAIAnalysis) {
+                                                            const added = window.addDocumentsToAIAnalysis(uniqueDocs);
+                                                            if (added > 0) {
+                                                                showToast(`✅ ${t('documentAdded')}: ${added} 个文档`, 'success');
+                                                            }
+                                                        }
+                                                    }}
+                                                    title={t('addToAIAnalysis')}
+                                                >
+                                                    🤖 {t('addToAIAnalysis')}
+                                                </button>
+                                                <button
+                                                    className="qa-chunks-download-all-btn"
+                                                    onClick={handleBatchDownloadChunks}
+                                                    title={t('qaChunksDownloadAll')}
+                                                >
+                                                    {t('qaChunksDownloadAll')}
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="qa-chunks-grid">
                                             {answer.chunks.map((chunk) => (
-                                                <button
-                                                    key={chunk.chunkId}
-                                                    className="qa-chunk-card"
-                                                    onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
-                                                    title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
-                                                >
-                                                    <div className="qa-chunk-title">
-                                                        {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
-                                                    </div>
-                                                    <div className="qa-chunk-info">
-                                                        <span className="qa-chunk-index">
-                                                            {chunk.chunkIndex + 1}/{chunk.totalChunks || answer.chunks.length}
-                                                        </span>
-                                                        <span className="qa-chunk-size">
-                                                            {(chunk.contentLength / 1024).toFixed(1)} KB
-                                                        </span>
-                                                    </div>
-                                                </button>
+                                                <div key={chunk.chunkId} className="qa-chunk-card-wrapper">
+                                                    <button
+                                                        className="qa-chunk-card"
+                                                        onClick={(e) => handleChunkDownload(chunk.documentId, chunk.chunkId, e.currentTarget)}
+                                                        title={`${t('qaChunkDownload')}: ${chunk.title || t('qaChunkTitle') + ' ' + (chunk.chunkIndex + 1)}`}
+                                                    >
+                                                        <div className="qa-chunk-title">
+                                                            {chunk.title || `${t('qaChunkTitle')} ${chunk.chunkIndex + 1}`}
+                                                        </div>
+                                                        <div className="qa-chunk-info">
+                                                            <span className="qa-chunk-index">
+                                                                {chunk.chunkIndex + 1}/{chunk.totalChunks || answer.chunks.length}
+                                                            </span>
+                                                            <span className="qa-chunk-size">
+                                                                {(chunk.contentLength / 1024).toFixed(1)} KB
+                                                            </span>
+                                                        </div>
+                                                    </button>
+                                                    <button
+                                                        className="qa-chunk-add-btn"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (window.addDocumentsToAIAnalysis) {
+                                                                const doc = {
+                                                                    id: chunk.documentId,
+                                                                    name: chunk.title || chunk.fileName || `文档_${chunk.documentId}`,
+                                                                    title: chunk.title,
+                                                                    fileName: chunk.fileName,
+                                                                    chunkId: chunk.chunkId
+                                                                };
+                                                                const added = window.addDocumentsToAIAnalysis(doc);
+                                                                if (added > 0) {
+                                                                    showToast(`✅ ${t('documentAdded')}`, 'success');
+                                                                } else {
+                                                                    showToast(`ℹ️ ${t('documentAlreadyAdded')}`, 'info');
+                                                                }
+                                                            }
+                                                        }}
+                                                        title={t('addToAIAnalysis')}
+                                                    >
+                                                        🤖
+                                                    </button>
+                                                </div>
                                             ))}
                                         </div>
                                     </div>

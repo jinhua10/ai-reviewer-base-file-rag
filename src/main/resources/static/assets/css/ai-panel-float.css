@@ -1,0 +1,237 @@
+/**
+ * AI 分析面板悬浮按钮和布局样式
+ * AI Analysis Panel Float Button and Layout Styles
+ */
+
+/* ==================== 主容器布局 ==================== */
+.app-layout-container {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* 左侧主内容区域 */
+.main-content-area {
+    min-height: 100vh;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.main-content-area.with-ai-panel {
+    transition: none;
+}
+
+.main-content-area.without-ai-panel {
+    width: 100%;
+    transition: width 0.3s;
+}
+
+.main-content-wrapper {
+    width: 100%;
+    padding: 0;
+}
+
+.main-content-wrapper.with-ai-panel {
+    max-width: 100%;
+    padding: 0 10px;
+}
+
+.main-content-wrapper.without-ai-panel {
+    max-width: 1200px;
+    padding: 0;
+}
+
+/* 状态信息显示 */
+.health-status {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+/* 标签页内容区域 */
+.tab-content-panel {
+    display: block;
+}
+
+.tab-content-panel.hidden {
+    display: none;
+}
+
+/* ==================== 拖拽分隔线 ==================== */
+.drag-divider {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e0e0e0;
+    transition: background-color 0.2s;
+}
+
+.drag-divider.dragging {
+    background-color: #2196F3;
+    transition: none;
+}
+
+.drag-divider-handle {
+    width: 20px;
+    height: 60px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background-color: #999;
+}
+
+.drag-divider.dragging .drag-divider-handle {
+    background-color: #2196F3;
+}
+
+/* ==================== AI 分析右侧面板 ==================== */
+.ai-analysis-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow-y: auto;
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    padding: 20px;
+}
+
+.ai-analysis-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.ai-analysis-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 24px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ai-analysis-subtitle {
+    margin: 8px 0 0 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+}
+
+/* ==================== 悬浮快速切换按钮 ==================== */
+.ai-panel-float-button-container {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10001;
+    transition: right 0.3s ease;
+}
+
+.ai-panel-float-button {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    animation: pulse 2s ease-in-out infinite;
+    position: relative;
+}
+
+.ai-panel-float-button.closed {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
+}
+
+.ai-panel-float-button.opened {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.ai-panel-float-button:hover {
+    transform: scale(1.1);
+}
+
+.ai-panel-float-button.closed:hover {
+    box-shadow: 0 8px 25px rgba(245, 87, 108, 0.7);
+}
+
+.ai-panel-float-button.opened:hover {
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.7);
+}
+
+/* 文档计数徽章 */
+.ai-panel-doc-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #ff4757;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.6);
+    animation: bounce 1s ease-in-out infinite;
+}
+
+/* ==================== 动画效果 ==================== */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    50% {
+        box-shadow: 0 6px 30px rgba(102, 126, 234, 0.8);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ==================== 响应式设计 ==================== */
+@media (max-width: 768px) {
+    .ai-panel-float-button {
+        width: 48px;
+        height: 48px;
+        font-size: 20px;
+    }
+
+    .ai-panel-doc-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        top: -6px;
+        right: -6px;
+    }
+
+    .ai-analysis-panel {
+        padding: 15px;
+    }
+
+    .ai-analysis-title {
+        font-size: 20px;
+    }
+}

@@ -1332,3 +1332,68 @@
     }
 }
 
+/* ============================================================================
+   文档添加到 AI 分析按钮样式
+   ============================================================================ */
+
+/* 引用文件区域按钮容器 */
+.qa-chunks-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* 添加到 AI 分析按钮 */
+.qa-add-to-ai-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.qa-add-to-ai-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+}
+
+/* 文档卡片容器（支持相对定位） */
+.qa-chunk-card-wrapper {
+    position: relative;
+}
+
+/* 文档卡片上的小按钮 */
+.qa-chunk-add-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.qa-chunk-add-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+}
+
+.qa-chunk-add-btn:active {
+    transform: scale(0.95);
+}
+
+
