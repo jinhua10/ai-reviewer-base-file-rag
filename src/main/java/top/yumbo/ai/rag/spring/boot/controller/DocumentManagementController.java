@@ -2,6 +2,8 @@ package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.service.DocumentManagementService;
+import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -36,9 +39,16 @@ import java.util.zip.ZipOutputStream;
 public class DocumentManagementController {
 
     private final DocumentManagementService documentService;
+    private final KnowledgeQAService qaService;
 
-    public DocumentManagementController(DocumentManagementService documentService) {
+    @Value("${knowledge.qa.knowledge-base.auto-index-after-upload:false}")
+    private boolean autoIndexAfterUpload;
+
+    public DocumentManagementController(
+            DocumentManagementService documentService,
+            @Autowired(required = false) top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService qaService) {
         this.documentService = documentService;
+        this.qaService = qaService;
     }
 
     /**
@@ -66,8 +76,29 @@ public class DocumentManagementController {
             response.setFileName(file.getOriginalFilename());
             response.setFileSize(file.getSize());
             response.setDocumentId(result);
+            response.setAutoIndexTriggered(false);
 
             log.info(I18N.get("document_management.log.upload_success", file.getOriginalFilename()));
+
+            // 自动触发增量索引
+            if (autoIndexAfterUpload && qaService != null) {
+                try {
+                    log.info(I18N.get("document_management.log.auto_index_trigger"));
+                    // 异步触发，不阻塞返回
+                    new Thread(() -> {
+                        try {
+                            qaService.incrementalIndexKnowledgeBase();
+                            log.info(I18N.get("document_management.log.auto_index_success"));
+                        } catch (Exception e) {
+                            log.warn(I18N.get("document_management.log.auto_index_failed", e.getMessage()));
+                        }
+                    }).start();
+                    response.setAutoIndexTriggered(true);
+                } catch (Exception e) {
+                    log.warn(I18N.get("document_management.log.trigger_auto_index_failed", e.getMessage()));
+                }
+            }
+
             return response;
 
         } catch (Exception e) {
@@ -592,6 +623,7 @@ public class DocumentManagementController {
         private String fileName;
         private long fileSize;
         private String documentId;
+        private boolean autoIndexTriggered;  // 是否自动触发了索引
     }
 
     @Data

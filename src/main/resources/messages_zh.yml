@@ -34,6 +34,10 @@ document_management:
     file_upload_failed: "文件上传失败: {0}"
     list_documents: "获取文档列表: 页码={0}, 每页数量={1}, 排序字段={2}, 排序方向={3}"
     list_failed: "获取文档列表失败"
+    auto_index_trigger: "📦 自动触发增量索引..."
+    auto_index_success: "✅ 自动增量索引完成"
+    auto_index_failed: "⚠️ 自动增量索引失败: {0}"
+    trigger_auto_index_failed: "⚠️ 触发自动索引失败: {0}"
 document_service:
   error:
     cannot_create_dir: "创建文档目录失败：{0}"
@@ -198,6 +202,8 @@ knowledge_qa:
     search_documents: "为问题搜索文档：{0}（找到 {1} 个）"
     session_question: "会话问题 [{0}]：{1}"
     rebuild_request: "收到重建请求：{0}"
+    indexing_in_progress: "索引正在进行中"
+    indexing_idle: "系统空闲，可以进行索引"
 # Vision LLM 策略消息
 vision_llm:
   log:

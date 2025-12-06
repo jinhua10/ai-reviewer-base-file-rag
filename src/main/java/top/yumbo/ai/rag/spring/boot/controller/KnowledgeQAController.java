@@ -226,6 +226,23 @@ public class KnowledgeQAController {
     }
 
     /**
+     * 检查索引状态 / Check indexing status
+     */
+    @GetMapping("/indexing-status")
+    public IndexingStatusResponse checkIndexingStatus(@RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        IndexingStatusResponse response = new IndexingStatusResponse();
+        response.setIndexing(qaService.isIndexing());
+
+        if (response.isIndexing()) {
+            response.setMessage(I18N.getLang("knowledge_qa.log.indexing_in_progress", lang));
+        } else {
+            response.setMessage(I18N.getLang("knowledge_qa.log.indexing_idle", lang));
+        }
+
+        return response;
+    }
+
+    /**
      * 搜索相似问题（基于关键词匹配）/ Search similar questions (based on keyword matching)
      * 在历史问答记录中查找相似问题 / Search similar questions in historical QA records
      */
@@ -327,6 +344,12 @@ public class KnowledgeQAController {
         private long durationMs;
     }
 
+    @Data
+    public static class IndexingStatusResponse {
+        private boolean indexing;
+        private String message;
+    }
+
     // ========== 辅助方法 ==========
 
     private DocumentInfo toDocumentInfo(Document doc) {
@@ -345,5 +368,3 @@ public class KnowledgeQAController {
         return info;
     }
 }
-
-

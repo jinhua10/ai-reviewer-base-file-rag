@@ -34,6 +34,10 @@ document_management:
     file_upload_failed: "File upload failed: {0}"
     list_documents: "Get document list: page={0}, pageSize={1}, sortBy={2}, sortOrder={3}"
     list_failed: "Failed to get document list"
+    auto_index_trigger: "📦 Auto-triggering incremental index..."
+    auto_index_success: "✅ Auto incremental index completed"
+    auto_index_failed: "⚠️ Auto incremental index failed: {0}"
+    trigger_auto_index_failed: "⚠️ Failed to trigger auto index: {0}"
 document_service:
   error:
     cannot_create_dir: "Failed to create document directory: {0}"
@@ -189,7 +193,7 @@ knowledge_qa:
       needs_indexing: "Knowledge base needs indexing"
       rebuild_complete: "Knowledge base rebuild completed"
     status:
-      UP: "UP"
+      up: "Running"
   log:
     received_question: "Received question: {0}"
     get_statistics: "Retrieving knowledge QA statistics"
@@ -198,6 +202,8 @@ knowledge_qa:
     search_documents: "Search documents for question: {0} (found {1})"
     session_question: "Session question [{0}]: {1}"
     rebuild_request: "Rebuild requested: {0}"
+    indexing_in_progress: "Indexing in progress"
+    indexing_idle: "System idle, ready for indexing"
 # Vision LLM Strategy Messages
 vision_llm:
   log:

@@ -107,6 +107,19 @@ const api = {
         return response.data;
     },
 
+    /**
+     * 检查索引状态 / Check indexing status
+     * @returns {Promise<Object>} 索引状态 / Indexing status
+     */
+    checkIndexingStatus: async () => {
+        const response = await axios.get(`${API_BASE_URL}/indexing-status`, {
+            params: {
+                lang: getCurrentLang() // 添加语言参数 / Add language parameter
+            }
+        });
+        return response.data;
+    },
+
     // ========== 文档管理 ==========
 
     /**

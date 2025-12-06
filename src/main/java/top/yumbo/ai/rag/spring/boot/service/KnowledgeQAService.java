@@ -56,6 +56,9 @@ public class KnowledgeQAService {
     private SimpleVectorIndexEngine vectorIndexEngine;
     private top.yumbo.ai.rag.optimization.SmartContextBuilder contextBuilder;
 
+    // 索引状态标记
+    private volatile boolean isIndexing = false;
+
     public KnowledgeQAService(KnowledgeQAProperties properties,
                               KnowledgeBaseService knowledgeBaseService,
                               HybridSearchService hybridSearchService,
@@ -976,6 +979,9 @@ public class KnowledgeQAService {
     public synchronized BuildResult rebuildKnowledgeBase() {
         log.info(I18N.get("knowledge_qa_service.rebuild_start"));
 
+        // 设置索引状态为进行中
+        isIndexing = true;
+
         try {
             // 1. 关闭现有的 RAG 实例，释放索引锁 / Close existing RAG instance and release index lock
             if (rag != null) {
@@ -1027,6 +1033,9 @@ public class KnowledgeQAService {
             }
 
             throw new RuntimeException(I18N.get("log.kqa.build_failed", e.getMessage()), e);
+        } finally {
+            // 无论成功或失败，都重置索引状态
+            isIndexing = false;
         }
     }
 
@@ -1036,6 +1045,9 @@ public class KnowledgeQAService {
      */
     public synchronized BuildResult incrementalIndexKnowledgeBase() {
         log.info(I18N.get("knowledge_qa_service.incremental_index_start"));
+
+        // 设置索引状态为进行中
+        isIndexing = true;
 
         try {
             // 1. 关闭现有的 RAG 实例，释放索引锁
@@ -1087,6 +1099,9 @@ public class KnowledgeQAService {
             }
 
             throw new RuntimeException(I18N.get("log.kqa.build_failed", e.getMessage()), e);
+        } finally {
+            // 无论成功或失败，都重置索引状态
+            isIndexing = false;
         }
     }
 
@@ -1150,5 +1165,12 @@ public class KnowledgeQAService {
             log.warn(I18N.get("knowledge_qa_service.save_qa_failed", e));
             return null;
         }
+    }
+
+    /**
+     * 检查是否正在索引
+     */
+    public boolean isIndexing() {
+        return isIndexing;
     }
 }

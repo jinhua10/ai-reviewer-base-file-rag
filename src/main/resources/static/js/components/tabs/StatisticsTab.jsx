@@ -18,10 +18,32 @@ function StatisticsTab() {
     const [rebuilding, setRebuilding] = useState(false);
     const [incrementalIndexing, setIncrementalIndexing] = useState(false);
     const [rebuildResult, setRebuildResult] = useState(null);
+    const [isIndexing, setIsIndexing] = useState(false); // 服务器端索引状态
 
     useEffect(() => {
         loadStatistics();
+        // 启动索引状态轮询
+        const intervalId = setInterval(checkIndexingStatus, 3000); // 每3秒检查一次
+        return () => clearInterval(intervalId); // 清理定时器
     }, []);
+
+    // 检查索引状态
+    const checkIndexingStatus = async () => {
+        try {
+            const result = await window.api.checkIndexingStatus();
+            setIsIndexing(result.indexing);
+
+            // 如果索引状态变化，更新统计信息
+            if (result.indexing !== isIndexing) {
+                if (!result.indexing && isIndexing) {
+                    // 索引刚完成，刷新统计
+                    setTimeout(() => loadStatistics(), 500);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to check indexing status:', err);
+        }
+    };
 
     const loadStatistics = async () => {
         setLoading(true);
@@ -39,6 +61,12 @@ function StatisticsTab() {
 
     const handleRebuild = async () => {
         if (!confirm(t('statsRebuildConfirm'))) return;
+
+        // 如果正在索引，禁止操作
+        if (isIndexing) {
+            alert(t('statsIndexingInProgress'));
+            return;
+        }
 
         setRebuilding(true);
         setError(null);
@@ -60,6 +88,12 @@ function StatisticsTab() {
 
     const handleIncrementalIndex = async () => {
         if (!confirm(t('statsIncrementalConfirm'))) return;
+
+        // 如果正在索引，禁止操作
+        if (isIndexing) {
+            alert(t('statsIndexingInProgress'));
+            return;
+        }
 
         setIncrementalIndexing(true);
         setError(null);
@@ -273,28 +307,28 @@ function StatisticsTab() {
                     <button
                         className="btn btn-secondary"
                         onClick={loadStatistics}
-                        disabled={rebuilding || incrementalIndexing}
+                        disabled={rebuilding || incrementalIndexing || isIndexing}
                     >
                         {t('statsRefresh')}
                     </button>
                     <button
                         className="btn btn-primary"
                         onClick={handleIncrementalIndex}
-                        disabled={rebuilding || incrementalIndexing}
+                        disabled={rebuilding || incrementalIndexing || isIndexing}
                         style={{
-                            background: incrementalIndexing
+                            background: (incrementalIndexing || isIndexing)
                                 ? '#ccc'
                                 : 'linear-gradient(135deg, #52c41a 0%, #73d13d 100%)'
                         }}
                     >
-                        {incrementalIndexing ? t('statsIndexing') : t('statsIncrementalIndex')}
+                        {(incrementalIndexing || isIndexing) ? t('statsIndexing') : t('statsIncrementalIndex')}
                     </button>
                     <button
                         className="btn btn-primary"
                         onClick={handleRebuild}
-                        disabled={rebuilding || incrementalIndexing}
+                        disabled={rebuilding || incrementalIndexing || isIndexing}
                     >
-                        {rebuilding ? t('statsIndexingProgress') : t('statsRebuildIndex')}
+                        {(rebuilding || isIndexing) ? t('statsIndexingProgress') : t('statsRebuildIndex')}
                     </button>
                 </div>
             </div>
