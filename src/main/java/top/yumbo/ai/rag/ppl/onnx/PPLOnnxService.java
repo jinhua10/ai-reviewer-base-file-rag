@@ -225,7 +225,7 @@ public class PPLOnnxService implements PPLService {
      * @param query 查询（可选，用于查询感知分块）(query, optional, for query-aware chunking)
      * @param config 分块配置 (chunk configuration)
      * @return 文档块列表 (list of document chunks)
-     * @throws PPLException PPL计算异常 (PPL calculation exception)
+     * @throws PPLException PPL计算异常 (PPL计算异常)
      */
     @Override
     public List<DocumentChunk> chunk(String content, String query, ChunkConfig config) throws PPLException {
@@ -514,13 +514,20 @@ public class PPLOnnxService implements PPLService {
      * @param sentences 句子列表 (list of sentences)
      * @param config 分块配置 (chunk configuration)
      * @return 文档块列表 (list of document chunks)
-     * @throws PPLException PPL计算异常 (PPL calculation exception)
+     * @throws PPLException PPL计算异常 (PPL计算异常)
      */
     private List<DocumentChunk> pplBasedChunk(List<String> sentences, ChunkConfig config) throws PPLException {
         List<DocumentChunk> chunks = new ArrayList<>();
 
         if (sentences.isEmpty()) {
             return chunks;
+        }
+
+        // 检测图片标记位置
+        Set<Integer> imagePositions = detectImageMarkers(sentences);
+
+        if (!imagePositions.isEmpty()) {
+            log.debug("   🖼️ 检测到 {} 个图片位置标记", imagePositions.size());
         }
 
         // 计算每个句子的 PPL
@@ -530,7 +537,7 @@ public class PPLOnnxService implements PPLService {
             pplScores.add(ppl);
         }
 
-        // 找到 PPL 突变点
+        // 找到 PPL 突变点（考虑图片位置）
         List<Integer> splitPoints = new ArrayList<>();
         splitPoints.add(0); // 起始点
 
@@ -538,8 +545,17 @@ public class PPLOnnxService implements PPLService {
             double currentPPL = pplScores.get(i);
             double prevPPL = pplScores.get(i - 1);
 
+            // 计算 PPL 变化
+            double pplDelta = Math.abs(currentPPL - prevPPL);
+
+            // 如果附近有图片标记，降低切分权重
+            if (isNearImagePosition(i, imagePositions)) {
+                pplDelta *= 0.3;  // 大幅降低图片附近的切分概率
+                log.debug("   📍 位置 {} 靠近图片，PPL 权重降低至 {}", i, pplDelta);
+            }
+
             // PPL 变化超过阈值，且当前块不为空
-            if (Math.abs(currentPPL - prevPPL) > config.getPplThreshold()) {
+            if (pplDelta > config.getPplThreshold()) {
                 splitPoints.add(i);
             }
         }
@@ -623,6 +639,57 @@ public class PPLOnnxService implements PPLService {
     }
 
     /**
+     * 检测文本中的图片标记位置
+     * Detect image markers in text
+     *
+     * 图片标记格式：[图片-xxx：描述] 或 [图片-xxx.png：描述]
+     *
+     * @param sentences 句子列表
+     * @return 包含图片标记的句子索引集合
+     */
+    private Set<Integer> detectImageMarkers(List<String> sentences) {
+        Set<Integer> imagePositions = new HashSet<>();
+
+        for (int i = 0; i < sentences.size(); i++) {
+            String sentence = sentences.get(i);
+
+            // 检测图片标记格式：[图片-xxx：
+            if (sentence.contains("[图片-") || sentence.contains("[Image-")) {
+                imagePositions.add(i);
+                log.debug("   🖼️ 句子 {} 包含图片标记", i);
+            }
+        }
+
+        return imagePositions;
+    }
+
+    /**
+     * 判断位置是否靠近图片标记
+     * Check if position is near image markers
+     *
+     * 策略：图片前后各2个句子范围内都认为是"靠近"
+     *
+     * @param position 当前位置
+     * @param imagePositions 图片位置集合
+     * @return 是否靠近图片
+     */
+    private boolean isNearImagePosition(int position, Set<Integer> imagePositions) {
+        if (imagePositions.isEmpty()) {
+            return false;
+        }
+
+        // 检查前后2个句子范围
+        int range = 2;
+        for (int offset = -range; offset <= range; offset++) {
+            if (imagePositions.contains(position + offset)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * 基于 PPL 的文档重排序
      * (PPL-based document reranking)
      *
@@ -633,7 +700,7 @@ public class PPLOnnxService implements PPLService {
      * @param candidates 候选文档列表 (list of candidate documents)
      * @param config 重排序配置 (rerank configuration)
      * @return 重排序后的文档列表 (reranked document list)
-     * @throws PPLException PPL计算异常 (PPL calculation exception)
+     * @throws PPLException PPL计算异常 (PPL计算异常)
      */
     @Override
     public List<Document> rerank(String question, List<Document> candidates, RerankConfig config) throws PPLException {
