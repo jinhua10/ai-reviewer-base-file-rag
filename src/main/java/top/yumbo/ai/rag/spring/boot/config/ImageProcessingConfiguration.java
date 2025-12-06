@@ -54,10 +54,6 @@ public class ImageProcessingConfiguration {
 
         // 根据配置添加策略
         switch (strategy.toLowerCase()) {
-            case "ocr":
-                addOcrStrategy(extractor, config);
-                break;
-
             case "vision-llm":
                 // 优先使用 LLMClient（如果支持图片）
                 if (llmClient != null && llmClient.supportsImageInput()) {
@@ -68,25 +64,15 @@ public class ImageProcessingConfiguration {
                 }
                 break;
 
-            case "llm-vision":
-                // 强制使用 LLMClient（Force using LLMClient）
+            case "llm-client":
+                // 使用主 LLM 客户端的图片识别功能（Use main LLM client's image recognition）
                 if (llmClient != null && llmClient.supportsImageInput()) {
                     addLLMClientVisionStrategy(extractor);
                 } else {
-                    // 如果主 LLM 不支持图片，退回到 vision-llm 配置（If main LLM doesn't support images, fallback to vision-llm config）
+                    // 如果主 LLM 不支持图片，退回到 vision-llm 配置
                     log.warn(I18N.get("log.imageproc.llm_fallback_vision"));
                     addVisionLlmStrategy(extractor, config);
                 }
-                break;
-
-            case "hybrid":
-                // 混合模式：优先 LLM Vision / Vision LLM，其次 OCR
-                if (llmClient != null && llmClient.supportsImageInput()) {
-                    addLLMClientVisionStrategy(extractor);
-                } else {
-                    addVisionLlmStrategy(extractor, config);
-                }
-                addOcrStrategy(extractor, config);
                 break;
 
             case "placeholder":

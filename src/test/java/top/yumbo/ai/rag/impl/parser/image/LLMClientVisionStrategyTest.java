@@ -235,7 +235,7 @@ class LLMClientVisionStrategyTest {
         System.out.println("\n💡 推荐：");
         System.out.println("   - 如果主 LLM 支持图片，建议使用 LLMClientVisionStrategy");
         System.out.println("   - 可以避免重复配置，统一管理 API Key 和模型");
-        System.out.println("   - 在 application.yml 中设置 strategy: llm-vision");
+        System.out.println("   - 在 application.yml 中设置 strategy: llm-client");
     }
 }
 

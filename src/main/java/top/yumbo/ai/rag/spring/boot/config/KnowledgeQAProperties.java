@@ -344,8 +344,10 @@ public class KnowledgeQAProperties {
     @Data
     public static class ImageProcessingConfig {
         /**
-         * 图片处理策略: placeholder, ocr, vision-llm, hybrid
-         * (Image processing strategy)
+         * 图片处理策略 (Image processing strategy)
+         * - placeholder: 占位符（默认）
+         * - vision-llm: 使用独立的 Vision LLM 配置
+         * - llm-client: 使用主 LLM 客户端（需要主 LLM 支持图片）
          */
         private String strategy = "placeholder";
 
@@ -356,15 +358,6 @@ public class KnowledgeQAProperties {
          */
         private String extractionMode = "concise";
 
-        /**
-         * 是否启用 OCR (Whether to enable OCR)
-         */
-        private boolean enableOcr = false;
-
-        /**
-         * OCR 配置 (OCR configuration)
-         */
-        private OcrConfig ocr = new OcrConfig();
 
         /**
          * Vision LLM 配置 (Vision LLM configuration)
@@ -372,21 +365,6 @@ public class KnowledgeQAProperties {
         private VisionLlmConfig visionLlm = new VisionLlmConfig();
     }
 
-    /**
-     * OCR 配置
-     */
-    @Data
-    public static class OcrConfig {
-        /**
-         * Tesseract 数据路径
-         */
-        private String tessdataPath = "${TESSDATA_PREFIX:}";
-
-        /**
-         * 识别语言 (chi_sim=简体中文, eng=英文)
-         */
-        private String language = "chi_sim+eng";
-    }
 
     /**
      * Vision LLM 配置

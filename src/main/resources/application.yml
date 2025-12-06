@@ -734,16 +734,16 @@ knowledge:
     image-processing:
       # 图片处理策略:
       #   - placeholder: 占位符（默认，零依赖）
-      #   - vision-llm: Vision LLM 语义理解（使用独立配置的 vision-llm）
-      #   - llm-vision: 使用主 LLM 客户端的图片识别功能（仅当主 LLM 支持图片时有效）
+      #   - vision-llm: 使用独立的 Vision LLM 配置（下方 vision-llm 配置节）
+      #   - llm-client: 使用主 LLM 客户端的图片识别功能（仅当主 LLM 支持 Vision 时有效）
       #
       # 💡 重要说明：
-      #   - llm-vision 策略要求主 LLM 模型支持图片（如 gpt-4o、qwen-vl-plus）
-      #   - 如果主 LLM 是 deepseek-chat 等不支持图片的模型，请使用 vision-llm 策略
+      #   - llm-client 策略要求主 LLM 模型支持图片（如 gpt-4o、qwen-vl-plus）
+      #   - 如果主 LLM 不支持图片（如 deepseek-chat），请使用 vision-llm 策略
       #   - vision-llm 策略使用独立配置，不依赖主 LLM
       #
       # 推荐配置：
-      #   - 主 LLM 支持图片（qwen-vl-plus、gpt-4o）→ 使用 llm-vision
+      #   - 主 LLM 支持图片（qwen-vl-plus、gpt-4o）→ 使用 llm-client
       #   - 主 LLM 不支持图片（deepseek-chat）→ 使用 vision-llm
       strategy: vision-llm
 
