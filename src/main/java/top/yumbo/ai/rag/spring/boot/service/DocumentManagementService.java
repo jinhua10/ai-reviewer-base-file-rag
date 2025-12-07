@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
@@ -33,6 +34,7 @@ import java.util.stream.Stream;
 public class DocumentManagementService {
 
     private final KnowledgeQAProperties properties;
+    private final FileTrackingService fileTrackingService;
     private final Path documentsPath;
 
     // 支持的文件格式 / Supported file formats
@@ -40,8 +42,11 @@ public class DocumentManagementService {
             "xlsx", "xls", "docx", "doc", "pptx", "ppt", "pdf", "txt", "md", "html", "xml"
     );
 
-    public DocumentManagementService(KnowledgeQAProperties properties) {
+    @Autowired
+    public DocumentManagementService(KnowledgeQAProperties properties,
+                                      FileTrackingService fileTrackingService) {
         this.properties = properties;
+        this.fileTrackingService = fileTrackingService;
 
         // 获取文档路径
         String sourcePath = properties.getKnowledgeBase().getSourcePath();
@@ -201,8 +206,10 @@ public class DocumentManagementService {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 info.setUploadTime(sdf.format(new Date(attrs.creationTime().toMillis())));
 
-                // TODO: 检查是否已索引 / Check if indexed
-                info.setIndexed(true);
+                // 检查是否已索引 / Check if indexed
+                // 通过 FileTrackingService 检查文件是否在追踪列表中
+                boolean indexed = fileTrackingService.isIndexed(path.toAbsolutePath().toString());
+                info.setIndexed(indexed);
 
                 documents.add(info);
             }

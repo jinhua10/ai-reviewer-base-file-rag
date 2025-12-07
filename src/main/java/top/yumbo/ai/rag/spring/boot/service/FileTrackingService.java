@@ -102,6 +102,27 @@ public class FileTrackingService {
     }
 
     /**
+     * 检查文件是否已索引
+     *
+     * @param filePath 文件完整路径
+     * @return true 如果文件已索引
+     */
+    public boolean isIndexed(String filePath) {
+        return fileTracking.containsKey(filePath);
+    }
+
+    /**
+     * 检查文件是否已索引（通过文件名）
+     *
+     * @param fileName 文件名
+     * @return true 如果文件已索引
+     */
+    public boolean isIndexedByName(String fileName) {
+        return fileTracking.values().stream()
+            .anyMatch(info -> fileName.equals(info.getFileName()));
+    }
+
+    /**
      * 标记文件已索引
      *
      * @param file 文件对象
