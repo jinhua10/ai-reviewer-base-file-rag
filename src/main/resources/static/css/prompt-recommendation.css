@@ -1,0 +1,225 @@
+/**
+ * Prompt Recommendation Panel Styles (提示词推荐面板样式)
+ * 
+ * 提示词推荐弹窗的样式定义
+ * Style definitions for prompt recommendation modal
+ * 
+ * @author AI Reviewer Team
+ * @since 2025-12-07
+ */
+
+/* 遮罩层 (Overlay) */
+.prompt-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+}
+
+/* 主面板 (Main panel) */
+.prompt-panel {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* 头部 (Header) */
+.prompt-panel-header {
+    padding: 20px 24px;
+    border-bottom: 2px solid #E8EAF6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.prompt-panel-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.prompt-panel-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-weight: bold;
+}
+
+.prompt-panel-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* 策略标签区 (Strategy tag area) */
+.prompt-strategy-tag-area {
+    padding: 12px 24px;
+    background-color: #F5F5F5;
+    border-bottom: 1px solid #E0E0E0;
+}
+
+.prompt-strategy-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+/* 内容区 (Content area) */
+.prompt-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+/* 加载状态 (Loading state) */
+.prompt-panel-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #666;
+}
+
+.prompt-panel-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #E0E0E0;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: prompt-spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes prompt-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 错误状态 (Error state) */
+.prompt-panel-error {
+    padding: 20px;
+    background-color: #FFEBEE;
+    color: #C62828;
+    border-radius: 8px;
+    text-align: center;
+    margin: 20px;
+}
+
+/* 空状态 (Empty state) */
+.prompt-panel-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.prompt-panel-empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.prompt-panel-empty-hint {
+    font-size: 13px;
+    color: #BBB;
+    margin-top: 8px;
+}
+
+/* 提示词列表 (Prompt list) */
+.prompt-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 提示词项 (Prompt item) */
+.prompt-item {
+    padding: 16px;
+    background-color: #FAFAFA;
+    border-radius: 12px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.prompt-item:hover {
+    border-color: #667eea;
+    background-color: #F3F4FF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+/* 提示词头部 (Prompt header) */
+.prompt-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.prompt-item-rating {
+    font-size: 16px;
+}
+
+.prompt-item-strategy-label {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* 提示词文本 (Prompt text) */
+.prompt-item-text {
+    font-size: 15px;
+    color: #333;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+/* 提示词底部 (Prompt footer) */
+.prompt-item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #999;
+}
+
+.prompt-item-usage-count {
+    font-size: 12px;
+}
+
+.prompt-item-click-hint {
+    color: #667eea;
+    font-weight: 600;
+}
