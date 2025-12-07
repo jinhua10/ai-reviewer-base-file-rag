@@ -421,6 +421,14 @@ log:
     feedback_weight_detail: "📊 Document weight adjusted: {0} | Original: {1} | Weight: {2} | Adjusted: {3}"
   similar:
     found: "Found {0} similar documents"
+    init: "✅ SimilarQAService initialized with {0} stopwords"
+    query_empty: "Query is empty, skipping similar QA search"
+    service_not_init: "QARecordService not initialized, skipping similar QA search"
+    no_keywords: "No valid keywords in query: {0}"
+    keywords: "Query keywords: {0}"
+    config_missing: "⚠️ SimilarQAConfig not configured, using defaults"
+    no_history: "No historical QA records"
+    failed: "Similar QA search failed"
   chunk:
     ai_completed: "AI semantic chunking completed: {0} chars -> {1} chunks, Time taken: {2}ms"
     ai_failed: "AI semantic chunking failed, falling back to smart keyword chunking"

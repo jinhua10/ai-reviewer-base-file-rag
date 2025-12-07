@@ -57,7 +57,7 @@ public class SimilarQAService {
         if (searchConfig.getEnglishStopWords() != null) {
             searchConfig.getEnglishStopWords().forEach(w -> stopWords.add(w.toLowerCase()));
         }
-        log.debug("SimilarQAService initialized with {} stopwords", stopWords.size());
+        log.debug(I18N.get("log.similar.init", stopWords.size()));
     }
 
     /**
@@ -72,12 +72,12 @@ public class SimilarQAService {
     public List<SimilarQA> findSimilar(String question, int minScore, int limit) {
         // 参数校验 (Parameter validation)
         if (question == null || question.trim().isEmpty()) {
-            log.debug("查询问题为空，跳过相似问题检索 (Query is empty, skipping similar QA search)");
+            log.debug(I18N.get("log.similar.query_empty"));
             return Collections.emptyList();
         }
 
         if (qaRecordService == null) {
-            log.debug("QARecordService 未初始化，跳过相似问题检索 (QARecordService not initialized)");
+            log.debug(I18N.get("log.similar.service_not_init"));
             return Collections.emptyList();
         }
 
@@ -85,17 +85,17 @@ public class SimilarQAService {
             // 1. 提取查询问题的关键词 (Extract keywords from query)
             Set<String> queryKeywords = extractKeywords(question);
             if (queryKeywords.isEmpty()) {
-                log.debug("查询问题没有有效关键词: {} (No valid keywords in query)", question);
+                log.debug(I18N.get("log.similar.no_keywords", question));
                 return Collections.emptyList();
             }
 
-            log.debug("查询关键词: {} (Query keywords)", queryKeywords);
+            log.debug(I18N.get("log.similar.keywords", queryKeywords));
 
             // 2. 获取历史问答记录（从配置获取数量限制）
             // (Get historical QA records with limit from config)
             KnowledgeQAProperties.SimilarQAConfig config = properties.getSimilarQa();
             if (config == null) {
-                log.warn("SimilarQAConfig 未配置，使用默认值 (SimilarQAConfig not configured, using defaults)");
+                log.warn(I18N.get("log.similar.config_missing"));
                 config = new KnowledgeQAProperties.SimilarQAConfig();
             }
             int historyLimit = config.getHistoryLimit();
@@ -103,7 +103,7 @@ public class SimilarQAService {
 
             List<QARecord> records = qaRecordService.getRecentRecords(historyLimit);
             if (records == null || records.isEmpty()) {
-                log.debug("没有历史问答记录 (No historical QA records)");
+                log.debug(I18N.get("log.similar.no_history"));
                 return Collections.emptyList();
             }
 

@@ -421,6 +421,14 @@ log:
     feedback_weight_detail: "📊 文档权重调整: {0} | 原始分数: {1} | 权重: {2} | 调整后: {3}"
   similar:
     found: "找到 {0} 个相似文档"
+    init: "✅ SimilarQAService 初始化完成，加载 {0} 个停用词"
+    query_empty: "查询问题为空，跳过相似问题检索"
+    service_not_init: "QARecordService 未初始化，跳过相似问题检索"
+    no_keywords: "查询问题没有有效关键词: {0}"
+    keywords: "查询关键词: {0}"
+    config_missing: "⚠️ SimilarQAConfig 未配置，使用默认值"
+    no_history: "没有历史问答记录"
+    failed: "相似问题检索失败"
   chunk:
     ai_completed: "AI 语义分片完成：{0} 字符 -> {1} 个分片，耗时：{2}ms"
     ai_failed: "AI 语义分片失败，降级为智能关键词分片"
