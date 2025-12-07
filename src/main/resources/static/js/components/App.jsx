@@ -92,7 +92,7 @@ function App() {
             );
             setSelectedDocs(remainingDocIds);
             
-            console.log(`✖️ 已移除 ${removedCount} 个文档`);
+            console.log(t('logDocumentsRemoved').replace('{0}', removedCount));
         }
 
         return removedCount;
@@ -115,17 +115,17 @@ function App() {
 
     // 健康检查
     useEffect(() => {
-        console.log('📡 App mounted, checking health...');
+        console.log(t('logAppMounted'));
         checkHealth();
 
         // 每30秒检查一次服务状态
         const intervalId = setInterval(() => {
-            console.log('🔄 Auto checking health status...');
+            console.log(t('logAutoCheckingHealth'));
             checkHealth();
         }, 30000);
 
         return () => {
-            console.log('🧹 Cleaning up health check interval');
+            console.log(t('logCleaningInterval'));
             clearInterval(intervalId);
         };
     }, []);
@@ -157,12 +157,12 @@ function App() {
 
     const checkHealth = async () => {
         try {
-            console.log('🔍 Calling health API...');
+            console.log(t('logCallingHealthAPI'));
             const result = await window.api.health();
-            console.log('✅ Health check result:', result);
+            console.log(t('logHealthCheckResult'), result);
             setHealth(result);
         } catch (err) {
-            console.error('❌ Health check error:', err);
+            console.error(t('logHealthCheckError'), err);
             setHealth({ status: t('statusOffline'), message: 'Service connection failed' });
         }
     };

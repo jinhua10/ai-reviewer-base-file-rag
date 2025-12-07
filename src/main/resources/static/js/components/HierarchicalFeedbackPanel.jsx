@@ -64,7 +64,7 @@
                     }
                 }
             } catch (err) {
-                console.error('加载文档内容失败 (Failed to load document content):', err);
+                console.error(t('logHierarchicalLoadContentError'), err);
             } finally {
                 setContentLoading(false);
             }
@@ -830,5 +830,5 @@
     // 导出组件
     window.HierarchicalFeedbackPanel = HierarchicalFeedbackPanel;
 
-    console.log('✅ HierarchicalFeedbackPanel loaded');
+    console.log(window.LanguageModule ? window.LanguageModule.useTranslation().t('hierarchicalLogComponentLoaded') : '✅ HierarchicalFeedbackPanel loaded');
 })();

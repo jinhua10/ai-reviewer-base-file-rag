@@ -120,12 +120,12 @@
                         setAnalysisGoal(data.defaultGoal);
                     }
 
-                    console.log('✅ Strategy configuration loaded from server');
+                    console.log(t('logEmbeddedAIConfigLoaded'));
                 } else {
                     throw new Error('Failed to load configuration');
                 }
             } catch (error) {
-                console.warn('⚠️ Using default configuration:', error.message);
+                console.warn(t('logEmbeddedAIDefaultConfig'), error.message);
                 setConfig(prev => ({
                     ...prev,
                     loaded: true,
@@ -279,11 +279,11 @@
                         keyPoints: result.keyPoints || []
                     });
                 } catch (saveError) {
-                    console.warn('Failed to save result:', saveError);
+                    console.warn(t('logEmbeddedAISaveResultFailed'), saveError);
                 }
 
             } catch (error) {
-                console.error('Analysis failed:', error);
+                console.error(t('logEmbeddedAIAnalysisFailed'), error);
                 setCurrentAnalysis(prev => ({
                     ...prev,
                     status: 'error',
@@ -708,7 +708,7 @@
                     })
                 });
             } catch (e) {
-                console.warn('Feedback submission failed:', e);
+                console.warn(t('logEmbeddedAIFeedbackFailed'), e);
             }
         }
 
@@ -719,7 +719,7 @@
                 await loadConfiguration(); // 重新加载配置
                 setShowStrategyMarket(false);
             } catch (e) {
-                console.error('Strategy install failed:', e);
+                console.error(t('logEmbeddedAIInstallFailed'), e);
             }
         }
     };
@@ -745,7 +745,7 @@
                     setStrategies(data.strategies || []);
                 }
             } catch (e) {
-                console.error('Failed to load strategies:', e);
+                console.error(t('logEmbeddedAILoadStrategiesFailed'), e);
             } finally {
                 setLoading(false);
             }
@@ -887,5 +887,5 @@
         );
     }
 
-    console.log('✅ EmbeddedAIAnalysisPanel (Dynamic Version) loaded');
+    console.log(window.LanguageModule ? window.LanguageModule.useTranslation().t('embeddedAILogComponentLoaded') : '✅ EmbeddedAIAnalysisPanel loaded');
 })();

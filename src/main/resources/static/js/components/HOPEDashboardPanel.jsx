@@ -28,7 +28,7 @@ function HOPEDashboardPanel({ collapsed = false, onToggle }) {
             setDashboard(data);
         } catch (err) {
             setError(err.message || t('hopeLoadError'));
-            console.error('Failed to load HOPE dashboard:', err);
+            console.error(t('logHOPEDashboardError'), err);
         } finally {
             setLoading(false);
         }

@@ -41,7 +41,7 @@ function StatisticsTab() {
                 }
             }
         } catch (err) {
-            console.error('Failed to check indexing status:', err);
+            console.error(t('logStatisticsIndexingError'), err);
         }
     };
 

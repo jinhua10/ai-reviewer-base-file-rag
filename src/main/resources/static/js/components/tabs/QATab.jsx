@@ -144,7 +144,7 @@ function QATab() {
                 setSessionInfo(info);
             }
         } catch (err) {
-            console.error('Failed to fetch session info:', err);
+            console.error(t('logSessionInfoError'), err);
         }
     };
 
@@ -175,7 +175,7 @@ function QATab() {
 
             showToast(t('qaLoadMoreSuccess') || `已加载第 ${sessionDocs.currentPage} 批文档`, 'success');
         } catch (err) {
-            console.error('Failed to load more documents:', err);
+            console.error(t('logLoadMoreDocumentsError'), err);
             showToast(t('qaLoadMoreError') || '加载更多文档失败', 'error');
         } finally {
             setLoadingMore(false);
@@ -209,7 +209,7 @@ function QATab() {
 
             showToast(t('qaLoadPreviousSuccess') || `已加载第 ${sessionDocs.currentPage} 批文档`, 'success');
         } catch (err) {
-            console.error('Failed to load previous documents:', err);
+            console.error(t('logLoadPreviousDocumentsError'), err);
             showToast(t('qaLoadPreviousError') || '加载上一批文档失败', 'error');
         } finally {
             setLoadingMore(false);
@@ -1158,7 +1158,7 @@ function QATab() {
                                 }))}
                                 topKUsed={answer.sources?.length || 5}
                                 onFeedbackSubmit={(docName, isRelevant) => {
-                                    console.log('主动学习反馈:', docName, isRelevant);
+                                    console.log(t('logActiveLearningFeedback'), docName, isRelevant);
                                 }}
                                 t={t}
                             />

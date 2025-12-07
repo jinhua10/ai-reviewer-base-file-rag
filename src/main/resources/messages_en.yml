@@ -1622,12 +1622,20 @@ hope:
     auto_definition: "🔍 Auto-extracted definition: {0}"
     session_cleared: "🧹 Session cleared: {0}"
 
+  # Manager
+  manager:
+    disabled: "⚠️ HOPE system disabled"
+    learn_success: "✅ Learning successful: question=\"{0}\", rating={1}"
+    learn_failed: "❌ Learning failed"
+    promote_attempted: "📤 Attempting promotion to permanent layer: {0}"
+
   # Query related
   query:
     classified: "📋 Question classified: type={0}, complexity={1}, confidence={2}"
     direct_hit: "🚀 Permanent layer direct hit, confidence: {0}"
     completed: "✅ HOPE query completed: {0}, source={1}, time={2}ms"
     error: "❌ HOPE query error"
+    needs_llm: "🔄 Needs LLM processing"
 
   # Strategy related
   strategy:
@@ -1635,6 +1643,7 @@ hope:
     template_answer: "📝 Strategy: Template enhanced (template: {0})"
     reference_answer: "📚 Strategy: Reference enhanced (similarity: {0})"
     full_rag: "🔍 Strategy: Full RAG"
+    decided: "🎯 Response strategy decided: {0}"
 
   # Learning related
   learn:
@@ -1647,6 +1656,14 @@ hope:
     init_success: "📊 HOPE monitor service initialized"
     hourly_report: "📊 HOPE hourly performance report"
     metrics_reset: "🔄 HOPE metrics reset"
+    report_title: "=== HOPE Performance Report ({0}) ==="
+    total_queries: "Total Queries: {0}"
+    direct_answers: "Direct Answers: {0} ({1}%)"
+    llm_savings: "LLM Savings Rate: {0}%"
+    avg_response: "Avg Response Time: {0}ms"
+    permanent_hits: "Permanent Layer Hits: {0}"
+    ordinary_hits: "Ordinary Layer Hits: {0}"
+    high_freq_hits: "High-freq Layer Hits: {0}"
 
   # LLM Integration
   llm:
@@ -1655,4 +1672,8 @@ hope:
     template_used: "📝 Using skill template: {0}"
     reference_used: "📚 Using similar QA references: {0} items"
 
-
+  # Quality Service
+  quality:
+    low_confidence: "⚠️ Low confidence knowledge: {0}"
+    stale_knowledge: "⚠️ Stale knowledge: {0}"
+    high_error: "⚠️ High error rate knowledge: {0}"

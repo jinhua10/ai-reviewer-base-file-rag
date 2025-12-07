@@ -64,7 +64,7 @@ function DatePicker({ value, onChange, placeholder, language = 'zh' }) {
                     setViewMonth(date.getMonth());
                 }
             } catch (e) {
-                console.error('Invalid date value:', value);
+                console.error(window.LanguageModule ? window.LanguageModule.useTranslation().t('logDatePickerInvalidDate') : 'Invalid date value:', value);
             }
         }
     }, [value]);

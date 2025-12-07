@@ -39,7 +39,7 @@
                     setError(t('loadFailed') || '加载失败');
                 }
             } catch (err) {
-                console.error('Failed to load prompt recommendations:', err);
+                console.error(t('logPromptRecommendationError'), err);
                 setError((t('loadFailed') || '加载失败') + ': ' + err.message);
             } finally {
                 setLoading(false);
@@ -112,80 +112,80 @@
         if (!visible) return null;
 
         return (
-            <div style={styles.overlay}>
-                <div style={styles.panel}>
-                    {/* 标题栏 */}
-                    <div style={styles.header}>
-                        <h3 style={styles.title}>
+            <div className="prompt-panel-overlay" onClick={onClose}>
+                <div className="prompt-panel" onClick={(e) => e.stopPropagation()}>
+                    {/* 头部 (Header) */}
+                    <div className="prompt-panel-header">
+                        <h3 className="prompt-panel-title">
                             {t('promptRecommendationsTitle') || '💡 高赞提示词推荐'}
                         </h3>
-                        <button style={styles.closeButton} onClick={onClose}>
+                        <button className="prompt-panel-close-btn" onClick={onClose}>
                             ✕
                         </button>
                     </div>
 
-                    {/* 策略标签 */}
-                    <div style={styles.strategyTag}>
-                        <span style={{
-                            ...styles.strategyBadge,
-                            backgroundColor: getStrategyColor(strategy)
-                        }}>
+                    {/* 策略标签 (Strategy tag) */}
+                    <div className="prompt-strategy-tag-area">
+                        <span
+                            className="prompt-strategy-badge"
+                            style={{ backgroundColor: getStrategyColor(strategy) }}
+                        >
                             {getStrategyDisplayName(strategy)}
                         </span>
                     </div>
 
-                    {/* 内容区域 */}
-                    <div style={styles.content}>
+                    {/* 内容区域 (Content area) */}
+                    <div className="prompt-panel-content">
                         {loading && (
-                            <div style={styles.loading}>
-                                <div style={styles.spinner} />
+                            <div className="prompt-panel-loading">
+                                <div className="prompt-panel-spinner" />
                                 <p>{t('loading') || '加载中...'}</p>
                             </div>
                         )}
 
                         {error && (
-                            <div style={styles.error}>
+                            <div className="prompt-panel-error">
                                 ❌ {error}
                             </div>
                         )}
 
                         {!loading && !error && prompts.length === 0 && (
-                            <div style={styles.empty}>
-                                <div style={styles.emptyIcon}>📝</div>
+                            <div className="prompt-panel-empty">
+                                <div className="prompt-panel-empty-icon">📝</div>
                                 <p>{t('noPrompts') || '暂无高赞提示词'}</p>
-                                <p style={styles.emptyHint}>
+                                <p className="prompt-panel-empty-hint">
                                     {t('noPromptsHint') || '使用AI分析后，给予高评分的提示词会出现在这里'}
                                 </p>
                             </div>
                         )}
 
                         {!loading && !error && prompts.length > 0 && (
-                            <div style={styles.promptList}>
+                            <div className="prompt-list">
                                 {prompts.map((prompt, index) => (
                                     <div
                                         key={index}
-                                        style={styles.promptItem}
+                                        className="prompt-item"
                                         onClick={() => handleSelectPrompt(prompt)}
                                     >
-                                        <div style={styles.promptHeader}>
-                                            <span style={styles.rating}>
+                                        <div className="prompt-item-header">
+                                            <span className="prompt-item-rating">
                                                 {getRatingStars(prompt.rating)}
                                             </span>
-                                            <span style={{
-                                                ...styles.strategyLabel,
-                                                color: getStrategyColor(prompt.strategy)
-                                            }}>
+                                            <span
+                                                className="prompt-item-strategy-label"
+                                                style={{ color: getStrategyColor(prompt.strategy) }}
+                                            >
                                                 {getStrategyDisplayName(prompt.strategy)}
                                             </span>
                                         </div>
-                                        <div style={styles.promptText}>
+                                        <div className="prompt-item-text">
                                             {prompt.prompt}
                                         </div>
-                                        <div style={styles.promptFooter}>
-                                            <span style={styles.usageCount}>
+                                        <div className="prompt-item-footer">
+                                            <span className="prompt-item-usage-count">
                                                 🔥 {(t('usageTimes') || '使用 {0} 次').replace('{0}', prompt.usageCount)}
                                             </span>
-                                            <span style={styles.clickHint}>
+                                            <span className="prompt-item-click-hint">
                                                 {t('clickToUse') || '点击使用 →'}
                                             </span>
                                         </div>
@@ -199,194 +199,8 @@
         );
     };
 
-    const styles = {
-        overlay: {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10000,
-            backdropFilter: 'blur(4px)'
-        },
-        panel: {
-            backgroundColor: '#ffffff',
-            borderRadius: '16px',
-            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.3)',
-            width: '90%',
-            maxWidth: '600px',
-            maxHeight: '80vh',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden'
-        },
-        header: {
-            padding: '20px 24px',
-            borderBottom: '2px solid #E8EAF6',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-        },
-        title: {
-            margin: 0,
-            fontSize: '20px',
-            fontWeight: '700',
-            color: '#ffffff',
-            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-        },
-        closeButton: {
-            background: 'rgba(255, 255, 255, 0.2)',
-            border: 'none',
-            borderRadius: '50%',
-            width: '32px',
-            height: '32px',
-            fontSize: '18px',
-            color: '#ffffff',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-            fontWeight: 'bold'
-        },
-        strategyTag: {
-            padding: '12px 24px',
-            backgroundColor: '#F5F5F5',
-            borderBottom: '1px solid #E0E0E0'
-        },
-        strategyBadge: {
-            display: 'inline-block',
-            padding: '6px 16px',
-            borderRadius: '20px',
-            color: '#ffffff',
-            fontSize: '14px',
-            fontWeight: '600',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-        },
-        content: {
-            flex: 1,
-            overflowY: 'auto',
-            padding: '16px'
-        },
-        loading: {
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '60px 20px',
-            color: '#666'
-        },
-        spinner: {
-            width: '40px',
-            height: '40px',
-            border: '4px solid #E0E0E0',
-            borderTop: '4px solid #667eea',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            marginBottom: '16px'
-        },
-        error: {
-            padding: '20px',
-            backgroundColor: '#FFEBEE',
-            color: '#C62828',
-            borderRadius: '8px',
-            textAlign: 'center',
-            margin: '20px'
-        },
-        empty: {
-            textAlign: 'center',
-            padding: '60px 20px',
-            color: '#999'
-        },
-        emptyIcon: {
-            fontSize: '64px',
-            marginBottom: '16px'
-        },
-        emptyHint: {
-            fontSize: '13px',
-            color: '#BBB',
-            marginTop: '8px'
-        },
-        promptList: {
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px'
-        },
-        promptItem: {
-            padding: '16px',
-            backgroundColor: '#FAFAFA',
-            borderRadius: '12px',
-            border: '2px solid transparent',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            ':hover': {
-                borderColor: '#667eea',
-                backgroundColor: '#F3F4FF',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.2)'
-            }
-        },
-        promptHeader: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '10px'
-        },
-        rating: {
-            fontSize: '16px'
-        },
-        strategyLabel: {
-            fontSize: '12px',
-            fontWeight: '600',
-            padding: '4px 10px',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: '12px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-        },
-        promptText: {
-            fontSize: '15px',
-            color: '#333',
-            lineHeight: '1.6',
-            marginBottom: '10px',
-            fontWeight: '500'
-        },
-        promptFooter: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            fontSize: '12px',
-            color: '#999'
-        },
-        usageCount: {
-            fontSize: '12px'
-        },
-        clickHint: {
-            color: '#667eea',
-            fontWeight: '600'
-        }
-    };
+    // 样式已提取到 CSS 文件 (Styles extracted to CSS file)
+    // See: assets/css/prompt-recommendation.css
 
-    // 添加CSS动画
-    const styleSheet = document.createElement('style');
-    styleSheet.textContent = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .prompt-item-hover:hover {
-            border-color: #667eea !important;
-            background-color: #F3F4FF !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
-        }
-    `;
-    document.head.appendChild(styleSheet);
-
-    console.log('✅ PromptRecommendationPanel component loaded (JSX)');
+    console.log(window.LanguageModule ? window.LanguageModule.useTranslation().t('logPromptRecommendationLoaded') : '✅ PromptRecommendationPanel component loaded (JSX)');
 })();

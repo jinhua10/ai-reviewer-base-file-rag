@@ -1622,12 +1622,20 @@ hope:
     auto_definition: "🔍 自动提取定义: {0}"
     session_cleared: "🧹 会话已清除: {0}"
 
+  # 管理器 (Manager)
+  manager:
+    disabled: "⚠️ HOPE 系统未启用"
+    learn_success: "✅ 学习成功: 问题=\"{0}\", 评分={1}"
+    learn_failed: "❌ 学习失败"
+    promote_attempted: "📤 尝试晋升到低频层: {0}"
+
   # 查询相关
   query:
     classified: "📋 问题分类: 类型={0}, 复杂度={1}, 置信度={2}"
     direct_hit: "🚀 低频层直接命中，置信度: {0}"
     completed: "✅ HOPE 查询完成: {0}, 来源={1}, 耗时={2}ms"
     error: "❌ HOPE 查询出错"
+    needs_llm: "🔄 需要 LLM 处理"
 
   # 策略相关
   strategy:
@@ -1635,6 +1643,7 @@ hope:
     template_answer: "📝 策略: 模板增强 (模板: {0})"
     reference_answer: "📚 策略: 参考增强 (相似度: {0})"
     full_rag: "🔍 策略: 完整RAG"
+    decided: "🎯 响应策略已决策: {0}"
 
   # 学习相关
   learn:
@@ -1647,6 +1656,14 @@ hope:
     init_success: "📊 HOPE 监控服务初始化成功"
     hourly_report: "📊 HOPE 小时性能报告"
     metrics_reset: "🔄 HOPE 监控指标已重置"
+    report_title: "=== HOPE 性能报告 ({0}) ==="
+    total_queries: "总查询数: {0}"
+    direct_answers: "直接回答: {0} ({1}%)"
+    llm_savings: "LLM 节省率: {0}%"
+    avg_response: "平均响应时间: {0}ms"
+    permanent_hits: "低频层命中: {0}"
+    ordinary_hits: "中频层命中: {0}"
+    high_freq_hits: "高频层命中: {0}"
 
   # LLM 集成 (LLM Integration)
   llm:
@@ -1655,4 +1672,8 @@ hope:
     template_used: "📝 使用技能模板: {0}"
     reference_used: "📚 使用相似问答参考: {0} 条"
 
-
+  # 质量服务 (Quality Service)
+  quality:
+    low_confidence: "⚠️ 低置信度知识: {0}"
+    stale_knowledge: "⚠️ 过时知识: {0}"
+    high_error: "⚠️ 高错误率知识: {0}"
