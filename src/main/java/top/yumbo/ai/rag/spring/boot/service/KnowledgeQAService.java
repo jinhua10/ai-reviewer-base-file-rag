@@ -416,7 +416,8 @@ public class KnowledgeQAService {
             String context = contextBuilder.buildSmartContext(question, documents);
             log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
-            // 步骤3: 收集可用的图片信息
+            // 步骤3: 收集可用的图片信息（使用 YAML 格式压缩重复内容）
+            // (Step 3: Collect image info using YAML format to reduce redundant content)
             List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
             StringBuilder imageContext = new StringBuilder();
 
@@ -431,24 +432,30 @@ public class KnowledgeQAService {
                         // 从配置获取每文档最大图片数 (Get max images per doc from config)
                         int maxImagesPerDoc = properties.getImageProcessing().getMaxImagesPerDoc();
 
-                        imageContext.append(I18N.get("knowledge_qa_service.available_images", doc.getTitle()));
+                        // 使用 YAML 格式减少重复 (Use YAML format to reduce redundancy)
+                        // 提取公共前缀 (Extract common prefix)
+                        String baseUrl = "/api/images/" + doc.getTitle() + "/";
+                        imageContext.append("images:\n");
+                        imageContext.append("  doc: \"").append(doc.getTitle()).append("\"\n");
+                        imageContext.append("  base_url: \"").append(baseUrl).append("\"\n");
+                        imageContext.append("  list:\n");
+
                         for (int i = 0; i < Math.min(docImages.size(), maxImagesPerDoc); i++) {
                             top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.related_image");
-                            // 格式：图片 1：描述（来源：URL）![描述](URL)
-                            // (Format: Image 1: description (source: URL) ![desc](URL))
-                            imageContext.append("\n  ")
-                                       .append(I18N.get("knowledge_qa_service.image_item",
-                                           i + 1, imgDesc, img.getUrl()))
-                                       .append(" ")
-                                       .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
+                            // 只保存相对路径部分，去掉公共前缀 (Keep only relative path, remove common prefix)
+                            String relativePath = img.getUrl().replace(baseUrl, "");
+                            imageContext.append("    - id: ").append(i + 1).append("\n");
+                            imageContext.append("      file: \"").append(relativePath).append("\"\n");
+                            if (!imgDesc.equals(I18N.get("knowledge_qa_service.related_image"))) {
+                                imageContext.append("      desc: \"").append(imgDesc).append("\"\n");
+                            }
                         }
                         if (docImages.size() > maxImagesPerDoc) {
-                            imageContext.append("\n  ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - maxImagesPerDoc));
+                            imageContext.append("  more: ").append(docImages.size() - maxImagesPerDoc).append("\n");
                         }
-                        imageContext.append("\n");
                     }
                 } catch (Exception e) {
                     log.warn(I18N.get("knowledge_qa_service.image_not_found", doc.getTitle()), e);
@@ -673,7 +680,8 @@ public class KnowledgeQAService {
             String context = contextBuilder.buildSmartContext(question, documents);
             log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
-            // 步骤3: 收集可用的图片信息
+            // 步骤3: 收集可用的图片信息（使用 YAML 格式压缩重复内容）
+            // (Step 3: Collect image info using YAML format to reduce redundant content)
             List<ImageInfo> allImages = new ArrayList<>();
             StringBuilder imageContext = new StringBuilder();
 
@@ -685,23 +693,32 @@ public class KnowledgeQAService {
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
 
-                        imageContext.append(I18N.get("knowledge_qa_service.available_images", doc.getTitle()));
-                        for (int i = 0; i < Math.min(docImages.size(), 5); i++) {
+                        // 从配置获取每文档最大图片数，这里使用 5 作为默认值 (Max images per doc)
+                        int maxImagesPerDoc = 5;
+
+                        // 使用 YAML 格式减少重复 (Use YAML format to reduce redundancy)
+                        String baseUrl = "/api/images/" + doc.getTitle() + "/";
+                        imageContext.append("images:\n");
+                        imageContext.append("  doc: \"").append(doc.getTitle()).append("\"\n");
+                        imageContext.append("  base_url: \"").append(baseUrl).append("\"\n");
+                        imageContext.append("  list:\n");
+
+                        for (int i = 0; i < Math.min(docImages.size(), maxImagesPerDoc); i++) {
                             ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.related_image");
-                            // 格式：图片 1：描述（来源：URL）![描述](URL)
-                            imageContext.append("\n  ")
-                                       .append(I18N.get("knowledge_qa_service.image_item",
-                                           i + 1, imgDesc, img.getUrl()))
-                                       .append(" ")
-                                       .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
+                            // 只保存相对路径部分 (Keep only relative path)
+                            String relativePath = img.getUrl().replace(baseUrl, "");
+                            imageContext.append("    - id: ").append(i + 1).append("\n");
+                            imageContext.append("      file: \"").append(relativePath).append("\"\n");
+                            if (!imgDesc.equals(I18N.get("knowledge_qa_service.related_image"))) {
+                                imageContext.append("      desc: \"").append(imgDesc).append("\"\n");
+                            }
                         }
-                        if (docImages.size() > 5) {
-                            imageContext.append("\n  ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - 5));
+                        if (docImages.size() > maxImagesPerDoc) {
+                            imageContext.append("  more: ").append(docImages.size() - maxImagesPerDoc).append("\n");
                         }
-                        imageContext.append("\n");
                     }
                 } catch (Exception e) {
                     log.warn(I18N.get("knowledge_qa_service.image_not_found", doc.getTitle()), e);
