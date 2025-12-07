@@ -416,8 +416,8 @@ public class KnowledgeQAService {
             String context = contextBuilder.buildSmartContext(question, documents);
             log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
-            // 步骤3: 收集可用的图片信息（使用 YAML 格式压缩重复内容）
-            // (Step 3: Collect image info using YAML format to reduce redundant content)
+            // 步骤3: 收集可用的图片信息
+            // (Step 3: Collect image info with both index and ready-to-use Markdown links)
             List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
             StringBuilder imageContext = new StringBuilder();
 
@@ -431,30 +431,29 @@ public class KnowledgeQAService {
 
                         // 从配置获取每文档最大图片数 (Get max images per doc from config)
                         int maxImagesPerDoc = properties.getImageProcessing().getMaxImagesPerDoc();
+                        int displayCount = Math.min(docImages.size(), maxImagesPerDoc);
 
-                        // 使用 YAML 格式减少重复 (Use YAML format to reduce redundancy)
-                        // 提取公共前缀 (Extract common prefix)
-                        String baseUrl = "/api/images/" + doc.getTitle() + "/";
-                        imageContext.append("images:\n");
-                        imageContext.append("  doc: \"").append(doc.getTitle()).append("\"\n");
-                        imageContext.append("  base_url: \"").append(baseUrl).append("\"\n");
-                        imageContext.append("  list:\n");
+                        // 构建图片引用区块 (Build image reference block)
+                        imageContext.append("\n---\n");
+                        imageContext.append("📎 ").append(I18N.get("knowledge_qa_service.doc_images_header", doc.getTitle(), displayCount));
+                        imageContext.append("\n");
 
-                        for (int i = 0; i < Math.min(docImages.size(), maxImagesPerDoc); i++) {
+                        // 提供可直接复制的 Markdown 链接 (Provide ready-to-use Markdown links)
+                        for (int i = 0; i < displayCount; i++) {
                             top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
-                                : I18N.get("knowledge_qa_service.related_image");
-                            // 只保存相对路径部分，去掉公共前缀 (Keep only relative path, remove common prefix)
-                            String relativePath = img.getUrl().replace(baseUrl, "");
-                            imageContext.append("    - id: ").append(i + 1).append("\n");
-                            imageContext.append("      file: \"").append(relativePath).append("\"\n");
-                            if (!imgDesc.equals(I18N.get("knowledge_qa_service.related_image"))) {
-                                imageContext.append("      desc: \"").append(imgDesc).append("\"\n");
-                            }
+                                : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
+
+                            // 提供完整的 Markdown 链接，AI 可直接引用
+                            // (Provide complete Markdown link that AI can directly reference)
+                            imageContext.append("[图").append(i + 1).append("] ");
+                            imageContext.append(imgDesc).append("\n");
+                            imageContext.append("  📷 `![").append(imgDesc).append("](").append(img.getUrl()).append(")`\n");
                         }
+
                         if (docImages.size() > maxImagesPerDoc) {
-                            imageContext.append("  more: ").append(docImages.size() - maxImagesPerDoc).append("\n");
+                            imageContext.append("  ⋯ ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - maxImagesPerDoc)).append("\n");
                         }
                     }
                 } catch (Exception e) {
@@ -680,8 +679,8 @@ public class KnowledgeQAService {
             String context = contextBuilder.buildSmartContext(question, documents);
             log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
-            // 步骤3: 收集可用的图片信息（使用 YAML 格式压缩重复内容）
-            // (Step 3: Collect image info using YAML format to reduce redundant content)
+            // 步骤3: 收集可用的图片信息
+            // (Step 3: Collect image info with ready-to-use Markdown links)
             List<ImageInfo> allImages = new ArrayList<>();
             StringBuilder imageContext = new StringBuilder();
 
@@ -693,31 +692,29 @@ public class KnowledgeQAService {
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
 
-                        // 从配置获取每文档最大图片数，这里使用 5 作为默认值 (Max images per doc)
-                        int maxImagesPerDoc = 5;
+                        // 从配置获取每文档最大图片数 (Max images per doc)
+                        int maxImagesPerDoc = properties.getImageProcessing().getMaxImagesPerDoc();
+                        int displayCount = Math.min(docImages.size(), maxImagesPerDoc);
 
-                        // 使用 YAML 格式减少重复 (Use YAML format to reduce redundancy)
-                        String baseUrl = "/api/images/" + doc.getTitle() + "/";
-                        imageContext.append("images:\n");
-                        imageContext.append("  doc: \"").append(doc.getTitle()).append("\"\n");
-                        imageContext.append("  base_url: \"").append(baseUrl).append("\"\n");
-                        imageContext.append("  list:\n");
+                        // 构建图片引用区块 (Build image reference block)
+                        imageContext.append("\n---\n");
+                        imageContext.append("📎 ").append(I18N.get("knowledge_qa_service.doc_images_header", doc.getTitle(), displayCount));
+                        imageContext.append("\n");
 
-                        for (int i = 0; i < Math.min(docImages.size(), maxImagesPerDoc); i++) {
+                        // 提供可直接复制的 Markdown 链接 (Provide ready-to-use Markdown links)
+                        for (int i = 0; i < displayCount; i++) {
                             ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
-                                : I18N.get("knowledge_qa_service.related_image");
-                            // 只保存相对路径部分 (Keep only relative path)
-                            String relativePath = img.getUrl().replace(baseUrl, "");
-                            imageContext.append("    - id: ").append(i + 1).append("\n");
-                            imageContext.append("      file: \"").append(relativePath).append("\"\n");
-                            if (!imgDesc.equals(I18N.get("knowledge_qa_service.related_image"))) {
-                                imageContext.append("      desc: \"").append(imgDesc).append("\"\n");
-                            }
+                                : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
+
+                            imageContext.append("[图").append(i + 1).append("] ");
+                            imageContext.append(imgDesc).append("\n");
+                            imageContext.append("  📷 `![").append(imgDesc).append("](").append(img.getUrl()).append(")`\n");
                         }
+
                         if (docImages.size() > maxImagesPerDoc) {
-                            imageContext.append("  more: ").append(docImages.size() - maxImagesPerDoc).append("\n");
+                            imageContext.append("  ⋯ ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - maxImagesPerDoc)).append("\n");
                         }
                     }
                 } catch (Exception e) {
