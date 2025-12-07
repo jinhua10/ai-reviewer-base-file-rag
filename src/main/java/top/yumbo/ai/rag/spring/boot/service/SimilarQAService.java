@@ -62,34 +62,60 @@ public class SimilarQAService {
 
     /**
      * 查找相似问题
+     * (Find similar questions)
      *
-     * @param question  用户问题
-     * @param minScore  最小相似度分数（0-100）
-     * @param limit     返回数量上限
-     * @return 相似问题列表，按相似度降序排序
+     * @param question  用户问题 (User question)
+     * @param minScore  最小相似度分数（0-100）(Minimum similarity score)
+     * @param limit     返回数量上限 (Result limit)
+     * @return 相似问题列表，按相似度降序排序 (Similar questions sorted by similarity descending)
      */
     public List<SimilarQA> findSimilar(String question, int minScore, int limit) {
+        // 参数校验 (Parameter validation)
+        if (question == null || question.trim().isEmpty()) {
+            log.debug("查询问题为空，跳过相似问题检索 (Query is empty, skipping similar QA search)");
+            return Collections.emptyList();
+        }
+
+        if (qaRecordService == null) {
+            log.debug("QARecordService 未初始化，跳过相似问题检索 (QARecordService not initialized)");
+            return Collections.emptyList();
+        }
+
         try {
-            // 1. 提取查询问题的关键词
+            // 1. 提取查询问题的关键词 (Extract keywords from query)
             Set<String> queryKeywords = extractKeywords(question);
             if (queryKeywords.isEmpty()) {
-                log.debug("查询问题没有有效关键词: {}", question);
+                log.debug("查询问题没有有效关键词: {} (No valid keywords in query)", question);
                 return Collections.emptyList();
             }
 
-            log.debug("查询关键词: {}", queryKeywords);
+            log.debug("查询关键词: {} (Query keywords)", queryKeywords);
 
             // 2. 获取历史问答记录（从配置获取数量限制）
+            // (Get historical QA records with limit from config)
             KnowledgeQAProperties.SimilarQAConfig config = properties.getSimilarQa();
+            if (config == null) {
+                log.warn("SimilarQAConfig 未配置，使用默认值 (SimilarQAConfig not configured, using defaults)");
+                config = new KnowledgeQAProperties.SimilarQAConfig();
+            }
             int historyLimit = config.getHistoryLimit();
             int minRating = config.getMinRating();
 
             List<QARecord> records = qaRecordService.getRecentRecords(historyLimit);
+            if (records == null || records.isEmpty()) {
+                log.debug("没有历史问答记录 (No historical QA records)");
+                return Collections.emptyList();
+            }
+
             List<SimilarQA> candidates = new ArrayList<>();
 
-            // 3. 计算每条记录的相似度
+            // 3. 计算每条记录的相似度 (Calculate similarity for each record)
             for (QARecord record : records) {
-                // 跳过低评分记录（使用配置的最低评分阈值）
+                // 跳过空记录和低评分记录（使用配置的最低评分阈值）
+                // (Skip null records and low-rated records)
+                if (record == null || record.getQuestion() == null) {
+                    continue;
+                }
                 if (record.getOverallRating() == null || record.getOverallRating() < minRating) {
                     continue;
                 }
@@ -99,22 +125,22 @@ public class SimilarQAService {
                     continue;
                 }
 
-                // 计算关键词重叠度
+                // 计算关键词重叠度 (Calculate keyword overlap)
                 int similarity = calculateSimilarity(queryKeywords, recordKeywords);
 
                 if (similarity >= minScore) {
                     SimilarQA qa = new SimilarQA();
                     qa.setQuestion(record.getQuestion());
-                    qa.setAnswer(record.getAnswer());
+                    qa.setAnswer(record.getAnswer() != null ? record.getAnswer() : "");
                     qa.setRating(record.getOverallRating());
                     qa.setRecordId(record.getId());
-                    qa.setSimilarity(similarity / 100.0f); // 转换为0-1范围
+                    qa.setSimilarity(similarity / 100.0f); // 转换为0-1范围 (Convert to 0-1 range)
 
                     candidates.add(qa);
                 }
             }
 
-            // 4. 按相似度排序并限制返回数量
+            // 4. 按相似度排序并限制返回数量 (Sort by similarity and limit results)
             List<SimilarQA> results = candidates.stream()
                 .sorted(Comparator.comparing(SimilarQA::getSimilarity).reversed()
                        .thenComparing(SimilarQA::getRating).reversed())

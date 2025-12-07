@@ -392,6 +392,13 @@ log:
     cleaned: "Cleaned expired session: {0}"
     cleaned_count: "Cleaned {0} expired sessions"
     not_found: "Session not found: {0}"
+    evicted: "📊 Session limit exceeded, evicted oldest session: {0} (current {1}/{2})"
+  cache:
+    init: "✅ Search cache initialized (max size: {0}, TTL: {1} minutes)"
+    hit: "🎯 Cache hit: {0}"
+    miss: "📭 Cache miss: {0} (search took {1}ms)"
+    cleared: "🗑️ All caches cleared"
+    search_cleared: "🗑️ Search cache cleared"
   ppl:
     rerank_start: "🔄 Starting PPL Rerank for {0} documents..."
     rerank_completed: "✅ PPL Rerank completed in {0}ms"

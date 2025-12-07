@@ -51,6 +51,12 @@ public class SearchSessionService {
      * @return 会话ID
      */
     public String createSession(String question, List<Document> allDocuments, int documentsPerQuery) {
+        // 先清理过期会话 (Clean expired sessions first)
+        cleanExpiredSessions();
+
+        // 检查会话数量限制 (Check session count limit)
+        enforceSessionLimit();
+
         String sessionId = UUID.randomUUID().toString();
 
         SearchSession session = new SearchSession();
@@ -66,10 +72,33 @@ public class SearchSessionService {
 
         log.info(I18N.get("log.session.create", sessionId, allDocuments.size(), documentsPerQuery));
 
-        // 清理过期会话
-        cleanExpiredSessions();
-
         return sessionId;
+    }
+
+    /**
+     * 强制执行会话数量限制
+     * (Enforce session count limit by removing oldest sessions)
+     */
+    private void enforceSessionLimit() {
+        int maxSessions = properties.getSession().getMaxSessions();
+        if (maxSessions <= 0) {
+            return; // 无限制 (No limit)
+        }
+
+        while (sessions.size() >= maxSessions) {
+            // 找到最旧的会话并删除 (Find and remove oldest session)
+            String oldestSessionId = sessions.entrySet().stream()
+                .min(Comparator.comparing(e -> e.getValue().getLastAccessTime()))
+                .map(Map.Entry::getKey)
+                .orElse(null);
+
+            if (oldestSessionId != null) {
+                sessions.remove(oldestSessionId);
+                log.info(I18N.get("log.session.evicted", oldestSessionId, sessions.size(), maxSessions));
+            } else {
+                break;
+            }
+        }
     }
 
     /**

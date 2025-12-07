@@ -35,20 +35,24 @@ public class HybridSearchService {
     private final SearchConfigService configService;
     private final QueryExpansionService queryExpansionService;
     private final DocumentWeightService documentWeightService;
+    private final SearchCacheService searchCacheService;
 
     @Autowired
     public HybridSearchService(KnowledgeQAProperties properties,
                                SearchConfigService configService,
                                @Autowired(required = false) QueryExpansionService queryExpansionService,
-                               @Autowired(required = false) DocumentWeightService documentWeightService) {
+                               @Autowired(required = false) DocumentWeightService documentWeightService,
+                               @Autowired(required = false) SearchCacheService searchCacheService) {
         this.properties = properties;
         this.configService = configService;
         this.queryExpansionService = queryExpansionService;
         this.documentWeightService = documentWeightService;
+        this.searchCacheService = searchCacheService;
     }
 
     /**
-     * 混合检索：结合 Lucene 关键词检索和向量语义检索（Hybrid search: combines Lucene keyword search and vector semantic search）
+     * 混合检索：结合 Lucene 关键词检索和向量语义检索
+     * (Hybrid search: combines Lucene keyword search and vector semantic search)
      *
      * @param question 查询问题（Query question）
      * @param rag RAG 实例（RAG instance）
@@ -59,13 +63,30 @@ public class HybridSearchService {
     public List<Document> hybridSearch(String question, LocalFileRAG rag,
                                       LocalEmbeddingEngine embeddingEngine,
                                       SimpleVectorIndexEngine vectorIndexEngine) {
+        // 使用缓存包装检索逻辑 (Wrap search logic with cache)
+        if (searchCacheService != null) {
+            return searchCacheService.getCachedOrSearch(question,
+                () -> doHybridSearch(question, rag, embeddingEngine, vectorIndexEngine));
+        }
+        return doHybridSearch(question, rag, embeddingEngine, vectorIndexEngine);
+    }
+
+    /**
+     * 执行实际的混合检索逻辑
+     * (Execute actual hybrid search logic)
+     */
+    private List<Document> doHybridSearch(String question, LocalFileRAG rag,
+                                          LocalEmbeddingEngine embeddingEngine,
+                                          SimpleVectorIndexEngine vectorIndexEngine) {
         try {
             long startTime = System.currentTimeMillis();
 
             // 0. 查询扩展（优化：提升召回率）
+            // (Query expansion for improved recall)
             String expandedQuestion = expandQueryIfEnabled(question);
 
             // 1. Lucene 关键词检索（快速粗筛）
+            // (Lucene keyword search for quick filtering)
             String keywords = extractKeywords(expandedQuestion);
             log.info(I18N.get("log.hybrid.extract_keywords", keywords));
 
