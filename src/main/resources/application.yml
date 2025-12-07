@@ -589,6 +589,45 @@ knowledge:
       #   - 高召回：0.05-0.08（优化后推荐）
       min-score-threshold: 0.06
 
+      # === 混合检索权重配置（2025-12-07）===
+      #
+      # 混合评分公式：finalScore = luceneWeight × luceneScore + vectorWeight × vectorScore
+      #
+      # 说明：
+      #   - luceneWeight: 关键词检索权重，适合精确匹配
+      #   - vectorWeight: 向量检索权重，适合语义理解
+      #   - 两个权重之和不必等于 1.0，但建议保持约 1.0
+      #
+      # 推荐配置：
+      #   - 通用场景：lucene=0.3, vector=0.7（默认，语义优先）
+      #   - 技术文档：lucene=0.4, vector=0.6（关键词更重要）
+      #   - 自然语言：lucene=0.2, vector=0.8（语义更重要）
+
+      # Lucene 关键词检索权重（0.0-1.0）
+      lucene-weight: 0.3
+
+      # 向量语义检索权重（0.0-1.0）
+      vector-weight: 0.7
+
+    # ============================================================
+    # 相似问题推荐配置（Similar QA Recommendation）
+    # ============================================================
+    similar-qa:
+      # 历史记录查询数量上限
+      # 系统会查询最近 N 条高评分问答记录用于相似度匹配
+      history-limit: 100
+
+      # 最低评分阈值（1-5）
+      # 只有评分 >= 此值的问答记录才会被用于推荐
+      min-rating: 4
+
+      # 最小相似度分数（0-100）
+      # 相似度低于此值的问题不会被推荐
+      min-score: 30
+
+      # 推荐结果数量上限
+      limit: 3
+
     # LLM 配置
     llm:
       # LLM 提供商
