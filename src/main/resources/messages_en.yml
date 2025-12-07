@@ -1642,4 +1642,10 @@ hope:
     error: "❌ Failed to save learning record"
     promoted: "⬆️ Knowledge promoted to permanent layer: {0}"
 
+  # Monitor Service - Phase 4
+  monitor:
+    init_success: "📊 HOPE monitor service initialized"
+    hourly_report: "📊 HOPE hourly performance report"
+    metrics_reset: "🔄 HOPE metrics reset"
+
 

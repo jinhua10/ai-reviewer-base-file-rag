@@ -1642,4 +1642,10 @@ hope:
     error: "❌ 学习记录保存失败"
     promoted: "⬆️ 知识已晋升到低频层: {0}"
 
+  # 监控服务 (Monitor Service) - Phase 4
+  monitor:
+    init_success: "📊 HOPE 监控服务初始化成功"
+    hourly_report: "📊 HOPE 小时性能报告"
+    metrics_reset: "🔄 HOPE 监控指标已重置"
+
 
