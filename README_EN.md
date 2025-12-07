@@ -46,16 +46,18 @@ English | [简体中文](README.md)
 - ✅ Fully offline operation, supports intranet deployment
 
 ### 🎯 Multimodal Document Support
-- 📄 **Text Formats**: TXT, MD, CSV, JSON, XML
+- 📄 **Text Formats**: TXT, MD, CSV, JSON, XML, HTML
 - 📊 **Office Documents**: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX
-- 🖼️ **Image OCR**: PNG, JPG, JPEG, GIF, BMP, TIFF
+- 🖼️ **Image Understanding**: PNG, JPG, JPEG, GIF, BMP (Vision LLM)
 - 🔤 **Code Files**: Java, Python, JavaScript, Go, C++
 - 📦 **35+ Formats**: Auto-recognition, smart parsing
 
-### 🚀 Flexible OCR Engines
-- **Tesseract**: Open-source, offline, supports 100+ languages
-- **GPT-4o Vision**: High-precision recognition, understands complex charts
-- **PaddleOCR**: Baidu product, Chinese optimized, GPU accelerated
+### 🚀 Multimodal AI Image Understanding
+- **Vision LLM**: Multiple vision models supported
+  - 🇨🇳 **Qwen-VL-Plus**: Chinese optimized, cost-effective
+  - 🇺🇸 **OpenAI GPT-4o**: High precision, complex chart understanding
+  - 🏠 **Ollama Local** (llava, minicpm-v): Fully offline, privacy protection
+- **Flexible Strategy**: placeholder / vision-llm / llm-client modes
 
 ### 🤖 Multi-LLM Support
 - **OpenAI**: GPT-4o, GPT-4, GPT-3.5
@@ -68,6 +70,19 @@ English | [简体中文](README.md)
 - **Smart Tokenization**: IK Chinese word segmentation, multilingual optimization
 - **Caching Mechanism**: Caffeine cache, sub-second response
 - **Concurrency Support**: Thread-safe, supports high-concurrency queries
+
+### 🔀 Hybrid Search Architecture (v1.1 New)
+- **Lucene + Vector Fusion**: BM25 keyword search + semantic vector search
+- **Strategy Dispatcher**: Auto-select best strategy (hybrid/keyword/vector)
+- **Query Expansion**: Synonym expansion + optional LLM rewrite for better recall
+- **PPL Rerank**: Perplexity-based re-ranking for improved precision
+- **Feedback Loop**: User ratings affect document weights, smarter with use
+
+### 📊 Feedback Optimization System (v1.1 New)
+- **Dynamic Weights**: High-rated docs auto-promoted, low-rated demoted
+- **QA Archiving**: High-quality QAs auto-archived as KB documents
+- **Similar Question Recommendations**: Smart recommendations from history
+- **Time Decay**: Weights naturally decay over time, maintaining freshness
 
 ---
 
@@ -117,6 +132,47 @@ LocalFileRAG:
 
 ---
 
+## 🔄 Retrieval Pipeline Architecture (v1.1)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      User Question                               │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 0: Similar Question Recommendation                         │
+│  ├── Search high-rated historical QAs                            │
+│  └── Found similar → Show historical answer as reference         │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 1: Strategy Dispatch (SearchStrategyDispatcher)            │
+│  ├── Auto-evaluate strategy suitability                          │
+│  └── Select best: hybrid / keyword / vector                      │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 2: Hybrid Search (HybridSearchService)                     │
+│  ├── Query Expansion: synonyms + optional LLM rewrite            │
+│  ├── Lucene BM25: keyword quick filter (top-100)                 │
+│  ├── Vector Search: semantic refinement (top-50)                 │
+│  ├── Hybrid Score: 0.3×Lucene + 0.7×Vector                       │
+│  └── Feedback Weight: adjusted score × doc weight                │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 3: PPL Rerank (Optional)                                   │
+│  ├── Calculate document perplexity                               │
+│  └── Re-rank: (1-α)×original + α×PPL score                       │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│  Step 4: Context Building + LLM Generation + Feedback Recording  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 📦 Prerequisites
 
 ### Required Dependencies
@@ -124,22 +180,23 @@ LocalFileRAG:
 - **Maven 3.6+** or **Gradle 7.0+**
 
 ### Optional Dependencies (install as needed)
-- **Tesseract OCR 5.0+** (for image recognition)
+- **Ollama** (for local PPL chunking and Vision LLM)
   ```bash
-  # Ubuntu/Debian
-  sudo apt-get install tesseract-ocr tesseract-ocr-chi-sim
+  # Install Ollama: https://ollama.com/download
   
-  # macOS
-  brew install tesseract tesseract-lang
+  # Download PPL chunking model
+  ollama pull qwen2.5:0.5b
   
-  # Windows
-  # Download installer: https://github.com/UB-Mannheim/tesseract/wiki
+  # Download Vision LLM model (optional, for image understanding)
+  ollama pull llava:7b
+  # or
+  ollama pull minicpm-v
   ```
 
-- **PaddleOCR** (optional, requires Python)
-  ```bash
-  pip install paddlepaddle paddleocr
-  ```
+- **Vector Model** (for hybrid search, BGE-Base-ZH built-in)
+  - System defaults to `bge-base-zh` model
+  - Model files located at `./models/bge-base-zh/`
+  - Ready to use, no additional download needed
 
 ---
 
@@ -170,17 +227,19 @@ local-file-rag:
   
   # LLM Configuration
   llm:
-    provider: openai                    # openai, deepseek, claude
-    api-key: ${OPENAI_API_KEY}
-    model: gpt-4o
-    temperature: 0.7
+    provider: openai                    # openai (compatible with DeepSeek, etc.)
+    api-key: ${AI_API_KEY}
+    model: deepseek-chat
+    api-url: https://api.deepseek.com/v1/chat/completions
     
-  # OCR Configuration (optional)
-  ocr:
-    provider: tesseract                 # tesseract, gpt4o, paddleocr
-    tesseract:
-      data-path: /usr/share/tesseract-ocr/5/tessdata
-      language: chi_sim+eng
+  # Image Processing Configuration (optional)
+  image-processing:
+    strategy: vision-llm               # placeholder / vision-llm / llm-client
+    vision-llm:
+      enabled: true
+      model: qwen-vl-plus              # or gpt-4o / llava:7b (Ollama)
+      api-key: ${QW_API_KEY}
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
 ```
 
 #### 3️⃣ Write Code
@@ -311,7 +370,9 @@ java -jar target/ai-reviewer-base-file-rag-1.0.jar
 | **LocalFileRAG** | Core RAG engine for indexing and retrieval | [View Code](src/main/java/top/yumbo/ai/rag/service/LocalFileRAG.java) |
 | **DocumentParser** | Document parser, supports 35+ formats | [View Code](src/main/java/top/yumbo/ai/rag/impl/parser) |
 | **LLMClient** | LLM client, supports multiple models | [View Code](src/main/java/top/yumbo/ai/rag/llm) |
-| **OCREngine** | OCR engine for image text recognition | [View Code](src/main/java/top/yumbo/ai/rag/ocr) |
+| **VisionLLMService** | Vision LLM service for image understanding | [View Code](src/main/java/top/yumbo/ai/rag/service/image) |
+| **PPLServiceFacade** | PPL service for smart chunking and reranking | [View Code](src/main/java/top/yumbo/ai/rag/ppl) |
+| **HybridSearchService** | Hybrid search with Lucene+Vector fusion | [View Code](src/main/java/top/yumbo/ai/rag/service/search) |
 
 ### Configuration Reference
 
@@ -341,27 +402,47 @@ local-file-rag:
   # LLM configuration
   llm:
     provider: openai
-    api-key: ${OPENAI_API_KEY}
-    model: gpt-4o
-    endpoint: https://api.openai.com/v1/chat/completions
-    temperature: 0.7
-    max-tokens: 2000
+    api-key: ${AI_API_KEY}
+    model: deepseek-chat
+    api-url: https://api.deepseek.com/v1/chat/completions
+    max-context-length: 20000
+    max-doc-length: 5000
     timeout-seconds: 30
     max-retries: 3
     
-  # OCR configuration
-  ocr:
-    provider: tesseract
-    tesseract:
-      data-path: /usr/share/tesseract-ocr/5/tessdata
-      language: chi_sim+eng
-    gpt-vision:
-      api-key: ${OPENAI_API_KEY}
-      model: gpt-4o
-      detail: high
-    paddleocr:
-      use-gpu: false
-      lang: ch
+  # Image processing configuration
+  image-processing:
+    strategy: vision-llm            # placeholder / vision-llm / llm-client
+    extraction-mode: concise        # concise / detailed
+    vision-llm:
+      enabled: true
+      model: qwen-vl-plus           # qwen-vl-plus / gpt-4o / llava:7b
+      api-key: ${QW_API_KEY}
+      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      
+  # PPL smart chunking configuration
+  ppl:
+    enabled: true
+    default-provider: onnx          # onnx / ollama / openai
+    chunking:
+      strategy: ppl                 # ppl / llm / auto
+      ppl-threshold: 20.0
+      target-chunk-size: 1500
+      max-chunk-size: 2500
+    reranking:
+      enabled: true
+      weight: 0.25
+      top-k: 8
+      
+  # Vector search configuration
+  vector-search:
+    enabled: true
+    model:
+      name: bge-base-zh
+      path: ./models/bge-base-zh/model.onnx
+    similarity-threshold: 0.5
+    lucene-weight: 0.3
+    vector-weight: 0.7
 ```
 
 </details>
@@ -453,13 +534,13 @@ limitations under the License.
 
 📄 **Text**: TXT, MD, CSV, JSON, XML, HTML, RTF  
 📊 **Office**: DOC, DOCX, XLS, XLSX, PPT, PPTX, PDF  
-🖼️ **Images** (OCR): PNG, JPG, JPEG, GIF, BMP, TIFF  
+🖼️ **Images**: PNG, JPG, JPEG, GIF, BMP (via Vision LLM)  
 🔤 **Code**: Java, Python, JS, Go, C++, C#, PHP, Ruby  
 📦 **Others**: ZIP, TAR, SQL, LOG, etc.
 
 **Auto-Detection**: Based on Apache Tika, automatically detects file types without manual parser specification.
 
-**OCR Support**: Text in images can be recognized via Tesseract/GPT-4o Vision/PaddleOCR, supports Chinese/English mixed.
+**Image Understanding**: Image content is intelligently understood via Vision LLM (Qwen-VL, GPT-4o, Ollama llava), supports Chinese/English mixed content.
 
 ---
 
@@ -606,23 +687,27 @@ eureka:
 
 ## 🗺️ Roadmap
 
-### ✅ v1.0 (Current) - 2024 Q4
+### ✅ v1.0 (Released) - 2024 Q4
 - ✅ Core RAG engine based on Lucene
 - ✅ 35+ document format support
-- ✅ Multi-LLM integration (OpenAI/DeepSeek/Claude)
-- ✅ Multi-OCR engines (Tesseract/GPT-4o/PaddleOCR)
+- ✅ Multi-LLM integration (OpenAI/DeepSeek/Qwen)
 - ✅ Spring Boot Starter
 - ✅ REST API interfaces
 - ✅ Cache optimization
 - ✅ Chinese & English documentation
 
-### 🔄 v1.1 (In Progress) - 2025 Q1
-- 🔨 Swagger/OpenAPI documentation
-- 🔨 Docker image support
-- 🔨 Performance benchmarking tools
-- 🔨 Hybrid search mode (BM25 + vector fusion)
-- 🔨 Document version management
-- 🔨 More LLM support (Qwen/ERNIE)
+### ✅ v1.1 (Current) - 2025 Q1
+- ✅ Hybrid search mode (BM25 + vector fusion)
+- ✅ PPL smart chunking (ONNX/Ollama/OpenAI switchable)
+- ✅ PPL Rerank re-ranking
+- ✅ Query expansion (synonyms + optional LLM rewrite)
+- ✅ Feedback system (dynamic weights, time decay)
+- ✅ Similar question recommendations
+- ✅ Vision LLM image understanding
+- ✅ Multi-document analysis strategy framework
+- ✅ Search cache optimization
+- ✅ Complete i18n support
+- ✅ Auto-indexing configuration
 
 ### 🚀 v2.0 (Planned) - 2025 Q2
 - 📋 Distributed indexing support
@@ -632,6 +717,7 @@ eureka:
 - 📋 Prometheus/Grafana monitoring
 - 📋 GraphQL API
 - 📋 WebSocket real-time push
+- 📋 Docker image support
 
 ### 🎯 v3.0 (Future) - 2025 Q3-Q4
 - 💡 Enterprise features (SLA guarantees)
@@ -663,9 +749,10 @@ eureka:
 | Component | LocalFileRAG | Traditional RAG |
 |-----------|--------------|-----------------|
 | **Search Engine** | Apache Lucene 9.9.1 | Pinecone/Weaviate/Milvus |
-| **Vectorization** | Optional ONNX (local) | Required OpenAI Embedding |
+| **Vectorization** | ONNX BGE-Base-ZH (local) | Cloud OpenAI Embedding |
 | **Doc Parsing** | Apache Tika + POI | LangChain Loaders |
-| **OCR Engine** | 3 options (local) | Cloud API |
+| **Image Understanding** | Vision LLM (multi-model) | Cloud API |
+| **Smart Chunking** | PPL (ONNX/Ollama/OpenAI) | Fixed-length split |
 | **Cache** | Caffeine (in-memory) | Redis (external) |
 | **Storage** | FileSystem + SQLite | S3/OSS (cloud) |
 | **Framework** | Spring Boot 2.7.18 | FastAPI/Flask |
@@ -678,8 +765,10 @@ This project is built on the following excellent open-source projects:
 
 - [Apache Lucene](https://lucene.apache.org/) - Full-text search engine
 - [Apache Tika](https://tika.apache.org/) - Document parsing framework
-- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) - OCR engine
 - [Spring Boot](https://spring.io/projects/spring-boot) - Application framework
+- [ONNX Runtime](https://onnxruntime.ai/) - AI model inference
+- [Hugging Face](https://huggingface.co/) - NLP tools and models
+- [Ollama](https://ollama.com/) - Local LLM deployment
 
 Thanks to all contributors for their hard work! 🙏
 
@@ -691,6 +780,49 @@ Thanks to all contributors for their hard work! 🙏
 - **Issue Tracking**: [Issues](https://github.com/jinhua10/ai-reviewer-base-file-rag/issues)
 - **Discussions**: [Discussions](https://github.com/jinhua10/ai-reviewer-base-file-rag/discussions)
 - **Email**: [1015770492@qq.com](mailto:1015770492@qq.com)
+
+---
+
+## 📝 Changelog
+
+### v1.1.0 (2025-12-07) - Current Version
+
+#### 🚀 New Features
+- **Hybrid Search**: Lucene + Vector fusion with configurable weights
+- **PPL Smart Chunking**: Perplexity-based chunking (ONNX/Ollama/OpenAI switchable)
+- **PPL Rerank**: Perplexity-based document re-ranking
+- **Query Expansion**: Synonym expansion + optional LLM rewrite for better recall
+- **Feedback System**: User ratings affect document weights with time decay
+- **Similar Question Recommendations**: Smart recommendations from high-rated history
+- **Vision LLM**: Multi-model image understanding (Qwen-VL/GPT-4o/Ollama)
+- **Multi-Document Analysis**: Pluggable strategy framework with auto-selection
+- **Search Cache**: Caffeine cache with configurable TTL and capacity
+- **Auto-Indexing**: Automatic incremental indexing after file upload
+
+#### 🔧 Improvements
+- Synonym lookup optimized from O(n) to O(1) (reverse index)
+- Cache key includes config hash for auto-invalidation
+- Complete i18n support (Chinese/English)
+- Configurable search weights and thresholds
+- Enhanced logging with configurable display limits
+
+#### 🐛 Bug Fixes
+- Fixed hardcoded document weight file path
+- Fixed hardcoded cache size and TTL
+- Fixed various i18n issues
+
+#### 🗑️ Removed
+- Removed Tesseract OCR dependency (replaced by Vision LLM)
+- Removed PaddleOCR support
+- Removed legacy Netty HTTP server code
+
+### v1.0.0 (2025-11-22)
+
+#### 🎉 Initial Release
+- Apache Lucene-based full-text search
+- 35+ document format support
+- Multi-LLM support (OpenAI/DeepSeek/Qwen)
+- Spring Boot Starter integration
 
 ---
 
