@@ -1,3 +1,7 @@
+# 请在release页面下载模型压缩包存放在 release/models
+
+仓库地址：[models download](https://github.com/jinhua10/models)
+
 # 🚀 一键下载脚本使用指南
 
 ## 📅 最后更新

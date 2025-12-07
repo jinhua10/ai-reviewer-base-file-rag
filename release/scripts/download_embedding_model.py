@@ -4,8 +4,8 @@
 支持 BGE、Text2Vec 等国产模型
 
 使用方法：
-    python download_embedding_model.py --model bge-m3
-    python download_embedding_model.py --model bge-base-zh --mirror
+    python scripts\download_embedding_model.py --model bge-m3
+    python scripts\download_embedding_model.py --model bge-base-zh --mirror
 """
 
 import os

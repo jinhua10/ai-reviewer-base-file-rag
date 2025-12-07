@@ -550,6 +550,56 @@ knowledge:
     max-weight: 2.0
     enable-dynamic-weighting: true
 
+  # ============================================================
+  # HOPE 三层记忆架构配置（参考 Google HOPE 论文）
+  # 让知识库越来越智能，减少 AI 调用，提升响应速度
+  # ============================================================
+  hope:
+    # 是否启用 HOPE 架构
+    enabled: true
+
+    # 低频层配置 - 技能知识库（永久存储）
+    permanent:
+      storage-path: ./data/hope/permanent
+      # 晋升到低频层的最小访问次数
+      promotion-min-access-count: 10
+      # 晋升到低频层的最小平均评分
+      promotion-min-avg-rating: 4.5
+      # 直接回答的最小置信度
+      direct-answer-confidence: 0.9
+
+    # 中频层配置 - 近期知识（Phase 2）
+    ordinary:
+      storage-path: ./data/hope/ordinary
+      # 保留时间（天）
+      retention-days: 30
+      # 直接使用历史答案的相似度阈值
+      similarity-threshold: 0.95
+      # 作为参考的相似度阈值
+      reference-threshold: 0.7
+      # 最大存储条目数
+      max-entries: 10000
+
+    # 高频层配置 - 实时上下文（Phase 3）
+    high-frequency:
+      # 存储方式: memory / redis
+      storage: memory
+      # 会话超时（分钟）
+      session-timeout-minutes: 30
+      # 最大会话数
+      max-sessions: 1000
+      # 每个会话最大历史记录数
+      max-history-per-session: 20
+
+    # 响应策略配置
+    strategy:
+      # 直接回答的置信度阈值
+      direct-answer-confidence: 0.9
+      # 是否启用技能模板
+      enable-skill-templates: true
+      # 是否启用问题分类
+      enable-question-classification: true
+
 # 日志配置
 logging:
   level:
