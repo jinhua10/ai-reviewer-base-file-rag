@@ -54,6 +54,12 @@ public class PPLOnnxService implements PPLService {
     // PPL 缓存
     private Cache<String, Double> pplCache;
 
+    // 模型配置（从模型输入推断）(Model config inferred from model inputs)
+    private int numLayers = 0;           // transformer 层数 (number of transformer layers)
+    private int numHeads = 0;            // 注意力头数 (number of attention heads)
+    private int headDim = 0;             // 每个头的维度 (dimension per head)
+    private boolean useKVCache = false;  // 是否使用 KV Cache (whether to use KV cache)
+
     public PPLOnnxService(PPLConfig config) {
         this.config = config;
         this.metrics = new PPLMetrics();
@@ -80,6 +86,9 @@ public class PPLOnnxService implements PPLService {
             this.session = env.createSession(onnxConfig.getModelPath(), sessionOptions);
             log.info(I18N.get("ppl_onnx.log.model_loaded", onnxConfig.getModelPath()));
 
+            // 打印模型输入输出信息，用于诊断 (Print model input/output info for diagnosis)
+            logModelInfo();
+
             // 3. 加载 Tokenizer
             this.tokenizer = HuggingFaceTokenizer.newInstance(Paths.get(onnxConfig.getTokenizerPath()));
             log.info(I18N.get("ppl_onnx.log.tokenizer_loaded", onnxConfig.getTokenizerPath()));
@@ -104,6 +113,53 @@ public class PPLOnnxService implements PPLService {
     }
 
     /**
+     * 打印模型输入输出信息，用于诊断
+     * (Print model input/output info for diagnosis)
+     */
+    private void logModelInfo() {
+        try {
+            log.info("📊 模型输入信息 (Model Input Info):");
+            Map<String, NodeInfo> inputInfo = session.getInputInfo();
+            for (Map.Entry<String, NodeInfo> entry : inputInfo.entrySet()) {
+                String name = entry.getKey();
+                NodeInfo info = entry.getValue();
+                log.info("  - 输入: {} (类型: {})", name, info.getInfo());
+
+                // 检测是否使用 KV Cache (Check if using KV cache)
+                if (name.startsWith("past_key_values.")) {
+                    useKVCache = true;
+                    // 提取层数 (Extract layer count)
+                    try {
+                        String[] parts = name.split("\\.");
+                        if (parts.length >= 2) {
+                            int layerNum = Integer.parseInt(parts[1]);
+                            numLayers = Math.max(numLayers, layerNum + 1);
+                        }
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+
+            log.info("📊 模型输出信息 (Model Output Info):");
+            Map<String, NodeInfo> outputInfo = session.getOutputInfo();
+            for (Map.Entry<String, NodeInfo> entry : outputInfo.entrySet()) {
+                log.info("  - 输出: {} (类型: {})", entry.getKey(), entry.getValue().getInfo());
+            }
+
+            if (useKVCache) {
+                log.info("⚠️ 模型使用 KV Cache，共 {} 层", numLayers);
+                // Qwen 默认参数：num_heads=14, head_dim=64 for 0.5B model
+                numHeads = 14;
+                headDim = 64;
+            } else {
+                log.info("✅ 模型不使用 KV Cache，可直接推理");
+            }
+
+        } catch (OrtException e) {
+            log.warn("⚠️ 无法获取模型信息: {}", e.getMessage());
+        }
+    }
+
+    /**
      * 计算文本的困惑度
      * (Calculate perplexity for text)
      *
@@ -118,6 +174,16 @@ public class PPLOnnxService implements PPLService {
     public double calculatePerplexity(String text) throws PPLException {
         if (text == null || text.trim().isEmpty()) {
             return Double.MAX_VALUE;
+        }
+
+        // 如果模型使用 KV Cache，暂不支持，提示用户使用 Ollama
+        // (If model uses KV Cache, not supported yet, suggest using Ollama)
+        if (useKVCache) {
+            throw new PPLException(PPLProviderType.ONNX,
+                    "当前 ONNX 模型使用 KV Cache，暂不支持。请使用 Ollama 作为替代: " +
+                    "1. 安装 Ollama: https://ollama.com/download " +
+                    "2. 下载模型: ollama pull qwen2.5:0.5b " +
+                    "3. 修改配置: knowledge.qa.ppl.default-provider=ollama");
         }
 
         // 检查缓存 (Check cache)
@@ -821,6 +887,13 @@ public class PPLOnnxService implements PPLService {
         try {
             // 检查关键组件是否已初始化 (Check if key components are initialized)
             if (session == null || tokenizer == null) {
+                return false;
+            }
+
+            // 如果模型使用 KV Cache，当前不支持，返回 false
+            // (If model uses KV Cache, not supported, return false)
+            if (useKVCache) {
+                log.warn("⚠️ ONNX 模型使用 KV Cache，当前不支持，请使用 Ollama 替代");
                 return false;
             }
 
