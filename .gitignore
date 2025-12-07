@@ -2,7 +2,7 @@
 /logs/
 *.log
 /knowledge-base/
-/release/models/*.onnx
+/release/models
 /release/data
 /release/logs
 /release/*.jar
