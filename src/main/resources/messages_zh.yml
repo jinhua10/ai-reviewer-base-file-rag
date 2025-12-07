@@ -1614,7 +1614,13 @@ hope:
   # 高频层 (High-frequency Layer) - Phase 3
   high_frequency:
     disabled: "🔒 HOPE 高频层已禁用"
-    init_success: "✅ HOPE 高频层初始化成功"
+    init_success: "✅ HOPE 高频层初始化成功，最大会话数: {0}，超时: {1}分钟"
+    session_created: "📝 创建新会话: {0}"
+    context_updated: "📝 会话上下文已更新: {0}，当前轮数: {1}"
+    context_found: "🔍 找到会话上下文: {0}"
+    definition_added: "📖 添加临时定义: {0} (会话: {1})"
+    auto_definition: "🔍 自动提取定义: {0}"
+    session_cleared: "🧹 会话已清除: {0}"
 
   # 查询相关
   query:

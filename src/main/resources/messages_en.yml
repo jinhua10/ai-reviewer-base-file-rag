@@ -1614,7 +1614,13 @@ hope:
   # High-frequency Layer - Phase 3
   high_frequency:
     disabled: "🔒 HOPE high-frequency layer disabled"
-    init_success: "✅ HOPE high-frequency layer initialized"
+    init_success: "✅ HOPE high-frequency layer initialized, max sessions: {0}, timeout: {1}min"
+    session_created: "📝 New session created: {0}"
+    context_updated: "📝 Session context updated: {0}, turns: {1}"
+    context_found: "🔍 Session context found: {0}"
+    definition_added: "📖 Temp definition added: {0} (session: {1})"
+    auto_definition: "🔍 Auto-extracted definition: {0}"
+    session_cleared: "🧹 Session cleared: {0}"
 
   # Query related
   query:
