@@ -52,7 +52,7 @@ echo [信息] 找到JAR文件: %JAR_FILE%
 echo.
 
 :: 检查Java环境
-jdk21/bin/java -version >nul 2>&1
+java -version >nul 2>&1
 if errorlevel 1 (
     echo [错误] 未找到Java环境
     echo.
@@ -108,7 +108,7 @@ echo ===========================================================================
 echo.
 
 :: 启动应用
-jdk21/bin/java %JAVA_OPTS% ^
+java %JAVA_OPTS% ^
   -jar %JAR_FILE% ^
   --spring.config.location=file:./config/application.yml ^
   --logging.file.name=./logs/knowledge-qa-system.log
