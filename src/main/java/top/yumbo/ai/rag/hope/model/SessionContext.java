@@ -24,50 +24,60 @@ public class SessionContext {
 
     /**
      * 会话ID
+     * (Session ID)
      */
     private String sessionId;
 
     /**
      * 当前话题
+     * (Current topic)
      */
     private String currentTopic;
 
     /**
      * 对话历史
+     * (Conversation history)
      */
     @Builder.Default
     private List<ConversationTurn> history = new ArrayList<>();
 
     /**
      * 临时定义/更正
+     * (Temporary definitions/corrections)
      */
     @Builder.Default
     private List<TempDefinition> tempDefinitions = new ArrayList<>();
 
     /**
      * 用户偏好（本会话）
+     * (User preference for this session)
      */
     private UserPreference preference;
 
     /**
      * 创建时间
+     * (Created time)
      */
     private LocalDateTime createdAt;
 
     /**
      * 最后活跃时间
+     * (Last active time)
      */
     private LocalDateTime lastActiveAt;
 
     /**
      * 对话轮次
+     * (Conversation turn)
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ConversationTurn {
-        private String role;      // user / assistant
+        /** 角色 user / assistant (Role: user / assistant) */
+        private String role;
+        /** 内容 (Content) */
         private String content;
         private LocalDateTime timestamp;
         private String topic;     // 该轮对话的话题（可选）

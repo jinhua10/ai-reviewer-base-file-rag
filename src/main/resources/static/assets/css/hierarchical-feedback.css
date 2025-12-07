@@ -1,0 +1,369 @@
+/**
+ * 分层反馈组件样式 (Hierarchical Feedback Component Styles)
+ * 组件特定前缀: hierarchical-*
+ * (Component-specific prefix: hierarchical-*)
+ */
+
+/* 面板容器 (Panel Container) */
+.hierarchical-panel {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* 头部 (Header) */
+.hierarchical-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 2px solid #e8eaf6;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.hierarchical-header-title {
+    margin: 0;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* 关闭按钮 (Close Button) */
+.hierarchical-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(238, 90, 111, 0.3);
+    line-height: 1;
+}
+
+.hierarchical-close-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(238, 90, 111, 0.4);
+}
+
+/* 标签页 (Tabs) */
+.hierarchical-tabs {
+    display: flex;
+    border-bottom: 1px solid #eee;
+}
+
+.hierarchical-tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.hierarchical-tab:hover {
+    background-color: #f5f5f5;
+}
+
+.hierarchical-tab-active {
+    background-color: #e3f2fd;
+    border-bottom: 2px solid #2196f3;
+    font-weight: bold;
+}
+
+/* 内容区 (Content Area) */
+.hierarchical-content {
+    padding: 20px;
+}
+
+.hierarchical-feedback-section {
+    /* Empty base style */
+}
+
+/* 评分行 (Rating Row) */
+.hierarchical-rating-row {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.hierarchical-star {
+    font-size: 28px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.hierarchical-star:hover {
+    transform: scale(1.2);
+}
+
+/* 选择框 (Select) */
+.hierarchical-select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.hierarchical-select:focus {
+    outline: none;
+    border-color: #2196f3;
+}
+
+/* 文本域 (Textarea) */
+.hierarchical-textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    margin-bottom: 15px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.hierarchical-textarea:focus {
+    outline: none;
+    border-color: #2196f3;
+}
+
+/* 标签容器 (Tags Container) */
+.hierarchical-tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.hierarchical-tag {
+    padding: 5px 12px;
+    border-radius: 15px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+    background-color: #fff;
+}
+
+.hierarchical-tag:hover {
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+}
+
+.hierarchical-tag-selected {
+    background-color: #2196f3;
+    color: #fff;
+    border-color: #2196f3;
+}
+
+/* 提交按钮 (Submit Button) */
+.hierarchical-submit-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.hierarchical-submit-btn:hover {
+    background-color: #43a047;
+}
+
+.hierarchical-submit-btn:active {
+    background-color: #388e3c;
+}
+
+/* 提示文本 (Hint Text) */
+.hierarchical-hint {
+    color: #666;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+/* 段落列表 (Paragraph List) */
+.hierarchical-paragraph-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.hierarchical-paragraph-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    gap: 10px;
+}
+
+.hierarchical-paragraph-content {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.hierarchical-paragraph-index {
+    color: #999;
+    margin-right: 8px;
+    font-weight: 500;
+}
+
+.hierarchical-paragraph-actions {
+    display: flex;
+    gap: 5px;
+}
+
+/* 有用/无用按钮 (Helpful/Not Helpful Buttons) */
+.hierarchical-helpful-btn,
+.hierarchical-not-helpful-btn {
+    padding: 5px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.hierarchical-helpful-btn {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.hierarchical-helpful-btn:hover {
+    background-color: #c8e6c9;
+}
+
+.hierarchical-not-helpful-btn {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.hierarchical-not-helpful-btn:hover {
+    background-color: #ffcdd2;
+}
+
+/* 选择工具栏 (Selection Toolbar) */
+.hierarchical-selection-toolbar {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.hierarchical-selected-text {
+    display: block;
+    margin-bottom: 10px;
+    font-style: italic;
+    color: #666;
+    font-size: 13px;
+}
+
+.hierarchical-highlight-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.hierarchical-highlight-btn {
+    padding: 6px 12px;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+
+.hierarchical-highlight-btn:hover {
+    transform: translateY(-1px);
+}
+
+.hierarchical-highlight-btn:active {
+    transform: translateY(0);
+}
+
+/* 内容显示区域 (Content Display Area) */
+.hierarchical-content-area {
+    padding: 15px;
+    background-color: #fafafa;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    user-select: text;
+}
+
+/* 高亮列表 (Highlights List) */
+.hierarchical-highlights-list {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+
+.hierarchical-highlight-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.hierarchical-highlight-item:last-child {
+    border-bottom: none;
+}
+
+.hierarchical-highlight-type {
+    padding: 2px 8px;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+/* 加载文本 (Loading Text) */
+.hierarchical-loading-text {
+    text-align: center;
+    color: #666;
+    padding: 20px;
+    font-size: 14px;
+}
+
+/* 响应式设计 (Responsive Design) */
+@media (max-width: 768px) {
+    .hierarchical-panel {
+        border-radius: 8px;
+    }
+
+    .hierarchical-header {
+        padding: 15px 18px;
+    }
+
+    .hierarchical-content {
+        padding: 15px;
+    }
+
+    .hierarchical-tab {
+        font-size: 13px;
+        padding: 10px;
+    }
+}

@@ -1,0 +1,232 @@
+/**
+ * 主动学习推荐组件样式 (Active Learning Recommendation Component Styles)
+ * 组件特定前缀: active-learning-*
+ * (Component-specific prefix: active-learning-*)
+ */
+
+/* 面板容器 (Panel Container) */
+.active-learning-panel {
+    background-color: #fff8e1;
+    border-radius: 8px;
+    border: 1px solid #ffca28;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+/* 头部 (Header) */
+.active-learning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: #fff3e0;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.active-learning-header:hover {
+    background-color: #ffe0b2;
+}
+
+.active-learning-title {
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #333;
+}
+
+.active-learning-badge {
+    background-color: #ff9800;
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.active-learning-expand-icon {
+    color: #666;
+    font-size: 12px;
+    transition: transform 0.3s;
+}
+
+.active-learning-expand-icon.expanded {
+    transform: rotate(180deg);
+}
+
+/* 内容区 (Content Area) */
+.active-learning-content {
+    padding: 15px;
+}
+
+/* 加载状态 (Loading State) */
+.active-learning-loading {
+    padding: 15px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+}
+
+/* 置信度条 (Confidence Bar) */
+.active-learning-confidence-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.active-learning-progress-bar {
+    flex: 1;
+    height: 8px;
+    background-color: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.active-learning-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+/* 原因说明 (Reason) */
+.active-learning-reason {
+    background-color: #e3f2fd;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+/* 章节 (Section) */
+.active-learning-section {
+    margin-bottom: 15px;
+}
+
+.active-learning-section-title {
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #666;
+}
+
+/* 文档项 (Document Item) */
+.active-learning-doc-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    border: 1px solid #eee;
+    transition: box-shadow 0.2s;
+}
+
+.active-learning-doc-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.active-learning-doc-info {
+    flex: 1;
+}
+
+.active-learning-doc-name {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    margin-bottom: 3px;
+    color: #333;
+}
+
+.active-learning-doc-reason {
+    display: block;
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+}
+
+/* 反馈按钮 (Feedback Buttons) */
+.active-learning-feedback-btns {
+    display: flex;
+    gap: 5px;
+}
+
+.active-learning-feedback-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: transform 0.2s;
+    font-weight: 500;
+}
+
+.active-learning-feedback-btn:hover {
+    transform: scale(1.05);
+}
+
+.active-learning-feedback-btn:active {
+    transform: scale(0.98);
+}
+
+.active-learning-relevant-btn {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.active-learning-relevant-btn:hover {
+    background-color: #c8e6c9;
+}
+
+.active-learning-irrelevant-btn {
+    background-color: #ffebee;
+    color: #c62828;
+}
+
+.active-learning-irrelevant-btn:hover {
+    background-color: #ffcdd2;
+}
+
+/* 反馈已给出 (Feedback Given) */
+.active-learning-feedback-given {
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+    padding: 5px 10px;
+}
+
+/* 响应式设计 (Responsive Design) */
+@media (max-width: 768px) {
+    .active-learning-panel {
+        margin: 8px 0;
+    }
+
+    .active-learning-header {
+        padding: 10px 12px;
+    }
+
+    .active-learning-content {
+        padding: 12px;
+    }
+
+    .active-learning-title {
+        font-size: 13px;
+    }
+
+    .active-learning-doc-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .active-learning-feedback-btns {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

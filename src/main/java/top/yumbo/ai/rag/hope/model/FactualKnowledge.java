@@ -22,31 +22,37 @@ public class FactualKnowledge {
 
     /**
      * 知识唯一标识
+     * (Unique knowledge ID)
      */
     private String id;
 
     /**
      * 问题模式（正则表达式或关键词）
+     * (Question pattern - regex or keywords)
      */
     private String questionPattern;
 
     /**
      * 问题关键词列表
+     * (Question keyword list)
      */
     private String[] keywords;
 
     /**
      * 确定性答案
+     * (Definitive answer)
      */
     private String answer;
 
     /**
      * 知识来源（文档名称）
+     * (Knowledge source - document name)
      */
     private String source;
 
     /**
      * 置信度 (0-1)，1.0 表示完全确定
+     * (Confidence score 0-1, 1.0 means completely certain)
      */
     private double confidence;
 

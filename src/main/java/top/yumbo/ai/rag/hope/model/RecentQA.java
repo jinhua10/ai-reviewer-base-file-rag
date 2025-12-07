@@ -22,41 +22,49 @@ public class RecentQA {
 
     /**
      * 唯一标识
+     * (Unique ID)
      */
     private String id;
 
     /**
      * 问题
+     * (Question)
      */
     private String question;
 
     /**
      * 答案
+     * (Answer)
      */
     private String answer;
 
     /**
      * 问题关键词（用于快速匹配）
+     * (Question keywords for quick matching)
      */
     private String[] keywords;
 
     /**
      * 评分（1-5）
+     * (Rating 1-5)
      */
     private int rating;
 
     /**
      * 累计评分总和
+     * (Cumulative rating sum)
      */
     private int totalRating;
 
     /**
      * 评分次数
+     * (Rating count)
      */
     private int ratingCount;
 
     /**
      * 访问次数
+     * (Access count)
      */
     private long accessCount;
 

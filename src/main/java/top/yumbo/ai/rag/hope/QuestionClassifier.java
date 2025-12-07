@@ -23,31 +23,37 @@ public class QuestionClassifier {
     public enum QuestionType {
         /**
          * 事实型：有确定答案，如"项目使用什么框架？"
+         * (Factual: Has definite answer, e.g., "What framework does the project use?")
          */
         FACTUAL,
 
         /**
          * 过程型：怎么做，如"如何配置数据库？"
+         * (Procedural: How-to, e.g., "How to configure database?")
          */
         PROCEDURAL,
 
         /**
          * 概念型：是什么，如"什么是 RAG？"
+         * (Conceptual: What is, e.g., "What is RAG?")
          */
         CONCEPTUAL,
 
         /**
          * 分析型：为什么，如"为什么要使用混合检索？"
+         * (Analytical: Why, e.g., "Why use hybrid search?")
          */
         ANALYTICAL,
 
         /**
          * 创作型：需要生成新内容
+         * (Creative: Requires generating new content)
          */
         CREATIVE,
 
         /**
          * 未知类型
+         * (Unknown type)
          */
         UNKNOWN
     }
@@ -59,16 +65,19 @@ public class QuestionClassifier {
     public enum ComplexityLevel {
         /**
          * 简单：可直接回答
+         * (Simple: Can answer directly)
          */
         SIMPLE,
 
         /**
          * 中等：需要检索
+         * (Moderate: Requires retrieval)
          */
         MODERATE,
 
         /**
          * 复杂：需要深度推理
+         * (Complex: Requires deep reasoning)
          */
         COMPLEX
     }
@@ -84,38 +93,44 @@ public class QuestionClassifier {
     public static class Classification {
         /**
          * 问题类型
+         * (Question type)
          */
         private QuestionType type;
 
         /**
          * 复杂度等级
+         * (Complexity level)
          */
         private ComplexityLevel complexity;
 
         /**
          * 置信度 (0-1)
+         * (Confidence score 0-1)
          */
         private double confidence;
 
         /**
          * 建议查询的层级: permanent / ordinary / full_rag
+         * (Recommended layer: permanent / ordinary / full_rag)
          */
         private String suggestedLayer;
 
         /**
          * 提取的关键词
+         * (Extracted keywords)
          */
         private String[] keywords;
 
         /**
          * 是否为简单问题（可能不需要 LLM）
+         * (Is simple question - may not need LLM)
          */
         public boolean isSimple() {
             return complexity == ComplexityLevel.SIMPLE && confidence > 0.8;
         }
     }
 
-    // 事实型问题模式
+    // 事实型问题模式 (Factual question patterns)
     private static final String[] FACTUAL_PATTERNS = {
         ".*是什么.*框架.*",
         ".*用什么.*技术.*",
@@ -127,25 +142,25 @@ public class QuestionClassifier {
         ".*由.*组成.*"
     };
 
-    // 过程型问题关键词
+    // 过程型问题关键词 (Procedural question keywords)
     private static final String[] PROCEDURAL_KEYWORDS = {
         "如何", "怎么", "怎样", "步骤", "方法", "流程",
         "how to", "how do", "steps", "guide"
     };
 
-    // 概念型问题关键词
+    // 概念型问题关键词 (Conceptual question keywords)
     private static final String[] CONCEPTUAL_KEYWORDS = {
         "是什么", "什么是", "定义", "概念", "含义", "意思",
         "what is", "define", "meaning"
     };
 
-    // 分析型问题关键词
+    // 分析型问题关键词 (Analytical question keywords)
     private static final String[] ANALYTICAL_KEYWORDS = {
         "为什么", "原因", "分析", "比较", "区别", "优缺点",
         "why", "reason", "analyze", "compare", "difference"
     };
 
-    // 创作型问题关键词
+    // 创作型问题关键词 (Creative question keywords)
     private static final String[] CREATIVE_KEYWORDS = {
         "写", "生成", "创建", "设计", "编写", "帮我",
         "write", "generate", "create", "design", "help me"
@@ -155,8 +170,8 @@ public class QuestionClassifier {
      * 对问题进行分类
      * (Classify the question)
      *
-     * @param question 用户问题
-     * @return 分类结果
+     * @param question 用户问题 (User question)
+     * @return 分类结果 (Classification result)
      */
     public Classification classify(String question) {
         if (question == null || question.trim().isEmpty()) {
