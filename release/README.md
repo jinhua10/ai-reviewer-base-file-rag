@@ -252,8 +252,13 @@ vector-index/
 
 ### 5. 启动脚本
 
-models download
+models download go page for details:
 [download model](https://github.com/jinhua10/models/tree/1.0)
+
+vector embedding models:
+https://github.com/jinhua10/models/releases/download/1.0/bge-base-zh.zip
+ppl chunk models:
+https://github.com/jinhua10/models/releases/download/1.0/qwen2.5-0.5b-instruct.zip
 
 #### `start.bat`
 **Windows 启动脚本**

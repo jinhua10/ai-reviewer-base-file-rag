@@ -2,6 +2,11 @@
 
 仓库地址：[models download](https://github.com/jinhua10/models)
 
+vector embedding models:
+https://github.com/jinhua10/models/releases/download/1.0/bge-base-zh.zip
+ppl chunk models:
+https://github.com/jinhua10/models/releases/download/1.0/qwen2.5-0.5b-instruct.zip
+
 # 🚀 一键下载脚本使用指南
 
 ## 📅 最后更新
