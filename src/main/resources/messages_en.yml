@@ -781,6 +781,50 @@ log:
       gc_freed: "GC completed, approximately {0}MB memory freed"
       gc_no_freed: "GC completed, no significant memory freed"
       suggest_gc: "Suggest executing garbage collection, current memory usage: {0}MB"
+  search_dispatcher:
+    init: "✅ Search strategy dispatcher initialized with {0} strategies"
+    no_strategies: "⚠️ No search strategies registered"
+    strategy_registered: "  ✅ Registered strategy: {0} - {1} (priority: {2})"
+    selected_strategy: "🎯 Selected search strategy: {0} ({1})"
+    search_completed: "✅ Strategy {0} search completed, found {1} documents in {2}ms"
+    search_failed: "❌ Strategy {0} search failed"
+    no_suitable_strategy: "⚠️ No suitable search strategy found"
+    strategy_not_found: "⚠️ Strategy {0} not found"
+    using_strategy: "📍 Using specified strategy: {0}"
+    fallback: "⚠️ Falling back to default strategy: {0}"
+    fallback_failed: "❌ Fallback strategy also failed"
+    strategy_score: "   Strategy {0} suitability score: {1}"
+    evaluate_failed: "⚠️ Failed to evaluate strategy {0}"
+    default_changed: "📍 Default strategy changed to: {0}"
+    threshold_changed: "📍 Suitability threshold changed to: {0}"
+    strategy_added: "✅ Dynamically registered strategy: {0}"
+  score_fusion:
+    init: "✅ Score fusion service initialized with {0} contributors"
+    no_contributors: "⚠️ No score contributors registered"
+    contributor_registered: "  ✅ Registered contributor: {0} (weight: {1}, priority: {2})"
+    no_enabled_contributors: "⚠️ No enabled score contributors"
+    zero_weight: "⚠️ All contributor weights are zero"
+    contributor_done: "   Contributor {0} done, {1} scores in {2}ms"
+    contributor_failed: "❌ Contributor {0} execution failed"
+    contributor_added: "✅ Dynamically added contributor: {0}"
+    contributor_removed: "✅ Removed contributor: {0}"
+  score_contributor:
+    lucene:
+      done: "   Lucene scoring done, {0} documents"
+    vector:
+      no_engine: "Vector engine not available, skipping vector scoring"
+      done: "   Vector scoring done, {0} documents"
+    feedback:
+      disabled: "Feedback service not available, skipping feedback scoring"
+      done: "   Feedback scoring done, {0} documents"
+  strategy:
+    hybrid:
+      completed: "✅ Hybrid strategy search completed, {0} documents"
+    keyword:
+      completed: "✅ Keyword strategy search completed, {0} documents"
+    vector:
+      no_engine: "Vector engine not available"
+      completed: "✅ Vector strategy search completed, {0} documents"
   qa:
     archive:
       init: "Initializing QA archiving service"
@@ -1368,9 +1412,19 @@ ppl_onnx:
     chunk_failed: "Failed to chunk document"
     rerank_failed: "Failed to rerank documents"
 # ============================================================
-# Strategy Module
+# Search Strategy Framework
 # ============================================================
 strategy:
+  search:
+    hybrid:
+      name: "Hybrid Search Strategy"
+      description: "Combines Lucene keyword search and vector semantic search, suitable for most scenarios"
+    keyword:
+      name: "Keyword Search Strategy"
+      description: "Uses only Lucene keyword search, suitable for exact match scenarios"
+    vector:
+      name: "Vector Search Strategy"
+      description: "Uses only vector semantic search, suitable for semantic similarity scenarios"
   dispatcher:
     log:
       init_start: "📦 Initializing Strategy Dispatcher..."
@@ -1441,6 +1495,13 @@ smart_analysis:
     file_not_found: "File not found: {0}"
     binary_file: "Binary file, cannot parse text content"
     parse_failed: "Cannot parse document: {0}"
+score_contributor:
+  lucene:
+    description: "Score contribution based on Lucene keyword matching"
+  vector:
+    description: "Score contribution based on vector semantic similarity"
+  feedback:
+    description: "Score adjustment based on user feedback weights"
 # ============================================================
 # Document Parser Service
 # ============================================================
