@@ -308,8 +308,8 @@ public class PPLOnnxService implements PPLService {
      * 对于首次推理，past_key_values 的 seq_len 维度为 0
      * (For first inference, the seq_len dimension of past_key_values is 0)
      *
-     * 张量形状: [batch=1, num_heads, seq_len=0, head_dim]
-     * (Tensor shape: [batch=1, num_heads, seq_len=0, head_dim])
+     * 使用 DirectFloatBuffer 创建张量，支持零维度
+     * (Use DirectFloatBuffer to create tensor, supports zero dimension)
      *
      * @param inputs 输入映射 (input map)
      * @param tensorsToClose 需要清理的张量列表 (list of tensors to close)
@@ -319,15 +319,22 @@ public class PPLOnnxService implements PPLService {
         // 为每一层创建空的 key 和 value 张量
         // (Create empty key and value tensors for each layer)
         for (int layer = 0; layer < numLayers; layer++) {
-            // 空的 KV Cache 形状: [batch=1, num_heads, seq_len=0, head_dim]
-            // (Empty KV Cache shape: [batch=1, num_heads, seq_len=0, head_dim])
-            float[][][][] emptyKV = new float[1][numHeads][0][headDim];
-
             String keyName = "past_key_values." + layer + ".key";
             String valueName = "past_key_values." + layer + ".value";
 
-            OnnxTensor keyTensor = OnnxTensor.createTensor(env, emptyKV);
-            OnnxTensor valueTensor = OnnxTensor.createTensor(env, emptyKV);
+            // 使用 DirectFloatBuffer 创建零维度张量
+            // 形状: [batch=1, num_heads, seq_len=0, head_dim]
+            // 总元素数: 1 * num_heads * 0 * head_dim = 0
+            long[] shape = new long[]{1, numHeads, 0, headDim};
+
+            // 创建直接缓冲区（容量为 0）
+            java.nio.FloatBuffer emptyBuffer = java.nio.ByteBuffer
+                    .allocateDirect(0)
+                    .order(java.nio.ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+
+            OnnxTensor keyTensor = OnnxTensor.createTensor(env, emptyBuffer, shape);
+            OnnxTensor valueTensor = OnnxTensor.createTensor(env, emptyBuffer, shape);
 
             tensorsToClose.add(keyTensor);
             tensorsToClose.add(valueTensor);
@@ -943,7 +950,11 @@ public class PPLOnnxService implements PPLService {
             double ppl = calculatePerplexity(testText);
 
             // PPL 应该是一个合理的正数 (PPL should be a reasonable positive number)
-            return ppl > 0 && ppl < 10000;
+            boolean healthy = ppl > 0 && ppl < 10000;
+            if (healthy && useKVCache) {
+                log.info("✅ ONNX 模型使用 KV Cache，已成功支持（使用 DirectBuffer 创建空张量）");
+            }
+            return healthy;
 
         } catch (Exception e) {
             log.warn(I18N.get("ppl_onnx.log.health_check_failed"), e);

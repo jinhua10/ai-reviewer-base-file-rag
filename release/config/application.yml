@@ -415,6 +415,7 @@ knowledge:
         use-dynamic-threshold: false
 
       # Reranking 配置
+      # ✅ 已支持 KV Cache 模型（使用 DirectBuffer 创建空张量）
       reranking:
         enabled: true
         weight: 0.25

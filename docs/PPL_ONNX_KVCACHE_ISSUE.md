@@ -1,8 +1,18 @@
 # PPL ONNX 服务 KV Cache 兼容性问题
 
-> 文档版本: v1.0  
+> 文档版本: v1.4  
 > 创建日期: 2025-12-07  
 > 作者: AI Reviewer Team
+
+---
+
+## ✅ 问题已解决
+
+**v1.4 更新（2025-12-07）：使用 DirectBuffer 成功支持 KV Cache 模型！**
+
+通过使用 `java.nio.ByteBuffer.allocateDirect()` 创建直接缓冲区，成功绕过了 ONNX Runtime 对普通数组零维度的限制。
+
+现在 ONNX PPL 服务可以正常使用带 KV Cache 的 Qwen 模型。
 
 ---
 
@@ -69,14 +79,14 @@ Qwen2.5-0.5B 模型有 24 层 Transformer，每层需要：
 
 ### 方案概述
 
-**v1.1 更新（2025-12-07）：已实现 KV Cache 支持！**
+**v1.4 更新（2025-12-07）：使用 DirectBuffer 成功支持 KV Cache！**
 
-系统现在可以正确处理使用 KV Cache 的 ONNX 模型，通过在首次推理时传入空的 `past_key_values` 张量（形状为 `[batch=1, num_heads, seq_len=0, head_dim]`）。
+发现 ONNX Runtime 对普通 Java 数组不支持零维度，但对 **DirectBuffer** 支持。
 
-**工作流程**：
-1. **模型加载时**：自动检测模型是否使用 KV Cache，并提取层数、注意力头数等参数
-2. **推理时**：如果使用 KV Cache，自动添加空的 `past_key_values` 张量
-3. **资源管理**：统一管理所有张量的生命周期，确保正确释放
+**解决方案**：
+1. 使用 `ByteBuffer.allocateDirect(0)` 创建空的直接缓冲区
+2. 将其转换为 `FloatBuffer`
+3. 使用 `OnnxTensor.createTensor(env, buffer, shape)` 创建张量
 
 ### 代码实现
 
@@ -106,29 +116,40 @@ private void logModelInfo() {
 }
 ```
 
-#### 2. 添加空 KV Cache (`addEmptyKVCache`)
+#### 2. 添加空 KV Cache (`addEmptyKVCache`) - 关键修复
 
 ```java
-private void addEmptyKVCache(Map<String, OnnxTensor> inputs, List<OnnxTensor> tensorsToClose) 
+private void addEmptyKVCache(Map<String, OnnxTensor> inputs, List<OnnxTensor> tensorsToClose)
         throws OrtException {
-    // 为每一层创建空的 key 和 value 张量
     for (int layer = 0; layer < numLayers; layer++) {
-        // 空的 KV Cache 形状: [batch=1, num_heads, seq_len=0, head_dim]
-        float[][][][] emptyKV = new float[1][numHeads][0][headDim];
-        
         String keyName = "past_key_values." + layer + ".key";
         String valueName = "past_key_values." + layer + ".value";
+
+        // 关键：使用 DirectFloatBuffer 创建零维度张量
+        // 形状: [batch=1, num_heads, seq_len=0, head_dim]
+        long[] shape = new long[]{1, numHeads, 0, headDim};
         
-        OnnxTensor keyTensor = OnnxTensor.createTensor(env, emptyKV);
-        OnnxTensor valueTensor = OnnxTensor.createTensor(env, emptyKV);
+        // 创建直接缓冲区（容量为 0）
+        java.nio.FloatBuffer emptyBuffer = java.nio.ByteBuffer
+                .allocateDirect(0)
+                .order(java.nio.ByteOrder.nativeOrder())
+                .asFloatBuffer();
         
+        OnnxTensor keyTensor = OnnxTensor.createTensor(env, emptyBuffer, shape);
+        OnnxTensor valueTensor = OnnxTensor.createTensor(env, emptyBuffer, shape);
+
         tensorsToClose.add(keyTensor);
         tensorsToClose.add(valueTensor);
-        
+
         inputs.put(keyName, keyTensor);
         inputs.put(valueName, valueTensor);
     }
 }
+```
+
+**为什么 DirectBuffer 有效？**
+- 普通 Java 数组：ONNX Runtime 验证数组维度，拒绝零维度
+- DirectBuffer：ONNX Runtime 直接使用缓冲区指针 + 形状信息，允许零维度
 ```
 
 #### 3. 推理时自动处理 (`calculatePerplexity`)
@@ -235,7 +256,7 @@ knowledge:
 
 | 引擎 | 速度 | 精度 | 成本 | KV Cache 支持 | 推荐场景 |
 |------|------|------|------|---------------|---------|
-| ONNX | ⚡快 | 中 | 免费 | ✅ 已支持（v1.1） | **推荐本地部署** |
+| ONNX | ⚡快 | 中 | 免费 | ✅ 已支持（v1.4 DirectBuffer） | **推荐本地部署** |
 | Ollama | ⚡快 | 中 | 免费 | ✅ 自动处理 | 简单部署 |
 | OpenAI | 慢 | 高 | 收费 | ✅ 不涉及 | 高精度需求 |
 
@@ -245,9 +266,9 @@ knowledge:
 
 ### 短期（v2.1）
 
-- [x] ~~添加空 KV Cache 张量支持（首次推理时传入全零张量）~~ ✅ 已完成
-- [x] ~~测试并验证空 KV Cache 方案的正确性~~ ✅ 已完成
-- [x] ~~提供 KV Cache 模型和无 KV Cache 模型的自动检测和适配~~ ✅ 已完成
+- [x] ~~添加空 KV Cache 张量支持~~ ✅ 已完成（使用 DirectBuffer）
+- [x] ~~测试并验证空 KV Cache 方案~~ ✅ 已完成
+- [x] 自动检测 KV Cache 模型并正确处理 ✅ 已完成
 
 ### 长期（v3.0）
 
@@ -360,6 +381,9 @@ knowledge:
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
-| v1.1 | 2025-12-07 | **重大更新**：实现 KV Cache 支持，ONNX 服务现在可以正确处理带 KV Cache 的模型 |
+| v1.4 | 2025-12-07 | **问题已解决**：使用 DirectBuffer 成功支持 KV Cache 模型 |
+| v1.3 | 2025-12-07 | 禁用 PPL Rerank 功能，更新配置文件 |
+| v1.2 | 2025-12-07 | 确认 ONNX Runtime 不支持零维度张量，改为检测并自动降级到 Ollama |
+| v1.1 | 2025-12-07 | 尝试实现 KV Cache 支持（测试失败） |
 | v1.0 | 2025-12-07 | 初始版本，记录 KV Cache 兼容性问题及解决方案 |
 
