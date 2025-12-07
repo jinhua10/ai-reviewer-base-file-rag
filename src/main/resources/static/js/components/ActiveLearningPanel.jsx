@@ -94,23 +94,23 @@
 
             if (feedback) {
                 return (
-                    <div style={styles.feedbackGiven}>
+                    <div className="active-learning-feedback-given">
                         {feedback === 'relevant' ? t('activeLearningMarkedRelevant') : t('activeLearningMarkedIrrelevant')}
                     </div>
                 );
             }
 
             return (
-                <div style={styles.feedbackBtns}>
+                <div className="active-learning-feedback-btns">
                     <button
-                        style={{...styles.feedbackBtn, ...styles.relevantBtn}}
+                        className="active-learning-feedback-btn active-learning-relevant-btn"
                         onClick={() => submitFeedback(documentName, true)}
                         title={t('activeLearningRelevantTitle')}
                     >
                         {t('activeLearningRelevant')}
                     </button>
                     <button
-                        style={{...styles.feedbackBtn, ...styles.irrelevantBtn}}
+                        className="active-learning-feedback-btn active-learning-irrelevant-btn"
                         onClick={() => submitFeedback(documentName, false)}
                         title={t('activeLearningIrrelevantTitle')}
                     >
@@ -120,11 +120,11 @@
             );
         }
 
-        // 如果没有推荐或正在加载，显示简单状态
+        // 如果没有推荐或正在加载，显示简单状态 (If no recommendations or loading, show simple state)
         if (loading) {
             return (
-                <div style={styles.panel}>
-                    <div style={styles.loading}>{t('activeLearningAnalyzing')}</div>
+                <div className="active-learning-panel">
+                    <div className="active-learning-loading">{t('activeLearningAnalyzing')}</div>
                 </div>
             );
         }
@@ -143,60 +143,62 @@
         }
 
         return (
-            <div style={styles.panel}>
-                {/* 标题栏 */}
+            <div className="active-learning-panel">
+                {/* 标题栏 (Title Bar) */}
                 <div
-                    style={styles.header}
+                    className="active-learning-header"
                     onClick={() => setExpanded(!expanded)}
                 >
-                    <span style={styles.title}>
+                    <span className="active-learning-title">
                         {t('activeLearningTitle')}
-                        <span style={styles.badge}>
+                        <span className="active-learning-badge">
                             {(recommendations.uncertainDocuments?.length || 0) +
                              (recommendations.potentiallyRelevantDocuments?.length || 0) +
                              (recommendations.historyBasedRecommendations?.length || 0)}
                         </span>
                     </span>
-                    <span style={styles.expandIcon}>
+                    <span className={`active-learning-expand-icon ${expanded ? 'expanded' : ''}`}>
                         {expanded ? '▼' : '▶'}
                     </span>
                 </div>
 
                 {expanded && (
-                    <div style={styles.content}>
-                        {/* 置信度指示器 */}
-                        <div style={styles.confidenceBar}>
+                    <div className="active-learning-content">
+                        {/* 置信度指示器 (Confidence Indicator) */}
+                        <div className="active-learning-confidence-bar">
                             <span>{t('activeLearningConfidence')}:</span>
-                            <div style={styles.progressBar}>
-                                <div style={{
-                                    ...styles.progressFill,
-                                    width: `${(recommendations.confidenceScore || 0) * 100}%`,
-                                    backgroundColor: getConfidenceColor(recommendations.confidenceScore)
-                                }} />
+                            <div className="active-learning-progress-bar">
+                                <div 
+                                    className="active-learning-progress-fill"
+                                    style={{
+                                        width: `${(recommendations.confidenceScore || 0) * 100}%`,
+                                        backgroundColor: getConfidenceColor(recommendations.confidenceScore)
+                                    }} 
+                                />
                             </div>
                             <span>{Math.round((recommendations.confidenceScore || 0) * 100)}%</span>
                         </div>
 
-                        {/* 推荐原因 */}
+                        {/* 推荐原因 (Recommendation Reason) */}
                         {recommendations.recommendationReason && (
-                            <div style={styles.reason}>
+                            <div className="active-learning-reason">
                                 💡 {recommendations.recommendationReason}
                             </div>
                         )}
 
-                        {/* 边界文档（不确定性高的文档） */}
+                        {/* 边界文档（不确定性高的文档）(Boundary Documents - High Uncertainty) */}
                         {recommendations.uncertainDocuments?.length > 0 && (
-                            <div style={styles.section}>
-                                <h4 style={styles.sectionTitle}>
+                            <div className="active-learning-section">
+                                <h4 className="active-learning-section-title">
                                     {t('activeLearningQuestionMark')} {t('activeLearningBoundaryDocs')}
                                 </h4>
                                 {recommendations.uncertainDocuments.map((doc, idx) => (
-                                    <div key={idx} style={styles.docItem}>
-                                        <div style={styles.docInfo}>
-                                            <span style={styles.docName}>
+                                    <div key={idx} className="active-learning-doc-item">
+                                        <div className="active-learning-doc-info">
+                                            <span className="active-learning-doc-name">
                                                 {t('activeLearningHashMark')}{doc.rank} {doc.document?.title || t('activeLearningUnknownDoc')}
                                             </span>
-                                            <span style={styles.docReason}>{doc.reason}</span>
+                                            <span className="active-learning-doc-reason">{doc.reason}</span>
                                         </div>
                                         {renderFeedbackButtons(doc.document?.title)}
                                     </div>
@@ -204,17 +206,17 @@
                             </div>
                         )}
 
-                        {/* 历史高分文档 */}
+                        {/* 历史高分文档 (Historical High-Rated Documents) */}
                         {recommendations.potentiallyRelevantDocuments?.length > 0 && (
-                            <div style={styles.section}>
-                                <h4 style={styles.sectionTitle}>
+                            <div className="active-learning-section">
+                                <h4 className="active-learning-section-title">
                                     {t('activeLearningStarMark')} {t('activeLearningHighRatedDocs')}
                                 </h4>
                                 {recommendations.potentiallyRelevantDocuments.map((doc, idx) => (
-                                    <div key={idx} style={styles.docItem}>
-                                        <div style={styles.docInfo}>
-                                            <span style={styles.docName}>{doc.documentName}</span>
-                                            <span style={styles.docReason}>
+                                    <div key={idx} className="active-learning-doc-item">
+                                        <div className="active-learning-doc-info">
+                                            <span className="active-learning-doc-name">{doc.documentName}</span>
+                                            <span className="active-learning-doc-reason">
                                                 {t('activeLearningWeight')}: {doc.historicalWeight?.toFixed(2)} - {doc.reason}
                                             </span>
                                         </div>
@@ -224,17 +226,17 @@
                             </div>
                         )}
 
-                        {/* 基于相似问题的推荐 */}
+                        {/* 基于相似问题的推荐 (History-Based Recommendations) */}
                         {recommendations.historyBasedRecommendations?.length > 0 && (
-                            <div style={styles.section}>
-                                <h4 style={styles.sectionTitle}>
+                            <div className="active-learning-section">
+                                <h4 className="active-learning-section-title">
                                     {t('activeLearningBookMark')} {t('activeLearningHistoryBased')}
                                 </h4>
                                 {recommendations.historyBasedRecommendations.map((rec, idx) => (
-                                    <div key={idx} style={styles.docItem}>
-                                        <div style={styles.docInfo}>
-                                            <span style={styles.docName}>{rec.documentName}</span>
-                                            <span style={styles.docReason}>
+                                    <div key={idx} className="active-learning-doc-item">
+                                        <div className="active-learning-doc-info">
+                                            <span className="active-learning-doc-name">{rec.documentName}</span>
+                                            <span className="active-learning-doc-reason">
                                                 {t('activeLearningFromSimilar')} ({t('activeLearningSimilarity')}: {Math.round(rec.similarityScore * 100)}%)
                                             </span>
                                         </div>
@@ -249,147 +251,19 @@
         );
     }
 
-    // 获取置信度颜色
+    // 获取置信度颜色 (Get Confidence Color)
     function getConfidenceColor(confidence) {
         if (confidence >= 0.7) return '#4caf50';
         if (confidence >= 0.4) return '#ff9800';
         return '#f44336';
     }
 
-    // 样式
-    const styles = {
-        panel: {
-            backgroundColor: '#fff8e1',
-            borderRadius: '8px',
-            border: '1px solid #ffca28',
-            margin: '10px 0',
-            overflow: 'hidden'
-        },
-        header: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '12px 15px',
-            backgroundColor: '#fff3e0',
-            cursor: 'pointer',
-            userSelect: 'none'
-        },
-        title: {
-            fontWeight: 'bold',
-            fontSize: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-        },
-        badge: {
-            backgroundColor: '#ff9800',
-            color: '#fff',
-            padding: '2px 8px',
-            borderRadius: '10px',
-            fontSize: '12px'
-        },
-        expandIcon: {
-            color: '#666',
-            fontSize: '12px'
-        },
-        content: {
-            padding: '15px'
-        },
-        loading: {
-            padding: '15px',
-            textAlign: 'center',
-            color: '#666'
-        },
-        confidenceBar: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            marginBottom: '15px',
-            fontSize: '13px'
-        },
-        progressBar: {
-            flex: 1,
-            height: '8px',
-            backgroundColor: '#eee',
-            borderRadius: '4px',
-            overflow: 'hidden'
-        },
-        progressFill: {
-            height: '100%',
-            borderRadius: '4px',
-            transition: 'width 0.3s'
-        },
-        reason: {
-            backgroundColor: '#e3f2fd',
-            padding: '10px',
-            borderRadius: '4px',
-            fontSize: '13px',
-            marginBottom: '15px'
-        },
-        section: {
-            marginBottom: '15px'
-        },
-        sectionTitle: {
-            fontSize: '13px',
-            fontWeight: 'bold',
-            marginBottom: '10px',
-            color: '#666'
-        },
-        docItem: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '10px',
-            backgroundColor: '#fff',
-            borderRadius: '4px',
-            marginBottom: '8px',
-            border: '1px solid #eee'
-        },
-        docInfo: {
-            flex: 1
-        },
-        docName: {
-            display: 'block',
-            fontWeight: '500',
-            fontSize: '13px',
-            marginBottom: '3px'
-        },
-        docReason: {
-            display: 'block',
-            fontSize: '11px',
-            color: '#888'
-        },
-        feedbackBtns: {
-            display: 'flex',
-            gap: '5px'
-        },
-        feedbackBtn: {
-            padding: '5px 10px',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '12px',
-            transition: 'transform 0.2s'
-        },
-        relevantBtn: {
-            backgroundColor: '#e8f5e9',
-            color: '#2e7d32'
-        },
-        irrelevantBtn: {
-            backgroundColor: '#ffebee',
-            color: '#c62828'
-        },
-        feedbackGiven: {
-            fontSize: '12px',
-            color: '#666',
-            fontStyle: 'italic'
-        }
-    };
+    // 样式已提取到 active-learning.css (Styles extracted to active-learning.css)
 
-    // 导出组件
+    // 导出组件 (Export Component)
     window.ActiveLearningPanel = ActiveLearningPanel;
 
-    // 获取翻译函数并输出加载日志
+    // 获取翻译函数并输出加载日志 (Get translation function and output loading log)
     const getT = () => window.LanguageModule ? window.LanguageModule.useTranslation().t : (k) => k;
     console.log(getT()('activeLearningLogComponentLoaded'));
 })();
