@@ -1577,4 +1577,53 @@ chunking_strategy:
     auto_select_ppl: "📊 Auto-selected: PPL chunking strategy"
     fallback_simple: "⚠️ Both PPL and LLM unavailable, using simple chunking strategy"
 
+# ============================================================
+# HOPE Three-Layer Memory Architecture
+# ============================================================
+hope:
+  # Permanent Layer
+  permanent:
+    disabled: "🔒 HOPE permanent layer disabled"
+    init_success: "✅ HOPE permanent layer initialized, skill templates: {0}, factual knowledge: {1}"
+    init_failed: "❌ HOPE permanent layer initialization failed"
+    skill_saved: "💾 Skill template saved: {0} - {1}"
+    factual_saved: "💾 Factual knowledge saved: {0}"
+    skill_hit: "🎯 Skill template hit: {0}"
+    factual_hit: "🎯 Factual knowledge hit: {0}"
+    factual_disabled: "⚠️ Factual knowledge disabled due to low satisfaction: {0}"
+    persist_failed: "❌ Failed to persist data"
+    load_failed: "❌ Failed to load data"
+    skills_loaded: "📦 Loaded {0} skill templates"
+    facts_loaded: "📦 Loaded {0} factual knowledge entries"
+
+  # Ordinary Layer - Phase 2
+  ordinary:
+    disabled: "🔒 HOPE ordinary layer disabled"
+    init_success: "✅ HOPE ordinary layer initialized"
+
+  # High-frequency Layer - Phase 3
+  high_frequency:
+    disabled: "🔒 HOPE high-frequency layer disabled"
+    init_success: "✅ HOPE high-frequency layer initialized"
+
+  # Query related
+  query:
+    classified: "📋 Question classified: type={0}, complexity={1}, confidence={2}"
+    direct_hit: "🚀 Permanent layer direct hit, confidence: {0}"
+    completed: "✅ HOPE query completed: {0}, source={1}, time={2}ms"
+    error: "❌ HOPE query error"
+
+  # Strategy related
+  strategy:
+    direct_answer: "🚀 Strategy: Direct answer (source: {0}, confidence: {1})"
+    template_answer: "📝 Strategy: Template enhanced (template: {0})"
+    reference_answer: "📚 Strategy: Reference enhanced (similarity: {0})"
+    full_rag: "🔍 Strategy: Full RAG"
+
+  # Learning related
+  learn:
+    recorded: "📝 Learning record saved, rating: {0}"
+    error: "❌ Failed to save learning record"
+    promoted: "⬆️ Knowledge promoted to permanent layer: {0}"
+
 

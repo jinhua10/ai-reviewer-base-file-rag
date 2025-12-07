@@ -1,0 +1,126 @@
+package top.yumbo.ai.rag.hope.model;
+
+import lombok.Data;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.time.LocalDateTime;
+
+/**
+ * 确定性知识 - 存储在低频层的可直接回答的事实
+ * (Factual Knowledge - Facts stored in permanent layer that can be directly answered)
+ *
+ * @author AI Reviewer Team
+ * @since 2025-12-07
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class FactualKnowledge {
+
+    /**
+     * 知识唯一标识
+     */
+    private String id;
+
+    /**
+     * 问题模式（正则表达式或关键词）
+     */
+    private String questionPattern;
+
+    /**
+     * 问题关键词列表
+     */
+    private String[] keywords;
+
+    /**
+     * 确定性答案
+     */
+    private String answer;
+
+    /**
+     * 知识来源（文档名称）
+     */
+    private String source;
+
+    /**
+     * 置信度 (0-1)，1.0 表示完全确定
+     */
+    private double confidence;
+
+    /**
+     * 访问次数
+     */
+    private long accessCount;
+
+    /**
+     * 正面反馈次数
+     */
+    private long positiveCount;
+
+    /**
+     * 负面反馈次数
+     */
+    private long negativeCount;
+
+    /**
+     * 最后访问时间
+     */
+    private LocalDateTime lastAccessed;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
+
+    /**
+     * 最后更新时间
+     */
+    private LocalDateTime updatedAt;
+
+    /**
+     * 是否启用
+     */
+    private boolean enabled;
+
+    /**
+     * 获取满意度
+     */
+    public double getSatisfactionRate() {
+        long total = positiveCount + negativeCount;
+        if (total == 0) {
+            return 1.0; // 默认满意
+        }
+        return (double) positiveCount / total;
+    }
+
+    /**
+     * 记录访问
+     */
+    public void recordAccess() {
+        this.accessCount++;
+        this.lastAccessed = LocalDateTime.now();
+    }
+
+    /**
+     * 记录反馈
+     */
+    public void recordFeedback(boolean positive) {
+        if (positive) {
+            this.positiveCount++;
+        } else {
+            this.negativeCount++;
+        }
+    }
+
+    /**
+     * 是否应该禁用（满意度过低）
+     */
+    public boolean shouldDisable() {
+        long total = positiveCount + negativeCount;
+        return total >= 5 && getSatisfactionRate() < 0.5;
+    }
+}
+
