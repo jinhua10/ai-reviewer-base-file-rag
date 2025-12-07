@@ -1599,7 +1599,17 @@ hope:
   # Ordinary Layer - Phase 2
   ordinary:
     disabled: "🔒 HOPE ordinary layer disabled"
-    init_success: "✅ HOPE ordinary layer initialized"
+    init_success: "✅ HOPE ordinary layer initialized, loaded {0} recent QAs"
+    init_failed: "❌ HOPE ordinary layer initialization failed"
+    saved: "💾 Recent QA saved: {0}, rating: {1}"
+    updated: "📝 Recent QA updated: {0}"
+    direct_hit: "🎯 Ordinary layer direct hit: {0}, similarity: {1}"
+    reference_hit: "📚 Ordinary layer reference hit: {0}, similarity: {1}"
+    cleaned: "🧹 Cleaned {0} expired QAs"
+    promote_failed: "❌ Promotion failed: {0}"
+    persist_failed: "❌ Ordinary layer persist failed"
+    load_failed: "❌ Ordinary layer load failed"
+    loaded: "📦 Loaded {0} recent QAs"
 
   # High-frequency Layer - Phase 3
   high_frequency:

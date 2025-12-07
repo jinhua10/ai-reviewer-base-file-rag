@@ -3,13 +3,16 @@ package top.yumbo.ai.rag.hope;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.hope.layer.OrdinaryLayerService;
 import top.yumbo.ai.rag.hope.layer.PermanentLayerService;
 import top.yumbo.ai.rag.hope.model.HOPEQueryResult;
 import top.yumbo.ai.rag.hope.model.SkillTemplate;
 import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * HOPE 知识管理器 - 统一管理三层知识的查询和学习
@@ -24,11 +27,9 @@ public class HOPEKnowledgeManager {
 
     private final HOPEConfig config;
     private final PermanentLayerService permanentLayer;
+    private final OrdinaryLayerService ordinaryLayer;
     private final QuestionClassifier questionClassifier;
     private final ResponseStrategyDecider strategyDecider;
-
-    // TODO: Phase 2 - 中频层服务
-    // private final OrdinaryLayerService ordinaryLayer;
 
     // TODO: Phase 3 - 高频层服务
     // private final HighFrequencyLayerService highFreqLayer;
@@ -36,10 +37,12 @@ public class HOPEKnowledgeManager {
     @Autowired
     public HOPEKnowledgeManager(HOPEConfig config,
                                 PermanentLayerService permanentLayer,
+                                OrdinaryLayerService ordinaryLayer,
                                 QuestionClassifier questionClassifier,
                                 ResponseStrategyDecider strategyDecider) {
         this.config = config;
         this.permanentLayer = permanentLayer;
+        this.ordinaryLayer = ordinaryLayer;
         this.questionClassifier = questionClassifier;
         this.strategyDecider = strategyDecider;
     }
@@ -83,8 +86,10 @@ public class HOPEKnowledgeManager {
                     .factualKnowledge(permResult.getFactualKnowledge());
 
                 log.info(I18N.get("hope.query.direct_hit", permResult.getConfidence()));
-            } else {
-                resultBuilder.needsLLM(true);
+
+                long processingTime = System.currentTimeMillis() - startTime;
+                resultBuilder.processingTimeMs(processingTime);
+                return resultBuilder.build();
             }
 
             // 设置技能模板（即使不能直接回答，也可以用于 Prompt 优化）
@@ -92,13 +97,44 @@ public class HOPEKnowledgeManager {
                 resultBuilder.skillTemplate(permResult.getSkillTemplate());
             }
 
-            // TODO: Phase 2 - 查询中频层
-            // OrdinaryLayerService.OrdinaryQueryResult ordResult = ordinaryLayer.query(question);
-            // if (ordResult.hasSimilarQA()) { ... }
+            // 3. 查询中频层（近期问答）
+            OrdinaryLayerService.OrdinaryQueryResult ordResult = ordinaryLayer.query(question);
+            if (ordResult.isFound()) {
+                if (ordResult.isDirectUsable()) {
+                    resultBuilder
+                        .answer(ordResult.getBestMatch().getAnswer())
+                        .sourceLayer("ordinary")
+                        .confidence(ordResult.getSimilarity())
+                        .needsLLM(false);
+
+                    log.info(I18N.get("hope.ordinary.direct_hit",
+                        ordResult.getBestMatch().getId(), ordResult.getSimilarity()));
+
+                    long processingTime = System.currentTimeMillis() - startTime;
+                    resultBuilder.processingTimeMs(processingTime);
+                    return resultBuilder.build();
+
+                } else if (ordResult.isAsReference()) {
+                    List<HOPEQueryResult.SimilarQA> similarQAs = ordResult.getAllMatches().stream()
+                        .map(match -> HOPEQueryResult.SimilarQA.builder()
+                            .question(match.getQa().getQuestion())
+                            .answer(match.getQa().getAnswer())
+                            .similarity(match.getSimilarity())
+                            .rating(match.getQa().getRating())
+                            .build())
+                        .collect(Collectors.toList());
+
+                    resultBuilder.similarQAs(similarQAs);
+                    resultBuilder.needsLLM(true);
+
+                    log.info(I18N.get("hope.ordinary.reference_hit",
+                        ordResult.getBestMatch().getId(), ordResult.getSimilarity()));
+                }
+            } else {
+                resultBuilder.needsLLM(true);
+            }
 
             // TODO: Phase 3 - 查询高频层（会话上下文）
-            // HighFrequencyLayerService.HighFreqResult highFreqResult = highFreqLayer.query(sessionId, question);
-            // if (highFreqResult.hasRelevantContext()) { ... }
 
         } catch (Exception e) {
             log.error(I18N.get("hope.query.error"), e);
@@ -153,18 +189,12 @@ public class HOPEKnowledgeManager {
         }
 
         try {
-            // TODO: Phase 2 - 保存到中频层
-            // if (rating >= 4) {
-            //     ordinaryLayer.save(question, answer, rating);
-            //
-            //     // 检查是否应该晋升到低频层
-            //     if (shouldPromote(question)) {
-            //         promoteToPeranent(question, answer);
-            //     }
-            // }
+            if (rating >= 4) {
+                ordinaryLayer.save(question, answer, rating);
+                ordinaryLayer.checkAndPromote();
+            }
 
             // TODO: Phase 3 - 更新高频层的会话上下文
-            // highFreqLayer.updateContext(sessionId, question, answer);
 
             log.debug(I18N.get("hope.learn.recorded", rating));
 
@@ -194,7 +224,7 @@ public class HOPEKnowledgeManager {
         Map<String, Object> stats = new HashMap<>();
         stats.put("enabled", config.isEnabled());
         stats.put("permanent", permanentLayer.getStatistics());
-        // TODO: Phase 2 - stats.put("ordinary", ordinaryLayer.getStatistics());
+        stats.put("ordinary", ordinaryLayer.getStatistics());
         // TODO: Phase 3 - stats.put("highFrequency", highFreqLayer.getStatistics());
         return stats;
     }
@@ -206,4 +236,3 @@ public class HOPEKnowledgeManager {
         return config.isEnabled();
     }
 }
-
