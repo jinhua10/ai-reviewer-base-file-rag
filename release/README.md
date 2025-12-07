@@ -252,6 +252,9 @@ vector-index/
 
 ### 5. 启动脚本
 
+models download
+[download model](https://github.com/jinhua10/models/tree/1.0)
+
 #### `start.bat`
 **Windows 启动脚本**
 

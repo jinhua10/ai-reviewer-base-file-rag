@@ -252,6 +252,9 @@ vector-index/
 
 ### 5. Startup Scripts
 
+models download
+[download model](https://github.com/jinhua10/models/tree/1.0)
+
 #### `start.bat`
 **Windows Startup Script**
 
