@@ -37,6 +37,7 @@ import top.yumbo.ai.rag.hope.ResponseStrategy;
 import top.yumbo.ai.rag.hope.model.HOPEQueryResult;
 import top.yumbo.ai.rag.hope.monitor.HOPEMonitorService;
 import top.yumbo.ai.rag.hope.integration.HOPELLMIntegrationConfig;
+import top.yumbo.ai.rag.hope.integration.HOPEEnhancedLLMClient;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -355,50 +356,10 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.question_prompt", question));
             log.info(I18N.get("knowledge_qa_service.separator"));
 
-            // ============================================================
-            // HOPE 智能查询（在传统 RAG 流程之前）
-            // (HOPE Smart Query - before traditional RAG flow)
-            // ============================================================
-            if (hopeManager != null && hopeManager.isEnabled()) {
-                HOPEQueryResult hopeResult = hopeManager.smartQuery(question, hopeSessionId);
-                ResponseStrategy strategy = hopeManager.getStrategy(question, hopeResult);
-
-                log.info(I18N.get("hope.query.completed",
-                    hopeResult.isNeedsLLM() ? "需要LLM" : "直接回答",
-                    hopeResult.getSourceLayer(),
-                    hopeResult.getProcessingTimeMs()));
-
-                // 策略1: 直接回答（不调用 LLM）
-                if (strategy == ResponseStrategy.DIRECT_ANSWER && hopeResult.canDirectAnswer()) {
-                    log.info(I18N.get("hope.strategy.direct_answer",
-                        hopeResult.getSourceLayer(), hopeResult.getConfidence()));
-
-                    long responseTime = System.currentTimeMillis() - startTime;
-
-                    // 记录监控指标
-                    if (hopeMonitor != null) {
-                        hopeMonitor.recordQuery(strategy, hopeResult, responseTime);
-                    }
-
-                    AIAnswer directAnswer = new AIAnswer(
-                        hopeResult.getAnswer(),
-                        Collections.singletonList("HOPE:" + hopeResult.getSourceLayer()),
-                        responseTime
-                    );
-                    directAnswer.setHopeSource(hopeResult.getSourceLayer());
-                    directAnswer.setDirectAnswer(true);
-                    directAnswer.setStrategyUsed(strategy.name());
-                    directAnswer.setHopeConfidence(hopeResult.getConfidence());
-
-                    return directAnswer;
-                }
-
-                // 策略2/3: 需要 LLM，但可能有上下文增强
-                // 将 HOPE 上下文传递给后续流程
-                if (hopeResult.hasSimilarReference()) {
-                    log.info(I18N.get("hope.strategy.reference_answer",
-                        hopeResult.getSimilarQAs().get(0).getSimilarity()));
-                }
+            // 设置 HOPE 会话ID（供 HOPEEnhancedLLMClient 使用）
+            // (Set HOPE session ID for HOPEEnhancedLLMClient to use)
+            if (hopeSessionId != null && !hopeSessionId.isEmpty()) {
+                HOPEEnhancedLLMClient.setSessionId(hopeSessionId);
             }
 
             // 步骤0: 搜索相似问题（在检索文档之前）
@@ -623,20 +584,31 @@ public class KnowledgeQAService {
             // 设置会话ID，支持分页引用
             aiAnswer.setSessionId(sessionId);
 
-            // 设置 HOPE 相关信息（完整 RAG 流程）
-            aiAnswer.setStrategyUsed("FULL_RAG");
-            aiAnswer.setDirectAnswer(false);
-
-            // 记录 HOPE 监控指标
-            if (hopeMonitor != null) {
-                hopeMonitor.recordQuery(ResponseStrategy.FULL_RAG, null, totalTime);
+            // 从 HOPEEnhancedLLMClient 获取 HOPE 信息
+            // (Get HOPE info from HOPEEnhancedLLMClient)
+            HOPEEnhancedLLMClient.LastQuery lastQuery = HOPEEnhancedLLMClient.getLastQuery();
+            if (lastQuery != null) {
+                aiAnswer.setHopeSource(lastQuery.getHopeSource());
+                aiAnswer.setDirectAnswer(lastQuery.isDirectAnswer());
+                aiAnswer.setStrategyUsed(lastQuery.isDirectAnswer() ? "DIRECT_ANSWER" : "FULL_RAG");
+            } else {
+                // 如果没有 HOPE 信息，使用默认值
+                aiAnswer.setStrategyUsed("FULL_RAG");
+                aiAnswer.setDirectAnswer(false);
             }
+
+            // 清除 HOPE 会话ID（避免影响其他请求）
+            HOPEEnhancedLLMClient.clearSessionId();
 
             return aiAnswer;
 
         } catch (Exception e) {
             log.error("❌ QA processing failed", e);
             long totalTime = System.currentTimeMillis() - startTime;
+
+            // 清除 HOPE 会话ID
+            HOPEEnhancedLLMClient.clearSessionId();
+
             return new AIAnswer(
                     I18N.get("knowledge_qa_service.error_processing", e.getMessage()),
                     List.of(),

@@ -649,6 +649,9 @@ const translations = {
         hopeStrategyTemplate: '模板增强',
         hopeStrategyReference: '参考增强',
         hopeStrategyRAG: 'RAG检索',
+        hopeLoadError: '加载 HOPE 仪表盘失败',
+        yes: '是',
+        no: '否',
     },
     en: {
         // Header
@@ -1290,6 +1293,9 @@ const translations = {
         hopeStrategyTemplate: 'Template Enhanced',
         hopeStrategyReference: 'Reference Enhanced',
         hopeStrategyRAG: 'RAG Search',
+        hopeLoadError: 'Failed to load HOPE dashboard',
+        yes: 'Yes',
+        no: 'No',
     }
 };
 
