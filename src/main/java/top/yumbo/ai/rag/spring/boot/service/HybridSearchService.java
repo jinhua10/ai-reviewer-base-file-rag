@@ -108,21 +108,25 @@ public class HybridSearchService {
             // 3. 混合评分：融合两种检索结果
             Map<String, Double> hybridScores = new HashMap<>();
 
-            // Lucene 结果（权重 0.3）
+            // 从配置获取权重（Lucene and vector weights from configuration）
+            double luceneWeight = properties.getVectorSearch().getLuceneWeight();
+            double vectorWeight = properties.getVectorSearch().getVectorWeight();
+
+            // Lucene 结果（使用配置的权重）
             List<Document> luceneDocs = luceneResult.getDocuments().stream()
                 .map(ScoredDocument::getDocument)
                 .toList();
             for (int i = 0; i < luceneDocs.size(); i++) {
                 String docId = luceneDocs.get(i).getId();
                 double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
-                hybridScores.put(docId, 0.3 * normalizedScore);
+                hybridScores.put(docId, luceneWeight * normalizedScore);
             }
 
-            // 向量结果（权重 0.7）
+            // 向量结果（使用配置的权重）
             for (SimpleVectorIndexEngine.VectorSearchResult result : vectorResults) {
                 String docId = result.getDocId();
                 double currentScore = hybridScores.getOrDefault(docId, 0.0);
-                hybridScores.put(docId, currentScore + 0.7 * result.getSimilarity());
+                hybridScores.put(docId, currentScore + vectorWeight * result.getSimilarity());
             }
 
             // 4. 按混合分数排序并去重

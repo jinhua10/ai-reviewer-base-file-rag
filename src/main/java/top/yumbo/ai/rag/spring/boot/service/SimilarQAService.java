@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * - ✅ 基于历史问答记录
  * - ✅ 关键词重叠度计算
  * - ✅ 支持中英文
+ * - ✅ 支持配置化（历史记录数量、最低评分等）
  *
  * @author AI Reviewer Team
  * @since 2025-11-30
@@ -29,19 +31,33 @@ import java.util.stream.Collectors;
 public class SimilarQAService {
 
     private final QARecordService qaRecordService;
+    private final KnowledgeQAProperties properties;
 
-    // 停用词（中英文）
-    private static final Set<String> STOP_WORDS = Set.of(
-        // 中文停用词
-        "的", "了", "是", "在", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到", "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这",
-        // 英文停用词
-        "a", "an", "the", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "do", "does", "did", "will", "would", "should", "could", "can", "may", "might", "must", "shall",
-        "what", "which", "who", "when", "where", "why", "how", "this", "that", "these", "those", "i", "you", "he", "she", "it", "we", "they", "me", "him", "her", "us", "them"
-    );
+    // 停用词从配置获取（Stopwords from configuration）
+    private Set<String> stopWords;
 
     @Autowired
-    public SimilarQAService(QARecordService qaRecordService) {
+    public SimilarQAService(QARecordService qaRecordService,
+                           KnowledgeQAProperties properties) {
         this.qaRecordService = qaRecordService;
+        this.properties = properties;
+        // 初始化停用词（从配置加载）
+        initStopWords();
+    }
+
+    /**
+     * 初始化停用词（从配置加载）
+     */
+    private void initStopWords() {
+        stopWords = new HashSet<>();
+        KnowledgeQAProperties.SearchConfig searchConfig = properties.getSearch();
+        if (searchConfig.getChineseStopWords() != null) {
+            stopWords.addAll(searchConfig.getChineseStopWords());
+        }
+        if (searchConfig.getEnglishStopWords() != null) {
+            searchConfig.getEnglishStopWords().forEach(w -> stopWords.add(w.toLowerCase()));
+        }
+        log.debug("SimilarQAService initialized with {} stopwords", stopWords.size());
     }
 
     /**
@@ -63,14 +79,18 @@ public class SimilarQAService {
 
             log.debug("查询关键词: {}", queryKeywords);
 
-            // 2. 获取历史问答记录（只取高评分的）
-            List<QARecord> records = qaRecordService.getRecentRecords(100); // 取最近100条
+            // 2. 获取历史问答记录（从配置获取数量限制）
+            KnowledgeQAProperties.SimilarQAConfig config = properties.getSimilarQa();
+            int historyLimit = config.getHistoryLimit();
+            int minRating = config.getMinRating();
+
+            List<QARecord> records = qaRecordService.getRecentRecords(historyLimit);
             List<SimilarQA> candidates = new ArrayList<>();
 
             // 3. 计算每条记录的相似度
             for (QARecord record : records) {
-                // 跳过低评分记录（只取评分 >= 4 的）
-                if (record.getOverallRating() == null || record.getOverallRating() < 4) {
+                // 跳过低评分记录（使用配置的最低评分阈值）
+                if (record.getOverallRating() == null || record.getOverallRating() < minRating) {
                     continue;
                 }
 
@@ -113,7 +133,7 @@ public class SimilarQAService {
 
     /**
      * 提取关键词
-     * 支持中英文，移除停用词
+     * 支持中英文，移除停用词（从配置获取）
      */
     private Set<String> extractKeywords(String text) {
         if (text == null || text.trim().isEmpty()) {
@@ -131,8 +151,8 @@ public class SimilarQAService {
         for (String token : tokens) {
             token = token.trim();
 
-            // 跳过短词和停用词
-            if (token.length() < 2 || STOP_WORDS.contains(token)) {
+            // 跳过短词和停用词（使用配置的停用词）
+            if (token.length() < 2 || stopWords.contains(token)) {
                 continue;
             }
 
@@ -144,7 +164,7 @@ public class SimilarQAService {
             // 提取2-3字的词组
             for (int i = 0; i < text.length() - 1; i++) {
                 String bigram = text.substring(i, Math.min(i + 2, text.length()));
-                if (bigram.length() == 2 && !STOP_WORDS.contains(bigram)) {
+                if (bigram.length() == 2 && !stopWords.contains(bigram)) {
                     keywords.add(bigram);
                 }
             }

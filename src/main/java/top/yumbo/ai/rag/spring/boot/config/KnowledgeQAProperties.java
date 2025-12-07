@@ -45,6 +45,16 @@ public class KnowledgeQAProperties {
      */
     private SearchConfig search = new SearchConfig();
 
+    /**
+     * 相似问题推荐配置
+     */
+    private SimilarQAConfig similarQa = new SimilarQAConfig();
+
+    /**
+     * 查询扩展配置
+     */
+    private QueryExpansionConfig queryExpansion = new QueryExpansionConfig();
+
     @Data
     public static class KnowledgeBaseConfig {
         /**
@@ -127,6 +137,20 @@ public class KnowledgeQAProperties {
          * 低于此分数的文档会被过滤
          */
         private float minScoreThreshold = 0.10f;
+
+        /**
+         * Lucene 关键词检索权重（Lucene keyword search weight）
+         * 混合检索公式: luceneWeight × luceneScore + vectorWeight × vectorScore
+         * 范围: 0.0 - 1.0
+         */
+        private double luceneWeight = 0.3;
+
+        /**
+         * 向量语义检索权重（Vector semantic search weight）
+         * 混合检索公式: luceneWeight × luceneScore + vectorWeight × vectorScore
+         * 范围: 0.0 - 1.0
+         */
+        private double vectorWeight = 0.7;
     }
 
     @Data
@@ -509,5 +533,75 @@ public class KnowledgeQAProperties {
          * 是否启用停用词过滤
          */
         private boolean enableStopWordsFilter = true;
+    }
+
+    /**
+     * 相似问题推荐配置（Similar QA recommendation configuration）
+     */
+    @Data
+    public static class SimilarQAConfig {
+        /**
+         * 历史记录查询数量上限
+         * 系统会查询最近 N 条高评分问答记录用于相似度匹配
+         */
+        private int historyLimit = 100;
+
+        /**
+         * 最低评分阈值
+         * 只有评分 >= 此值的问答记录才会被用于推荐
+         * 范围: 1-5
+         */
+        private int minRating = 4;
+
+        /**
+         * 最小相似度分数（0-100）
+         * 相似度低于此值的问题不会被推荐
+         */
+        private int minScore = 30;
+
+        /**
+         * 推荐结果数量上限
+         */
+        private int limit = 3;
+    }
+
+    /**
+     * 查询扩展配置（Query expansion configuration）
+     */
+    @Data
+    public static class QueryExpansionConfig {
+        /**
+         * 是否启用查询扩展
+         */
+        private boolean enabled = true;
+
+        /**
+         * 同义词词典文件路径
+         * 格式: 每行一组同义词，用逗号分隔
+         * 例如: 数据库,DB,database,存储
+         */
+        private String synonymFile = null;
+
+        /**
+         * 是否使用 LLM 进行查询改写
+         */
+        private boolean useLlmRewrite = false;
+
+        /**
+         * LLM 改写的 Prompt 模板
+         */
+        private String llmRewritePrompt = """
+            请帮我改写以下搜索查询，使其更适合在知识库中检索相关文档。
+            
+            要求：
+            1. 保持原意，但使用更通用、更专业的表述
+            2. 添加可能的同义词或相关概念
+            3. 如果查询太模糊，尝试明确化
+            4. 只返回改写后的查询，不要解释
+            
+            原始查询：{query}
+            
+            改写后的查询：
+            """;
     }
 }

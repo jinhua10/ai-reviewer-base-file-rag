@@ -1,10 +1,15 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +23,9 @@ import java.util.regex.Pattern;
  * 根据 RAG 收敛性分析，查询扩展可减少 2-3 次反馈交互
  * 详见: md/20251205140000-RAG系统收敛性分析.md
  *
+ * 📈 优化说明（2025-12-07）：
+ * 支持从配置文件和外部文件加载同义词和停用词
+ *
  * @author AI Reviewer Team
  * @since 2025-12-05
  */
@@ -26,12 +34,13 @@ import java.util.regex.Pattern;
 public class QueryExpansionService {
 
     private final LLMClient llmClient;
+    private final KnowledgeQAProperties properties;
 
-    /** 同义词词典 */
-    private static final Map<String, List<String>> SYNONYM_DICT = new HashMap<>();
+    /** 同义词词典（支持从配置加载） */
+    private final Map<String, List<String>> synonymDict = new HashMap<>();
 
-    /** 停用词 */
-    private static final Set<String> STOP_WORDS = new HashSet<>();
+    /** 停用词（从配置加载） */
+    private final Set<String> stopWords = new HashSet<>();
 
     /** 分词正则 */
     private static final Pattern TOKEN_PATTERN = Pattern.compile("[\\s,.;:?!]+");
@@ -39,15 +48,26 @@ public class QueryExpansionService {
     /** 短语匹配正则 */
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
 
-    static {
-        // 初始化同义词词典（可从外部配置加载）
-        initSynonyms();
-        initStopWords();
+    @Autowired
+    public QueryExpansionService(@Autowired(required = false) LLMClient llmClient,
+                                  KnowledgeQAProperties properties) {
+        this.llmClient = llmClient;
+        this.properties = properties;
     }
 
-    @Autowired
-    public QueryExpansionService(@Autowired(required = false) LLMClient llmClient) {
-        this.llmClient = llmClient;
+    @PostConstruct
+    public void init() {
+        // 1. 加载内置同义词
+        initBuiltinSynonyms();
+
+        // 2. 从配置加载停用词
+        initStopWordsFromConfig();
+
+        // 3. 加载外部同义词文件（如果配置了）
+        loadSynonymsFromFile();
+
+        log.info("QueryExpansionService initialized: {} synonyms, {} stopwords",
+            synonymDict.size(), stopWords.size());
     }
 
     /**
@@ -113,18 +133,18 @@ public class QueryExpansionService {
         String[] tokens = TOKEN_PATTERN.split(query);
 
         for (String token : tokens) {
-            if (token.length() < 2 || STOP_WORDS.contains(token.toLowerCase())) {
+            if (token.length() < 2 || stopWords.contains(token.toLowerCase())) {
                 continue;
             }
 
             // 查找同义词
-            List<String> synonyms = SYNONYM_DICT.get(token.toLowerCase());
+            List<String> synonyms = synonymDict.get(token.toLowerCase());
             if (synonyms != null) {
                 expandedTerms.addAll(synonyms);
             }
 
             // 反向查找（如果当前词是某个词的同义词）
-            for (Map.Entry<String, List<String>> entry : SYNONYM_DICT.entrySet()) {
+            for (Map.Entry<String, List<String>> entry : synonymDict.entrySet()) {
                 if (entry.getValue().contains(token.toLowerCase())) {
                     expandedTerms.add(entry.getKey());
                     expandedTerms.addAll(entry.getValue());
@@ -150,8 +170,8 @@ public class QueryExpansionService {
         String[] tokens = TOKEN_PATTERN.split(query);
 
         for (String token : tokens) {
-            // 过滤停用词和短词
-            if (token.length() >= 2 && !STOP_WORDS.contains(token.toLowerCase())) {
+            // 过滤停用词和短词（使用配置的停用词）
+            if (token.length() >= 2 && !stopWords.contains(token.toLowerCase())) {
                 keywords.add(token);
             }
         }
@@ -166,17 +186,12 @@ public class QueryExpansionService {
     }
 
     /**
-     * 使用 LLM 改写查询
+     * 使用 LLM 改写查询（使用配置的 Prompt 模板）
      */
     private String llmRewriteQuery(String originalQuery) {
-        String prompt = "请帮我改写以下搜索查询，使其更适合在知识库中检索相关文档。\n\n" +
-            "要求：\n" +
-            "1. 保持原意，但使用更通用、更专业的表述\n" +
-            "2. 添加可能的同义词或相关概念\n" +
-            "3. 如果查询太模糊，尝试明确化\n" +
-            "4. 只返回改写后的查询，不要解释\n\n" +
-            "原始查询：" + originalQuery + "\n\n" +
-            "改写后的查询：";
+        // 使用配置的 Prompt 模板
+        String promptTemplate = properties.getQueryExpansion().getLlmRewritePrompt();
+        String prompt = promptTemplate.replace("{query}", originalQuery);
 
         String response = llmClient.generate(prompt);
 
@@ -216,55 +231,91 @@ public class QueryExpansionService {
     }
 
     /**
-     * 初始化同义词词典
+     * 初始化内置同义词词典
      */
-    private static void initSynonyms() {
+    private void initBuiltinSynonyms() {
         // 技术领域同义词
-        SYNONYM_DICT.put("数据库", Arrays.asList("DB", "database", "存储", "数据存储"));
-        SYNONYM_DICT.put("接口", Arrays.asList("API", "interface", "端点", "endpoint"));
-        SYNONYM_DICT.put("服务器", Arrays.asList("server", "服务端", "后端", "backend"));
-        SYNONYM_DICT.put("客户端", Arrays.asList("client", "前端", "frontend", "用户端"));
-        SYNONYM_DICT.put("配置", Arrays.asList("config", "configuration", "设置", "参数"));
-        SYNONYM_DICT.put("文档", Arrays.asList("document", "doc", "文件", "资料"));
-        SYNONYM_DICT.put("错误", Arrays.asList("error", "异常", "exception", "bug", "问题"));
-        SYNONYM_DICT.put("性能", Arrays.asList("performance", "效率", "速度", "优化"));
-        SYNONYM_DICT.put("安全", Arrays.asList("security", "安全性", "加密", "权限"));
-        SYNONYM_DICT.put("部署", Arrays.asList("deploy", "deployment", "发布", "上线"));
+        synonymDict.put("数据库", Arrays.asList("DB", "database", "存储", "数据存储"));
+        synonymDict.put("接口", Arrays.asList("API", "interface", "端点", "endpoint"));
+        synonymDict.put("服务器", Arrays.asList("server", "服务端", "后端", "backend"));
+        synonymDict.put("客户端", Arrays.asList("client", "前端", "frontend", "用户端"));
+        synonymDict.put("配置", Arrays.asList("config", "configuration", "设置", "参数"));
+        synonymDict.put("文档", Arrays.asList("document", "doc", "文件", "资料"));
+        synonymDict.put("错误", Arrays.asList("error", "异常", "exception", "bug", "问题"));
+        synonymDict.put("性能", Arrays.asList("performance", "效率", "速度", "优化"));
+        synonymDict.put("安全", Arrays.asList("security", "安全性", "加密", "权限"));
+        synonymDict.put("部署", Arrays.asList("deploy", "deployment", "发布", "上线"));
 
         // 业务领域同义词
-        SYNONYM_DICT.put("用户", Arrays.asList("user", "客户", "会员", "账户"));
-        SYNONYM_DICT.put("订单", Arrays.asList("order", "交易", "购买记录"));
-        SYNONYM_DICT.put("支付", Arrays.asList("pay", "payment", "付款", "结算"));
-        SYNONYM_DICT.put("报表", Arrays.asList("report", "统计", "分析", "报告"));
+        synonymDict.put("用户", Arrays.asList("user", "客户", "会员", "账户"));
+        synonymDict.put("订单", Arrays.asList("order", "交易", "购买记录"));
+        synonymDict.put("支付", Arrays.asList("pay", "payment", "付款", "结算"));
+        synonymDict.put("报表", Arrays.asList("report", "统计", "分析", "报告"));
 
         // 通用同义词
-        SYNONYM_DICT.put("如何", Arrays.asList("怎么", "怎样", "方法", "步骤", "how"));
-        SYNONYM_DICT.put("什么", Arrays.asList("哪些", "which", "what"));
-        SYNONYM_DICT.put("为什么", Arrays.asList("原因", "why", "理由"));
-        SYNONYM_DICT.put("创建", Arrays.asList("新建", "添加", "create", "add"));
-        SYNONYM_DICT.put("删除", Arrays.asList("移除", "清除", "delete", "remove"));
-        SYNONYM_DICT.put("修改", Arrays.asList("更新", "编辑", "update", "edit", "change"));
-        SYNONYM_DICT.put("查询", Arrays.asList("搜索", "检索", "查找", "search", "query", "find"));
+        synonymDict.put("如何", Arrays.asList("怎么", "怎样", "方法", "步骤", "how"));
+        synonymDict.put("什么", Arrays.asList("哪些", "which", "what"));
+        synonymDict.put("为什么", Arrays.asList("原因", "why", "理由"));
+        synonymDict.put("创建", Arrays.asList("新建", "添加", "create", "add"));
+        synonymDict.put("删除", Arrays.asList("移除", "清除", "delete", "remove"));
+        synonymDict.put("修改", Arrays.asList("更新", "编辑", "update", "edit", "change"));
+        synonymDict.put("查询", Arrays.asList("搜索", "检索", "查找", "search", "query", "find"));
     }
 
     /**
-     * 初始化停用词
+     * 从配置加载停用词
      */
-    private static void initStopWords() {
-        STOP_WORDS.addAll(Arrays.asList(
-            // 中文停用词
-            "的", "了", "和", "与", "或", "是", "在", "有", "这", "那",
-            "吗", "呢", "啊", "吧", "呀", "哦", "哈", "嗯", "呵",
-            "我", "你", "他", "她", "它", "我们", "你们", "他们",
-            "一个", "一些", "这个", "那个", "这些", "那些",
-            "请", "请问", "想", "要", "能", "可以", "应该",
-            // 英文停用词
-            "a", "an", "the", "is", "are", "was", "were", "be", "been",
-            "to", "of", "in", "for", "on", "with", "at", "by", "from",
-            "i", "you", "he", "she", "it", "we", "they",
-            "this", "that", "these", "those",
-            "and", "or", "but", "if", "then", "else"
-        ));
+    private void initStopWordsFromConfig() {
+        KnowledgeQAProperties.SearchConfig searchConfig = properties.getSearch();
+        if (searchConfig.getChineseStopWords() != null) {
+            stopWords.addAll(searchConfig.getChineseStopWords());
+        }
+        if (searchConfig.getEnglishStopWords() != null) {
+            searchConfig.getEnglishStopWords().forEach(w -> stopWords.add(w.toLowerCase()));
+        }
+    }
+
+    /**
+     * 从外部文件加载同义词
+     * 格式: 每行一组同义词，用逗号分隔
+     * 例如: 数据库,DB,database,存储
+     */
+    private void loadSynonymsFromFile() {
+        String synonymFile = properties.getQueryExpansion().getSynonymFile();
+        if (synonymFile == null || synonymFile.isBlank()) {
+            return;
+        }
+
+        Path filePath = Path.of(synonymFile);
+        if (!Files.exists(filePath)) {
+            log.warn("Synonym file not found: {}", synonymFile);
+            return;
+        }
+
+        try {
+            List<String> lines = Files.readAllLines(filePath);
+            int count = 0;
+            for (String line : lines) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue; // 跳过空行和注释
+                }
+                String[] parts = line.split(",");
+                if (parts.length >= 2) {
+                    String key = parts[0].trim().toLowerCase();
+                    List<String> synonyms = Arrays.stream(parts)
+                        .skip(1)
+                        .map(String::trim)
+                        .filter(s -> !s.isEmpty())
+                        .toList();
+                    synonymDict.put(key, new ArrayList<>(synonyms));
+                    count++;
+                }
+            }
+            log.info("Loaded {} synonyms from file: {}", count, synonymFile);
+        } catch (IOException e) {
+            log.error("Failed to load synonyms from file: {}", synonymFile, e);
+        }
     }
 
     /**
