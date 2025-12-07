@@ -12,6 +12,7 @@ import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.SearchResult;
 import top.yumbo.ai.rag.model.ScoredDocument;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.feedback.DocumentWeightService;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
  * 结合 Lucene 关键词检索和向量语义检索（Combines Lucene keyword search and vector semantic search）
  *
  * 📈 优化（2025-12-05）：集成查询扩展服务，提升召回率
+ * 📈 优化（2025-12-07）：集成文档权重服务，反馈影响检索排序
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -32,14 +34,17 @@ public class HybridSearchService {
     private final KnowledgeQAProperties properties;
     private final SearchConfigService configService;
     private final QueryExpansionService queryExpansionService;
+    private final DocumentWeightService documentWeightService;
 
     @Autowired
     public HybridSearchService(KnowledgeQAProperties properties,
                                SearchConfigService configService,
-                               @Autowired(required = false) QueryExpansionService queryExpansionService) {
+                               @Autowired(required = false) QueryExpansionService queryExpansionService,
+                               @Autowired(required = false) DocumentWeightService documentWeightService) {
         this.properties = properties;
         this.configService = configService;
         this.queryExpansionService = queryExpansionService;
+        this.documentWeightService = documentWeightService;
     }
 
     /**
@@ -129,7 +134,33 @@ public class HybridSearchService {
                 hybridScores.put(docId, currentScore + vectorWeight * result.getSimilarity());
             }
 
-            // 4. 按混合分数排序并去重
+            // 3.5 应用文档反馈权重（如果启用）
+            // (Apply document feedback weights if enabled)
+            if (documentWeightService != null) {
+                int adjustedCount = 0;
+                for (Map.Entry<String, Double> entry : hybridScores.entrySet()) {
+                    Document doc = rag.getDocument(entry.getKey());
+                    if (doc != null) {
+                        double feedbackWeight = documentWeightService.getDocumentWeight(doc.getTitle());
+                        if (feedbackWeight != 1.0) {
+                            double originalScore = entry.getValue();
+                            double adjustedScore = originalScore * feedbackWeight;
+                            hybridScores.put(entry.getKey(), adjustedScore);
+                            adjustedCount++;
+                            log.debug(I18N.get("log.hybrid.feedback_weight_detail",
+                                doc.getTitle(),
+                                String.format("%.3f", originalScore),
+                                String.format("%.2f", feedbackWeight),
+                                String.format("%.3f", adjustedScore)));
+                        }
+                    }
+                }
+                if (adjustedCount > 0) {
+                    log.info(I18N.get("log.hybrid.feedback_weight_applied", adjustedCount));
+                }
+            }
+
+            // 4. 按混合分数排序并去重 (Sort by hybrid score and deduplicate)
             int topK = configService.getHybridTopK();
             float minScore = configService.getMinScoreThreshold();
 
@@ -192,16 +223,20 @@ public class HybridSearchService {
                 log.error(I18N.get("log.hybrid.doc_id_list", sortedScores.stream().limit(5).map(Map.Entry::getKey).collect(Collectors.joining(", "))));
             }
 
-            // 5. 从 RAG 获取完整文档
+            // 5. 从 RAG 获取完整文档，并保存检索分数
+            // (Get full documents from RAG and save retrieval scores)
             List<Document> finalDocs = new ArrayList<>();
             int nullCount = 0;
             for (var entry : sortedScores) {
                 Document doc = rag.getDocument(entry.getKey());
                 if (doc != null) {
+                    // 保存检索分数到文档，供后续 PPL Rerank 使用
+                    // (Save retrieval score to document for PPL Rerank)
+                    doc.setScore(entry.getValue());
                     finalDocs.add(doc);
                 } else {
                     nullCount++;
-                    if (nullCount <= 3) { // 只输出前3个null的详细信息
+                    if (nullCount <= 3) { // 只输出前3个null的详细信息 (Only output first 3 nulls)
                         log.warn(I18N.get("log.hybrid.cannot_get_doc", entry.getKey(), String.format("%.3f", entry.getValue())));
                     }
                 }

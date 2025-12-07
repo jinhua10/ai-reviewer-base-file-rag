@@ -406,6 +406,8 @@ log:
     top5_item: "{0}. {1}（得分={2}）"
     topk_header: "Top K 结果："
     vector_found: "向量搜索找到 {0} 个文档"
+    feedback_weight_applied: "📊 已应用 {0} 个文档的反馈权重调整"
+    feedback_weight_detail: "📊 文档权重调整: {0} | 原始分数: {1} | 权重: {2} | 调整后: {3}"
   similar:
     found: "找到 {0} 个相似文档"
   chunk:
@@ -1340,6 +1342,7 @@ ppl_onnx:
     shutdown_error: "关闭过程中发生错误"
     calc_ppl_failed: "计算困惑度失败: {0}"
     health_check_failed: "健康检查失败"
+    rerank_detail: "📊 PPL Rerank - 文档: {0} | 原始分数: {1} | PPL: {2} | PPL分数: {3} | 最终分数: {4}"
   error:
     init_failed: "ONNX 初始化失败"
     calc_ppl_failed: "计算困惑度失败"

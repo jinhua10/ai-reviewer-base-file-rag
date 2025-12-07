@@ -406,6 +406,8 @@ log:
     top5_item: "{0}. {1} (score={2})"
     topk_header: "Top K results:"
     vector_found: "Vector search found {0} documents"
+    feedback_weight_applied: "📊 Applied feedback weight adjustments to {0} documents"
+    feedback_weight_detail: "📊 Document weight adjusted: {0} | Original: {1} | Weight: {2} | Adjusted: {3}"
   similar:
     found: "Found {0} similar documents"
   chunk:
@@ -1340,6 +1342,7 @@ ppl_onnx:
     shutdown_error: "Error during shutdown"
     calc_ppl_failed: "Failed to calculate perplexity for text: {0}"
     health_check_failed: "Health check failed"
+    rerank_detail: "📊 PPL Rerank - Doc: {0} | Original: {1} | PPL: {2} | PPL Score: {3} | Final: {4}"
   error:
     init_failed: "ONNX initialization failed"
     calc_ppl_failed: "Failed to calculate perplexity"

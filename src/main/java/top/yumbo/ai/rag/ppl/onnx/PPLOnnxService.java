@@ -734,13 +734,22 @@ public class PPLOnnxService implements PPLService {
                 // (Convert PPL to score: higher score is better, lower PPL is better)
                 double pplScore = 1.0 / (1.0 + ppl);
 
-                // 获取原始分数（如果有的话）(Get original score if available)
-                double originalScore = 1.0; // 默认分数 (default score)
+                // 获取原始检索分数（从混合检索传递过来）
+                // (Get original retrieval score, passed from hybrid search)
+                double originalScore = doc.getScore() != null ? doc.getScore() : 1.0;
 
                 // 混合评分：final = (1-weight) * original + weight * ppl_score
                 // (Hybrid scoring: final = (1-weight) * original + weight * ppl_score)
                 double weight = config.getWeight();
                 double finalScore = (1 - weight) * originalScore + weight * pplScore;
+
+                // 记录日志，方便调试 (Log for debugging)
+                log.debug(I18N.get("ppl_onnx.log.rerank_detail",
+                    doc.getTitle(),
+                    String.format("%.3f", originalScore),
+                    String.format("%.2f", ppl),
+                    String.format("%.3f", pplScore),
+                    String.format("%.3f", finalScore)));
 
                 scoredDocs.add(new DocumentWithScore(doc, finalScore));
             }
