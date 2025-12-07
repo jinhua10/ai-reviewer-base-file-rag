@@ -1,6 +1,6 @@
 # PPL ONNX 服务 KV Cache 兼容性问题
 
-> 文档版本: v1.4  
+> 文档版本: v1.5  
 > 创建日期: 2025-12-07  
 > 作者: AI Reviewer Team
 
@@ -8,11 +8,11 @@
 
 ## ✅ 问题已解决
 
-**v1.4 更新（2025-12-07）：使用 DirectBuffer 成功支持 KV Cache 模型！**
+**v1.5 更新（2025-12-07）：动态提取 KV Cache 维度！**
 
-通过使用 `java.nio.ByteBuffer.allocateDirect()` 创建直接缓冲区，成功绕过了 ONNX Runtime 对普通数组零维度的限制。
+之前硬编码了 `numHeads=14`，但 Qwen 模型使用 GQA（Grouped-Query Attention），实际 `num_kv_heads=2`。
 
-现在 ONNX PPL 服务可以正常使用带 KV Cache 的 Qwen 模型。
+现在从模型输入信息中 **动态提取** `numHeads` 和 `headDim`，确保兼容所有模型配置。
 
 ---
 
@@ -63,15 +63,17 @@ KV Cache 推理:
 
 ### Qwen 模型的 KV Cache 结构
 
-Qwen2.5-0.5B 模型有 24 层 Transformer，每层需要：
-- `past_key_values.{layer}.key`: shape `[batch, num_heads, seq_len, head_dim]`
-- `past_key_values.{layer}.value`: shape `[batch, num_heads, seq_len, head_dim]`
+Qwen2.5-0.5B 模型有 24 层 Transformer，使用 **GQA（Grouped-Query Attention）** 优化：
+- `past_key_values.{layer}.key`: shape `[batch, num_kv_heads, seq_len, head_dim]`
+- `past_key_values.{layer}.value`: shape `[batch, num_kv_heads, seq_len, head_dim]`
 
 其中：
 - `batch = 1`（批次大小）
-- `num_heads = 14`（注意力头数）
+- `num_kv_heads = 2`（**注意：不是 14！** GQA 使用更少的 KV heads）
 - `head_dim = 64`（每个头的维度）
 - `seq_len = 0`（首次推理时为 0）
+
+> ⚠️ **GQA 说明**：Qwen 使用 Grouped-Query Attention，query heads 数量（14）与 key/value heads 数量（2）不同。这是为了减少 KV Cache 的内存占用。
 
 ---
 
@@ -90,31 +92,44 @@ Qwen2.5-0.5B 模型有 24 层 Transformer，每层需要：
 
 ### 代码实现
 
-#### 1. 模型信息检测 (`logModelInfo`)
+#### 1. 模型信息检测 (`logModelInfo`) - 动态提取维度
 
 ```java
 private void logModelInfo() {
     Map<String, NodeInfo> inputInfo = session.getInputInfo();
     for (Map.Entry<String, NodeInfo> entry : inputInfo.entrySet()) {
         String name = entry.getKey();
+        NodeInfo info = entry.getValue();
         
-        // 检测是否使用 KV Cache
         if (name.startsWith("past_key_values.")) {
             useKVCache = true;
+            
             // 提取层数
             String[] parts = name.split("\\.");
             if (parts.length >= 2) {
                 int layerNum = Integer.parseInt(parts[1]);
                 numLayers = Math.max(numLayers, layerNum + 1);
             }
+            
+            // 关键：从模型输入动态提取 numHeads 和 headDim
+            if (numHeads == 0 && info.getInfo() instanceof TensorInfo) {
+                TensorInfo tensorInfo = (TensorInfo) info.getInfo();
+                long[] shape = tensorInfo.getShape();
+                // KV Cache 形状: [batch, num_kv_heads, seq_len, head_dim]
+                if (shape.length >= 4) {
+                    numHeads = (int) shape[1];  // num_kv_heads (不是 num_heads!)
+                    headDim = (int) shape[3];
+                }
+            }
         }
-    }
-    
-    if (useKVCache) {
-        log.info("⚠️ 模型使用 KV Cache，共 {} 层", numLayers);
     }
 }
 ```
+
+**为什么需要动态提取？**
+- Qwen 使用 GQA（Grouped-Query Attention）
+- Query heads 数量（14）与 KV heads 数量（2）不同
+- 硬编码 `numHeads=14` 会导致维度不匹配错误
 
 #### 2. 添加空 KV Cache (`addEmptyKVCache`) - 关键修复
 
@@ -381,7 +396,8 @@ knowledge:
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
-| v1.4 | 2025-12-07 | **问题已解决**：使用 DirectBuffer 成功支持 KV Cache 模型 |
+| v1.5 | 2025-12-07 | **关键修复**：动态提取 KV Cache 维度（numHeads/headDim），支持 GQA 模型 |
+| v1.4 | 2025-12-07 | 使用 DirectBuffer 成功支持 KV Cache 模型 |
 | v1.3 | 2025-12-07 | 禁用 PPL Rerank 功能，更新配置文件 |
 | v1.2 | 2025-12-07 | 确认 ONNX Runtime 不支持零维度张量，改为检测并自动降级到 Ollama |
 | v1.1 | 2025-12-07 | 尝试实现 KV Cache 支持（测试失败） |

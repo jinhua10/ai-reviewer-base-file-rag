@@ -136,6 +136,20 @@ public class PPLOnnxService implements PPLService {
                             numLayers = Math.max(numLayers, layerNum + 1);
                         }
                     } catch (NumberFormatException ignored) {}
+
+                    // 从第一个 KV Cache 输入提取 numHeads 和 headDim
+                    // (Extract numHeads and headDim from first KV Cache input)
+                    if (numHeads == 0 && info.getInfo() instanceof TensorInfo) {
+                        TensorInfo tensorInfo = (TensorInfo) info.getInfo();
+                        long[] shape = tensorInfo.getShape();
+                        // KV Cache 形状: [batch, num_heads, seq_len, head_dim]
+                        // 但有些模型可能是 [batch, num_kv_heads, seq_len, head_dim]
+                        if (shape.length >= 4) {
+                            numHeads = (int) shape[1];  // num_heads 或 num_kv_heads
+                            headDim = (int) shape[3];   // head_dim
+                            log.info("  📐 从模型提取 KV Cache 维度: num_heads={}, head_dim={}", numHeads, headDim);
+                        }
+                    }
                 }
             }
 
@@ -146,10 +160,15 @@ public class PPLOnnxService implements PPLService {
             }
 
             if (useKVCache) {
-                log.info("⚠️ 模型使用 KV Cache，共 {} 层", numLayers);
-                // Qwen 默认参数：num_heads=14, head_dim=64 for 0.5B model
-                numHeads = 14;
-                headDim = 64;
+                log.info("⚠️ 模型使用 KV Cache，共 {} 层, num_heads={}, head_dim={}",
+                        numLayers, numHeads, headDim);
+
+                // 如果无法从模型提取，使用默认值并警告
+                if (numHeads == 0 || headDim == 0) {
+                    log.warn("⚠️ 无法从模型提取 KV Cache 维度，使用默认值");
+                    numHeads = 2;   // GQA 模式常见值
+                    headDim = 64;
+                }
             } else {
                 log.info("✅ 模型不使用 KV Cache，可直接推理");
             }
