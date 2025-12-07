@@ -399,21 +399,25 @@ public class KnowledgeQAService {
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
 
+                        // 从配置获取每文档最大图片数 (Get max images per doc from config)
+                        int maxImagesPerDoc = properties.getImageProcessing().getMaxImagesPerDoc();
+
                         imageContext.append(I18N.get("knowledge_qa_service.available_images", doc.getTitle()));
-                        for (int i = 0; i < Math.min(docImages.size(), 5); i++) { // 最多列出 5 张图片 / List up to 5 images
+                        for (int i = 0; i < Math.min(docImages.size(), maxImagesPerDoc); i++) {
                             top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.related_image");
                             // 格式：图片 1：描述（来源：URL）![描述](URL)
+                            // (Format: Image 1: description (source: URL) ![desc](URL))
                             imageContext.append("\n  ")
                                        .append(I18N.get("knowledge_qa_service.image_item",
                                            i + 1, imgDesc, img.getUrl()))
                                        .append(" ")
                                        .append("![").append(imgDesc).append("](").append(img.getUrl()).append(")");
                         }
-                        if (docImages.size() > 5) {
-                            imageContext.append("\n  ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - 5));
+                        if (docImages.size() > maxImagesPerDoc) {
+                            imageContext.append("\n  ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - maxImagesPerDoc));
                         }
                         imageContext.append("\n");
                     }

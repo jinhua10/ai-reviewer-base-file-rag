@@ -55,6 +55,11 @@ public class KnowledgeQAProperties {
      */
     private QueryExpansionConfig queryExpansion = new QueryExpansionConfig();
 
+    /**
+     * 会话管理配置
+     */
+    private SessionConfig session = new SessionConfig();
+
     @Data
     public static class KnowledgeBaseConfig {
         /**
@@ -382,6 +387,11 @@ public class KnowledgeQAProperties {
          */
         private String extractionMode = "concise";
 
+        /**
+         * 每个文档在上下文中最多显示的图片数量
+         * (Maximum number of images to display per document in context)
+         */
+        private int maxImagesPerDoc = 5;
 
         /**
          * Vision LLM 配置 (Vision LLM configuration)
@@ -603,5 +613,23 @@ public class KnowledgeQAProperties {
             
             改写后的查询：
             """;
+    }
+
+    /**
+     * 会话管理配置（Session management configuration）
+     */
+    @Data
+    public static class SessionConfig {
+        /**
+         * 会话超时时间（分钟）
+         * (Session timeout in minutes)
+         */
+        private long timeoutMinutes = 30;
+
+        /**
+         * 最大会话数量
+         * (Maximum number of sessions)
+         */
+        private int maxSessions = 1000;
     }
 }

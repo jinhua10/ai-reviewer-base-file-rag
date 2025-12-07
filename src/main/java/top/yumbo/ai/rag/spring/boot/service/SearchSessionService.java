@@ -2,9 +2,11 @@ package top.yumbo.ai.rag.spring.boot.service;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -12,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 搜索会话管理服务 - 支持分页引用文档
+ * (Search session management service - supports paginated document references)
  *
  * @author AI Reviewer Team
  * @since 2025-11-29
@@ -20,11 +23,24 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SearchSessionService {
 
+    private final KnowledgeQAProperties properties;
+
     // 会话存储（sessionId -> SearchSession）
+    // (Session storage)
     private final Map<String, SearchSession> sessions = new ConcurrentHashMap<>();
 
-    // 会话超时时间（30分钟）
-    private static final long SESSION_TIMEOUT_MINUTES = 30;
+    @Autowired
+    public SearchSessionService(KnowledgeQAProperties properties) {
+        this.properties = properties;
+    }
+
+    /**
+     * 获取会话超时时间（分钟）
+     * (Get session timeout in minutes)
+     */
+    private long getSessionTimeoutMinutes() {
+        return properties.getSession().getTimeoutMinutes();
+    }
 
     /**
      * 创建新的搜索会话
@@ -179,7 +195,7 @@ public class SearchSessionService {
         List<String> expiredSessions = new ArrayList<>();
 
         sessions.forEach((id, session) -> {
-            if (session.getLastAccessTime().plusMinutes(SESSION_TIMEOUT_MINUTES).isBefore(now)) {
+            if (session.getLastAccessTime().plusMinutes(getSessionTimeoutMinutes()).isBefore(now)) {
                 expiredSessions.add(id);
             }
         });
