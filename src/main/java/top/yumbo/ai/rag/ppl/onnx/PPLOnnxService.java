@@ -144,19 +144,29 @@ public class PPLOnnxService implements PPLService {
 
             // 2. 准备 ONNX 输入 (Prepare ONNX inputs)
             Map<String, OnnxTensor> inputs = new HashMap<>();
+            int seqLen = inputIds.length;
 
             // 将 inputIds 转换为 [1, seq_len] 的张量 (Convert to [1, seq_len] tensor)
-            long[][] inputIdsArray = new long[1][inputIds.length];
+            long[][] inputIdsArray = new long[1][seqLen];
             inputIdsArray[0] = inputIds;
 
-            long[][] attentionMaskArray = new long[1][attentionMask.length];
+            long[][] attentionMaskArray = new long[1][seqLen];
             attentionMaskArray[0] = attentionMask;
+
+            // 生成 position_ids [1, seq_len]，值为 0, 1, 2, ..., seq_len-1
+            // (Generate position_ids [1, seq_len], values are 0, 1, 2, ..., seq_len-1)
+            long[][] positionIdsArray = new long[1][seqLen];
+            for (int i = 0; i < seqLen; i++) {
+                positionIdsArray[0][i] = i;
+            }
 
             OnnxTensor inputIdsTensor = OnnxTensor.createTensor(env, inputIdsArray);
             OnnxTensor attentionMaskTensor = OnnxTensor.createTensor(env, attentionMaskArray);
+            OnnxTensor positionIdsTensor = OnnxTensor.createTensor(env, positionIdsArray);
 
             inputs.put("input_ids", inputIdsTensor);
             inputs.put("attention_mask", attentionMaskTensor);
+            inputs.put("position_ids", positionIdsTensor);
 
             // 3. 模型推理 (Model inference)
             try (OrtSession.Result results = session.run(inputs)) {
@@ -195,6 +205,7 @@ public class PPLOnnxService implements PPLService {
                 // 清理资源 (Clean up resources)
                 inputIdsTensor.close();
                 attentionMaskTensor.close();
+                positionIdsTensor.close();
 
                 // 缓存结果 (Cache result)
                 if (pplCache != null) {
