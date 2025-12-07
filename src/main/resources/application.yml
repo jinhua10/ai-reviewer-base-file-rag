@@ -573,6 +573,10 @@ knowledge:
       # 建议值：5-8（保持5，确保质量）
       documents-per-query: 5
 
+      # 日志中显示的最大文档数量（调试用）
+      # 用于控制 Lucene/向量检索结果的日志输出数量
+      log-display-limit: 10
+
       # 检索返回的文档数量上限（已废弃）
       # @deprecated 使用 hybrid-top-k 替代
       top-k: 20
