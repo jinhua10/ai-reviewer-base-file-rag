@@ -69,12 +69,14 @@ Qwen2.5-0.5B 模型有 24 层 Transformer，每层需要：
 
 ### 方案概述
 
-由于正确处理 KV Cache 输入非常复杂，当前采用 **检测并降级** 策略：
+**v1.1 更新（2025-12-07）：已实现 KV Cache 支持！**
 
-1. **模型加载时**：自动检测模型是否使用 KV Cache
-2. **健康检查时**：如果使用 KV Cache，返回 `false`
-3. **推理时**：如果使用 KV Cache，抛出明确的异常消息
-4. **服务降级**：`PPLServiceFacade` 自动切换到 Ollama 等替代服务
+系统现在可以正确处理使用 KV Cache 的 ONNX 模型，通过在首次推理时传入空的 `past_key_values` 张量（形状为 `[batch=1, num_heads, seq_len=0, head_dim]`）。
+
+**工作流程**：
+1. **模型加载时**：自动检测模型是否使用 KV Cache，并提取层数、注意力头数等参数
+2. **推理时**：如果使用 KV Cache，自动添加空的 `past_key_values` 张量
+3. **资源管理**：统一管理所有张量的生命周期，确保正确释放
 
 ### 代码实现
 
@@ -104,30 +106,47 @@ private void logModelInfo() {
 }
 ```
 
-#### 2. 健康检查 (`isHealthy`)
+#### 2. 添加空 KV Cache (`addEmptyKVCache`)
 
 ```java
-@Override
-public boolean isHealthy() {
-    // 如果模型使用 KV Cache，返回 false 触发降级
-    if (useKVCache) {
-        log.warn("⚠️ ONNX 模型使用 KV Cache，当前不支持，请使用 Ollama 替代");
-        return false;
+private void addEmptyKVCache(Map<String, OnnxTensor> inputs, List<OnnxTensor> tensorsToClose) 
+        throws OrtException {
+    // 为每一层创建空的 key 和 value 张量
+    for (int layer = 0; layer < numLayers; layer++) {
+        // 空的 KV Cache 形状: [batch=1, num_heads, seq_len=0, head_dim]
+        float[][][][] emptyKV = new float[1][numHeads][0][headDim];
+        
+        String keyName = "past_key_values." + layer + ".key";
+        String valueName = "past_key_values." + layer + ".value";
+        
+        OnnxTensor keyTensor = OnnxTensor.createTensor(env, emptyKV);
+        OnnxTensor valueTensor = OnnxTensor.createTensor(env, emptyKV);
+        
+        tensorsToClose.add(keyTensor);
+        tensorsToClose.add(valueTensor);
+        
+        inputs.put(keyName, keyTensor);
+        inputs.put(valueName, valueTensor);
     }
-    // ... 其他检查
 }
 ```
 
-#### 3. 推理时检查 (`calculatePerplexity`)
+#### 3. 推理时自动处理 (`calculatePerplexity`)
 
 ```java
-@Override
-public double calculatePerplexity(String text) throws PPLException {
-    if (useKVCache) {
-        throw new PPLException(PPLProviderType.ONNX,
-            "当前 ONNX 模型使用 KV Cache，暂不支持。请使用 Ollama 作为替代...");
-    }
-    // ... 正常推理逻辑
+// 准备基本输入
+inputs.put("input_ids", inputIdsTensor);
+inputs.put("attention_mask", attentionMaskTensor);
+inputs.put("position_ids", positionIdsTensor);
+
+// 如果模型使用 KV Cache，添加空的 past_key_values
+if (useKVCache) {
+    addEmptyKVCache(inputs, tensorsToClose);
+}
+
+// 执行推理
+try (OrtSession.Result results = session.run(inputs)) {
+    // ... 计算 PPL
 }
 ```
 
@@ -216,8 +235,8 @@ knowledge:
 
 | 引擎 | 速度 | 精度 | 成本 | KV Cache 支持 | 推荐场景 |
 |------|------|------|------|---------------|---------|
-| ONNX | ⚡快 | 中 | 免费 | ❌ 需要无 KV Cache 模型 | 有合适模型时使用 |
-| Ollama | ⚡快 | 中 | 免费 | ✅ 自动处理 | **推荐日常使用** |
+| ONNX | ⚡快 | 中 | 免费 | ✅ 已支持（v1.1） | **推荐本地部署** |
+| Ollama | ⚡快 | 中 | 免费 | ✅ 自动处理 | 简单部署 |
 | OpenAI | 慢 | 高 | 收费 | ✅ 不涉及 | 高精度需求 |
 
 ---
@@ -226,9 +245,9 @@ knowledge:
 
 ### 短期（v2.1）
 
-- [ ] 添加空 KV Cache 张量支持（首次推理时传入全零张量）
-- [ ] 测试并验证空 KV Cache 方案的正确性
-- [ ] 提供 KV Cache 模型和无 KV Cache 模型的自动检测和适配
+- [x] ~~添加空 KV Cache 张量支持（首次推理时传入全零张量）~~ ✅ 已完成
+- [x] ~~测试并验证空 KV Cache 方案的正确性~~ ✅ 已完成
+- [x] ~~提供 KV Cache 模型和无 KV Cache 模型的自动检测和适配~~ ✅ 已完成
 
 ### 长期（v3.0）
 
@@ -253,7 +272,12 @@ knowledge:
   ... (每层都有 key 和 value)
   
 ⚠️ 模型使用 KV Cache，共 24 层
-⚠️ ONNX 模型使用 KV Cache，当前不支持，请使用 Ollama 替代
+✅ 已添加 24 层空 KV Cache (Added 24 layers of empty KV Cache)
+```
+
+**PPL 计算成功时**：
+```
+✅ PPL 计算完成: 文本="Hello world", PPL=15.23, 耗时=50ms
 ```
 
 ---
@@ -336,5 +360,6 @@ knowledge:
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.1 | 2025-12-07 | **重大更新**：实现 KV Cache 支持，ONNX 服务现在可以正确处理带 KV Cache 的模型 |
 | v1.0 | 2025-12-07 | 初始版本，记录 KV Cache 兼容性问题及解决方案 |
 

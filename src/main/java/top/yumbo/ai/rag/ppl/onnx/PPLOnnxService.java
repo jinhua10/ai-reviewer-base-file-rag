@@ -176,16 +176,6 @@ public class PPLOnnxService implements PPLService {
             return Double.MAX_VALUE;
         }
 
-        // 如果模型使用 KV Cache，暂不支持，提示用户使用 Ollama
-        // (If model uses KV Cache, not supported yet, suggest using Ollama)
-        if (useKVCache) {
-            throw new PPLException(PPLProviderType.ONNX,
-                    "当前 ONNX 模型使用 KV Cache，暂不支持。请使用 Ollama 作为替代: " +
-                    "1. 安装 Ollama: https://ollama.com/download " +
-                    "2. 下载模型: ollama pull qwen2.5:0.5b " +
-                    "3. 修改配置: knowledge.qa.ppl.default-provider=ollama");
-        }
-
         // 检查缓存 (Check cache)
         if (pplCache != null) {
             Double cached = pplCache.getIfPresent(text);
@@ -197,6 +187,7 @@ public class PPLOnnxService implements PPLService {
         }
 
         long startTime = System.currentTimeMillis();
+        List<OnnxTensor> tensorsToClose = new ArrayList<>();
 
         try {
             // 1. Tokenize - 将文本转换为 Token IDs (Convert text to Token IDs)
@@ -230,9 +221,19 @@ public class PPLOnnxService implements PPLService {
             OnnxTensor attentionMaskTensor = OnnxTensor.createTensor(env, attentionMaskArray);
             OnnxTensor positionIdsTensor = OnnxTensor.createTensor(env, positionIdsArray);
 
+            tensorsToClose.add(inputIdsTensor);
+            tensorsToClose.add(attentionMaskTensor);
+            tensorsToClose.add(positionIdsTensor);
+
             inputs.put("input_ids", inputIdsTensor);
             inputs.put("attention_mask", attentionMaskTensor);
             inputs.put("position_ids", positionIdsTensor);
+
+            // 3. 如果模型使用 KV Cache，添加空的 past_key_values
+            // (If model uses KV Cache, add empty past_key_values)
+            if (useKVCache) {
+                addEmptyKVCache(inputs, tensorsToClose);
+            }
 
             // 3. 模型推理 (Model inference)
             try (OrtSession.Result results = session.run(inputs)) {
@@ -269,9 +270,11 @@ public class PPLOnnxService implements PPLService {
                 double ppl = validTokens > 0 ? Math.exp(totalLoss / validTokens) : Double.MAX_VALUE;
 
                 // 清理资源 (Clean up resources)
-                inputIdsTensor.close();
-                attentionMaskTensor.close();
-                positionIdsTensor.close();
+                for (OnnxTensor tensor : tensorsToClose) {
+                    try {
+                        tensor.close();
+                    } catch (Exception ignored) {}
+                }
 
                 // 缓存结果 (Cache result)
                 if (pplCache != null) {
@@ -283,12 +286,57 @@ public class PPLOnnxService implements PPLService {
             }
 
         } catch (Exception e) {
+            // 确保清理资源 (Ensure cleanup)
+            for (OnnxTensor tensor : tensorsToClose) {
+                try {
+                    tensor.close();
+                } catch (Exception ignored) {}
+            }
+
             metrics.recordFailure(System.currentTimeMillis() - startTime);
             log.error(I18N.get("ppl_onnx.log.calc_ppl_failed",
                     text.substring(0, Math.min(50, text.length()))), e);
             throw new PPLException(PPLProviderType.ONNX,
                     I18N.get("ppl_onnx.error.calc_ppl_failed"), e);
         }
+    }
+
+    /**
+     * 添加空的 KV Cache 张量到输入
+     * (Add empty KV Cache tensors to inputs)
+     *
+     * 对于首次推理，past_key_values 的 seq_len 维度为 0
+     * (For first inference, the seq_len dimension of past_key_values is 0)
+     *
+     * 张量形状: [batch=1, num_heads, seq_len=0, head_dim]
+     * (Tensor shape: [batch=1, num_heads, seq_len=0, head_dim])
+     *
+     * @param inputs 输入映射 (input map)
+     * @param tensorsToClose 需要清理的张量列表 (list of tensors to close)
+     */
+    private void addEmptyKVCache(Map<String, OnnxTensor> inputs, List<OnnxTensor> tensorsToClose)
+            throws OrtException {
+        // 为每一层创建空的 key 和 value 张量
+        // (Create empty key and value tensors for each layer)
+        for (int layer = 0; layer < numLayers; layer++) {
+            // 空的 KV Cache 形状: [batch=1, num_heads, seq_len=0, head_dim]
+            // (Empty KV Cache shape: [batch=1, num_heads, seq_len=0, head_dim])
+            float[][][][] emptyKV = new float[1][numHeads][0][headDim];
+
+            String keyName = "past_key_values." + layer + ".key";
+            String valueName = "past_key_values." + layer + ".value";
+
+            OnnxTensor keyTensor = OnnxTensor.createTensor(env, emptyKV);
+            OnnxTensor valueTensor = OnnxTensor.createTensor(env, emptyKV);
+
+            tensorsToClose.add(keyTensor);
+            tensorsToClose.add(valueTensor);
+
+            inputs.put(keyName, keyTensor);
+            inputs.put(valueName, valueTensor);
+        }
+
+        log.debug("✅ 已添加 {} 层空 KV Cache (Added {} layers of empty KV Cache)", numLayers, numLayers);
     }
 
     /**
@@ -887,13 +935,6 @@ public class PPLOnnxService implements PPLService {
         try {
             // 检查关键组件是否已初始化 (Check if key components are initialized)
             if (session == null || tokenizer == null) {
-                return false;
-            }
-
-            // 如果模型使用 KV Cache，当前不支持，返回 false
-            // (If model uses KV Cache, not supported, return false)
-            if (useKVCache) {
-                log.warn("⚠️ ONNX 模型使用 KV Cache，当前不支持，请使用 Ollama 替代");
                 return false;
             }
 
