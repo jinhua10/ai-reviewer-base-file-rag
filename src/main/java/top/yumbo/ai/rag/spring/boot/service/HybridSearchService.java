@@ -353,6 +353,7 @@ public class HybridSearchService {
 
     /**
      * 查询扩展（如果启用）
+     * (Query expansion if enabled)
      *
      * 📈 优化（2025-12-05）：通过同义词扩展提升召回率
      */
@@ -363,13 +364,14 @@ public class HybridSearchService {
 
         try {
             // 使用简单扩展（不调用 LLM，避免延迟）
+            // (Use simple expansion without LLM to avoid latency)
             String expanded = queryExpansionService.simpleExpand(question);
             if (!expanded.equals(question)) {
-                log.debug("🔍 查询扩展: {} -> {}", question, expanded);
+                log.debug(I18N.get("log.hybrid.query_expanded", question, expanded));
             }
             return expanded;
         } catch (Exception e) {
-            log.warn("⚠️ 查询扩展失败，使用原始查询: {}", e.getMessage());
+            log.warn(I18N.get("log.hybrid.expand_failed", e.getMessage()));
             return question;
         }
     }

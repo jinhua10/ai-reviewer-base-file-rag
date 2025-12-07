@@ -53,8 +53,8 @@ public class SearchCacheService {
 
         // 初始化查询扩展缓存 (Initialize query expansion cache)
         queryExpansionCache = Caffeine.newBuilder()
-            .maximumSize(1000)
-            .expireAfterWrite(60, TimeUnit.MINUTES)
+            .maximumSize(getQueryExpansionCacheMaxSize())
+            .expireAfterWrite(getQueryExpansionCacheTtlMinutes(), TimeUnit.MINUTES)
             .build();
 
         log.info(I18N.get("log.cache.init", getCacheMaxSize(), getCacheTtlMinutes()));
@@ -147,15 +147,45 @@ public class SearchCacheService {
     }
 
     /**
-     * 生成缓存键
-     * (Generate cache key)
+     * 生成缓存键（包含配置参数hash，确保参数变化时缓存失效）
+     * (Generate cache key with config hash to ensure cache invalidation on config changes)
      */
     private String generateCacheKey(String question) {
-        // 简单的缓存键生成：规范化问题文本
-        // (Simple cache key generation: normalize question text)
-        return question.toLowerCase().trim()
+        // 包含配置 hash 确保参数变化时缓存失效
+        // (Include config hash to ensure cache invalidation when config changes)
+        int configHash = generateConfigHash();
+
+        // 规范化问题文本 (Normalize question text)
+        String normalized = question.toLowerCase().trim()
             .replaceAll("\\s+", " ")  // 合并空白字符 (Merge whitespace)
             .replaceAll("[?？!！。，,.]+$", "");  // 移除尾部标点 (Remove trailing punctuation)
+
+        return normalized + "_cfg" + configHash;
+    }
+
+    /**
+     * 生成配置参数的 hash 值
+     * (Generate hash of config parameters)
+     * 用于确保配置变化时缓存自动失效
+     */
+    private int generateConfigHash() {
+        var vectorSearch = properties.getVectorSearch();
+        if (vectorSearch == null) {
+            return 0;
+        }
+
+        // 组合影响检索结果的关键配置参数
+        // (Combine key config parameters that affect search results)
+        String configString = String.format("%.2f_%.2f_%d_%d_%d_%.2f",
+            vectorSearch.getLuceneWeight(),
+            vectorSearch.getVectorWeight(),
+            vectorSearch.getLuceneTopK(),
+            vectorSearch.getVectorTopK(),
+            vectorSearch.getHybridTopK(),
+            vectorSearch.getMinScoreThreshold()
+        );
+
+        return configString.hashCode();
     }
 
     private boolean isCacheEnabled() {
@@ -163,14 +193,48 @@ public class SearchCacheService {
                properties.getKnowledgeBase().isEnableCache();
     }
 
+    /**
+     * 获取缓存最大大小（从配置读取）
+     * (Get cache max size from config)
+     */
     private int getCacheMaxSize() {
-        // 默认缓存 500 个查询结果 (Default cache 500 query results)
-        return 500;
+        if (properties.getCache() != null) {
+            return properties.getCache().getMaxSize();
+        }
+        return 500; // 默认值 (Default value)
     }
 
+    /**
+     * 获取缓存 TTL（从配置读取）
+     * (Get cache TTL from config)
+     */
     private int getCacheTtlMinutes() {
-        // 默认缓存 30 分钟 (Default cache for 30 minutes)
-        return 30;
+        if (properties.getCache() != null) {
+            return properties.getCache().getTtlMinutes();
+        }
+        return 30; // 默认值 (Default value)
+    }
+
+    /**
+     * 获取查询扩展缓存最大大小
+     * (Get query expansion cache max size)
+     */
+    private int getQueryExpansionCacheMaxSize() {
+        if (properties.getCache() != null) {
+            return properties.getCache().getQueryExpansionMaxSize();
+        }
+        return 1000;
+    }
+
+    /**
+     * 获取查询扩展缓存 TTL
+     * (Get query expansion cache TTL)
+     */
+    private int getQueryExpansionCacheTtlMinutes() {
+        if (properties.getCache() != null) {
+            return properties.getCache().getQueryExpansionTtlMinutes();
+        }
+        return 60;
     }
 
     /**

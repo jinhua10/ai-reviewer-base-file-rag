@@ -4,6 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 
@@ -36,16 +37,19 @@ public class QueryExpansionService {
     private final LLMClient llmClient;
     private final KnowledgeQAProperties properties;
 
-    /** 同义词词典（支持从配置加载） */
+    /** 同义词词典（支持从配置加载）(Synonym dictionary) */
     private final Map<String, List<String>> synonymDict = new HashMap<>();
 
-    /** 停用词（从配置加载） */
+    /** 同义词反向索引，优化查找效率 (Reverse index for efficient lookup) */
+    private final Map<String, String> synonymReverseIndex = new HashMap<>();
+
+    /** 停用词（从配置加载）(Stopwords from config) */
     private final Set<String> stopWords = new HashSet<>();
 
-    /** 分词正则 */
+    /** 分词正则 (Token pattern) */
     private static final Pattern TOKEN_PATTERN = Pattern.compile("[\\s,.;:?!]+");
 
-    /** 短语匹配正则 */
+    /** 短语匹配正则 (Phrase pattern) */
     private static final Pattern PHRASE_PATTERN = Pattern.compile("\"([^\"]+)\"");
 
     @Autowired
@@ -57,28 +61,46 @@ public class QueryExpansionService {
 
     @PostConstruct
     public void init() {
-        // 1. 加载内置同义词
+        // 1. 加载内置同义词 (Load builtin synonyms)
         initBuiltinSynonyms();
 
-        // 2. 从配置加载停用词
+        // 2. 从配置加载停用词 (Load stopwords from config)
         initStopWordsFromConfig();
 
-        // 3. 加载外部同义词文件（如果配置了）
+        // 3. 加载外部同义词文件（如果配置了）(Load external synonym file if configured)
         loadSynonymsFromFile();
 
-        log.info("QueryExpansionService initialized: {} synonyms, {} stopwords",
-            synonymDict.size(), stopWords.size());
+        // 4. 构建反向索引 (Build reverse index)
+        buildReverseIndex();
+
+        log.info(I18N.get("log.query_expansion.init", synonymDict.size(), stopWords.size()));
+    }
+
+    /**
+     * 构建同义词反向索引
+     * (Build synonym reverse index for O(1) lookup)
+     */
+    private void buildReverseIndex() {
+        synonymReverseIndex.clear();
+        for (Map.Entry<String, List<String>> entry : synonymDict.entrySet()) {
+            String mainWord = entry.getKey();
+            for (String synonym : entry.getValue()) {
+                synonymReverseIndex.put(synonym.toLowerCase(), mainWord);
+            }
+        }
+        log.debug(I18N.get("log.query_expansion.reverse_index", synonymReverseIndex.size()));
     }
 
     /**
      * 扩展查询（完整版）
+     * (Expand query - full version)
      *
-     * @param originalQuery 原始查询
-     * @param useLLM 是否使用 LLM 改写
-     * @return 扩展后的查询
+     * @param originalQuery 原始查询 (Original query)
+     * @param useLLM 是否使用 LLM 改写 (Whether to use LLM rewrite)
+     * @return 扩展后的查询 (Expanded query)
      */
     public ExpandedQuery expandQuery(String originalQuery, boolean useLLM) {
-        log.debug("🔍 开始扩展查询: {}", originalQuery);
+        log.debug(I18N.get("log.query_expansion.start", originalQuery));
 
         ExpandedQuery result = new ExpandedQuery();
         result.setOriginalQuery(originalQuery);
@@ -125,11 +147,12 @@ public class QueryExpansionService {
 
     /**
      * 同义词扩展
+     * (Synonym expansion with O(1) reverse lookup)
      */
     private Set<String> synonymExpand(String query) {
         Set<String> expandedTerms = new LinkedHashSet<>();
 
-        // 分词
+        // 分词 (Tokenize)
         String[] tokens = TOKEN_PATTERN.split(query);
 
         for (String token : tokens) {
@@ -137,22 +160,26 @@ public class QueryExpansionService {
                 continue;
             }
 
-            // 查找同义词
-            List<String> synonyms = synonymDict.get(token.toLowerCase());
+            String lowerToken = token.toLowerCase();
+
+            // 正向查找：当前词是主词 (Forward lookup: current word is main word)
+            List<String> synonyms = synonymDict.get(lowerToken);
             if (synonyms != null) {
                 expandedTerms.addAll(synonyms);
             }
 
-            // 反向查找（如果当前词是某个词的同义词）
-            for (Map.Entry<String, List<String>> entry : synonymDict.entrySet()) {
-                if (entry.getValue().contains(token.toLowerCase())) {
-                    expandedTerms.add(entry.getKey());
-                    expandedTerms.addAll(entry.getValue());
+            // 反向查找：使用反向索引 O(1) (Reverse lookup: use reverse index O(1))
+            String mainWord = synonymReverseIndex.get(lowerToken);
+            if (mainWord != null) {
+                expandedTerms.add(mainWord);
+                List<String> relatedSynonyms = synonymDict.get(mainWord);
+                if (relatedSynonyms != null) {
+                    expandedTerms.addAll(relatedSynonyms);
                 }
             }
         }
 
-        // 移除原始查询中已有的词
+        // 移除原始查询中已有的词 (Remove words already in original query)
         for (String token : tokens) {
             expandedTerms.remove(token.toLowerCase());
         }

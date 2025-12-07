@@ -58,4 +58,28 @@ public class FeedbackConfig {
      * 默认 true (Default true)
      */
     private boolean enableDynamicWeighting = true;
+
+    /**
+     * 权重文件存储路径 (Document weight file path)
+     * 默认 data/document-weights.json
+     */
+    private String weightsFile = "data/document-weights.json";
+
+    /**
+     * 是否启用时间衰减 (Whether to enable time decay)
+     * 默认 true - 超过衰减天数后权重逐渐恢复到 1.0
+     */
+    private boolean enableTimeDecay = true;
+
+    /**
+     * 衰减开始天数 (Decay start days)
+     * 超过此天数后权重开始衰减
+     */
+    private int decayStartDays = 30;
+
+    /**
+     * 衰减因子 (Decay factor)
+     * 每天衰减的比例，例如 0.95 表示每天衰减 5%
+     */
+    private double decayFactor = 0.95;
 }

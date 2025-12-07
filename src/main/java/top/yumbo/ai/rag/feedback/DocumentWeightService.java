@@ -34,13 +34,18 @@ public class DocumentWeightService {
     // 文档权重映射表 <文档名, 权重>（Document weight mapping table <document name, weight>）
     private final Map<String, DocumentWeight> documentWeights = new ConcurrentHashMap<>();
 
-    // 权重文件路径（Weight file path）
-    private static final String WEIGHTS_FILE = "data/document-weights.json";
-
     public DocumentWeightService(FeedbackConfig feedbackConfig) {
         this.feedbackConfig = feedbackConfig;
         this.objectMapper = new ObjectMapper();
         loadWeights();
+    }
+
+    /**
+     * 获取权重文件路径（从配置读取）
+     * (Get weights file path from config)
+     */
+    private String getWeightsFilePath() {
+        return feedbackConfig.getWeightsFile();
     }
 
     /**
@@ -107,13 +112,43 @@ public class DocumentWeightService {
     }
 
     /**
-     * 获取文档权重（Get document weight）
+     * 获取文档权重（支持时间衰减）（Get document weight with time decay support）
      */
     public double getDocumentWeight(String documentName) {
         DocumentWeight docWeight = documentWeights.get(documentName);
         if (docWeight == null) {
             return 1.0; // 默认权重（Default weight）
         }
+
+        // 如果启用时间衰减，计算衰减后的权重
+        // (If time decay is enabled, calculate decayed weight)
+        if (feedbackConfig.isEnableTimeDecay()) {
+            return calculateDecayedWeight(docWeight);
+        }
+
+        return docWeight.getWeight();
+    }
+
+    /**
+     * 计算时间衰减后的权重
+     * (Calculate weight after time decay)
+     * 超过配置的天数后，权重逐渐恢复到 1.0
+     */
+    private double calculateDecayedWeight(DocumentWeight docWeight) {
+        long daysSinceUpdate = (System.currentTimeMillis() - docWeight.getLastUpdated())
+                               / (1000L * 60 * 60 * 24);
+
+        int decayStartDays = feedbackConfig.getDecayStartDays();
+        double decayFactor = feedbackConfig.getDecayFactor();
+
+        if (daysSinceUpdate > decayStartDays) {
+            // 超过衰减开始天数，应用衰减
+            // (Apply decay after decay start days)
+            long daysToDecay = daysSinceUpdate - decayStartDays;
+            double decay = Math.pow(decayFactor, daysToDecay);
+            return 1.0 + (docWeight.getWeight() - 1.0) * decay;
+        }
+
         return docWeight.getWeight();
     }
 
@@ -153,7 +188,7 @@ public class DocumentWeightService {
      */
     private void saveWeights() {
         try {
-            Path weightsPath = Paths.get(WEIGHTS_FILE);
+            Path weightsPath = Paths.get(getWeightsFilePath());
             Files.createDirectories(weightsPath.getParent());
 
             objectMapper.writerWithDefaultPrettyPrinter()
@@ -170,7 +205,7 @@ public class DocumentWeightService {
      */
     private void loadWeights() {
         try {
-            File weightsFile = new File(WEIGHTS_FILE);
+            File weightsFile = new File(getWeightsFilePath());
             if (!weightsFile.exists()) {
                 log.info(I18N.get("log.feedback.weights_file_not_exists"));
                 return;

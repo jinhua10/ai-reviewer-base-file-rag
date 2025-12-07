@@ -419,6 +419,8 @@ log:
     vector_found: "Vector search found {0} documents"
     feedback_weight_applied: "📊 Applied feedback weight adjustments to {0} documents"
     feedback_weight_detail: "📊 Document weight adjusted: {0} | Original: {1} | Weight: {2} | Adjusted: {3}"
+    query_expanded: "🔍 Query expanded: {0} -> {1}"
+    expand_failed: "⚠️ Query expansion failed, using original query: {0}"
   similar:
     found: "Found {0} similar documents"
     init: "✅ SimilarQAService initialized with {0} stopwords"
@@ -429,6 +431,13 @@ log:
     config_missing: "⚠️ SimilarQAConfig not configured, using defaults"
     no_history: "No historical QA records"
     failed: "Similar QA search failed"
+    cache_init: "✅ Similar QA cache initialized (max size: {0}, TTL: {1} minutes)"
+    cache_hit: "🎯 Similar QA cache hit: {0}"
+    cache_cleared: "🗑️ Similar QA cache cleared"
+  query_expansion:
+    init: "✅ Query expansion service initialized (synonyms: {0} groups, stopwords: {1})"
+    reverse_index: "✅ Synonym reverse index built ({0} entries)"
+    start: "🔍 Starting query expansion: {0}"
   chunk:
     ai_completed: "AI semantic chunking completed: {0} chars -> {1} chunks, Time taken: {2}ms"
     ai_failed: "AI semantic chunking failed, falling back to smart keyword chunking"
@@ -1550,3 +1559,5 @@ chunking_strategy:
     auto_select_llm: "🤖 Auto-selected: LLM chunking strategy"
     auto_select_ppl: "📊 Auto-selected: PPL chunking strategy"
     fallback_simple: "⚠️ Both PPL and LLM unavailable, using simple chunking strategy"
+
+

@@ -60,6 +60,11 @@ public class KnowledgeQAProperties {
      */
     private SessionConfig session = new SessionConfig();
 
+    /**
+     * 缓存配置
+     */
+    private CacheConfig cache = new CacheConfig();
+
     @Data
     public static class KnowledgeBaseConfig {
         /**
@@ -637,5 +642,35 @@ public class KnowledgeQAProperties {
          * (Maximum number of sessions)
          */
         private int maxSessions = 1000;
+    }
+
+    /**
+     * 缓存配置（Cache configuration）
+     */
+    @Data
+    public static class CacheConfig {
+        /**
+         * 检索结果缓存最大数量
+         * (Maximum number of cached search results)
+         */
+        private int maxSize = 500;
+
+        /**
+         * 缓存过期时间（分钟）
+         * (Cache TTL in minutes)
+         */
+        private int ttlMinutes = 30;
+
+        /**
+         * 查询扩展缓存最大数量
+         * (Maximum number of cached query expansions)
+         */
+        private int queryExpansionMaxSize = 1000;
+
+        /**
+         * 查询扩展缓存过期时间（分钟）
+         * (Query expansion cache TTL in minutes)
+         */
+        private int queryExpansionTtlMinutes = 60;
     }
 }

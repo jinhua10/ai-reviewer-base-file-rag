@@ -1,5 +1,8 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +13,7 @@ import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +40,15 @@ public class SimilarQAService {
     // 停用词从配置获取（Stopwords from configuration）
     private Set<String> stopWords;
 
+    // 相似问题结果缓存（Similar QA result cache）
+    // 因为历史记录变化不频繁，添加短期缓存提升性能
+    private Cache<String, List<SimilarQA>> similarQACache;
+
+    // 缓存 TTL（分钟）
+    private static final int CACHE_TTL_MINUTES = 5;
+    // 缓存最大大小
+    private static final int CACHE_MAX_SIZE = 200;
+
     @Autowired
     public SimilarQAService(QARecordService qaRecordService,
                            KnowledgeQAProperties properties) {
@@ -43,6 +56,16 @@ public class SimilarQAService {
         this.properties = properties;
         // 初始化停用词（从配置加载）
         initStopWords();
+    }
+
+    @PostConstruct
+    public void init() {
+        // 初始化缓存
+        similarQACache = Caffeine.newBuilder()
+            .maximumSize(CACHE_MAX_SIZE)
+            .expireAfterWrite(CACHE_TTL_MINUTES, TimeUnit.MINUTES)
+            .build();
+        log.debug(I18N.get("log.similar.cache_init", CACHE_MAX_SIZE, CACHE_TTL_MINUTES));
     }
 
     /**
@@ -61,8 +84,8 @@ public class SimilarQAService {
     }
 
     /**
-     * 查找相似问题
-     * (Find similar questions)
+     * 查找相似问题（带缓存支持）
+     * (Find similar questions with cache support)
      *
      * @param question  用户问题 (User question)
      * @param minScore  最小相似度分数（0-100）(Minimum similarity score)
@@ -81,6 +104,57 @@ public class SimilarQAService {
             return Collections.emptyList();
         }
 
+        // 生成缓存键
+        String cacheKey = generateCacheKey(question, minScore, limit);
+
+        // 尝试从缓存获取
+        if (similarQACache != null) {
+            List<SimilarQA> cached = similarQACache.getIfPresent(cacheKey);
+            if (cached != null) {
+                log.debug(I18N.get("log.similar.cache_hit", question.length() > 30 ? question.substring(0, 30) + "..." : question));
+                return cached;
+            }
+        }
+
+        // 执行实际查找
+        List<SimilarQA> results = doFindSimilar(question, minScore, limit);
+
+        // 存入缓存
+        if (similarQACache != null && !results.isEmpty()) {
+            similarQACache.put(cacheKey, results);
+        }
+
+        return results;
+    }
+
+    /**
+     * 生成缓存键
+     * (Generate cache key)
+     */
+    private String generateCacheKey(String question, int minScore, int limit) {
+        String normalized = question.toLowerCase().trim()
+            .replaceAll("\\s+", " ")
+            .replaceAll("[?？!！。，,.]+$", "");
+        return normalized + "_" + minScore + "_" + limit;
+    }
+
+    /**
+     * 清除相似问题缓存
+     * (Clear similar QA cache)
+     * 当历史记录发生变化时调用
+     */
+    public void clearCache() {
+        if (similarQACache != null) {
+            similarQACache.invalidateAll();
+            log.debug(I18N.get("log.similar.cache_cleared"));
+        }
+    }
+
+    /**
+     * 执行实际的相似问题查找
+     * (Perform actual similar question search)
+     */
+    private List<SimilarQA> doFindSimilar(String question, int minScore, int limit) {
         try {
             // 1. 提取查询问题的关键词 (Extract keywords from query)
             Set<String> queryKeywords = extractKeywords(question);
