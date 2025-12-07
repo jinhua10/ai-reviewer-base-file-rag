@@ -29,6 +29,12 @@ public class AIAnswer {
     // 新增：相似问题推荐 / New: Similar question recommendations
     private List<SimilarQAService.SimilarQA> similarQuestions;
 
+    // 新增：HOPE 相关字段 / New: HOPE related fields
+    private String hopeSource;       // HOPE 来源层：permanent/ordinary/high_frequency/null
+    private boolean directAnswer;    // 是否为直接回答（未调用 LLM）
+    private String strategyUsed;     // 使用的策略：DIRECT_ANSWER/TEMPLATE_ANSWER/REFERENCE_ANSWER/FULL_RAG
+    private double hopeConfidence;   // HOPE 查询置信度
+
     public AIAnswer(String answer, List<String> sources, long responseTimeMs) {
         this(answer, sources, responseTimeMs, Collections.emptyList(), Collections.emptyList(),
              Collections.emptyList(), 0, false);
@@ -69,4 +75,14 @@ public class AIAnswer {
     public void setSessionId(String sessionId) { this.sessionId = sessionId; }
     public List<SimilarQAService.SimilarQA> getSimilarQuestions() { return similarQuestions; }
     public void setSimilarQuestions(List<SimilarQAService.SimilarQA> similarQuestions) { this.similarQuestions = similarQuestions; }
+
+    // HOPE 相关 getter/setter
+    public String getHopeSource() { return hopeSource; }
+    public void setHopeSource(String hopeSource) { this.hopeSource = hopeSource; }
+    public boolean isDirectAnswer() { return directAnswer; }
+    public void setDirectAnswer(boolean directAnswer) { this.directAnswer = directAnswer; }
+    public String getStrategyUsed() { return strategyUsed; }
+    public void setStrategyUsed(String strategyUsed) { this.strategyUsed = strategyUsed; }
+    public double getHopeConfidence() { return hopeConfidence; }
+    public void setHopeConfidence(double hopeConfidence) { this.hopeConfidence = hopeConfidence; }
 }

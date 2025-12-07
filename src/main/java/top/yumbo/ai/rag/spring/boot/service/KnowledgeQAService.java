@@ -1,14 +1,19 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import ai.onnxruntime.OrtException;
+import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.chunking.ChunkingStrategy;
+import top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
+import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
 import top.yumbo.ai.rag.image.ImageInfo;
 import top.yumbo.ai.rag.image.ImageStorageService;
+import top.yumbo.ai.rag.model.Query;
 import top.yumbo.ai.rag.model.ScoredDocument;
 import top.yumbo.ai.rag.ppl.PPLServiceFacade;
 import top.yumbo.ai.rag.ppl.config.PPLConfig;
@@ -27,6 +32,10 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import top.yumbo.ai.rag.spring.boot.strategy.search.SearchContext;
 import top.yumbo.ai.rag.spring.boot.strategy.search.SearchStrategyDispatcher;
+import top.yumbo.ai.rag.hope.HOPEKnowledgeManager;
+import top.yumbo.ai.rag.hope.ResponseStrategy;
+import top.yumbo.ai.rag.hope.model.HOPEQueryResult;
+import top.yumbo.ai.rag.hope.monitor.HOPEMonitorService;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -62,6 +71,8 @@ public class KnowledgeQAService {
     private final PPLServiceFacade pplServiceFacade;  // PPL 服务门面
     private final PPLConfig pplConfig;  // PPL 配置
     private final SearchStrategyDispatcher searchStrategyDispatcher;  // 检索策略调度器
+    private final HOPEKnowledgeManager hopeManager;  // HOPE 知识管理器
+    private final HOPEMonitorService hopeMonitor;    // HOPE 监控服务
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -88,8 +99,9 @@ public class KnowledgeQAService {
                               SimilarQAService similarQAService,
                               PPLServiceFacade pplServiceFacade,
                               PPLConfig pplConfig,
-                              @Autowired(required = false)
-                              SearchStrategyDispatcher searchStrategyDispatcher) {
+                              @Autowired(required = false) SearchStrategyDispatcher searchStrategyDispatcher,
+                              @Autowired(required = false) HOPEKnowledgeManager hopeManager,
+                              @Autowired(required = false) HOPEMonitorService hopeMonitor) {
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
@@ -100,9 +112,11 @@ public class KnowledgeQAService {
         this.imageStorageService = imageStorageService;
         this.qaRecordService = qaRecordService;
         this.similarQAService = similarQAService;
-        this.pplServiceFacade = pplServiceFacade;  // 初始化 PPL 服务
-        this.pplConfig = pplConfig;  // 初始化 PPL 配置
-        this.searchStrategyDispatcher = searchStrategyDispatcher;  // 初始化检索策略调度器
+        this.pplServiceFacade = pplServiceFacade;
+        this.pplConfig = pplConfig;
+        this.searchStrategyDispatcher = searchStrategyDispatcher;
+        this.hopeManager = hopeManager;
+        this.hopeMonitor = hopeMonitor;
     }
 
     /**
@@ -275,8 +289,7 @@ public class KnowledgeQAService {
 
         // 获取切分策略配置 / Get chunking strategy configuration
         String strategyName = properties.getLlm().getChunkingStrategy();
-        top.yumbo.ai.rag.chunking.ChunkingStrategy strategy =
-            top.yumbo.ai.rag.chunking.ChunkingStrategy.fromString(strategyName);
+        ChunkingStrategy strategy = ChunkingStrategy.fromString(strategyName);
 
         // 初始化智能上下文构建器（使用新的构造函数，包含存储服务）/ Initialize smart context builder (using new constructor with storage service)
         contextBuilder = new SmartContextBuilder(
@@ -295,7 +308,7 @@ public class KnowledgeQAService {
         log.info(I18N.get("knowledge_qa_service.log.chunk_size_chars", properties.getLlm().getChunking().getChunkSize()));
         log.info(I18N.get("knowledge_qa_service.log.chunk_overlap_chars", properties.getLlm().getChunking().getChunkOverlap()));
 
-        if (strategy == top.yumbo.ai.rag.chunking.ChunkingStrategy.AI_SEMANTIC
+        if (strategy == ChunkingStrategy.AI_SEMANTIC
             && properties.getLlm().getChunking().getAiChunking().isEnabled()) {
             log.info(I18N.get("knowledge_qa_service.log.ai_chunking_enabled",
                 properties.getLlm().getChunking().getAiChunking().getModel()));
@@ -315,6 +328,17 @@ public class KnowledgeQAService {
      * @return 回答
      */
     public AIAnswer ask(String question) {
+        return ask(question, null);
+    }
+
+    /**
+     * 提问（带会话ID）
+     *
+     * @param question 问题
+     * @param hopeSessionId HOPE 会话ID（用于上下文增强）
+     * @return 回答
+     */
+    public AIAnswer ask(String question, String hopeSessionId) {
         if (rag == null || llmClient == null) {
             throw new IllegalStateException(I18N.get("log.kqa.system_not_initialized"));
         }
@@ -325,6 +349,52 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.question_separator"));
             log.info(I18N.get("knowledge_qa_service.question_prompt", question));
             log.info(I18N.get("knowledge_qa_service.separator"));
+
+            // ============================================================
+            // HOPE 智能查询（在传统 RAG 流程之前）
+            // (HOPE Smart Query - before traditional RAG flow)
+            // ============================================================
+            if (hopeManager != null && hopeManager.isEnabled()) {
+                HOPEQueryResult hopeResult = hopeManager.smartQuery(question, hopeSessionId);
+                ResponseStrategy strategy = hopeManager.getStrategy(question, hopeResult);
+
+                log.info(I18N.get("hope.query.completed",
+                    hopeResult.isNeedsLLM() ? "需要LLM" : "直接回答",
+                    hopeResult.getSourceLayer(),
+                    hopeResult.getProcessingTimeMs()));
+
+                // 策略1: 直接回答（不调用 LLM）
+                if (strategy == ResponseStrategy.DIRECT_ANSWER && hopeResult.canDirectAnswer()) {
+                    log.info(I18N.get("hope.strategy.direct_answer",
+                        hopeResult.getSourceLayer(), hopeResult.getConfidence()));
+
+                    long responseTime = System.currentTimeMillis() - startTime;
+
+                    // 记录监控指标
+                    if (hopeMonitor != null) {
+                        hopeMonitor.recordQuery(strategy, hopeResult, responseTime);
+                    }
+
+                    AIAnswer directAnswer = new AIAnswer(
+                        hopeResult.getAnswer(),
+                        Collections.singletonList("HOPE:" + hopeResult.getSourceLayer()),
+                        responseTime
+                    );
+                    directAnswer.setHopeSource(hopeResult.getSourceLayer());
+                    directAnswer.setDirectAnswer(true);
+                    directAnswer.setStrategyUsed(strategy.name());
+                    directAnswer.setHopeConfidence(hopeResult.getConfidence());
+
+                    return directAnswer;
+                }
+
+                // 策略2/3: 需要 LLM，但可能有上下文增强
+                // 将 HOPE 上下文传递给后续流程
+                if (hopeResult.hasSimilarReference()) {
+                    log.info(I18N.get("hope.strategy.reference_answer",
+                        hopeResult.getSimilarQAs().get(0).getSimilarity()));
+                }
+            }
 
             // 步骤0: 搜索相似问题（在检索文档之前）
             // (Step 0: Search for similar questions before retrieving documents)
@@ -342,7 +412,7 @@ public class KnowledgeQAService {
             }
 
             // 步骤1: 检索相关文档 / Step 1: Retrieve relevant documents
-            List<top.yumbo.ai.rag.model.Document> documents;
+            List<Document> documents;
 
             // 优先使用策略调度器（如果可用）/ Prefer strategy dispatcher if available
             if (searchStrategyDispatcher != null && !searchStrategyDispatcher.getAllStrategies().isEmpty()) {
@@ -380,7 +450,7 @@ public class KnowledgeQAService {
             int docsPerQuery = configService.getDocumentsPerQuery();
             int totalDocs = documents.size();
             boolean hasMoreDocs = false;
-            List<top.yumbo.ai.rag.model.Document> remainingDocs = new ArrayList<>();
+            List<Document> remainingDocs = new ArrayList<>();
             String sessionId = null;
 
             // 创建会话以支持分页引用 / Create session to support paginated references
@@ -418,12 +488,12 @@ public class KnowledgeQAService {
 
             // 步骤3: 收集可用的图片信息
             // (Step 3: Collect image info with both index and ready-to-use Markdown links)
-            List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
+            List<ImageInfo> allImages = new ArrayList<>();
             StringBuilder imageContext = new StringBuilder();
 
             for (top.yumbo.ai.rag.model.Document doc : documents) {
                 try {
-                    List<top.yumbo.ai.rag.image.ImageInfo> docImages =
+                    List<ImageInfo> docImages =
                         imageStorageService.listImages(doc.getTitle());
 
                     if (!docImages.isEmpty()) {
@@ -440,7 +510,7 @@ public class KnowledgeQAService {
 
                         // 提供可直接复制的 Markdown 链接 (Provide ready-to-use Markdown links)
                         for (int i = 0; i < displayCount; i++) {
-                            top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
+                            ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
@@ -463,7 +533,7 @@ public class KnowledgeQAService {
 
             // 步骤4: 构建增强的 Prompt（包含图片信息和文档说明）
             List<String> usedDocTitles = documents.stream()
-                    .map(top.yumbo.ai.rag.model.Document::getTitle)
+                    .map(Document::getTitle)
                     .distinct()
                     .toList();
 
@@ -497,8 +567,8 @@ public class KnowledgeQAService {
                     .toList();
 
             // 步骤7: 获取切分块信息 / Step 7: Get chunk information
-            List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks = Collections.emptyList();
-            List<top.yumbo.ai.rag.image.ImageInfo> images = Collections.emptyList();
+            List<ChunkStorageInfo> chunks = Collections.emptyList();
+            List<ImageInfo> images = Collections.emptyList();
 
             if (!documents.isEmpty()) {
                 String firstDocTitle = documents.get(0).getTitle();
@@ -543,10 +613,19 @@ public class KnowledgeQAService {
             // 设置相似问题推荐
             if (similarQuestions != null && !similarQuestions.isEmpty()) {
                 aiAnswer.setSimilarQuestions(similarQuestions);
-            };
+            }
 
             // 设置会话ID，支持分页引用
             aiAnswer.setSessionId(sessionId);
+
+            // 设置 HOPE 相关信息（完整 RAG 流程）
+            aiAnswer.setStrategyUsed("FULL_RAG");
+            aiAnswer.setDirectAnswer(false);
+
+            // 记录 HOPE 监控指标
+            if (hopeMonitor != null) {
+                hopeMonitor.recordQuery(ResponseStrategy.FULL_RAG, null, totalTime);
+            }
 
             return aiAnswer;
 
@@ -760,8 +839,8 @@ public class KnowledgeQAService {
                     .toList();
 
             // 步骤7: 获取切分块信息 / Step 7: Get chunk information
-            List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks = Collections.emptyList();
-            List<top.yumbo.ai.rag.image.ImageInfo> images = Collections.emptyList();
+            List<ChunkStorageInfo> chunks = Collections.emptyList();
+            List<ImageInfo> images = Collections.emptyList();
 
             if (!documents.isEmpty()) {
                 String firstDocTitle = documents.get(0).getTitle();
@@ -1010,7 +1089,7 @@ public class KnowledgeQAService {
     /**
      * 增强的统计信息类
      */
-    @lombok.Data
+    @Data
     public static class EnhancedStatistics {
         private long documentCount;          // 文件系统中的文档数量（原始文件数）
         private long indexedDocumentCount;   // 已索引的文档块数量（包含分块）
@@ -1160,7 +1239,7 @@ public class KnowledgeQAService {
             throw new IllegalStateException(I18N.get("log.kqa.kb_not_initialized"));
         }
 
-        var result = rag.search(top.yumbo.ai.rag.model.Query.builder()
+        var result = rag.search(Query.builder()
                 .queryText(query)
                 .limit(limit)
                 .build());
@@ -1197,7 +1276,7 @@ public class KnowledgeQAService {
                                List<String> retrievedDocs, List<String> usedDocs,
                                long responseTimeMs) {
         try {
-            top.yumbo.ai.rag.feedback.QARecord record = top.yumbo.ai.rag.feedback.QARecord.builder()
+            QARecord record = QARecord.builder()
                 .question(question)
                 .answer(answer)
                 .retrievedDocuments(retrievedDocs)
@@ -1221,7 +1300,7 @@ public class KnowledgeQAService {
      * @param question 查询问题 (Query question)
      * @return 检索到的文档列表 (Retrieved document list)
      */
-    private List<top.yumbo.ai.rag.model.Document> searchWithStrategyDispatcher(String question) {
+    private List<Document> searchWithStrategyDispatcher(String question) {
         // 构建检索上下文 (Build search context)
         SearchContext.SearchParameters params = new SearchContext.SearchParameters();
         params.setLuceneTopK(configService.getLuceneTopK());

@@ -48,7 +48,8 @@ public class KnowledgeQAController {
     public QuestionResponse ask(@RequestBody QuestionRequest request) {
         log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()));
 
-        AIAnswer answer = qaService.ask(request.getQuestion());
+        // 支持 HOPE 会话ID / Support HOPE session ID
+        AIAnswer answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
 
         QuestionResponse response = new QuestionResponse();
         response.setQuestion(request.getQuestion());
@@ -60,7 +61,13 @@ public class KnowledgeQAController {
         response.setTotalRetrieved(answer.getTotalRetrieved());
         response.setHasMoreDocuments(answer.isHasMoreDocuments());
         response.setRecordId(answer.getRecordId());
-        response.setSimilarQuestions(answer.getSimilarQuestions());  // 新增：相似问题 / New: similar questions
+        response.setSimilarQuestions(answer.getSimilarQuestions());
+
+        // 新增 HOPE 相关字段 / New: HOPE related fields
+        response.setHopeSource(answer.getHopeSource());
+        response.setDirectAnswer(answer.isDirectAnswer());
+        response.setStrategyUsed(answer.getStrategyUsed());
+        response.setHopeConfidence(answer.getHopeConfidence());
 
         return response;
     }
@@ -281,6 +288,7 @@ public class KnowledgeQAController {
     @Data
     public static class QuestionRequest {
         private String question;
+        private String hopeSessionId;  // HOPE 会话ID（用于上下文增强）
     }
 
     @Data
@@ -301,6 +309,12 @@ public class KnowledgeQAController {
         private boolean hasMoreDocuments;      // 是否还有更多文档
         private String recordId;               // 记录ID（用于反馈）
         private List<SimilarQAService.SimilarQA> similarQuestions;  // 相似问题推荐
+
+        // HOPE 相关字段 / HOPE related fields
+        private String hopeSource;             // HOPE 来源层
+        private boolean directAnswer;          // 是否为直接回答
+        private String strategyUsed;           // 使用的策略
+        private double hopeConfidence;         // HOPE 置信度
     }
 
     @Data

@@ -1,10 +1,12 @@
 package top.yumbo.ai.rag.spring.boot.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
+import top.yumbo.ai.rag.hope.HOPEKnowledgeManager;
 import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.List;
@@ -23,9 +25,13 @@ import java.util.Map;
 public class FeedbackController {
 
     private final QARecordService qaRecordService;
+    private final HOPEKnowledgeManager hopeManager;
 
-    public FeedbackController(QARecordService qaRecordService) {
+    @Autowired
+    public FeedbackController(QARecordService qaRecordService,
+                              @Autowired(required = false) HOPEKnowledgeManager hopeManager) {
         this.qaRecordService = qaRecordService;
+        this.hopeManager = hopeManager;
     }
 
     /**
@@ -58,6 +64,23 @@ public class FeedbackController {
 
             if (success) {
                 log.info(I18N.get("log.feedback.overall_received", recordId, rating));
+
+                // 触发 HOPE 学习（评分 >= 4 分时学习）
+                // Trigger HOPE learning (when rating >= 4)
+                if (hopeManager != null && hopeManager.isEnabled() && rating >= 4) {
+                    try {
+                        var record = qaRecordService.getRecord(recordId);
+                        if (record.isPresent()) {
+                            QARecord qaRecord = record.get();
+                            String hopeSessionId = (String) request.get("hopeSessionId");
+                            hopeManager.learn(qaRecord.getQuestion(), qaRecord.getAnswer(), rating, hopeSessionId);
+                            log.info(I18N.get("hope.learn.recorded", rating));
+                        }
+                    } catch (Exception e) {
+                        log.warn("HOPE learning failed: {}", e.getMessage());
+                    }
+                }
+
                 return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", I18N.getLang("feedback.api.success.feedback_received", lang)
