@@ -1648,4 +1648,11 @@ hope:
     hourly_report: "📊 HOPE hourly performance report"
     metrics_reset: "🔄 HOPE metrics reset"
 
+  # LLM Integration
+  llm:
+    integration_enabled: "🔗 HOPE LLM integration enabled, underlying model: {0}"
+    direct_answer: "⚡ HOPE direct answer, source: {0}, time: {1}ms"
+    template_used: "📝 Using skill template: {0}"
+    reference_used: "📚 Using similar QA references: {0} items"
+
 

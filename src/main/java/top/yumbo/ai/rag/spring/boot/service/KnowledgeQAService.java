@@ -36,6 +36,7 @@ import top.yumbo.ai.rag.hope.HOPEKnowledgeManager;
 import top.yumbo.ai.rag.hope.ResponseStrategy;
 import top.yumbo.ai.rag.hope.model.HOPEQueryResult;
 import top.yumbo.ai.rag.hope.monitor.HOPEMonitorService;
+import top.yumbo.ai.rag.hope.integration.HOPELLMIntegrationConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -73,6 +74,7 @@ public class KnowledgeQAService {
     private final SearchStrategyDispatcher searchStrategyDispatcher;  // 检索策略调度器
     private final HOPEKnowledgeManager hopeManager;  // HOPE 知识管理器
     private final HOPEMonitorService hopeMonitor;    // HOPE 监控服务
+    private final HOPELLMIntegrationConfig hopeLLMConfig;  // HOPE LLM 集成配置
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
@@ -101,13 +103,15 @@ public class KnowledgeQAService {
                               PPLConfig pplConfig,
                               @Autowired(required = false) SearchStrategyDispatcher searchStrategyDispatcher,
                               @Autowired(required = false) HOPEKnowledgeManager hopeManager,
-                              @Autowired(required = false) HOPEMonitorService hopeMonitor) {
+                              @Autowired(required = false) HOPEMonitorService hopeMonitor,
+                              @Autowired(required = false) HOPELLMIntegrationConfig hopeLLMConfig) {
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
         this.sessionService = sessionService;
         this.configService = configService;
-        this.llmClient = llmClient;
+        // 如果 HOPE LLM 集成启用，包装 LLM 客户端
+        this.llmClient = (hopeLLMConfig != null) ? hopeLLMConfig.wrapWithHOPE(llmClient) : llmClient;
         this.chunkStorageService = chunkStorageService;
         this.imageStorageService = imageStorageService;
         this.qaRecordService = qaRecordService;
@@ -117,6 +121,7 @@ public class KnowledgeQAService {
         this.searchStrategyDispatcher = searchStrategyDispatcher;
         this.hopeManager = hopeManager;
         this.hopeMonitor = hopeMonitor;
+        this.hopeLLMConfig = hopeLLMConfig;
     }
 
     /**

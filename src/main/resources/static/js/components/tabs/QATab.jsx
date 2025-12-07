@@ -39,6 +39,18 @@ function QATab() {
     // 追踪已添加到AI分析的文档，用于更新按钮状态
     const [addedDocsVersion, setAddedDocsVersion] = useState(0);
 
+    // HOPE 相关状态
+    const [hopeSessionId, setHopeSessionId] = useState(() => {
+        // 从 localStorage 恢复或生成新的会话ID
+        let sid = localStorage.getItem('hopeSessionId');
+        if (!sid) {
+            sid = 'hope_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('hopeSessionId', sid);
+        }
+        return sid;
+    });
+    const [showHOPEDashboard, setShowHOPEDashboard] = useState(false);
+
     // ============================================================================
     // 副作用 / Effects
     // ============================================================================
@@ -97,7 +109,8 @@ function QATab() {
         setSessionInfo(null);
 
         try {
-            const result = await window.api.ask(question);
+            // 使用 hopeSessionId 调用 API，支持 HOPE 上下文增强
+            const result = await window.api.ask(question, hopeSessionId);
             setAnswer(result);
 
             // 保存会话ID并获取会话信息
@@ -413,10 +426,12 @@ function QATab() {
         }
 
         try {
+            // 传递 hopeSessionId 以触发 HOPE 学习
             const result = await window.api.submitOverallFeedback(
                 answer.recordId || Date.now().toString(),
                 feedbackRating,
-                feedbackComment
+                feedbackComment,
+                hopeSessionId
             );
 
             if (result.success) {
@@ -1149,9 +1164,58 @@ function QATab() {
                             />
                         )}
 
-                        {/* 响应时间 */}
-                        <div className="response-time">
-                            {t('qaResponseTime')}: {answer.responseTimeMs}ms
+                        {/* 响应时间和 HOPE 信息 */}
+                        <div className="response-time" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                            <span>{t('qaResponseTime')}: {answer.responseTimeMs}ms</span>
+
+                            {/* HOPE 状态标签 */}
+                            {answer.strategyUsed && (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    background: answer.directAnswer ? '#dcfce7' : '#dbeafe',
+                                    color: answer.directAnswer ? '#166534' : '#1e40af'
+                                }}>
+                                    {answer.directAnswer ? '⚡' : '🔍'}
+                                    {answer.strategyUsed === 'DIRECT_ANSWER' ? '直接回答' :
+                                     answer.strategyUsed === 'TEMPLATE_ANSWER' ? '模板增强' :
+                                     answer.strategyUsed === 'REFERENCE_ANSWER' ? '参考增强' : 'RAG检索'}
+                                </span>
+                            )}
+
+                            {/* HOPE 来源层 */}
+                            {answer.hopeSource && answer.hopeSource !== 'null' && (
+                                <span style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: '500',
+                                    background: '#fef3c7',
+                                    color: '#92400e'
+                                }}>
+                                    🧠 {answer.hopeSource === 'permanent' ? '低频层' :
+                                        answer.hopeSource === 'ordinary' ? '中频层' :
+                                        answer.hopeSource === 'high_frequency' ? '高频层' : answer.hopeSource}
+                                </span>
+                            )}
+
+                            {/* HOPE 置信度 */}
+                            {answer.hopeConfidence > 0 && (
+                                <span style={{
+                                    fontSize: '11px',
+                                    color: '#6b7280'
+                                }}>
+                                    置信度: {(answer.hopeConfidence * 100).toFixed(0)}%
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -1189,6 +1253,66 @@ function QATab() {
                     </div>
                 </div>
             )}
+
+            {/* HOPE 仪表盘浮动按钮 */}
+            <div
+                onClick={() => setShowHOPEDashboard(!showHOPEDashboard)}
+                style={{
+                    position: 'fixed',
+                    bottom: '80px',
+                    right: '20px',
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                    zIndex: 999,
+                    transition: 'transform 0.2s ease'
+                }}
+                title="HOPE 三层记忆架构"
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+                🧠
+            </div>
+
+            {/* HOPE 仪表盘面板 */}
+            {showHOPEDashboard && window.HOPEDashboardPanel && (
+                <div style={{
+                    position: 'fixed',
+                    bottom: '140px',
+                    right: '20px',
+                    width: '400px',
+                    maxHeight: '70vh',
+                    overflowY: 'auto',
+                    zIndex: 998,
+                    animation: 'slideUp 0.3s ease'
+                }}>
+                    <HOPEDashboardPanel
+                        onToggle={() => setShowHOPEDashboard(false)}
+                    />
+                </div>
+            )}
+
+            {/* 添加动画样式 */}
+            <style>{`
+                @keyframes slideUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            `}</style>
         </div>
     );
 }

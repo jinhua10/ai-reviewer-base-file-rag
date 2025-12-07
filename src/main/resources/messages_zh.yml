@@ -1648,4 +1648,11 @@ hope:
     hourly_report: "📊 HOPE 小时性能报告"
     metrics_reset: "🔄 HOPE 监控指标已重置"
 
+  # LLM 集成 (LLM Integration)
+  llm:
+    integration_enabled: "🔗 HOPE LLM 集成已启用，底层模型: {0}"
+    direct_answer: "⚡ HOPE 直接回答，来源: {0}，耗时: {1}ms"
+    template_used: "📝 使用技能模板: {0}"
+    reference_used: "📚 使用相似问答参考: {0} 条"
+
 

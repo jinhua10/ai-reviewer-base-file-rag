@@ -11,6 +11,7 @@ const API_DOCS_URL = 'http://localhost:8080/api/documents';
 const API_FEEDBACK_URL = 'http://localhost:8080/api/feedback';
 const API_DOCUMENT_QA_URL = 'http://localhost:8080/api/document-qa';
 const API_LLM_RESULTS_URL = 'http://localhost:8080/api/llm-results';
+const API_HOPE_URL = 'http://localhost:8080/api/hope';  // HOPE API
 
 /**
  * 获取当前语言设置 / Get current language setting
@@ -25,12 +26,17 @@ const api = {
     // ========== 智能问答 ==========
 
     /**
-     * 提问
+     * 提问（支持 HOPE 会话）
      * @param {string} question - 问题文本
-     * @returns {Promise<Object>} 回答结果
+     * @param {string} hopeSessionId - HOPE会话ID（可选，用于上下文增强）
+     * @returns {Promise<Object>} 回答结果（包含 HOPE 相关字段）
      */
-    ask: async (question) => {
-        const response = await axios.post(`${API_BASE_URL}/ask`, { question });
+    ask: async (question, hopeSessionId = null) => {
+        const payload = { question };
+        if (hopeSessionId) {
+            payload.hopeSessionId = hopeSessionId;
+        }
+        const response = await axios.post(`${API_BASE_URL}/ask`, payload);
         return response.data;
     },
 
@@ -211,15 +217,20 @@ const api = {
      * @param {string} recordId - 记录ID / Record ID
      * @param {number} rating - 评分(1-5) / Rating (1-5)
      * @param {string} feedback - 反馈文本 / Feedback text
+     * @param {string} hopeSessionId - HOPE会话ID（可选）/ HOPE session ID (optional)
      * @returns {Promise<Object>} 提交结果 / Submit result
      */
-    submitOverallFeedback: async (recordId, rating, feedback) => {
-        const response = await axios.post(`${API_FEEDBACK_URL}/overall`, {
+    submitOverallFeedback: async (recordId, rating, feedback, hopeSessionId = null) => {
+        const payload = {
             recordId,
             rating,
             feedback,
-            lang: getCurrentLang() // 添加语言参数 / Add language parameter
-        });
+            lang: getCurrentLang()
+        };
+        if (hopeSessionId) {
+            payload.hopeSessionId = hopeSessionId;
+        }
+        const response = await axios.post(`${API_FEEDBACK_URL}/overall`, payload);
         return response.data;
     },
 
@@ -478,6 +489,111 @@ const api = {
                 lang: getCurrentLang()
             }
         });
+        return response.data;
+    },
+
+    // ========== HOPE 三层记忆架构 API ==========
+
+    /**
+     * 获取 HOPE 系统状态
+     * @returns {Promise<Object>} 系统状态和配置
+     */
+    getHOPEStatus: async () => {
+        const response = await axios.get(`${API_HOPE_URL}/status`);
+        return response.data;
+    },
+
+    /**
+     * 获取 HOPE 仪表盘数据
+     * @returns {Promise<Object>} 完整仪表盘数据（指标、统计、健康状态、建议）
+     */
+    getHOPEDashboard: async () => {
+        const response = await axios.get(`${API_HOPE_URL}/dashboard`);
+        return response.data;
+    },
+
+    /**
+     * 获取 HOPE 性能指标
+     * @returns {Promise<Object>} 性能指标摘要
+     */
+    getHOPEMetrics: async () => {
+        const response = await axios.get(`${API_HOPE_URL}/metrics`);
+        return response.data;
+    },
+
+    /**
+     * 获取 HOPE 三层统计
+     * @returns {Promise<Object>} 各层统计信息
+     */
+    getHOPELayers: async () => {
+        const response = await axios.get(`${API_HOPE_URL}/layers`);
+        return response.data;
+    },
+
+    /**
+     * 获取 HOPE 健康状态
+     * @returns {Promise<Object>} 健康检查结果
+     */
+    getHOPEHealth: async () => {
+        const response = await axios.get(`${API_HOPE_URL}/health`);
+        return response.data;
+    },
+
+    /**
+     * 获取 HOPE 知识质量评估
+     * @returns {Promise<Object>} 质量评估报告
+     */
+    getHOPEQuality: async () => {
+        const response = await axios.get(`${API_HOPE_URL}/quality`);
+        return response.data;
+    },
+
+    /**
+     * 测试 HOPE 查询
+     * @param {string} question - 测试问题
+     * @param {string} sessionId - 会话ID（可选）
+     * @returns {Promise<Object>} 查询测试结果
+     */
+    testHOPEQuery: async (question, sessionId = 'test-session') => {
+        const response = await axios.post(`${API_HOPE_URL}/test`, {
+            question,
+            sessionId
+        });
+        return response.data;
+    },
+
+    /**
+     * 添加临时定义到 HOPE 高频层
+     * @param {string} sessionId - 会话ID
+     * @param {string} term - 术语
+     * @param {string} definition - 定义
+     * @returns {Promise<Object>} 操作结果
+     */
+    addHOPEDefinition: async (sessionId, term, definition) => {
+        const response = await axios.post(`${API_HOPE_URL}/definition`, {
+            sessionId,
+            term,
+            definition
+        });
+        return response.data;
+    },
+
+    /**
+     * 清除 HOPE 会话
+     * @param {string} sessionId - 会话ID
+     * @returns {Promise<Object>} 操作结果
+     */
+    clearHOPESession: async (sessionId) => {
+        const response = await axios.delete(`${API_HOPE_URL}/session/${sessionId}`);
+        return response.data;
+    },
+
+    /**
+     * 重置 HOPE 监控指标
+     * @returns {Promise<Object>} 操作结果
+     */
+    resetHOPEMetrics: async () => {
+        const response = await axios.post(`${API_HOPE_URL}/metrics/reset`);
         return response.data;
     }
 };
