@@ -305,10 +305,14 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.question_prompt", question));
             log.info(I18N.get("knowledge_qa_service.separator"));
 
-            // 步骤0: 搜索相似问题（在检索文档之前）/ Step 0: Search for similar questions (before retrieving documents)
+            // 步骤0: 搜索相似问题（在检索文档之前）
+            // (Step 0: Search for similar questions before retrieving documents)
             List<SimilarQAService.SimilarQA> similarQuestions = null;
             try {
-                similarQuestions = similarQAService.findSimilar(question, 30, 3);  // minScore=30, limit=3
+                // 从配置获取相似问题参数 (Get similar QA params from config)
+                int minScore = properties.getSimilarQa().getMinScore();
+                int limit = properties.getSimilarQa().getLimit();
+                similarQuestions = similarQAService.findSimilar(question, minScore, limit);
                 if (!similarQuestions.isEmpty()) {
                     log.info(I18N.get("knowledge_qa_service.similar_found", similarQuestions.size()));
                 }
@@ -329,21 +333,21 @@ public class KnowledgeQAService {
                 log.info(I18N.get("knowledge_qa_service.using_keyword_search"));
             }
 
-            // 步骤1.5: PPL Rerank（如果启用）/ Step 1.5: PPL Rerank (if enabled)
+            // 步骤1.5: PPL Rerank（如果启用）(Step 1.5: PPL Rerank if enabled)
             if (pplServiceFacade != null && pplConfig != null && pplConfig.getReranking() != null &&
                 pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
                 try {
-                    log.info("🔄 Starting PPL Rerank for {} documents...", documents.size());
+                    log.info(I18N.get("log.ppl.rerank_start", documents.size()));
                     long rerankStart = System.currentTimeMillis();
 
                     // PPLServiceFacade.rerank 需要 2 个参数: question, candidates
-                    // config 会自动从 pplConfig 中获取
+                    // (config 会自动从 pplConfig 中获取)
                     documents = pplServiceFacade.rerank(question, documents);
 
                     long rerankTime = System.currentTimeMillis() - rerankStart;
-                    log.info("✅ PPL Rerank completed in {}ms", rerankTime);
+                    log.info(I18N.get("log.ppl.rerank_completed", rerankTime));
                 } catch (Exception e) {
-                    log.warn("⚠️ PPL Rerank failed, using original order: {}", e.getMessage());
+                    log.warn(I18N.get("log.ppl.rerank_failed", e.getMessage()));
                 }
             }
 

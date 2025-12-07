@@ -392,6 +392,10 @@ log:
     cleaned: "Cleaned expired session: {0}"
     cleaned_count: "Cleaned {0} expired sessions"
     not_found: "Session not found: {0}"
+  ppl:
+    rerank_start: "🔄 Starting PPL Rerank for {0} documents..."
+    rerank_completed: "✅ PPL Rerank completed in {0}ms"
+    rerank_failed: "⚠️ PPL Rerank failed, using original order: {0}"
   hybrid:
     found_docs: "Hybrid search found {0} documents"
     keyword_search: "Hybrid keyword search executed: {0}"

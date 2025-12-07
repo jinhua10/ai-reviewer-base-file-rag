@@ -83,14 +83,16 @@ public class HybridSearchService {
                 List<Document> luceneDocs = luceneResult.getDocuments().stream()
                     .map(ScoredDocument::getDocument)
                     .toList();
-                for (int i = 0; i < Math.min(10, luceneDocs.size()); i++) {
+                // 从配置获取日志显示数量 (Get log display limit from config)
+                int logLimit = properties.getVectorSearch().getLogDisplayLimit();
+                for (int i = 0; i < Math.min(logLimit, luceneDocs.size()); i++) {
                     Document doc = luceneDocs.get(i);
                     double normalizedScore = 1.0 - (i * 1.0 / luceneDocs.size());
                     log.info(I18N.get("log.hybrid.lucene_top_item", i + 1, doc.getTitle(), doc.getContent().length(), normalizedScore));
                 }
             }
 
-            // 2. 向量检索（语义精排）
+            // 2. 向量检索（语义精排）(Step 2: Vector search for semantic refinement)
             float[] queryVector = embeddingEngine.embed(question);
             float threshold = properties.getVectorSearch().getSimilarityThreshold();
             int vectorLimit = configService.getVectorTopK();
@@ -102,7 +104,8 @@ public class HybridSearchService {
 
             if (!vectorResults.isEmpty()) {
                 log.info(I18N.get("log.hybrid.vector_top_header"));
-                vectorResults.stream().limit(10).forEach(result -> {
+                int logLimit = properties.getVectorSearch().getLogDisplayLimit();
+                vectorResults.stream().limit(logLimit).forEach(result -> {
                     Document doc = rag.getDocument(result.getDocId());
                     if (doc != null) {
                         log.info(I18N.get("log.hybrid.vector_top_item", doc.getTitle(), result.getSimilarity()));
@@ -191,7 +194,8 @@ public class HybridSearchService {
 
             log.info(I18N.get("log.hybrid.topk_header", sortedScores.size()));
             int displayCount = 0;
-            for (int i = 0; i < Math.min(sortedScores.size(), 20); i++) {
+            int logLimit = properties.getVectorSearch().getLogDisplayLimit();
+            for (int i = 0; i < Math.min(sortedScores.size(), logLimit * 2); i++) {
                 var entry = sortedScores.get(i);
                 Document doc = rag.getDocument(entry.getKey());
                 if (doc != null) {

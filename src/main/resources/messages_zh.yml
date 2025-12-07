@@ -392,6 +392,10 @@ log:
     cleaned: "已清理过期会话：{0}"
     cleaned_count: "已清理 {0} 个过期会话"
     not_found: "未找到会话：{0}"
+  ppl:
+    rerank_start: "🔄 开始 PPL Rerank，共 {0} 个文档..."
+    rerank_completed: "✅ PPL Rerank 完成，耗时 {0}ms"
+    rerank_failed: "⚠️ PPL Rerank 失败，使用原排序: {0}"
   hybrid:
     found_docs: "混合搜索找到 {0} 个文档"
     keyword_search: "执行混合关键词搜索：{0}"

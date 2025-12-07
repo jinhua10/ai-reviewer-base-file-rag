@@ -130,6 +130,12 @@ public class KnowledgeQAProperties {
         private int documentsPerQuery = 5;
 
         /**
+         * 日志中显示的最大文档数量（调试用）
+         * (Maximum number of documents to display in logs for debugging)
+         */
+        private int logDisplayLimit = 10;
+
+        /**
          * 检索返回的文档数量上限（已废弃，请使用 hybridTopK）
          *
          * @deprecated 使用 hybridTopK 替代
