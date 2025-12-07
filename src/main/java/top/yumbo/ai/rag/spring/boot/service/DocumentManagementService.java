@@ -188,7 +188,7 @@ public class DocumentManagementService {
                         String extension = getFileExtension(path.getFileName().toString());
                         return SUPPORTED_EXTENSIONS.contains(extension.toLowerCase());
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
             for (Path path : files) {
                 DocumentInfo info = new DocumentInfo();
