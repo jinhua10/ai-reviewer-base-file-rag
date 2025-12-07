@@ -5,7 +5,7 @@
 
 **🚀 Zero External Dependencies Local File RAG Retrieval System | Enterprise-Grade Document Retrieval Framework Based on Lucene**
 
-[![Version](https://img.shields.io/badge/version-1.0-blue.svg)](https://github.com/jinhua10/ai-reviewer-base-file-rag)
+[![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/jinhua10/ai-reviewer-base-file-rag)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/jinhua10/ai-reviewer-base-file-rag/actions)
 [![Java](https://img.shields.io/badge/Java-11+-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.7.18-brightgreen.svg)](https://spring.io/projects/spring-boot)
