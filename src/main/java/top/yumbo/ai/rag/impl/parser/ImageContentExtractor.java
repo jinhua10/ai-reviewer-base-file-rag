@@ -272,19 +272,6 @@ public class ImageContentExtractor {
     }
 
     /**
-     * 简单的OCR引擎实现（占位符，实际使用需要集成Tesseract等）
-     */
-    public static class SimpleOCREngine implements OCREngine {
-
-        @Override
-        public String recognizeText(byte[] imageData) {
-            // TODO: 集成实际的OCR引擎（如Tesseract OCR）
-            // 这里返回占位符
-            return "[需要集成OCR引擎才能识别文字]";
-        }
-    }
-
-    /**
      * Builder模式
      */
     public static class Builder {
