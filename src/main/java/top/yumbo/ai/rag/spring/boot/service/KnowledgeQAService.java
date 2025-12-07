@@ -1,9 +1,17 @@
 package top.yumbo.ai.rag.spring.boot.service;
 
 import ai.onnxruntime.OrtException;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
+import top.yumbo.ai.rag.feedback.QARecordService;
+import top.yumbo.ai.rag.image.ImageInfo;
+import top.yumbo.ai.rag.image.ImageStorageService;
 import top.yumbo.ai.rag.model.ScoredDocument;
+import top.yumbo.ai.rag.ppl.PPLServiceFacade;
+import top.yumbo.ai.rag.ppl.config.PPLConfig;
 import top.yumbo.ai.rag.service.LocalFileRAG;
 import top.yumbo.ai.rag.spring.boot.config.KnowledgeQAProperties;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
@@ -17,6 +25,9 @@ import top.yumbo.ai.rag.i18n.I18N;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import top.yumbo.ai.rag.spring.boot.strategy.search.SearchContext;
+import top.yumbo.ai.rag.spring.boot.strategy.search.SearchStrategyDispatcher;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,19 +55,25 @@ public class KnowledgeQAService {
     private final SearchSessionService sessionService;
     private final SearchConfigService configService;
     private final LLMClient llmClient;
-    private final top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;
-    private final top.yumbo.ai.rag.image.ImageStorageService imageStorageService;
-    private final top.yumbo.ai.rag.feedback.QARecordService qaRecordService;
+    private final ChunkStorageService chunkStorageService;
+    private final ImageStorageService imageStorageService;
+    private final QARecordService qaRecordService;
     private final SimilarQAService similarQAService;
-    private final top.yumbo.ai.rag.ppl.PPLServiceFacade pplServiceFacade;  // PPL 服务门面
-    private final top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig;  // PPL 配置
+    private final PPLServiceFacade pplServiceFacade;  // PPL 服务门面
+    private final PPLConfig pplConfig;  // PPL 配置
+    private final SearchStrategyDispatcher searchStrategyDispatcher;  // 检索策略调度器
 
     private LocalFileRAG rag;
     private LocalEmbeddingEngine embeddingEngine;
     private SimpleVectorIndexEngine vectorIndexEngine;
     private top.yumbo.ai.rag.optimization.SmartContextBuilder contextBuilder;
 
+    /**
+     * -- GETTER --
+     *  检查是否正在索引
+     */
     // 索引状态标记
+    @Getter
     private volatile boolean isIndexing = false;
 
     public KnowledgeQAService(KnowledgeQAProperties properties,
@@ -65,12 +82,14 @@ public class KnowledgeQAService {
                               SearchSessionService sessionService,
                               SearchConfigService configService,
                               LLMClient llmClient,
-                              top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService,
-                              top.yumbo.ai.rag.image.ImageStorageService imageStorageService,
-                              top.yumbo.ai.rag.feedback.QARecordService qaRecordService,
+                              ChunkStorageService chunkStorageService,
+                              ImageStorageService imageStorageService,
+                              QARecordService qaRecordService,
                               SimilarQAService similarQAService,
-                              top.yumbo.ai.rag.ppl.PPLServiceFacade pplServiceFacade,
-                              top.yumbo.ai.rag.ppl.config.PPLConfig pplConfig) {  // 添加 PPL 配置
+                              PPLServiceFacade pplServiceFacade,
+                              PPLConfig pplConfig,
+                              @Autowired(required = false)
+                              SearchStrategyDispatcher searchStrategyDispatcher) {
         this.properties = properties;
         this.knowledgeBaseService = knowledgeBaseService;
         this.hybridSearchService = hybridSearchService;
@@ -83,6 +102,7 @@ public class KnowledgeQAService {
         this.similarQAService = similarQAService;
         this.pplServiceFacade = pplServiceFacade;  // 初始化 PPL 服务
         this.pplConfig = pplConfig;  // 初始化 PPL 配置
+        this.searchStrategyDispatcher = searchStrategyDispatcher;  // 初始化检索策略调度器
     }
 
     /**
@@ -220,16 +240,17 @@ public class KnowledgeQAService {
 
         } catch (OrtException | IOException e) {
             log.error(I18N.get("log.kb.vector_init_failed"), e);
-            log.warn("⚠️ 向量搜索初始化失败，系统将仅使用文本搜索功能（Vector search initialization failed, system will use text search only）");
-            log.warn("💡 提示：embedding 模型文件不完整或损坏（Hint: embedding model file is incomplete or corrupted）");
-            log.warn("📝 解决方案：");
-            log.warn("   1. 在 application.yml 中设置 knowledge.qa.vector-search.enabled: false");
-            log.warn("   2. 或下载完整的 ONNX 模型文件（包含 .onnx 和 .onnx_data 文件）");
+            log.warn(I18N.get("knowledge_qa_service.log.vector_init_failed_hint"));
+            log.warn(I18N.get("knowledge_qa_service.log.vector_init_model_hint"));
+            log.warn(I18N.get("knowledge_qa_service.log.vector_init_solution"));
+            log.warn(I18N.get("knowledge_qa_service.log.vector_init_solution_1"));
+            log.warn(I18N.get("knowledge_qa_service.log.vector_init_solution_2"));
             log.warn(I18N.get("knowledge_qa_service.model_download_hint"));
             log.warn(I18N.get("knowledge_qa_service.model_doc_hint"));
             embeddingEngine = null;
             vectorIndexEngine = null;
             // 不抛出异常，允许系统继续运行（只使用文本搜索）
+            // (Don't throw exception, allow system to continue running with text search only)
         }
     }
 
@@ -323,7 +344,11 @@ public class KnowledgeQAService {
             // 步骤1: 检索相关文档 / Step 1: Retrieve relevant documents
             List<top.yumbo.ai.rag.model.Document> documents;
 
-            if (embeddingEngine != null && vectorIndexEngine != null) {
+            // 优先使用策略调度器（如果可用）/ Prefer strategy dispatcher if available
+            if (searchStrategyDispatcher != null && !searchStrategyDispatcher.getAllStrategies().isEmpty()) {
+                documents = searchWithStrategyDispatcher(question);
+                log.info(I18N.get("knowledge_qa_service.using_strategy_dispatcher"));
+            } else if (embeddingEngine != null && vectorIndexEngine != null) {
                 // 使用混合检索 / Use hybrid search
                 documents = hybridSearchService.hybridSearch(question, rag, embeddingEngine, vectorIndexEngine);
                 log.info(I18N.get("knowledge_qa_service.using_hybrid_search"));
@@ -546,17 +571,17 @@ public class KnowledgeQAService {
         try {
             String fullPrompt;
             if (context != null && !context.trim().isEmpty()) {
-                fullPrompt = prompt + "\n\n上下文信息：\n" + context;
+                fullPrompt = prompt + "\n\n" + I18N.get("knowledge_qa_service.log.context_info") + "\n" + context;
             } else {
                 fullPrompt = prompt;
             }
 
-            log.debug("🤖 调用 LLM，提示词长度: {} 字符", fullPrompt.length());
+            log.debug(I18N.get("knowledge_qa_service.log.llm_call", fullPrompt.length()));
             return llmClient.generate(fullPrompt);
 
         } catch (Exception e) {
-            log.error("❌ LLM 调用失败", e);
-            throw new RuntimeException("LLM 调用失败: " + e.getMessage(), e);
+            log.error(I18N.get("knowledge_qa_service.log.llm_call_failed"), e);
+            throw new RuntimeException(I18N.get("knowledge_qa_service.log.llm_call_error", e.getMessage()), e);
         }
     }
 
@@ -578,26 +603,26 @@ public class KnowledgeQAService {
         long startTime = System.currentTimeMillis();
 
         try {
-            log.info("📄 直接问答模式（不使用知识库检索）");
-            log.debug("提示词长度: {} 字符", prompt.length());
+            log.info(I18N.get("knowledge_qa_service.log.direct_qa_mode"));
+            log.debug(I18N.get("knowledge_qa_service.log.prompt_length", prompt.length()));
 
-            // 直接调用 LLM
+            // 直接调用 LLM (Directly call LLM)
             String answer = llmClient.generate(prompt);
 
             long totalTime = System.currentTimeMillis() - startTime;
-            log.info("✅ 直接问答完成，耗时: {}ms", totalTime);
+            log.info(I18N.get("knowledge_qa_service.log.direct_qa_complete", totalTime));
 
             return new AIAnswer(
                 answer,
-                List.of(), // 无引用来源
+                List.of(), // 无引用来源 (No reference sources)
                 totalTime
             );
 
         } catch (Exception e) {
-            log.error("❌ 直接问答失败", e);
+            log.error(I18N.get("knowledge_qa_service.log.direct_qa_failed"), e);
             long totalTime = System.currentTimeMillis() - startTime;
             return new AIAnswer(
-                "直接问答处理失败: " + e.getMessage(),
+                I18N.get("knowledge_qa_service.log.direct_qa_error", e.getMessage()),
                 List.of(),
                 totalTime
             );
@@ -627,7 +652,7 @@ public class KnowledgeQAService {
             SearchSessionService.SessionDocuments sessionDocs =
                 sessionService.getCurrentDocuments(sessionId);
 
-            List<top.yumbo.ai.rag.model.Document> documents = sessionDocs.getDocuments();
+            List<Document> documents = sessionDocs.getDocuments();
 
             log.info(I18N.get("knowledge_qa_service.using_session_docs",
                 sessionDocs.getTotalDocuments(),
@@ -649,12 +674,12 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.context_stats", contextBuilder.getContextStats(context)));
 
             // 步骤3: 收集可用的图片信息
-            List<top.yumbo.ai.rag.image.ImageInfo> allImages = new ArrayList<>();
+            List<ImageInfo> allImages = new ArrayList<>();
             StringBuilder imageContext = new StringBuilder();
 
             for (top.yumbo.ai.rag.model.Document doc : documents) {
                 try {
-                    List<top.yumbo.ai.rag.image.ImageInfo> docImages =
+                    List<ImageInfo> docImages =
                         imageStorageService.listImages(doc.getTitle());
 
                     if (!docImages.isEmpty()) {
@@ -662,7 +687,7 @@ public class KnowledgeQAService {
 
                         imageContext.append(I18N.get("knowledge_qa_service.available_images", doc.getTitle()));
                         for (int i = 0; i < Math.min(docImages.size(), 5); i++) {
-                            top.yumbo.ai.rag.image.ImageInfo img = docImages.get(i);
+                            ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.related_image");
@@ -685,7 +710,7 @@ public class KnowledgeQAService {
 
             // 步骤4: 构建增强的 Prompt
             List<String> usedDocTitles = documents.stream()
-                .map(top.yumbo.ai.rag.model.Document::getTitle)
+                .map(Document::getTitle)
                 .distinct()
                 .toList();
 
@@ -1176,9 +1201,39 @@ public class KnowledgeQAService {
     }
 
     /**
-     * 检查是否正在索引
+     * 使用检索策略调度器执行检索
+     * (Execute search using strategy dispatcher)
+     *
+     * @param question 查询问题 (Query question)
+     * @return 检索到的文档列表 (Retrieved document list)
      */
-    public boolean isIndexing() {
-        return isIndexing;
+    private List<top.yumbo.ai.rag.model.Document> searchWithStrategyDispatcher(String question) {
+        // 构建检索上下文 (Build search context)
+        SearchContext.SearchParameters params = new SearchContext.SearchParameters();
+        params.setLuceneTopK(configService.getLuceneTopK());
+        params.setVectorTopK(configService.getVectorTopK());
+        params.setHybridTopK(configService.getHybridTopK());
+        params.setMinScoreThreshold(configService.getMinScoreThreshold());
+        // 从 properties 获取权重配置 (Get weight config from properties)
+        params.setLuceneWeight(properties.getVectorSearch().getLuceneWeight());
+        params.setVectorWeight(properties.getVectorSearch().getVectorWeight());
+        params.setSimilarityThreshold(properties.getVectorSearch().getSimilarityThreshold());
+
+        // 提取关键词 (Extract keywords)
+        String keywords = hybridSearchService.extractKeywords(question);
+
+        SearchContext context =
+            SearchContext.builder()
+                .question(question)
+                .expandedQuestion(question)
+                .keywords(keywords)
+                .rag(rag)
+                .embeddingEngine(embeddingEngine)
+                .vectorIndexEngine(vectorIndexEngine)
+                .parameters(params)
+                .build();
+
+        // 使用策略调度器执行检索 (Execute search using strategy dispatcher)
+        return searchStrategyDispatcher.search(context);
     }
 }

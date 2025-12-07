@@ -318,8 +318,12 @@ public class HybridSearchService {
      * 提取关键词（Extract keywords）
      *
      * 支持中英文停用词过滤，通过 yml 配置可自定义停用词列表
+     * (Supports Chinese and English stopword filtering, customizable via yml config)
+     *
+     * @param question 原始问题 (Original question)
+     * @return 提取的关键词 (Extracted keywords)
      */
-    private String extractKeywords(String question) {
+    public String extractKeywords(String question) {
         // 获取配置的停用词
         KnowledgeQAProperties.SearchConfig searchConfig = properties.getSearch();
 
