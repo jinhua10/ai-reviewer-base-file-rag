@@ -258,6 +258,71 @@ knowledge:
 
 ---
 
+## 常见问题排查
+
+### 场景：PPL Rerank 失败并使用原排序
+
+**日志特征**：
+```
+⚠️ rerank failed using Hugging Face ONNX: [Hugging Face ONNX] 文档重排序失败
+🔄 Trying fallback for rerank...
+⚠️ PPL Rerank 失败，使用原排序: [Hugging Face ONNX] rerank failed and all fallbacks exhausted
+```
+
+**原因分析**：
+
+1. **ONNX 服务检测到 KV Cache 模型**
+   - 系统检测到当前 ONNX 模型包含 KV Cache
+   - 主动拒绝服务并抛出异常（这是预期行为）
+
+2. **降级服务不可用**
+   - `all fallbacks exhausted` 表示所有备用服务都不可用
+   - 可能原因：
+     - Ollama 未安装或未启动
+     - Ollama 中没有下载所需模型
+     - 配置的 OpenAI API Key 无效
+
+**解决方案**：
+
+```bash
+# 方案 1：启动 Ollama 并下载模型
+ollama serve                    # 启动 Ollama 服务（如未运行）
+ollama pull qwen2.5:0.5b       # 下载 Qwen 模型
+
+# 方案 2：禁用 PPL Rerank
+# 在 application.yml 中设置:
+# knowledge.qa.ppl.reranking.enabled: false
+```
+
+**验证降级是否配置正确**：
+
+检查 `application.yml` 中的配置：
+```yaml
+knowledge:
+  qa:
+    ppl:
+      enable-fallback: true      # 确保启用降级
+      fallback-order:
+        - ollama                 # 优先降级到 Ollama
+        - openai                 # 备用：云端 API
+      
+      ollama:
+        enabled: true
+        base-url: http://localhost:11434
+        model: qwen2.5:0.5b
+```
+
+### 场景：向量索引为空
+
+**日志特征**：
+```
+索引为空，返回空结果
+```
+
+**说明**：这是正常的。向量检索返回空结果时，系统会使用纯 Lucene 关键词检索的结果。混合检索仍然可以正常工作。
+
+---
+
 ## 参考资料
 
 - [ONNX Runtime 官方文档](https://onnxruntime.ai/docs/)
