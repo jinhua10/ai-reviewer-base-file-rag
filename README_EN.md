@@ -3,7 +3,7 @@
 </div>
 <div align="center">
 
-**🚀 Zero External Dependencies Local File RAG Retrieval System | Enterprise-Grade Document Retrieval Framework Based on Lucene**
+**🚀 Pluggable AI Engine Architecture RAG System | Enterprise Document Retrieval & Analysis Framework**
 
 [![Version](https://img.shields.io/badge/version-2.0-blue.svg)](https://github.com/jinhua10/ai-reviewer-base-file-rag)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/jinhua10/ai-reviewer-base-file-rag/actions)
@@ -15,7 +15,7 @@
 
 English | [简体中文](README.md)
 
-[Quick Start](#-quick-start) • [Features](#-key-features) • [Installation](#-installation) • [Documentation](#-documentation) • [FAQ](#-faq)
+[Quick Start](#-quick-start) • [Features](#-key-features) • [Architecture](#-system-architecture) • [Documentation](#-documentation) • [FAQ](#-faq)
 
 </div>
 
@@ -23,806 +23,353 @@ English | [简体中文](README.md)
 
 ## 📖 Introduction
 
-**AI Reviewer Base File RAG** is a fully localized RAG (Retrieval-Augmented Generation) retrieval system, built on Apache Lucene for high-performance document indexing and retrieval. No vector database or Embedding API required, perfectly suitable for enterprise-level privacy protection and cost control.
+**AI Reviewer Base File RAG** is an intelligent RAG (Retrieval-Augmented Generation) system with **pluggable AI engine architecture**, supporting flexible switching of different AI capability providers across document chunking, vector embedding, retrieval strategies, Q&A generation, and image understanding.
 
 > 💡 **Project Type**: Enterprise RAG Framework / Spring Boot Starter  
-> 🎯 **Key Differentiator**: Industry's first zero-dependency open-source RAG solution with 40%+ cost savings and 100% data localization
+> 🎯 **v2.0 Core Upgrade**: Pluggable AI Engines + Intelligent Strategy Dispatch + Multi-Document Joint Analysis
 
-### 💡 Core Value
+### 💡 Core Values
 
-- **40%+ Cost Savings**: Zero Embedding fees, save $1000+/month
-- **100% Privacy Protection**: Fully localized data, never goes to cloud
-- **Excellent Performance**: Based on BM25 algorithm, response time < 1 second
-- **Ready to Use**: Spring Boot Starter, 5-minute integration
+| Value | Description |
+|-------|-------------|
+| 🔌 **Pluggable Architecture** | All AI components can be freely switched to adapt to different scenarios |
+| 💰 **Cost Controllable** | Support local models, zero API fee deployment |
+| 🔒 **Privacy Protection** | Fully localized data, support offline intranet deployment |
+| 🧠 **Smarter with Use** | Feedback loop + knowledge accumulation, continuous precision improvement |
 
 ---
 
 ## ✨ Key Features
 
-### 🔥 Zero External Dependencies Architecture
-- ✅ No vector database needed (Pinecone/Weaviate/Milvus)
-- ✅ No Embedding API needed (OpenAI/Cohere)
-- ✅ Local full-text search based on Lucene
-- ✅ Fully offline operation, supports intranet deployment
+### 🔌 Pluggable AI Engine Architecture (v2.0)
 
-### 🎯 Multimodal Document Support
-- 📄 **Text Formats**: TXT, MD, CSV, JSON, XML, HTML
-- 📊 **Office Documents**: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX
-- 🖼️ **Image Understanding**: PNG, JPG, JPEG, GIF, BMP (Vision LLM)
-- 🔤 **Code Files**: Java, Python, JavaScript, Go, C++
-- 📦 **35+ Formats**: Auto-recognition, smart parsing
+System supports flexible switching of AI capability providers at multiple key stages:
 
-### 🚀 Multimodal AI Image Understanding
-- **Vision LLM**: Multiple vision models supported
-  - 🇨🇳 **Qwen-VL-Plus**: Chinese optimized, cost-effective
-  - 🇺🇸 **OpenAI GPT-4o**: High precision, complex chart understanding
-  - 🏠 **Ollama Local** (llava, minicpm-v): Fully offline, privacy protection
-- **Flexible Strategy**: placeholder / vision-llm / llm-client modes
+| Stage | Available Engines | Features |
+|-------|-------------------|----------|
+| 🧩 **Doc Chunking** | ONNX Local / Ollama / Online LLM | PPL-based intelligent semantic boundary detection |
+| 📊 **Vector Embedding** | BGE-Base-ZH / BGE-M3 / Other ONNX | Chinese models first, local inference |
+| 🎯 **Doc Reranking** | PPL Rerank (ONNX/Ollama/OpenAI) | Perplexity-based secondary ranking |
+| 🤖 **Q&A Generation** | DeepSeek / OpenAI / Qwen / Ollama | Balance cost and quality freely |
+| 🖼️ **Image Understanding** | Qwen-VL / GPT-4o / Ollama Vision | Multimodal document support |
+| 🔍 **Search Strategy** | Hybrid / Keyword / Vector | Intelligent strategy dispatcher auto-selection |
+| 📑 **Multi-Doc Analysis** | Parallel Summary / Structured Compare / Question-Driven / Entity-Relation | Intent-aware + strategy combination |
 
-### 🤖 Multi-LLM Support
-- **OpenAI**: GPT-4o, GPT-4, GPT-3.5
-- **DeepSeek**: Chinese LLM, cost-effective
-- **Claude**: Anthropic product, long-text processing
-- **Custom**: Supports any OpenAI-compatible API
+### 🎯 Intelligent Search Strategy Framework
 
-### ⚡ High-Performance Retrieval
-- **BM25 Algorithm**: Academia's recognized best full-text retrieval algorithm
-- **Smart Tokenization**: IK Chinese word segmentation, multilingual optimization
-- **Caching Mechanism**: Caffeine cache, sub-second response
-- **Concurrency Support**: Thread-safe, supports high-concurrency queries
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                SearchStrategyDispatcher                          │
+├─────────────────────────────────────────────────────────────────┤
+│  Evaluate → Select Best Strategy → Execute → Auto Fallback      │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
+│  │   hybrid    │  │   keyword   │  │   vector    │             │
+│  │  (default)  │  │ (exact)     │  │ (semantic)  │             │
+│  └─────────────┘  └─────────────┘  └─────────────┘             │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-### 🔀 Hybrid Search Architecture (v1.1 New)
-- **Lucene + Vector Fusion**: BM25 keyword search + semantic vector search
-- **Strategy Dispatcher**: Auto-select best strategy (hybrid/keyword/vector)
-- **Query Expansion**: Synonym expansion + optional LLM rewrite for better recall
-- **PPL Rerank**: Perplexity-based re-ranking for improved precision
-- **Feedback Loop**: User ratings affect document weights, smarter with use
+- **3 Search Strategies**: hybrid, keyword, vector
+- **Smart Dispatch**: Auto-evaluate strategy suitability (0-100 score)
+- **Auto Fallback**: Switch to default strategy on failure
+- **Extensible**: Support runtime dynamic strategy registration
 
-### 📊 Feedback Optimization System (v1.1 New)
-- **Dynamic Weights**: High-rated docs auto-promoted, low-rated demoted
-- **QA Archiving**: High-quality QAs auto-archived as KB documents
-- **Similar Question Recommendations**: Smart recommendations from history
-- **Time Decay**: Weights naturally decay over time, maintaining freshness
+### 🧠 Multi-Document Analysis Framework
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  StrategyDispatcher                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Intent Analysis → Evaluate → Select/Combine → Execute → Merge  │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐    │
+│  │ parallel-      │  │ structured-    │  │ question-      │    │
+│  │ summary        │  │ compare        │  │ driven         │    │
+│  └────────────────┘  └────────────────┘  └────────────────┘    │
+│  ┌────────────────┐                                             │
+│  │ entity-        │  Support strategy combination execution     │
+│  │ relation       │                                             │
+│  └────────────────┘                                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**4 Analysis Strategies** (Implemented):
+| Strategy | Use Case | Token Cost |
+|----------|----------|------------|
+| `parallel-summary` | Quick summary, overview | Medium |
+| `structured-compare` | Comparison, pros/cons analysis | Medium |
+| `question-driven` | Precise query, find answers | Low |
+| `entity-relation` | Association analysis, causal tracing | Medium |
+
+### 🔀 Hybrid Search & Score Fusion
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     ScoreFusionService                           │
+├─────────────────────────────────────────────────────────────────┤
+│  finalScore = Σ(contributor.weight × contributor.score)         │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ Lucene       │  │ Vector       │  │ Feedback     │          │
+│  │ Contributor  │  │ Contributor  │  │ Contributor  │          │
+│  │ weight: 0.3  │  │ weight: 0.7  │  │ weight: 0.2  │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **Lucene Keyword Search**: BM25 algorithm, fast rough filtering
+- **Vector Semantic Search**: BGE model embedding, semantic refinement
+- **Feedback Weight Adjustment**: User ratings affect document ranking
+- **PPL Rerank**: Perplexity-based secondary sorting (optional)
+
+### 📊 Feedback Optimization Loop
+
+```
+User Question → RAG Search → LLM Generate → User Feedback
+                                    ↓
+              ┌─────────────────────┴─────────────────────┐
+              ↓                     ↓                     ↓
+        Dynamic Weight         High-Score QA          Similar Question
+        Adjustment             Archiving              Indexing
+              ↓                     ↓                     ↓
+        Good docs auto-        Auto add to            Reuse historical
+        promoted               knowledge base         high-score answers
+```
+
+**Effect**: Reduce ~50% interactions to reach satisfactory answer
+
+### ⚡ PPL Intelligent Chunking
+
+Perplexity-based semantic boundary detection:
+
+```
+Input Doc → Sentence Split → Calculate PPL → Detect Spikes → Semantic Chunks
+                        ↓
+          PPL: [12.5, 15.2, 45.8, 18.3, ...]
+                            ↑
+                    Spike! Cut here
+```
+
+| Engine | Speed | Precision | Cost |
+|--------|-------|-----------|------|
+| ONNX (qwen2.5-0.5b) | ⚡Fast | Medium | Free |
+| Ollama (qwen2.5:0.5b) | ⚡Fast | Medium | Free |
+| OpenAI API | Slow | High | Paid |
+| LLM Direct Split | Slow | Highest | Paid |
+
+### 🖼️ Multimodal Image Understanding
+
+| Model | Precision | Cost | Use Case |
+|-------|-----------|------|----------|
+| **Qwen-VL-Plus** | High | Low | Chinese optimized ✅Recommended |
+| **GPT-4o Vision** | Very High | High | Complex charts |
+| **Ollama llava** | Medium | Free | Offline deployment |
+
+Three strategies: `placeholder` / `vision-llm` / `llm-client`
+
+### 📄 Multimodal Document Support
+
+- 📄 **Text**: TXT, MD, CSV, JSON, XML, HTML
+- 📊 **Office**: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX
+- 🖼️ **Images**: PNG, JPG, JPEG, GIF, BMP (Vision LLM)
+- 🔤 **Code**: Java, Python, JavaScript, Go, C++
+- 📦 **35+ Formats**: Auto-detection, smart parsing
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     User Interface (React)                       │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐           │
+│  │ Smart QA │ │ Doc Mgmt │ │ AI Anal. │ │ Feedback │           │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────┘           │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                   Spring Boot Backend Service                    │
+├─────────────────────────────────────────────────────────────────┤
+│  KnowledgeQAController  │  DocumentController  │  FeedbackCtrl  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                    Strategy Dispatch Layer (Pluggable)           │
+├─────────────────────────────────────────────────────────────────┤
+│  SearchStrategyDispatcher     │     StrategyDispatcher          │
+│  (Search Strategy)            │     (Multi-Doc Analysis)        │
+│  • HybridSearchStrategy       │     • ParallelSummaryStrategy   │
+│  • KeywordSearchStrategy      │     • StructuredCompareStrategy │
+│  • VectorSearchStrategy       │     • QuestionDrivenStrategy    │
+│                               │     • EntityRelationStrategy    │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                      Core Engine Layer                           │
+├─────────────────────────────────────────────────────────────────┤
+│  LocalFileRAG    │  PPLServiceFacade  │  LLMClient              │
+│  (Lucene+Vector) │  (ONNX/Ollama/API) │  (DeepSeek/OpenAI/...)  │
+├─────────────────────────────────────────────────────────────────┤
+│  EmbeddingEngine │  VisionLLMStrategy │  DocumentParser         │
+│  (BGE-Base-ZH)   │  (Qwen-VL/GPT-4o)  │  (Tika/POI)             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────────────────────────────────────────┐
+│                       Storage Layer                              │
+│  ./data/documents  │  ./data/vector-index  │  ./data/feedback   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## ⚡ Performance Benchmarks
 
-### 📊 Real-World Performance
-
 | Metric | Performance | Notes |
 |--------|-------------|-------|
-| **Indexing Speed** | 1000+ docs/min | Depends on doc size and type |
+| **Indexing Speed** | 1000+ docs/min | Depends on doc size |
 | **Search Latency** | < 100ms | P95, 10K docs |
-| **Memory Usage** | 256MB - 2GB | Scales linearly with index size |
+| **Memory Usage** | 256MB - 2GB | Scales linearly with index |
 | **Concurrent QPS** | 200+ | Single instance, 4C8G |
-| **Index Size** | 10-30% of original | Efficient compression |
-
-### 🆚 Cost Comparison
-
-```
-Scenario: Enterprise KB (100K docs, 10K queries/day)
-
-Traditional RAG:
-├─ Embedding API: $1,200/month (OpenAI)
-├─ Vector DB: $800/month (Pinecone)
-├─ LLM Calls: $600/month
-└─ Total: $2,600/month
-
-LocalFileRAG:
-├─ Embedding API: $0 (Local BM25)
-├─ Vector DB: $0 (Lucene index)
-├─ LLM Calls: $600/month
-└─ Total: $600/month
-
-💰 Monthly Savings: $2,000 (77% cost reduction)
-```
-
----
-
-## 🎯 Use Cases
-
-| Scenario | Traditional RAG | LocalFileRAG | Advantage |
-|----------|----------------|--------------|-----------|
-| **Enterprise Knowledge Base** | ❌ Cloud data | ✅ Fully local | Privacy protection |
-| **Technical Doc Retrieval** | ⚠️ High cost | ✅ Zero cost | Cost savings |
-| **Compliance Review System** | ❌ External deps | ✅ Offline operation | Compliance requirements |
-| **Customer Service QA** | ⚠️ High latency | ✅ Fast response | User experience |
-| **Intranet Doc Search** | ❌ Cannot deploy | ✅ Intranet deploy | Network isolation |
-
----
-
-## 🔄 Retrieval Pipeline Architecture (v1.1)
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      User Question                               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 0: Similar Question Recommendation                         │
-│  ├── Search high-rated historical QAs                            │
-│  └── Found similar → Show historical answer as reference         │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: Strategy Dispatch (SearchStrategyDispatcher)            │
-│  ├── Auto-evaluate strategy suitability                          │
-│  └── Select best: hybrid / keyword / vector                      │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: Hybrid Search (HybridSearchService)                     │
-│  ├── Query Expansion: synonyms + optional LLM rewrite            │
-│  ├── Lucene BM25: keyword quick filter (top-100)                 │
-│  ├── Vector Search: semantic refinement (top-50)                 │
-│  ├── Hybrid Score: 0.3×Lucene + 0.7×Vector                       │
-│  └── Feedback Weight: adjusted score × doc weight                │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: PPL Rerank (Optional)                                   │
-│  ├── Calculate document perplexity                               │
-│  └── Re-rank: (1-α)×original + α×PPL score                       │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│  Step 4: Context Building + LLM Generation + Feedback Recording  │
-└─────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
 ## 📦 Prerequisites
 
-### Required Dependencies
+### Required
 - **Java 11+** (Java 17 recommended)
-- **Maven 3.6+** or **Gradle 7.0+**
+- **Maven 3.6+**
 
-### Optional Dependencies (install as needed)
-- **Ollama** (for local PPL chunking and Vision LLM)
+### Optional
+- **Ollama** (Local PPL chunking / Vision LLM)
   ```bash
-  # Install Ollama: https://ollama.com/download
-  
-  # Download PPL chunking model
-  ollama pull qwen2.5:0.5b
-  
-  # Download Vision LLM model (optional, for image understanding)
-  ollama pull llava:7b
-  # or
-  ollama pull minicpm-v
+  ollama pull qwen2.5:0.5b   # PPL chunking
+  ollama pull llava:7b       # Image understanding
   ```
 
-- **Vector Model** (for hybrid search, BGE-Base-ZH built-in)
-  - System defaults to `bge-base-zh` model
-  - Model files located at `./models/bge-base-zh/`
-  - Ready to use, no additional download needed
+- **Vector Model** (BGE-Base-ZH built-in, ready to use)
 
 ---
 
 ## 🚀 Quick Start
 
-### Method 1: Spring Boot Starter (⭐ Recommended)
-
-#### 1️⃣ Add Dependency
-
-Add to `pom.xml`:
+### 1️⃣ Add Dependency
 
 ```xml
 <dependency>
     <groupId>top.yumbo.ai</groupId>
     <artifactId>ai-reviewer-base-file-rag</artifactId>
-    <version>1.0</version>
+    <version>2.0</version>
 </dependency>
 ```
 
-#### 2️⃣ Configuration
-
-Create `application.yml`:
+### 2️⃣ Configuration
 
 ```yaml
-local-file-rag:
-  storage-path: ./data/rag              # Data storage path
-  auto-qa-service: true                 # Auto-enable QA service
-  
-  # LLM Configuration
-  llm:
-    provider: openai                    # openai (compatible with DeepSeek, etc.)
-    api-key: ${AI_API_KEY}
-    model: deepseek-chat
-    api-url: https://api.deepseek.com/v1/chat/completions
+knowledge:
+  qa:
+    llm:
+      api-key: ${AI_API_KEY}
+      api-url: https://api.deepseek.com/v1/chat/completions
+      model: deepseek-chat
     
-  # Image Processing Configuration (optional)
-  image-processing:
-    strategy: vision-llm               # placeholder / vision-llm / llm-client
-    vision-llm:
+    ppl:
+      default-provider: onnx  # or ollama / openai
+      
+    vector-search:
       enabled: true
-      model: qwen-vl-plus              # or gpt-4o / llava:7b (Ollama)
-      api-key: ${QW_API_KEY}
-      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+      lucene-weight: 0.3
+      vector-weight: 0.7
+      
+    image-processing:
+      strategy: vision-llm
+      vision-llm:
+        model: qwen-vl-plus
 ```
 
-#### 3️⃣ Write Code
-
-```java
-@RestController
-@RequestMapping("/api")
-public class KnowledgeController {
-    
-    @Autowired
-    private SimpleRAGService ragService;
-    
-    // Index document
-    @PostMapping("/index")
-    public String indexDocument(@RequestParam String title, 
-                               @RequestParam String content) {
-        return ragService.index(title, content);
-    }
-    
-    // Search documents
-    @GetMapping("/search")
-    public List<Document> searchDocuments(@RequestParam String query) {
-        return ragService.search(query, 5);
-    }
-    
-    // AI Q&A
-    @GetMapping("/answer")
-    public String answerQuestion(@RequestParam String question) {
-        return ragService.answer(question);
-    }
-}
-```
-
-#### 4️⃣ Start Application
+### 3️⃣ Start
 
 ```bash
-# Set API Key
-export OPENAI_API_KEY="sk-your-key-here"
-
-# Start application
+export AI_API_KEY="your-api-key"
 mvn spring-boot:run
-```
-
-#### 5️⃣ Test API
-
-```bash
-# Index document
-curl -X POST "http://localhost:8080/api/index" \
-  -d "title=Spring Boot Tutorial" \
-  -d "content=Spring Boot is a rapid development framework..."
-
-# Search documents
-curl "http://localhost:8080/api/search?query=Spring+Boot"
-
-# AI Q&A
-curl "http://localhost:8080/api/answer?question=What+is+Spring+Boot?"
-```
-
-### Expected Results
-
-```bash
-// Index response
-"doc-12345-67890"
-
-// Search response
-[
-  {
-    "id": "doc-12345-67890",
-    "title": "Spring Boot Tutorial",
-    "content": "Spring Boot is a rapid development framework...",
-    "score": 0.95
-  }
-]
-
-// Q&A response
-"Spring Boot is a rapid development scaffold based on the Spring framework that simplifies Spring application configuration and deployment..."
-```
-
----
-
-### Method 2: Standalone JAR Deployment
-
-#### 1️⃣ Download Release
-
-```bash
-# Clone project
-git clone https://github.com/jinhua10/ai-reviewer-base-file-rag.git
-cd ai-reviewer-base-file-rag
-
-# Build project
-mvn clean package -DskipTests
-```
-
-#### 2️⃣ Configuration
-
-Edit `config/application.yml`:
-
-```yaml
-local-file-rag:
-  storage-path: ./data/rag
-  llm:
-    provider: openai
-    api-key: your-api-key-here
-    model: gpt-4o
-```
-
-#### 3️⃣ Start Service
-
-```bash
-# Linux/macOS
-export OPENAI_API_KEY="sk-your-key-here"
-java -jar target/ai-reviewer-base-file-rag-1.0.jar
-
-# Windows
-set OPENAI_API_KEY=sk-your-key-here
-java -jar target/ai-reviewer-base-file-rag-1.0.jar
 ```
 
 ---
 
 ## 📚 Documentation
 
-### Core Components
-
-| Component | Description | Link |
-|-----------|-------------|------|
-| **SimpleRAGService** | Simple RAG service with high-level API | [View Code](src/main/java/top/yumbo/ai/rag/spring/boot/autoconfigure/SimpleRAGService.java) |
-| **LocalFileRAG** | Core RAG engine for indexing and retrieval | [View Code](src/main/java/top/yumbo/ai/rag/service/LocalFileRAG.java) |
-| **DocumentParser** | Document parser, supports 35+ formats | [View Code](src/main/java/top/yumbo/ai/rag/impl/parser) |
-| **LLMClient** | LLM client, supports multiple models | [View Code](src/main/java/top/yumbo/ai/rag/llm) |
-| **VisionLLMService** | Vision LLM service for image understanding | [View Code](src/main/java/top/yumbo/ai/rag/service/image) |
-| **PPLServiceFacade** | PPL service for smart chunking and reranking | [View Code](src/main/java/top/yumbo/ai/rag/ppl) |
-| **HybridSearchService** | Hybrid search with Lucene+Vector fusion | [View Code](src/main/java/top/yumbo/ai/rag/service/search) |
-
-### Configuration Reference
-
-<details>
-<summary>📝 Complete Configuration Example (Click to expand)</summary>
-
-```yaml
-local-file-rag:
-  # Storage path
-  storage-path: ./data/rag
-  
-  # Auto-enable services
-  auto-qa-service: true
-  
-  # Index configuration
-  index:
-    analyzer: ik_smart              # Tokenizer: standard, ik_smart, ik_max_word
-    similarity: BM25                # Algorithm: BM25, TFIDF
-    buffer-size-mb: 256             # Index buffer size
-    
-  # Cache configuration
-  cache:
-    enabled: true
-    max-size: 1000
-    expire-minutes: 60
-    
-  # LLM configuration
-  llm:
-    provider: openai
-    api-key: ${AI_API_KEY}
-    model: deepseek-chat
-    api-url: https://api.deepseek.com/v1/chat/completions
-    max-context-length: 20000
-    max-doc-length: 5000
-    timeout-seconds: 30
-    max-retries: 3
-    
-  # Image processing configuration
-  image-processing:
-    strategy: vision-llm            # placeholder / vision-llm / llm-client
-    extraction-mode: concise        # concise / detailed
-    vision-llm:
-      enabled: true
-      model: qwen-vl-plus           # qwen-vl-plus / gpt-4o / llava:7b
-      api-key: ${QW_API_KEY}
-      endpoint: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-      
-  # PPL smart chunking configuration
-  ppl:
-    enabled: true
-    default-provider: onnx          # onnx / ollama / openai
-    chunking:
-      strategy: ppl                 # ppl / llm / auto
-      ppl-threshold: 20.0
-      target-chunk-size: 1500
-      max-chunk-size: 2500
-    reranking:
-      enabled: true
-      weight: 0.25
-      top-k: 8
-      
-  # Vector search configuration
-  vector-search:
-    enabled: true
-    model:
-      name: bge-base-zh
-      path: ./models/bge-base-zh/model.onnx
-    similarity-threshold: 0.5
-    lucene-weight: 0.3
-    vector-weight: 0.7
-```
-
-</details>
-
-### API Documentation
-
-Full API documentation: [API-REFERENCE.md](docs/API-REFERENCE.md)
-
-### Advanced Usage
-
-- **Custom Tokenizer**: [CUSTOM-ANALYZER.md](docs/CUSTOM-ANALYZER.md)
-- **Performance Tuning**: [PERFORMANCE-TUNING.md](docs/PERFORMANCE-TUNING.md)
-- **Integration Examples**: [INTEGRATION-EXAMPLES.md](docs/INTEGRATION-EXAMPLES.md)
-
----
-
-## 🤝 Contributing
-
-We welcome all forms of contributions! Whether it's reporting bugs, proposing new features, improving documentation, or submitting code.
-
-### How to Contribute
-
-1. **Fork** this repository
-2. **Create** feature branch (`git checkout -b feature/AmazingFeature`)
-3. **Commit** changes (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** to branch (`git push origin feature/AmazingFeature`)
-5. **Submit** Pull Request
-
-### Development Guidelines
-
-- Follow [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
-- Write unit tests, coverage > 80%
-- Update related documentation
-- Run `mvn clean verify` before committing
-
-### Issue Reporting
-
-- **Bug Reports**: [Submit Issue](https://github.com/jinhua10/ai-reviewer-base-file-rag/issues)
-- **Feature Requests**: [Feature Discussions](https://github.com/jinhua10/ai-reviewer-base-file-rag/discussions)
-- **Security Vulnerabilities**: Please contact privately [security@example.com](mailto:security@example.com)
-
----
-
-## 📄 License
-
-This project is released under the [Apache License 2.0](LICENSE.txt).
-
-```
-Copyright 2024 AI Reviewer Team
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
-
----
-
-## ❓ FAQ
-
-### Q1: Why not use a vector database?
-
-**A:** While vector databases are powerful, they have the following issues:
-- ❌ **High Cost**: Embedding API costs $0.0001/token, extremely expensive for large-scale data
-- ❌ **Complex Deployment**: Requires additional vector database maintenance (Pinecone/Milvus)
-- ❌ **Privacy Risks**: Embedding requires external API calls, data leakage risk
-- ❌ **Network Dependency**: Cannot work offline
-
-**Our Solution**: Based on **BM25 algorithm**, academic research proves performance is comparable to vector retrieval in most scenarios, and:
-- ✅ **Zero Cost**: Fully localized, no external dependencies
-- ✅ **High Performance**: Sub-second response, no network latency
-- ✅ **Easy Deployment**: Single JAR, no additional components
-- ✅ **100% Privacy**: Data never leaves local environment
-
-**Performance Comparison**: According to BEIR benchmark, BM25 achieves NDCG@10 of 0.52 in technical document retrieval, while vector search scores 0.54, only 4% difference.
-
----
-
-### Q2: What document formats are supported?
-
-**A:** Supports **35+ formats**, including:
-
-📄 **Text**: TXT, MD, CSV, JSON, XML, HTML, RTF  
-📊 **Office**: DOC, DOCX, XLS, XLSX, PPT, PPTX, PDF  
-🖼️ **Images**: PNG, JPG, JPEG, GIF, BMP (via Vision LLM)  
-🔤 **Code**: Java, Python, JS, Go, C++, C#, PHP, Ruby  
-📦 **Others**: ZIP, TAR, SQL, LOG, etc.
-
-**Auto-Detection**: Based on Apache Tika, automatically detects file types without manual parser specification.
-
-**Image Understanding**: Image content is intelligently understood via Vision LLM (Qwen-VL, GPT-4o, Ollama llava), supports Chinese/English mixed content.
-
----
-
-### Q3: How to improve retrieval accuracy?
-
-**A:** Multiple optimization strategies available:
-
-#### 1. **Enable Vector Search** (Optional)
-```yaml
-knowledge.qa.vector-search:
-  enabled: true
-  model: paraphrase-multilingual
-```
-
-#### 2. **Optimize Tokenization**
-```yaml
-local-file-rag.index:
-  analyzer: ik_max_word  # Fine-grained tokenization, improve recall
-```
-
-#### 3. **Adjust Retrieval Parameters**
-```yaml
-knowledge.qa.vector-search:
-  top-k: 20                    # Increase candidate documents
-  similarity-threshold: 0.3    # Lower threshold, improve recall
-```
-
-#### 4. **Document Quality Optimization**
-- ✅ Use clear document titles and summaries
-- ✅ Avoid overly long documents (recommend < 10,000 words)
-- ✅ Regularly clean outdated documents
-
-#### 5. **Hybrid Search Mode**
-```java
-// Use both BM25 + vector search, merge results
-SearchResult result = ragService.hybridSearch(query);
-```
-
-**Real Results**: Accuracy can improve 15-25% after optimization.
-
----
-
-### Q4: Production deployment considerations?
-
-**A:** Production deployment checklist:
-
-#### ✅ Performance Optimization
-```yaml
-# Increase index buffer
-local-file-rag.index.buffer-size-mb: 512
-
-# Enable caching
-local-file-rag.cache:
-  enabled: true
-  max-size: 10000
-  expire-minutes: 120
-```
-
-#### ✅ Resource Configuration
-```bash
-# Recommended JVM parameters
-java -Xms2g -Xmx4g \
-     -XX:+UseG1GC \
-     -XX:MaxGCPauseMillis=200 \
-     -jar ai-reviewer-base-file-rag-1.0.jar
-```
-
-#### ✅ Monitoring & Alerting
-```yaml
-# Enable Actuator monitoring
-management:
-  endpoints.web.exposure.include: health,metrics,prometheus
-  metrics.export.prometheus.enabled: true
-```
-
-#### ✅ Data Backup
-```bash
-# Regular backup of index and metadata
-tar -czf backup-$(date +%Y%m%d).tar.gz ./data/knowledge-base
-```
-
-#### ✅ Log Management
-```yaml
-# logback.xml - Configure log rotation
-logging:
-  level:
-    top.yumbo.ai.rag: INFO
-  file:
-    name: logs/app.log
-    max-size: 100MB
-    max-history: 30
-```
-
-#### ✅ Security Hardening
-- 🔒 Enable HTTPS (configure SSL certificates)
-- 🔒 API Authentication (integrate Spring Security)
-- 🔒 Encrypt sensitive info (API keys use env variables)
-
----
-
-### Q5: How to integrate with existing systems?
-
-**A:** Multiple integration methods available:
-
-#### Method 1: Spring Boot Starter (Recommended)
-```xml
-<dependency>
-    <groupId>top.yumbo.ai</groupId>
-    <artifactId>ai-reviewer-base-file-rag</artifactId>
-    <version>1.0</version>
-</dependency>
-```
-
-#### Method 2: REST API
-```bash
-# Any language can call via HTTP
-curl -X POST http://localhost:8080/api/qa/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question": "How to use Spring Boot?"}'
-```
-
-#### Method 3: Java SDK
-```java
-LocalFileRAG rag = LocalFileRAG.builder()
-    .storagePath("./data/rag")
-    .enableCache(true)
-    .build();
-
-List<Document> results = rag.search("Spring Boot", 10);
-```
-
-#### Method 4: Microservice Deployment
-```yaml
-# As independent service, integrate via service discovery
-eureka:
-  client:
-    service-url:
-      defaultZone: http://eureka-server:8761/eureka/
-```
-
-**Best Practice**: For Spring Boot apps, use Starter; for non-Java apps, use REST API
+| Document | Description |
+|----------|-------------|
+| [RAG System Architecture](md/20251207-RAG系统整体架构与工作流程.md) | Complete system design doc |
+| [Multi-Doc Analysis Strategy](md/20251206-多文档联合分析策略方案.md) | Strategy framework details |
+| [PPL Technical Analysis](md/20251204-PPL技术分析与对比.md) | PPL chunking principles |
+| [Vision LLM Config](docs/VISION_LLM_UNIVERSAL_CONFIG.md) | Image understanding config |
 
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ v1.0 (Released) - 2024 Q4
-- ✅ Core RAG engine based on Lucene
+### ✅ v1.0 - 2024 Q4
+- ✅ Lucene core search engine
 - ✅ 35+ document format support
-- ✅ Multi-LLM integration (OpenAI/DeepSeek/Qwen)
-- ✅ Spring Boot Starter
-- ✅ REST API interfaces
-- ✅ Cache optimization
-- ✅ Chinese & English documentation
+- ✅ Multi-LLM integration
 
-### ✅ v1.1 (Current) - 2025 Q1
-- ✅ Hybrid search mode (BM25 + vector fusion)
-- ✅ PPL smart chunking (ONNX/Ollama/OpenAI switchable)
-- ✅ PPL Rerank re-ranking
-- ✅ Query expansion (synonyms + optional LLM rewrite)
-- ✅ Feedback system (dynamic weights, time decay)
-- ✅ Similar question recommendations
-- ✅ Vision LLM image understanding
-- ✅ Multi-document analysis strategy framework
-- ✅ Search cache optimization
-- ✅ Complete i18n support
-- ✅ Auto-indexing configuration
+### ✅ v2.0 (Current) - 2025 Q1
+- ✅ **Pluggable AI Engine Architecture**
+- ✅ **Search Strategy Framework** (3 strategies)
+- ✅ **Multi-Doc Analysis Framework** (4 strategies)
+- ✅ **Score Fusion Service** (3 contributors)
+- ✅ PPL Smart Chunking (ONNX/Ollama/OpenAI)
+- ✅ Vision LLM Image Understanding
+- ✅ Feedback Loop Optimization
+- ✅ Search Cache
 
-### 🚀 v2.0 (Planned) - 2025 Q2
-- 📋 Distributed indexing support
+### 🚀 v3.0 (Planned) - 2025 Q2
+- 📋 Distributed indexing
 - 📋 Multi-tenancy architecture
-- 📋 Permission management (RBAC)
-- 📋 Kubernetes Helm Chart
-- 📋 Prometheus/Grafana monitoring
-- 📋 GraphQL API
+- 📋 Docker image
 - 📋 WebSocket real-time push
-- 📋 Docker image support
-
-### 🎯 v3.0 (Future) - 2025 Q3-Q4
-- 💡 Enterprise features (SLA guarantees)
-- 💡 Visual management interface
-- 💡 Intelligent recommendation system
-- 💡 Multi-language SDKs (Python/Go/Node.js)
-- 💡 Plugin marketplace
-- 💡 Cloud SaaS version
-
----
-
-## 📊 Technology Comparison
-
-### Comparison with Other RAG Solutions
-
-| Dimension | LocalFileRAG | LangChain | LlamaIndex | Commercial |
-|-----------|-------------|-----------|------------|------------|
-| **Deployment** | ⭐⭐⭐⭐⭐ Single JAR | ⭐⭐⭐ Many deps | ⭐⭐⭐ Many deps | ⭐⭐ Complex |
-| **Cost** | ⭐⭐⭐⭐⭐ Free | ⭐⭐⭐⭐ Low | ⭐⭐⭐⭐ Low | ⭐⭐ Expensive |
-| **Privacy** | ⭐⭐⭐⭐⭐ 100% Local | ⭐⭐⭐ Partial | ⭐⭐⭐ Partial | ⭐⭐ Cloud |
-| **Performance** | ⭐⭐⭐⭐⭐ < 100ms | ⭐⭐⭐⭐ < 200ms | ⭐⭐⭐⭐ < 200ms | ⭐⭐⭐⭐⭐ Optimized |
-| **Doc Support** | ⭐⭐⭐⭐⭐ 35+ | ⭐⭐⭐⭐ 20+ | ⭐⭐⭐⭐ 20+ | ⭐⭐⭐⭐⭐ Rich |
-| **Spring** | ⭐⭐⭐⭐⭐ Native | ⭐⭐ Adapter | ⭐⭐ Adapter | ⭐⭐⭐⭐ Complete |
-| **Community** | ⭐⭐⭐ Growing | ⭐⭐⭐⭐⭐ Active | ⭐⭐⭐⭐⭐ Active | ⭐⭐⭐⭐ Support |
-| **Best For** | Enterprise | General | General | Large Corp |
-
-### Technology Stack Comparison
-
-| Component | LocalFileRAG | Traditional RAG |
-|-----------|--------------|-----------------|
-| **Search Engine** | Apache Lucene 9.9.1 | Pinecone/Weaviate/Milvus |
-| **Vectorization** | ONNX BGE-Base-ZH (local) | Cloud OpenAI Embedding |
-| **Doc Parsing** | Apache Tika + POI | LangChain Loaders |
-| **Image Understanding** | Vision LLM (multi-model) | Cloud API |
-| **Smart Chunking** | PPL (ONNX/Ollama/OpenAI) | Fixed-length split |
-| **Cache** | Caffeine (in-memory) | Redis (external) |
-| **Storage** | FileSystem + SQLite | S3/OSS (cloud) |
-| **Framework** | Spring Boot 2.7.18 | FastAPI/Flask |
-
----
-
-## 🌟 Acknowledgments
-
-This project is built on the following excellent open-source projects:
-
-- [Apache Lucene](https://lucene.apache.org/) - Full-text search engine
-- [Apache Tika](https://tika.apache.org/) - Document parsing framework
-- [Spring Boot](https://spring.io/projects/spring-boot) - Application framework
-- [ONNX Runtime](https://onnxruntime.ai/) - AI model inference
-- [Hugging Face](https://huggingface.co/) - NLP tools and models
-- [Ollama](https://ollama.com/) - Local LLM deployment
-
-Thanks to all contributors for their hard work! 🙏
-
----
-
-## 📞 Contact Us
-
-- **Project Home**: [GitHub](https://github.com/jinhua10/ai-reviewer-base-file-rag)
-- **Issue Tracking**: [Issues](https://github.com/jinhua10/ai-reviewer-base-file-rag/issues)
-- **Discussions**: [Discussions](https://github.com/jinhua10/ai-reviewer-base-file-rag/discussions)
-- **Email**: [1015770492@qq.com](mailto:1015770492@qq.com)
 
 ---
 
 ## 📝 Changelog
 
-### v1.1.0 (2025-12-07) - Current Version
+### v2.0.0 (2025-12-07) - Current Version
 
-#### 🚀 New Features
-- **Hybrid Search**: Lucene + Vector fusion with configurable weights
-- **PPL Smart Chunking**: Perplexity-based chunking (ONNX/Ollama/OpenAI switchable)
-- **PPL Rerank**: Perplexity-based document re-ranking
-- **Query Expansion**: Synonym expansion + optional LLM rewrite for better recall
-- **Feedback System**: User ratings affect document weights with time decay
-- **Similar Question Recommendations**: Smart recommendations from high-rated history
-- **Vision LLM**: Multi-model image understanding (Qwen-VL/GPT-4o/Ollama)
-- **Multi-Document Analysis**: Pluggable strategy framework with auto-selection
-- **Search Cache**: Caffeine cache with configurable TTL and capacity
-- **Auto-Indexing**: Automatic incremental indexing after file upload
+#### 🚀 Major Upgrades
+- **Pluggable AI Engine Architecture**: All key stages support engine switching
+- **Search Strategy Framework**: SearchStrategyDispatcher + 3 strategies
+- **Multi-Doc Analysis Framework**: StrategyDispatcher + 4 analysis strategies
+- **Score Fusion Service**: ScoreFusionService + 3 contributors
 
 #### 🔧 Improvements
-- Synonym lookup optimized from O(n) to O(1) (reverse index)
-- Cache key includes config hash for auto-invalidation
-- Complete i18n support (Chinese/English)
-- Configurable search weights and thresholds
-- Enhanced logging with configurable display limits
-
-#### 🐛 Bug Fixes
-- Fixed hardcoded document weight file path
-- Fixed hardcoded cache size and TTL
-- Fixed various i18n issues
+- Configurable hybrid search weights
+- Switchable PPL Rerank engines
+- Multi-model Vision LLM support
+- Feedback weight applied to search
+- Search result caching
 
 #### 🗑️ Removed
-- Removed Tesseract OCR dependency (replaced by Vision LLM)
-- Removed PaddleOCR support
-- Removed legacy Netty HTTP server code
+- Removed Tesseract OCR (replaced by Vision LLM)
+- Removed Netty HTTP server code
 
 ### v1.0.0 (2025-11-22)
+- 🎉 Initial release
 
-#### 🎉 Initial Release
-- Apache Lucene-based full-text search
-- 35+ document format support
-- Multi-LLM support (OpenAI/DeepSeek/Qwen)
-- Spring Boot Starter integration
+---
+
+## 📄 License
+
+**Apache License 2.0** - Safe for commercial use
+
+---
+
+## 🌟 Acknowledgments
+
+- [Apache Lucene](https://lucene.apache.org/)
+- [Spring Boot](https://spring.io/projects/spring-boot)
+- [ONNX Runtime](https://onnxruntime.ai/)
+- [Ollama](https://ollama.com/)
 
 ---
 
@@ -833,4 +380,3 @@ Thanks to all contributors for their hard work! 🙏
 Made with ❤️ by [AI Reviewer Team](https://github.com/jinhua10)
 
 </div>
-
