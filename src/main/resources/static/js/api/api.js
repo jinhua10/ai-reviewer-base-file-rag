@@ -5,13 +5,14 @@
  * @since 2025-11-27
  */
 
-// API 配置
-const API_BASE_URL = 'http://localhost:8080/api/qa';
-const API_DOCS_URL = 'http://localhost:8080/api/documents';
-const API_FEEDBACK_URL = 'http://localhost:8080/api/feedback';
-const API_DOCUMENT_QA_URL = 'http://localhost:8080/api/document-qa';
-const API_LLM_RESULTS_URL = 'http://localhost:8080/api/llm-results';
-const API_HOPE_URL = 'http://localhost:8080/api/hope';  // HOPE API
+// API 配置 - 使用相对路径，自动适配开发和生产环境
+// API Configuration - Use relative paths, automatically adapt to dev and prod environments
+const API_BASE_URL = '/api/qa';
+const API_DOCS_URL = '/api/documents';
+const API_FEEDBACK_URL = '/api/feedback';
+const API_DOCUMENT_QA_URL = '/api/document-qa';
+const API_LLM_RESULTS_URL = '/api/llm-results';
+const API_HOPE_URL = '/api/hope';  // HOPE API
 
 /**
  * 获取当前语言设置 / Get current language setting

@@ -2,7 +2,6 @@ package top.yumbo.ai.rag.ppl;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.ppl.config.ChunkConfig;
@@ -15,18 +14,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * PPL 服务门面类（Facade Pattern）
+ * (PPL Service Facade - Facade Pattern)
  *
- * 功能：
+ * 功能（Features）：
  * 1. 管理多种 PPL 服务实现（ONNX、Ollama、OpenAI）
+ *    (Manage multiple PPL service implementations)
  * 2. 支持动态切换提供商
+ *    (Support dynamic provider switching)
  * 3. 支持降级策略
+ *    (Support fallback strategy)
  * 4. 统一的监控和日志
+ *    (Unified monitoring and logging)
+ *
+ * 注意：不使用 @Service 注解，通过 PPLConfiguration 的 @Bean 方法创建
+ * (Note: No @Service annotation, created by @Bean method in PPLConfiguration)
  *
  * @author AI Reviewer Team
  * @since 2025-12-04
  */
 @Slf4j
-@Service
 public class PPLServiceFacade {
 
     private final PPLConfig config;
