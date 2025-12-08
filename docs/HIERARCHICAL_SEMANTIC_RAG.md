@@ -14,11 +14,244 @@
 - 扁平化的文档切片，丢失层次结构
 - 固定粒度检索，无法适应不同查询视角
 - 缺乏语义完整性保证
+- **静态知识，无法自我进化** 🆕
 
 **我们的方案**：
 - **层次化语义单元提取**：识别概念的最小完整描述
 - **多层嵌套知识结构**：保留文档组织关系
 - **视角导向检索**：根据问题动态选择知识粒度
+- **知识自进化机制**：从初始种子知识到完全自主演化 🆕
+
+### 冷启动问题与解决方案
+
+#### 问题：知识演化的"鸡生蛋"困境
+
+```
+困境:
+  知识演化需要 → 大量用户反馈
+  用户反馈需要 → 足够的知识
+  足够的知识需要 → 知识演化
+  
+  ↓ 死循环 ↓
+  
+  系统启动时没有知识 → 无法提供服务 → 无用户使用 → 无反馈 → 无法演化
+```
+
+#### 解决方案：HOPE 结构驱动的渐进式演化
+
+**HOPE 架构现状**（已实现）：
+
+```java
+当前系统的 HOPE 三层结构:
+
+低频层 (PermanentLayerService):
+  - 技能模板 (SkillTemplate)
+  - 确定性知识 (FactualKnowledge)
+  - 特点: 高置信度 (≥0.9)、极少更新、可直接回答
+  - 数据: 内置知识 + 专家标注
+  
+中频层 (OrdinaryLayerService):
+  - 近期高分问答 (RecentQA)
+  - 特点: 经过验证、定期清理、可晋升到低频层
+  - 数据: 用户问答 + 反馈评分
+  
+高频层 (HighFrequencyLayerService):
+  - 会话上下文 (SessionContext)
+  - 特点: 短期有效、快速更新、辅助理解
+  - 数据: 当前会话的对话历史
+```
+
+**集成策略：HOPE → 概念单元库**
+
+```yaml
+映射关系:
+  HOPE 低频层 → 概念单元库的"种子概念"
+    - FactualKnowledge → ConceptUnit (type=DEFINITION)
+    - SkillTemplate → ConceptUnit (type=PROCESS)
+    - 自动标记: initialSource=HOPE_PERMANENT, confidence=0.95
+    
+  HOPE 中频层 → 概念单元库的"候选概念"
+    - RecentQA (高分) → ConceptUnit (待验证)
+    - 条件: 评分≥4.0 + 访问量≥10 + 有效期≥30天
+    - 自动标记: initialSource=HOPE_ORDINARY, confidence=0.8
+    
+  HOPE 高频层 → 不直接引入
+    - 理由: 会话级别，不适合作为持久概念
+```
+
+**渐进式演化路径**（细化版）：
+
+```yaml
+═══════════════════════════════════════════════════════════
+阶段 0: 冷启动 (0-7天)
+═══════════════════════════════════════════════════════════
+数据来源:
+  ✅ HOPE 低频层 (PermanentLayer)
+  ❌ 用户文档: 暂不引入
+  ❌ 用户反馈: 无
+
+引入策略:
+  1. 扫描 HOPE 低频层所有知识
+  2. 转换为概念单元:
+     - FactualKnowledge → 定义型概念
+     - SkillTemplate → 流程型概念
+  3. 自动设置属性:
+     - version: 1
+     - status: ACTIVE
+     - healthScore: 0.95
+     - disputeCount: 0
+     - createdBy: "HOPE_SEED"
+  
+验收标准:
+  - 导入概念数量: 100-500个
+  - 覆盖领域: 基础定义、通用技能
+  - 平均置信度: ≥0.9
+  
+系统行为:
+  - 用户查询直接使用 HOPE 种子概念
+  - 无需 LLM 即可回答基础问题
+  - 建立知识基线
+
+═══════════════════════════════════════════════════════════
+阶段 1: 种子成长 (1-4周)
+═══════════════════════════════════════════════════════════
+数据来源:
+  ✅ HOPE 低频层 (持续)
+  ✅ HOPE 中频层 (筛选引入)
+  ✅ 用户文档 (开始接收)
+  ⚠️ 用户反馈 (收集但不触发演化)
+
+引入策略:
+  1. HOPE 中频层筛选条件:
+     - 评分 ≥ 4.0 (满分5.0)
+     - 访问量 ≥ 10次
+     - 存活期 ≥ 30天
+     - 无负面反馈
+     
+  2. 用户文档处理:
+     - 提取概念单元
+     - 与 HOPE 种子概念对比
+     - 冲突检测:
+       ✓ 如果与 HOPE 一致 → 直接引入
+       ✗ 如果与 HOPE 冲突 → 标记为"待验证"
+       
+  3. 双轨制管理:
+     种子概念 (HOPE来源):
+       - confidence ≥ 0.8
+       - 优先级高
+       - 默认采用
+       
+     用户概念 (文档来源):
+       - confidence = 0.5
+       - 优先级低
+       - 需要验证
+
+验收标准:
+  - HOPE 中频引入: 50-200个
+  - 用户文档引入: 100-500个
+  - 冲突检测率: ≥95%
+  - 种子概念占比: ≥60%
+
+系统行为:
+  - 优先返回 HOPE 种子概念
+  - 用户概念标注"来源：用户文档"
+  - 开始收集反馈数据
+
+═══════════════════════════════════════════════════════════
+阶段 2: 混合演化 (1-6个月)
+═══════════════════════════════════════════════════════════
+数据来源:
+  ✅ HOPE 低/中频层 (持续补充)
+  ✅ 用户文档 (大量)
+  ✅ 用户反馈 (开始驱动演化)
+
+引入策略:
+  1. HOPE 角色转变:
+     从"主导"变为"参考权威"
+     - 低频层: 作为投票时的"专家意见"
+     - 中频层: 与用户概念平等竞争
+     
+  2. 启动投票机制:
+     触发条件:
+       - 用户概念与 HOPE 概念冲突
+       - 用户概念获得10+正向反馈
+       - HOPE 概念收到5+质疑
+     
+     投票权重:
+       - HOPE 低频 = 5.0 (专家级)
+       - HOPE 中频 = 2.0 (活跃用户级)
+       - LLM 评估 = 3.0
+       - 普通用户 = 1.0
+       
+  3. 三方平衡:
+     HOPE 概念:
+       - 保留权威地位
+       - 可被质疑和投票
+       
+     用户概念:
+       - 平等参与竞争
+       - 胜出后提升权重
+       
+     演化概念:
+       - 投票胜出的概念
+       - 记录演化历史
+
+验收标准:
+  - 投票会话数: 10-50个
+  - 用户概念胜出率: 20-30%
+  - HOPE 概念被更新: 5-10%
+  - 知识库增长: +50-100%
+
+系统行为:
+  - HOPE 不再绝对权威
+  - 用户可以挑战 HOPE 知识
+  - 投票决定最终采用版本
+  - 形成"HOPE + 社区"共治
+
+═══════════════════════════════════════════════════════════
+阶段 3: 自主演化 (6个月+)
+═══════════════════════════════════════════════════════════
+数据来源:
+  ⚠️ HOPE 层 (仅作参考)
+  ✅ 用户文档 (主导)
+  ✅ 用户反馈 (完全驱动)
+
+引入策略:
+  1. HOPE 角色进一步弱化:
+     - 仅在"知识空白"时引入新概念
+     - 现有概念不再依赖 HOPE
+     - HOPE 投票权重降低到 2.0
+     
+  2. 完全自主投票:
+     - 用户 + LLM + 系统自动
+     - HOPE 作为"历史记录"参考
+     - 社区共识为主导
+     
+  3. 知识晋升机制:
+     用户概念晋升为"权威概念":
+       条件:
+         - 存活 ≥ 180天
+         - 健康度 ≥ 0.9
+         - 无争议 ≥ 90天
+         - 引用量 ≥ 100次
+       
+       效果:
+         - 权重等同原 HOPE 低频
+         - 成为新的"种子概念"
+         - 可作为后续判断标准
+
+验收标准:
+  - HOPE 依赖度: <20%
+  - 用户驱动率: >80%
+  - 自主演化概念: >60%
+  - 晋升权威概念: 10-50个
+
+系统行为:
+  - 完全自主运作
+  - HOPE 成为"历史档案"
+  - 形成自己的知识权威体系
+  - 持续自我优化
+```
 
 ### 关键概念
 
@@ -325,6 +558,127 @@ enum RelationType {
     USES,           // 使用
     RELATED_TO      // 相关
 }
+```
+
+---
+
+## ⚙️ 系统配置 (application.yml)
+
+### 知识演化配置
+
+```yaml
+knowledge:
+  evolution:
+    # 当前演化阶段（控制系统行为）
+    current-stage: BOOTSTRAP  # BOOTSTRAP | SEED_GROWTH | MIXED_EVOLUTION | AUTONOMOUS
+    
+    # HOPE 集成配置
+    hope-integration:
+      enabled: true
+      
+      # 冷启动配置
+      bootstrap:
+        enabled: true
+        import-permanent-layer: true    # 导入 HOPE 低频层
+        import-ordinary-layer: false    # 暂不导入中频层
+        min-confidence: 0.8             # 最低置信度
+        
+      # 种子成长配置
+      seed-growth:
+        enabled: false                  # 阶段0完成后启用
+        ordinary-filter:
+          min-rating: 4.0
+          min-access-count: 10
+          min-days-alive: 30
+          require-no-negative: true
+        
+      # 投票参与配置
+      voting-participation:
+        permanent-layer-weight: 5.0     # HOPE 低频层投票权重
+        ordinary-layer-weight: 2.0      # HOPE 中频层投票权重
+    
+    # 概念来源优先级（根据阶段自动调整）
+    source-priority:
+      hope-permanent: 8.0     # 阶段1权重
+      hope-ordinary: 6.0
+      user-document: 3.0
+      community-evolved: 5.0
+      community-authority: 10.0
+    
+    # 反馈收集
+    feedback:
+      enabled: true
+      collect-implicit: true              # 收集隐式反馈
+      implicit-dwell-threshold: 30        # 停留时间阈值（秒）
+      
+    # 冲突检测
+    conflict-detection:
+      enabled: true
+      similarity-threshold: 0.8           # 概念相似度阈值
+      auto-detect-on-import: true         # 导入时自动检测
+      
+    # 投票仲裁
+    voting:
+      enabled: false                      # 阶段2后启用
+      voting-period-days: 7               # 投票周期
+      min-votes-required: 5               # 最少投票数
+      auto-close-threshold: 20            # 自动结束票数
+      
+      weights:
+        expert-user: 5.0
+        llm-evaluation: 3.0
+        active-user: 2.0
+        system-auto: 1.5
+        normal-user: 1.0
+    
+    # 质量监控
+    quality-monitor:
+      enabled: true
+      check-interval-hours: 24            # 检查间隔
+      
+      # 重审触发条件
+      review-triggers:
+        dispute-threshold: 5              # 争议次数阈值
+        health-score-threshold: 0.5       # 健康度阈值
+        negative-rate-threshold: 0.3      # 负面反馈率阈值
+        min-feedback-count: 10            # 最少反馈数
+    
+    # 版本管理
+    versioning:
+      enabled: true
+      max-versions-per-concept: 10        # 最多保留版本数
+      archive-after-days: 365             # 归档时间
+      
+    # 知识晋升（阶段3）
+    knowledge-promotion:
+      enabled: false                      # 阶段3启用
+      conditions:
+        min-days-alive: 180
+        min-health-score: 0.9
+        min-no-dispute-days: 90
+        min-reference-count: 100
+```
+
+### 阶段切换示例
+
+```yaml
+# 阶段0 → 阶段1 切换配置
+阶段0完成后:
+  1. 修改 current-stage: SEED_GROWTH
+  2. 启用 hope-integration.seed-growth.enabled: true
+  3. 观察1-2周，收集反馈数据
+  
+阶段1 → 阶段2 切换配置:
+  1. 修改 current-stage: MIXED_EVOLUTION
+  2. 启用 voting.enabled: true
+  3. 调整 source-priority 权重
+  4. 观察投票效果
+  
+阶段2 → 阶段3 切换配置:
+  1. 修改 current-stage: AUTONOMOUS
+  2. 启用 knowledge-promotion.enabled: true
+  3. 降低 HOPE 权重
+  4. 系统自主运行
 ```
 
 ### 多层索引
@@ -849,6 +1203,378 @@ graph TB
 | 🔄 **演化** | UPDATING | 达到重审阈值 | 7天 |
 | 🏆 **优化** | ACTIVE (v+1) | 投票胜出 | 长期 |
 | 📦 **归档** | ARCHIVED | 被完全取代 | 永久 |
+
+### 0. HOPE 集成模块 (Knowledge Bootstrap)
+
+#### HOPE → 概念单元转换器
+
+```java
+/**
+ * HOPE 知识导入服务
+ * 将现有 HOPE 架构的知识转换为概念单元
+ */
+@Service
+public class HOPEKnowledgeBootstrap {
+    
+    private final PermanentLayerService permanentLayer;
+    private final OrdinaryLayerService ordinaryLayer;
+    private final HierarchicalKnowledgeIndex conceptIndex;
+    private final ConceptExtractor conceptExtractor;
+    
+    /**
+     * 阶段0：冷启动 - 导入 HOPE 低频层
+     */
+    public BootstrapResult bootstrapFromHOPE() {
+        log.info("🌱 开始知识冷启动：从 HOPE 架构导入种子知识...");
+        
+        BootstrapResult result = new BootstrapResult();
+        
+        // 1. 转换 HOPE 低频层（确定性知识）
+        List<ConceptUnit> factualConcepts = convertFactualKnowledge();
+        result.addFactualConcepts(factualConcepts);
+        
+        // 2. 转换 HOPE 低频层（技能模板）
+        List<ConceptUnit> skillConcepts = convertSkillTemplates();
+        result.addSkillConcepts(skillConcepts);
+        
+        // 3. 建立索引
+        conceptIndex.batchAdd(factualConcepts);
+        conceptIndex.batchAdd(skillConcepts);
+        
+        log.info("✅ 冷启动完成：导入 {} 个种子概念", result.getTotalCount());
+        return result;
+    }
+    
+    /**
+     * 转换确定性知识 → 定义型概念
+     */
+    private List<ConceptUnit> convertFactualKnowledge() {
+        List<FactualKnowledge> facts = permanentLayer.getAllFactualKnowledge();
+        List<ConceptUnit> concepts = new ArrayList<>();
+        
+        for (FactualKnowledge fact : facts) {
+            ConceptUnit concept = ConceptUnit.builder()
+                .id(UUID.randomUUID().toString())
+                .name(extractConceptName(fact.getQuestion()))
+                .type(ConceptType.DEFINITION)
+                .level(2)  // 概念级别
+                
+                // 核心内容
+                .definition(fact.getAnswer())
+                .description(fact.getExplanation())
+                .keywords(fact.getKeywords())
+                .examples(fact.getExamples())
+                
+                // 来源信息
+                .sourceDocument("HOPE_PERMANENT_LAYER")
+                .metadata(Map.of(
+                    "hopeId", fact.getId(),
+                    "hopeConfidence", fact.getConfidence(),
+                    "hopeCategory", fact.getCategory()
+                ))
+                
+                // 质量评分（继承 HOPE 的高置信度）
+                .completeness(1.0)
+                .independence(1.0)
+                .importance(0.9)
+                
+                // 演化相关
+                .version(1)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .disputeCount(0)
+                .healthScore(0.95)  // HOPE 低频层 = 高质量
+                .currentVotingSessionId(null)
+                
+                .build();
+            
+            // 生成向量嵌入
+            concept.setEmbedding(embeddingEngine.embed(
+                concept.getName() + " " + concept.getDefinition()
+            ));
+            
+            concepts.add(concept);
+        }
+        
+        return concepts;
+    }
+    
+    /**
+     * 转换技能模板 → 流程型概念
+     */
+    private List<ConceptUnit> convertSkillTemplates() {
+        List<SkillTemplate> skills = permanentLayer.getAllSkillTemplates();
+        List<ConceptUnit> concepts = new ArrayList<>();
+        
+        for (SkillTemplate skill : skills) {
+            // 主概念：技能整体
+            ConceptUnit mainConcept = ConceptUnit.builder()
+                .id(UUID.randomUUID().toString())
+                .name(skill.getName())
+                .type(ConceptType.PROCESS)
+                .level(2)
+                
+                .definition(skill.getDescription())
+                .description(skill.getDetailedExplanation())
+                .keywords(skill.getTags())
+                
+                .sourceDocument("HOPE_PERMANENT_LAYER")
+                .version(1)
+                .healthScore(0.95)
+                
+                .build();
+            
+            concepts.add(mainConcept);
+            
+            // 子概念：技能步骤
+            if (skill.getSteps() != null) {
+                for (int i = 0; i < skill.getSteps().size(); i++) {
+                    String step = skill.getSteps().get(i);
+                    
+                    ConceptUnit stepConcept = ConceptUnit.builder()
+                        .id(UUID.randomUUID().toString())
+                        .name(skill.getName() + " - 步骤" + (i+1))
+                        .type(ConceptType.STEP)
+                        .level(3)  // 子概念级别
+                        
+                        .definition(step)
+                        .parentId(mainConcept.getId())
+                        
+                        .sourceDocument("HOPE_PERMANENT_LAYER")
+                        .version(1)
+                        .healthScore(0.95)
+                        
+                        .build();
+                    
+                    concepts.add(stepConcept);
+                }
+            }
+        }
+        
+        return concepts;
+    }
+    
+    /**
+     * 阶段1：种子成长 - 筛选 HOPE 中频层
+     */
+    public GrowthResult growFromHOPEOrdinary() {
+        log.info("🌿 知识成长阶段：从 HOPE 中频层筛选优质概念...");
+        
+        // 筛选条件
+        OrdinaryLayerService.FilterCriteria criteria = OrdinaryLayerService.FilterCriteria.builder()
+            .minRating(4.0)
+            .minAccessCount(10)
+            .minDaysAlive(30)
+            .requireNoNegativeFeedback(true)
+            .build();
+        
+        List<RecentQA> qualifiedQAs = ordinaryLayer.filterQAs(criteria);
+        
+        GrowthResult result = new GrowthResult();
+        
+        for (RecentQA qa : qualifiedQAs) {
+            // 1. 从问答中提取概念
+            List<ConceptUnit> extracted = conceptExtractor.extractFromQA(
+                qa.getQuestion(), 
+                qa.getAnswer()
+            );
+            
+            for (ConceptUnit concept : extracted) {
+                // 2. 检查是否与现有 HOPE 种子概念冲突
+                List<ConceptUnit> existingSeeds = conceptIndex.searchSimilarConcepts(
+                    concept.getName(), 
+                    0.8
+                );
+                
+                if (existingSeeds.isEmpty()) {
+                    // 无冲突，直接引入
+                    concept.setHealthScore(0.8);  // 中频层质量略低
+                    concept.getMetadata().put("source", "HOPE_ORDINARY");
+                    conceptIndex.add(concept);
+                    result.addDirectImport(concept);
+                    
+                } else {
+                    // 有冲突，标记为待验证
+                    ConceptUnit seed = existingSeeds.get(0);
+                    
+                    ConflictType conflictType = compareDefinitions(concept, seed);
+                    
+                    if (conflictType == ConflictType.NONE) {
+                        // 实际无冲突，合并
+                        mergeConcepts(seed, concept);
+                        result.addMerge(seed, concept);
+                    } else {
+                        // 真实冲突，标记
+                        concept.setHealthScore(0.5);  // 降低置信度
+                        concept.getMetadata().put("status", "PENDING_VERIFICATION");
+                        concept.getMetadata().put("conflictWith", seed.getId());
+                        conceptIndex.add(concept);
+                        result.addConflict(concept, seed);
+                    }
+                }
+            }
+        }
+        
+        log.info("✅ 成长阶段完成：引入 {} 个，合并 {} 个，冲突 {} 个",
+            result.getDirectImportCount(),
+            result.getMergeCount(),
+            result.getConflictCount());
+        
+        return result;
+    }
+    
+    /**
+     * HOPE 作为投票参考
+     */
+    public void contributeToVoting(VotingSession session) {
+        ConceptConflict conflict = session.getConflict();
+        
+        // 1. 查找相关的 HOPE 知识
+        String conceptName = conflict.getExistingConcept().getName();
+        
+        // 查询 HOPE 低频层
+        FactualKnowledge hopeFact = permanentLayer.findByConceptName(conceptName);
+        if (hopeFact != null) {
+            // HOPE 低频层投票（权重 5.0）
+            String recommendation = compareWithHOPE(
+                conflict.getNewConcept(), 
+                hopeFact
+            );
+            
+            votingArbiter.castVote(session,
+                recommendation.equals("new") ? conflict.getNewConcept() : conflict.getExistingConcept(),
+                5.0,
+                "HOPE 低频层参考：" + hopeFact.getExplanation()
+            );
+        }
+        
+        // 查询 HOPE 中频层
+        List<RecentQA> relatedQAs = ordinaryLayer.searchByKeywords(conceptName);
+        if (!relatedQAs.isEmpty()) {
+            RecentQA bestQA = relatedQAs.get(0);
+            
+            // HOPE 中频层投票（权重 2.0）
+            String recommendation = compareWithHOPE(
+                conflict.getNewConcept(),
+                bestQA
+            );
+            
+            votingArbiter.castVote(session,
+                recommendation.equals("new") ? conflict.getNewConcept() : conflict.getExistingConcept(),
+                2.0,
+                "HOPE 中频层参考：评分 " + bestQA.getRating() + "/5.0"
+            );
+        }
+    }
+}
+
+/**
+ * 冷启动结果
+ */
+@Data
+public class BootstrapResult {
+    private List<ConceptUnit> factualConcepts = new ArrayList<>();
+    private List<ConceptUnit> skillConcepts = new ArrayList<>();
+    
+    public int getTotalCount() {
+        return factualConcepts.size() + skillConcepts.size();
+    }
+}
+
+/**
+ * 成长阶段结果
+ */
+@Data
+public class GrowthResult {
+    private List<ConceptUnit> directImports = new ArrayList<>();
+    private List<ConceptPair> merges = new ArrayList<>();
+    private List<ConceptConflict> conflicts = new ArrayList<>();
+    
+    public int getDirectImportCount() { return directImports.size(); }
+    public int getMergeCount() { return merges.size(); }
+    public int getConflictCount() { return conflicts.size(); }
+}
+```
+
+#### 双轨制管理机制
+
+```java
+/**
+ * 概念来源管理器
+ * 管理 HOPE 种子概念 vs 用户概念的优先级
+ */
+public class ConceptSourceManager {
+    
+    /**
+     * 检索时的优先级排序
+     */
+    public List<ConceptUnit> rankBySourcePriority(List<ConceptUnit> concepts, Stage stage) {
+        return concepts.stream()
+            .sorted((a, b) -> {
+                double priorityA = calculatePriority(a, stage);
+                double priorityB = calculatePriority(b, stage);
+                return Double.compare(priorityB, priorityA);  // 降序
+            })
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * 根据阶段计算概念优先级
+     */
+    private double calculatePriority(ConceptUnit concept, Stage stage) {
+        String source = (String) concept.getMetadata().get("initialSource");
+        
+        double basePriority = switch (stage) {
+            case BOOTSTRAP -> {
+                // 阶段0：HOPE 绝对优先
+                if ("HOPE_PERMANENT".equals(source)) yield 10.0;
+                yield 0.0;  // 还没有用户概念
+            }
+            
+            case SEED_GROWTH -> {
+                // 阶段1：HOPE 高优先，用户概念可见
+                if ("HOPE_PERMANENT".equals(source)) yield 8.0;
+                if ("HOPE_ORDINARY".equals(source)) yield 6.0;
+                if ("USER_DOCUMENT".equals(source)) yield 3.0;
+                yield 1.0;
+            }
+            
+            case MIXED_EVOLUTION -> {
+                // 阶段2：三方平衡
+                if ("HOPE_PERMANENT".equals(source)) yield 6.0;
+                if ("HOPE_ORDINARY".equals(source)) yield 4.0;
+                if ("USER_DOCUMENT".equals(source)) yield 4.0;  // 平等
+                if ("COMMUNITY_EVOLVED".equals(source)) yield 5.0;  // 演化概念略高
+                yield 1.0;
+            }
+            
+            case AUTONOMOUS -> {
+                // 阶段3：用户主导
+                if ("HOPE_PERMANENT".equals(source)) yield 3.0;  // HOPE 降权
+                if ("USER_DOCUMENT".equals(source)) yield 6.0;
+                if ("COMMUNITY_EVOLVED".equals(source)) yield 8.0;
+                if ("COMMUNITY_AUTHORITY".equals(source)) yield 10.0;  // 晋升的权威概念
+                yield 1.0;
+            }
+        };
+        
+        // 叠加健康度和版本因素
+        double healthFactor = concept.getHealthScore();
+        double versionFactor = Math.log10(concept.getVersion() + 1) * 0.5;
+        
+        return basePriority * (0.7 + 0.2 * healthFactor + 0.1 * versionFactor);
+    }
+}
+
+enum Stage {
+    BOOTSTRAP,        // 阶段0：冷启动
+    SEED_GROWTH,      // 阶段1：种子成长
+    MIXED_EVOLUTION,  // 阶段2：混合演化
+    AUTONOMOUS        // 阶段3：自主演化
+}
+```
+
+---
 
 ### 1. 反馈收集机制
 
@@ -1689,6 +2415,66 @@ const ConceptDisplay: React.FC<ConceptDisplayProps> = ({ concept, health }) => {
 
 ## 🚀 实施方案
 
+### Phase 0: HOPE 集成与冷启动 (1周) 🆕
+
+```yaml
+目标: 将现有 HOPE 架构知识转换为概念单元库的种子知识
+
+Day 1-2: 分析与设计
+  任务:
+    - 分析 HOPE 三层数据结构
+    - 设计转换规则
+    - 定义映射关系
+  
+  产出:
+    - 转换规则文档
+    - 数据映射表
+    - 冲突处理策略
+
+Day 3-4: 核心开发
+  任务:
+    - HOPEKnowledgeBootstrap 实现
+    - convertFactualKnowledge() 实现
+    - convertSkillTemplates() 实现
+    - ConceptSourceManager 实现
+  
+  关键代码:
+    ```java
+    // 1. 读取 HOPE 低频层
+    List<FactualKnowledge> facts = permanentLayer.getAllFactualKnowledge();
+    
+    // 2. 转换为概念单元
+    List<ConceptUnit> concepts = facts.stream()
+        .map(this::convertToConceptUnit)
+        .collect(Collectors.toList());
+    
+    // 3. 批量索引
+    conceptIndex.batchAdd(concepts);
+    ```
+
+Day 5-6: 测试与验证
+  任务:
+    - 单元测试（转换准确性）
+    - 集成测试（索引正确性）
+    - 性能测试（批量导入速度）
+  
+  验收标准:
+    - HOPE 低频层转换率: 100%
+    - 概念完整性: ≥95%
+    - 导入速度: ≥100个/秒
+
+Day 7: 上线与监控
+  任务:
+    - 生产环境导入
+    - 监控概念分布
+    - 验证检索效果
+  
+  目标指标:
+    - 种子概念数量: 100-500个
+    - 平均健康度: ≥0.9
+    - 检索可用率: 100%
+```
+
 ### Phase 1: 原型验证 (2周)
 
 ```yaml
@@ -1979,10 +2765,171 @@ Week 4: 质量监控与自动重审
 
 ---
 
+## ✅ 启动检查清单
+
+### 阶段0启动前检查
+
+```yaml
+前置条件:
+  ✓ HOPE 架构已部署并运行
+  ✓ HOPE 低频层有数据（≥50条）
+  ✓ HOPE 中频层有数据（≥100条）
+  ✓ 数据库已创建相关表
+  ✓ 向量引擎已配置
+
+配置检查:
+  ✓ knowledge.evolution.current-stage = BOOTSTRAP
+  ✓ knowledge.evolution.hope-integration.enabled = true
+  ✓ knowledge.evolution.hope-integration.bootstrap.enabled = true
+  ✓ knowledge.evolution.feedback.enabled = true
+  ✓ knowledge.evolution.conflict-detection.enabled = true
+
+数据检查:
+  执行: SELECT COUNT(*) FROM hope_factual_knowledge
+  期望: ≥50
+  
+  执行: SELECT COUNT(*) FROM hope_recent_qa
+  期望: ≥100
+
+启动步骤:
+  1. 备份 HOPE 数据
+     mysqldump hope_db > hope_backup.sql
+     
+  2. 启动冷启动脚本
+     POST /api/evolution/bootstrap/start
+     
+  3. 监控日志
+     tail -f logs/evolution.log
+     
+  4. 验证导入结果
+     GET /api/evolution/bootstrap/status
+     期望: {
+       "status": "SUCCESS",
+       "conceptCount": 100-500,
+       "avgHealthScore": ≥0.9
+     }
+     
+  5. 抽样验证
+     - 随机查询10个 HOPE 低频概念
+     - 检查转换后的概念单元完整性
+     - 验证关系映射正确性
+```
+
+### 阶段切换决策表
+
+| 当前阶段 | 切换条件 | 切换到 | 预计时长 |
+|---------|---------|--------|---------|
+| **阶段0** | 种子概念≥100 + 健康度≥0.9 | 阶段1 | 7天 |
+| **阶段1** | 用户概念≥200 + 反馈量≥100 | 阶段2 | 1-4周 |
+| **阶段2** | 投票会话≥20 + 用户概念胜出≥5 | 阶段3 | 1-6个月 |
+| **阶段3** | 权威概念≥10 + 自主率≥80% | 稳定运行 | 6个月+ |
+
+### 常见问题排查
+
+```yaml
+问题1: 冷启动导入失败
+  症状: 种子概念数量为0
+  排查:
+    1. 检查 HOPE 服务是否运行
+    2. 检查数据库连接
+    3. 查看 permanentLayer.getAllFactualKnowledge() 返回值
+  解决:
+    - 确保 HOPE 低频层有数据
+    - 检查网络连接
+    - 重启 HOPE 服务
+
+问题2: 概念转换不完整
+  症状: 概念缺少字段或向量
+  排查:
+    1. 检查日志中的转换错误
+    2. 验证 embeddingEngine 是否正常
+    3. 查看 ConceptUnit 是否正确构建
+  解决:
+    - 补全缺失字段的默认值
+    - 重新生成向量嵌入
+    - 检查数据映射规则
+
+问题3: 检索时 HOPE 概念未优先
+  症状: 用户概念排在 HOPE 概念前面
+  排查:
+    1. 检查 current-stage 配置
+    2. 查看 source-priority 权重
+    3. 验证 ConceptSourceManager 逻辑
+  解决:
+    - 确认阶段配置正确
+    - 调整优先级权重
+    - 检查 initialSource 标记
+
+问题4: 阶段1引入中频层失败
+  症状: 无中频概念被导入
+  排查:
+    1. 检查筛选条件是否过严
+    2. 查看 HOPE 中频层数据质量
+    3. 验证 FilterCriteria 参数
+  解决:
+    - 放宽筛选条件（降低评分阈值）
+    - 检查中频层数据是否符合预期
+    - 手动验证几个中频 QA
+
+问题5: 投票机制不触发
+  症状: 有冲突但未发起投票
+  排查:
+    1. 检查 voting.enabled 配置
+    2. 查看冲突严重度评分
+    3. 验证投票触发条件
+  解决:
+    - 确认阶段≥2
+    - 检查冲突检测逻辑
+    - 降低触发阈值
+```
+
+### 监控指标
+
+```yaml
+日常监控:
+  概念库状态:
+    - 总概念数
+    - HOPE 来源占比
+    - 用户来源占比
+    - 平均健康度
+    
+  用户参与:
+    - 日反馈量
+    - 正向/负向比例
+    - 活跃用户数
+    - 专家参与率
+    
+  演化效果:
+    - 投票会话数
+    - 概念更新次数
+    - 冲突解决率
+    - 知识晋升数
+    
+  质量指标:
+    - 争议概念占比
+    - 平均争议解决时间
+    - 用户满意度
+    - 答案准确率
+
+告警规则:
+  严重:
+    - 健康度<0.5 的概念 >5%
+    - 连续3天无反馈
+    - 投票系统故障
+    
+  警告:
+    - 争议概念 >10%
+    - HOPE 来源占比异常下降
+    - 冲突解决时间 >14天
+```
+
+---
+
 ## 更新历史
 
 | 版本 | 日期 | 说明 |
 |------|------|------|
+| v1.2 | 2025-12-08 | **🌟 重大更新**：HOPE 架构集成，解决冷启动问题<br>- 从现有 HOPE 三层结构导入种子知识<br>- 设计渐进式演化路径（4个阶段）<br>- 双轨制管理（HOPE vs 用户概念）<br>- 添加完整的启动检查清单 |
 | v1.1 | 2025-12-08 | 🆕 添加知识演化系统（反馈、冲突检测、投票仲裁、版本管理、质量监控） |
 | v1.0 | 2025-12-08 | 初始版本，层次化语义知识提取与检索系统设计 |
 
