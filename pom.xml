@@ -234,7 +234,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
         <!--
             注意：不需要手动添加 slf4j-api、logback-classic 等日志依赖
             spring-boot-starter 已经包含了完整的日志配置：
@@ -249,6 +252,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Reactor Core - 响应式流支持（用于 Flux 流式接口）-->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
         </dependency>
 
         <!-- Spring Boot Configuration Processor - 配置提示支持 -->

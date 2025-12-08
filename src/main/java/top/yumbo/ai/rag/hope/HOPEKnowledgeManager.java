@@ -1,5 +1,6 @@
 package top.yumbo.ai.rag.hope;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,8 +28,26 @@ import java.util.stream.Collectors;
 public class HOPEKnowledgeManager {
 
     private final HOPEConfig config;
+    /**
+     * -- GETTER --
+     *  获取低频层服务
+     *  (Get permanent layer service)
+     */
+    @Getter
     private final PermanentLayerService permanentLayer;
+    /**
+     * -- GETTER --
+     *  获取中频层服务
+     *  (Get ordinary layer service)
+     */
+    @Getter
     private final OrdinaryLayerService ordinaryLayer;
+    /**
+     * -- GETTER --
+     *  获取高频层服务
+     *  (Get high frequency layer service)
+     */
+    @Getter
     private final HighFrequencyLayerService highFreqLayer;
     private final QuestionClassifier questionClassifier;
     private final ResponseStrategyDecider strategyDecider;

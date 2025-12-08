@@ -114,7 +114,33 @@ public class OrdinaryLayerService {
     }
 
     /**
-     * 查找相似问答
+     * 查找相似问答（公开方法）
+     * (Find similar Q&A - public method)
+     *
+     * @param question 用户问题
+     * @param minSimilarity 最小相似度阈值
+     * @return 最相似的问答，如果未找到或相似度低于阈值返回 null
+     */
+    public RecentQA findSimilarQA(String question, double minSimilarity) {
+        List<SimilarMatch> matches = findSimilarQAs(question);
+
+        if (!matches.isEmpty()) {
+            SimilarMatch bestMatch = matches.get(0);
+            if (bestMatch.getSimilarity() >= minSimilarity) {
+                RecentQA qa = bestMatch.getQa();
+                // 设置相似度评分
+                qa.setSimilarityScore(bestMatch.getSimilarity());
+                // 记录访问
+                qa.recordAccess();
+                return qa;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 查找相似问答（内部方法）
      */
     private List<SimilarMatch> findSimilarQAs(String question) {
         List<SimilarMatch> matches = new ArrayList<>();
@@ -231,6 +257,51 @@ public class OrdinaryLayerService {
         return Arrays.stream(text.toLowerCase().split("[\\s,.;:?!，。；：？！]+"))
             .filter(w -> w.length() >= 2 && !stopWords.contains(w))
             .toArray(String[]::new);
+    }
+
+    /**
+     * 保存 RecentQA 对象到中频层
+     * (Save RecentQA object to ordinary layer)
+     *
+     * @param qa 问答对象
+     */
+    public void save(RecentQA qa) {
+        if (qa == null) {
+            return;
+        }
+
+        // 如果没有 ID，生成一个
+        if (qa.getId() == null || qa.getId().isEmpty()) {
+            qa.setId("qa_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4));
+        }
+
+        // 如果没有关键词，提取关键词
+        if (qa.getKeywords() == null || qa.getKeywords().length == 0) {
+            qa.setKeywords(extractKeywords(qa.getQuestion()));
+        }
+
+        // 设置创建时间（如果未设置）
+        if (qa.getCreatedAt() == null) {
+            qa.setCreatedAt(LocalDateTime.now());
+        }
+
+        // 设置访问时间
+        if (qa.getLastAccessedAt() == null) {
+            qa.setLastAccessedAt(LocalDateTime.now());
+        }
+
+        // 保存到内存
+        recentQAs.put(qa.getId(), qa);
+
+        // 更新关键词索引
+        for (String keyword : qa.getKeywords()) {
+            keywordIndex.computeIfAbsent(keyword.toLowerCase(), k -> new HashSet<>()).add(qa.getId());
+        }
+
+        // 持久化
+        persistData();
+
+        log.debug(I18N.get("hope.ordinary.saved", qa.getId()));
     }
 
     /**

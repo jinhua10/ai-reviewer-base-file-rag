@@ -89,6 +89,30 @@ public class RecentQA {
     private boolean promoted;
 
     /**
+     * 会话ID（用于流式响应追踪）
+     * (Session ID for streaming response tracking)
+     */
+    private String sessionId;
+
+    /**
+     * 相似度评分（用于查询时）
+     * (Similarity score when queried)
+     */
+    private Double similarityScore;
+
+    /**
+     * 完成时间（流式响应）
+     * (Completion time for streaming response)
+     */
+    private LocalDateTime completedAt;
+
+    /**
+     * 响应时长（秒）
+     * (Response time in seconds)
+     */
+    private Long responseTimeSeconds;
+
+    /**
      * 获取平均评分
      */
     public double getAverageRating() {

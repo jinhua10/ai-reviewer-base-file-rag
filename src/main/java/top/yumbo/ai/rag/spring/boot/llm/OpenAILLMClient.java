@@ -4,13 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import reactor.core.publisher.Flux;
 import top.yumbo.ai.rag.i18n.I18N;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * OpenAI LLM 客户端 / OpenAI LLM Client
@@ -206,6 +212,13 @@ public class OpenAILLMClient implements LLMClient {
     }
 
     @Override
+    public boolean supportsStreaming() {
+        // OpenAI 所有模型都支持流式输出
+        // (All OpenAI models support streaming)
+        return true;
+    }
+
+    @Override
     public boolean isAvailable() {
         return apiKey != null && !apiKey.isEmpty();
     }
@@ -373,6 +386,148 @@ public class OpenAILLMClient implements LLMClient {
         }
 
         throw new IOException(I18N.get("llm.error.parse_failed", responseBody));
+    }
+
+    // ==================== 流式接口实现 ====================
+
+    @Override
+    public Flux<String> generateStream(String prompt) {
+        return generateStream(prompt, null);
+    }
+
+    @Override
+    public Flux<String> generateStream(String prompt, String systemPrompt) {
+        return Flux.create(sink -> {
+            try {
+                log.debug("开始 OpenAI 流式生成 (Starting OpenAI streaming): prompt length={}", prompt.length());
+
+                // 构建请求消息
+                List<Map<String, String>> messages = buildMessages(systemPrompt, prompt);
+
+                // 构建请求体（启用流式）
+                Map<String, Object> requestBody = new HashMap<>();
+                requestBody.put("model", model);
+                requestBody.put("messages", messages);
+                requestBody.put("temperature", temperature);
+                requestBody.put("max_tokens", maxTokens);
+                requestBody.put("stream", true);  // ✅ 启用流式
+
+                String jsonBody = objectMapper.writeValueAsString(requestBody);
+
+                Request request = new Request.Builder()
+                    .url(apiUrl)
+                    .post(RequestBody.create(jsonBody, JSON))
+                    .addHeader("Authorization", "Bearer " + apiKey)
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "text/event-stream")  // ✅ SSE
+                    .build();
+
+                // 发送请求并处理流式响应
+                Call call = httpClient.newCall(request);
+                AtomicBoolean completed = new AtomicBoolean(false);
+
+                // 处理取消订阅
+                sink.onCancel(() -> {
+                    log.debug("流式订阅被取消 (Stream subscription cancelled)");
+                    call.cancel();
+                    completed.set(true);
+                });
+
+                Response response = call.execute();
+
+                if (!response.isSuccessful()) {
+                    String errorBody = response.body() != null ? response.body().string() : "No response body";
+                    log.error("OpenAI API 错误 (OpenAI API error): code={}, body={}", response.code(), errorBody);
+                    sink.error(new IOException("OpenAI API error: " + response.code() + " - " + errorBody));
+                    response.close();
+                    return;
+                }
+
+                // 读取 SSE 流
+                ResponseBody responseBody = response.body();
+                if (responseBody == null) {
+                    sink.error(new IOException("Empty response body"));
+                    response.close();
+                    return;
+                }
+
+                try (InputStream inputStream = responseBody.byteStream();
+                     BufferedReader reader = new BufferedReader(
+                         new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+
+                    String line;
+                    StringBuilder currentChunk = new StringBuilder();
+
+                    while ((line = reader.readLine()) != null && !completed.get()) {
+                        // SSE 格式：data: {...}
+                        if (line.startsWith("data: ")) {
+                            String data = line.substring(6).trim();
+
+                            // OpenAI 使用 [DONE] 标记结束
+                            if ("[DONE]".equals(data)) {
+                                log.debug("OpenAI 流式完成 (OpenAI streaming completed)");
+                                break;
+                            }
+
+                            try {
+                                // 解析 JSON
+                                JsonNode root = objectMapper.readTree(data);
+                                JsonNode choices = root.get("choices");
+
+                                if (choices != null && choices.isArray() && choices.size() > 0) {
+                                    JsonNode firstChoice = choices.get(0);
+                                    JsonNode delta = firstChoice.get("delta");
+
+                                    if (delta != null) {
+                                        JsonNode content = delta.get("content");
+                                        if (content != null && !content.isNull()) {
+                                            String chunk = content.asText();
+                                            if (!chunk.isEmpty()) {
+                                                // ✅ 实时发送每个文本块
+                                                sink.next(chunk);
+                                                currentChunk.append(chunk);
+                                            }
+                                        }
+                                    }
+
+                                    // 检查是否完成
+                                    JsonNode finishReason = firstChoice.get("finish_reason");
+                                    if (finishReason != null && !finishReason.isNull()) {
+                                        String reason = finishReason.asText();
+                                        if ("stop".equals(reason) || "length".equals(reason)) {
+                                            log.debug("流式完成 (Streaming finished): reason={}, totalLength={}",
+                                                reason, currentChunk.length());
+                                            break;
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                log.warn("解析流式数据失败 (Failed to parse streaming data): {}", e.getMessage());
+                                // 继续处理下一行
+                            }
+                        }
+                    }
+
+                    if (!completed.get()) {
+                        sink.complete();
+                        log.info("✅ OpenAI 流式生成完成 (OpenAI streaming completed): totalLength={}",
+                            currentChunk.length());
+                    }
+
+                } catch (IOException e) {
+                    if (!completed.get()) {
+                        log.error("读取流式响应失败 (Failed to read streaming response): {}", e.getMessage());
+                        sink.error(e);
+                    }
+                } finally {
+                    response.close();
+                }
+
+            } catch (Exception e) {
+                log.error("OpenAI 流式生成失败 (OpenAI streaming failed): {}", e.getMessage(), e);
+                sink.error(new RuntimeException("OpenAI streaming failed: " + e.getMessage(), e));
+            }
+        });
     }
 }
 

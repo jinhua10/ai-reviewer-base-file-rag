@@ -118,6 +118,26 @@ public class PermanentLayerService {
     }
 
     /**
+     * 查找可直接回答的确定性知识
+     * (Find factual knowledge for direct answer)
+     *
+     * @param question 用户问题
+     * @return 确定性知识，如果未找到返回 null
+     */
+    public FactualKnowledge findDirectAnswer(String question) {
+        String normalizedQuestion = question.toLowerCase().trim();
+        FactualKnowledge fact = findFactualKnowledge(normalizedQuestion);
+
+        // 只返回高置信度的知识（可直接回答）
+        if (fact != null && fact.getConfidence() >= config.getPermanent().getDirectAnswerConfidence()) {
+            fact.recordAccess();
+            return fact;
+        }
+
+        return null;
+    }
+
+    /**
      * 查找匹配的确定性知识
      */
     private FactualKnowledge findFactualKnowledge(String question) {
