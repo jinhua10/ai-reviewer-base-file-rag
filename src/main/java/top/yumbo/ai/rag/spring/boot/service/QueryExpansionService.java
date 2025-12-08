@@ -92,15 +92,14 @@ public class QueryExpansionService {
     }
 
     /**
-     * 扩展查询（完整版）
-     * (Expand query - full version)
+     * 扩展查询（完整版）(Expand query - full version)
      *
      * @param originalQuery 原始查询 (Original query)
      * @param useLLM 是否使用 LLM 改写 (Whether to use LLM rewrite)
      * @return 扩展后的查询 (Expanded query)
      */
     public ExpandedQuery expandQuery(String originalQuery, boolean useLLM) {
-        log.debug(I18N.get("log.query_expansion.start", originalQuery));
+        log.debug(I18N.get("log.query_expansion.expand_query", originalQuery));
 
         ExpandedQuery result = new ExpandedQuery();
         result.setOriginalQuery(originalQuery);
@@ -119,7 +118,7 @@ public class QueryExpansionService {
                 String rewrittenQuery = llmRewriteQuery(originalQuery);
                 result.setRewrittenQuery(rewrittenQuery);
             } catch (Exception e) {
-                log.warn("⚠️ LLM 查询改写失败: {}", e.getMessage());
+                log.warn(I18N.get("log.query_expansion.llm_rewrite_failed", e.getMessage()));
                 result.setRewrittenQuery(originalQuery);
             }
         } else {
@@ -130,7 +129,7 @@ public class QueryExpansionService {
         String finalQuery = buildExpandedQueryString(result);
         result.setFinalQuery(finalQuery);
 
-        log.debug("✅ 查询扩展完成: {} -> {}", originalQuery, finalQuery);
+        log.debug(I18N.get("log.query_expansion.expansion_complete", originalQuery, finalQuery));
         return result;
     }
 
@@ -226,8 +225,9 @@ public class QueryExpansionService {
         if (response != null) {
             response = response.trim();
             // 移除可能的"改写后的查询："前缀
-            if (response.startsWith("改写后的查询：")) {
-                response = response.substring("改写后的查询：".length()).trim();
+            String prefix = "改写后的查询：";
+            if (response.startsWith(prefix)) {
+                response = response.substring(prefix.length()).trim();
             }
         }
 

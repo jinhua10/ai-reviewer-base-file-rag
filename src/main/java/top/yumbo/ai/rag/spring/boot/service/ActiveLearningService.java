@@ -82,8 +82,8 @@ public class ActiveLearningService {
         // 5. 生成推荐理由
         recommendation.setRecommendationReason(generateRecommendationReason(recommendation));
 
-        log.debug("🎯 主动学习推荐: 不确定文档={}, 潜在相关={}, 历史推荐={}",
-                uncertainDocs.size(), potentialDocs.size(), historyRecs.size());
+        log.debug(I18N.get("active_learning.log.recommendation_generated",
+                uncertainDocs.size(), potentialDocs.size(), historyRecs.size()));
 
         return recommendation;
     }
@@ -154,7 +154,7 @@ public class ActiveLearningService {
                 PotentiallyRelevantDocument potential = new PotentiallyRelevantDocument();
                 potential.setDocumentName(docName);
                 potential.setHistoricalWeight(weight);
-                potential.setReason("该文档历史上获得过高评分，但未出现在当前检索结果中");
+                potential.setReason(I18N.get("active_learning.log.potential_doc_reason"));
                 potentialDocs.add(potential);
             }
         }
@@ -210,7 +210,7 @@ public class ActiveLearningService {
         String key = extractKeywords(question);
         queryHistoryCache.computeIfAbsent(key, k -> new ArrayList<>()).add(history);
 
-        log.debug("📝 记录查询历史: {}", question.substring(0, Math.min(50, question.length())));
+        log.debug(I18N.get("active_learning.log.save_history", question.substring(0, Math.min(50, question.length()))));
     }
 
     /**
@@ -224,8 +224,8 @@ public class ActiveLearningService {
                     isRelevant ? top.yumbo.ai.rag.feedback.QARecord.FeedbackType.LIKE
                               : top.yumbo.ai.rag.feedback.QARecord.FeedbackType.DISLIKE);
 
-            log.info("🎯 主动学习反馈: {} -> {} ({})",
-                    documentName, isRelevant ? "相关" : "不相关", adjustment);
+            log.info(I18N.get("active_learning.log.feedback_processed", documentName, 
+                    I18N.get(isRelevant ? "active_learning.feedback.relevant" : "active_learning.feedback.irrelevant"), adjustment));
         }
     }
 
