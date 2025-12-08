@@ -305,6 +305,7 @@ mvn spring-boot:run
 | [多文档联合分析策略](md/20251206-多文档联合分析策略方案.md) | 策略框架详解 |
 | [PPL技术分析](md/20251204-PPL技术分析与对比.md) | PPL 分块原理 |
 | [Vision LLM配置](docs/VISION_LLM_UNIVERSAL_CONFIG.md) | 图片理解配置 |
+| [LightRAG 技术分析](docs/LIGHTRAG_ANALYSIS.md) | 图增强 RAG 集成方案 |
 
 ---
 
@@ -326,6 +327,7 @@ mvn spring-boot:run
 - ✅ 检索缓存
 
 ### 🚀 v3.0 (规划) - 2025 Q2
+- 📋 **LightRAG 集成** - 轻量级图增强 RAG
 - 📋 分布式索引
 - 📋 多租户架构
 - 📋 Docker 镜像

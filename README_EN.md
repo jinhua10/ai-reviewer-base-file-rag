@@ -325,6 +325,7 @@ mvn spring-boot:run
 - ✅ Search Cache
 
 ### 🚀 v3.0 (Planned) - 2025 Q2
+- 📋 **LightRAG Integration** - Lightweight graph-enhanced RAG
 - 📋 Distributed indexing
 - 📋 Multi-tenancy architecture
 - 📋 Docker image
