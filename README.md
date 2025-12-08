@@ -306,6 +306,7 @@ mvn spring-boot:run
 | [PPL技术分析](md/20251204-PPL技术分析与对比.md) | PPL 分块原理 |
 | [Vision LLM配置](docs/VISION_LLM_UNIVERSAL_CONFIG.md) | 图片理解配置 |
 | [LightRAG 技术分析](docs/LIGHTRAG_ANALYSIS.md) | 图增强 RAG 集成方案 |
+| [层次化语义 RAG](docs/HIERARCHICAL_SEMANTIC_RAG.md) | 🌟 下一代 RAG 架构设计 |
 
 ---
 

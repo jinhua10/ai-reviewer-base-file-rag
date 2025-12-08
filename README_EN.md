@@ -304,6 +304,8 @@ mvn spring-boot:run
 | [Multi-Doc Analysis Strategy](md/20251206-多文档联合分析策略方案.md) | Strategy framework details |
 | [PPL Technical Analysis](md/20251204-PPL技术分析与对比.md) | PPL chunking principles |
 | [Vision LLM Config](docs/VISION_LLM_UNIVERSAL_CONFIG.md) | Image understanding config |
+| [LightRAG Analysis](docs/LIGHTRAG_ANALYSIS.md) | Graph-enhanced RAG integration |
+| [Hierarchical Semantic RAG](docs/HIERARCHICAL_SEMANTIC_RAG.md) | 🌟 Next-gen RAG architecture |
 
 ---
 
