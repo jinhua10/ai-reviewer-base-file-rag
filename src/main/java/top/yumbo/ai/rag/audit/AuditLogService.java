@@ -48,9 +48,9 @@ public class AuditLogService {
                 StandardOpenOption.CREATE, 
                 StandardOpenOption.APPEND);
             
-            log.debug(I18N.get("log.audit.logged", event.getAction()));
+            log.debug(I18N.get("audit_log.log.logged", event.getAction()));
         } catch (Exception e) {
-            log.error(I18N.get("log.audit.write_failed"), e);
+            log.error(I18N.get("audit_log.log.write_failed"), e);
         }
     }
     
@@ -121,7 +121,7 @@ public class AuditLogService {
                 Files.createDirectories(path);
             }
         } catch (Exception e) {
-            log.error(I18N.get("log.audit.init_failed"), e);
+            log.error(I18N.get("audit_log.log.init_failed"), e);
         }
     }
 }

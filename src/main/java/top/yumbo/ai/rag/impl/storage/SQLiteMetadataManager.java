@@ -2,6 +2,7 @@ package top.yumbo.ai.rag.impl.storage;
 
 import com.alibaba.fastjson2.JSON;
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 
 import java.sql.*;
@@ -63,10 +64,10 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 stmt.execute(CREATE_CATEGORY_INDEX);
             }
 
-            log.info("SQLite metadata manager initialized: {}", dbPath);
+            log.info(I18N.get("sqlite_metadata_manager.log.initialized", dbPath));
         } catch (SQLException e) {
-            log.error("Failed to initialize SQLite database", e);
-            throw new RuntimeException("Failed to initialize database", e);
+            log.error(I18N.get("sqlite_metadata_manager.log.failed_init"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.error.failed_init"), e);
         }
     }
 
@@ -94,10 +95,10 @@ public class SQLiteMetadataManager implements AutoCloseable {
             pstmt.setString(10, JSON.toJSONString(document.getMetadata()));
 
             pstmt.executeUpdate();
-            log.debug("Document metadata saved: {}", document.getId());
+            log.debug(I18N.get("sqlite_metadata_manager.log.document_saved", document.getId()));
         } catch (SQLException e) {
-            log.error("Failed to save document metadata: {}", document.getId(), e);
-            throw new RuntimeException("Failed to save document metadata", e);
+            log.error(I18N.get("sqlite_metadata_manager.error.failed_save", document.getId()), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.error.failed_save", document.getId()), e);
         }
     }
 
@@ -116,8 +117,8 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 }
             }
         } catch (SQLException e) {
-            log.error("Failed to get document metadata: {}", id, e);
-            throw new RuntimeException("Failed to get document metadata", e);
+            log.error(I18N.get("sqlite_metadata_manager.error.failed_find", id), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.error.failed_find", id), e);
         }
 
         return null;
@@ -133,11 +134,11 @@ public class SQLiteMetadataManager implements AutoCloseable {
             pstmt.setString(1, id);
             int affected = pstmt.executeUpdate();
 
-            log.debug("Document metadata deleted: {}, affected: {}", id, affected);
+            log.debug(I18N.get("sqlite_metadata_manager.log.document_deleted", id));
             return affected > 0;
         } catch (SQLException e) {
-            log.error("Failed to delete document metadata: {}", id, e);
-            throw new RuntimeException("Failed to delete document metadata", e);
+            log.error(I18N.get("sqlite_metadata_manager.error.failed_delete", id), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.error.failed_delete", id), e);
         }
     }
 
@@ -156,8 +157,8 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 }
             }
         } catch (SQLException e) {
-            log.error("Failed to check document existence: {}", id, e);
-            throw new RuntimeException("Failed to check document existence", e);
+            log.error(I18N.get("sqlite_metadata_manager.failed_exists"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.failed_exists"), e);
         }
 
         return false;
@@ -179,8 +180,8 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 }
             }
         } catch (SQLException e) {
-            log.error("Failed to find documents by hash: {}", hash, e);
-            throw new RuntimeException("Failed to find documents by hash", e);
+            log.error(I18N.get("sqlite_metadata_manager.failed_find_by_hash"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.failed_find_by_hash"), e);
         }
 
         return results;
@@ -200,8 +201,8 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 results.add(mapResultSetToDocument(rs));
             }
         } catch (SQLException e) {
-            log.error("Failed to list all documents", e);
-            throw new RuntimeException("Failed to list all documents", e);
+            log.error(I18N.get("sqlite_metadata_manager.failed_count"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.failed_count"), e);
         }
 
         return results;
@@ -220,8 +221,8 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 return rs.getLong(1);
             }
         } catch (SQLException e) {
-            log.error("Failed to count documents", e);
-            throw new RuntimeException("Failed to count documents", e);
+            log.error(I18N.get("sqlite_metadata_manager.failed_count"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.failed_count"), e);
         }
 
         return 0;
@@ -241,10 +242,10 @@ public class SQLiteMetadataManager implements AutoCloseable {
                 ids.add(rs.getString("id"));
             }
 
-            log.debug("Retrieved {} document IDs", ids.size());
+            log.debug(I18N.get("sqlite_metadata_manager.retrieved_ids", ids.size()));
         } catch (SQLException e) {
-            log.error("Failed to get all document IDs", e);
-            throw new RuntimeException("Failed to get all document IDs", e);
+            log.error(I18N.get("sqlite_metadata_manager.failed_get_all_ids"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.failed_get_all_ids"), e);
         }
 
         return ids;
@@ -258,10 +259,10 @@ public class SQLiteMetadataManager implements AutoCloseable {
 
         try (Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(sql);
-            log.info("All document metadata cleared");
+            log.info(I18N.get("sqlite_metadata_manager.all_cleared"));
         } catch (SQLException e) {
-            log.error("Failed to clear documents", e);
-            throw new RuntimeException("Failed to clear documents", e);
+            log.error(I18N.get("sqlite_metadata_manager.clear_failed"), e);
+            throw new RuntimeException(I18N.get("sqlite_metadata_manager.clear_failed"), e);
         }
     }
 
@@ -292,9 +293,9 @@ public class SQLiteMetadataManager implements AutoCloseable {
         if (connection != null) {
             try {
                 connection.close();
-                log.info("SQLite connection closed");
+                log.info(I18N.get("sqlite_metadata_manager.connection_closed"));
             } catch (SQLException e) {
-                log.error("Failed to close SQLite connection", e);
+                log.error(I18N.get("sqlite_metadata_manager.connection_close_failed"), e);
             }
         }
     }

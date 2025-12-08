@@ -49,9 +49,9 @@ public class Application {
             app.setWebApplicationType(WebApplicationType.SERVLET);
             app.run(args);
 
-            log.info(I18N.get("log.app.started", "http://localhost:8080"));
+            log.info(I18N.get("api.started", "http://localhost:8080"));
         } catch (Exception e) {
-            log.error(I18N.get("log.app.start_failed"), e);
+            log.error(I18N.get("app.log.start_failed"), e);
             System.exit(1);
         }
     }

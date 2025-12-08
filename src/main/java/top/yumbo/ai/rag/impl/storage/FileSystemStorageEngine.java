@@ -3,6 +3,7 @@ package top.yumbo.ai.rag.impl.storage;
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.config.RAGConfiguration;
 import top.yumbo.ai.rag.core.StorageEngine;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.model.Query;
 
@@ -45,7 +46,7 @@ public class FileSystemStorageEngine implements StorageEngine {
         String dbPath = Paths.get(basePath, "metadata", "metadata.db").toString();
         this.metadataManager = new SQLiteMetadataManager(dbPath);
 
-        log.info("FileSystemStorageEngine initialized at: {}", basePath);
+        log.info(I18N.get("storage_engine.log.initialized", basePath));
     }
 
     /**
@@ -57,8 +58,8 @@ public class FileSystemStorageEngine implements StorageEngine {
             Files.createDirectories(Paths.get(basePath, "metadata"));
             Files.createDirectories(Paths.get(basePath, "cache"));
         } catch (IOException e) {
-            log.error("Failed to initialize directories", e);
-            throw new RuntimeException("Failed to initialize storage directories", e);
+            log.error(I18N.get("storage_engine.log.failed_init_dirs"), e);
+            throw new RuntimeException(I18N.get("storage_engine.error.failed_init_storage_dirs"), e);
         }
     }
 
@@ -77,7 +78,7 @@ public class FileSystemStorageEngine implements StorageEngine {
             // 3. 检查是否已存在相同内容的文档
             List<Document> duplicates = metadataManager.findByHash(hash);
             if (!duplicates.isEmpty()) {
-                log.info("Document with same content already exists: {}", duplicates.get(0).getId());
+                log.info(I18N.get("storage_engine.log.document_with_same_content", duplicates.get(0).getId()));
                 return duplicates.get(0).getId();
             }
 
@@ -101,12 +102,12 @@ public class FileSystemStorageEngine implements StorageEngine {
             // 7. 保存元数据
             metadataManager.save(document);
 
-            log.debug("Document stored: {}", document.getId());
+            log.debug(I18N.get("storage_engine.log.document_stored", document.getId()));
             return document.getId();
 
         } catch (Exception e) {
-            log.error("Failed to store document", e);
-            throw new RuntimeException("Failed to store document", e);
+            log.error(I18N.get("storage_engine.log.failed_store"), e);
+            throw new RuntimeException(I18N.get("storage_engine.error.failed_store_document"), e);
         }
     }
 
@@ -118,7 +119,7 @@ public class FileSystemStorageEngine implements StorageEngine {
                 store(doc);
                 count++;
             } catch (Exception e) {
-                log.error("Failed to store document in batch: {}", doc.getId(), e);
+                log.error(I18N.get("storage_engine.log.failed_store_batch", doc.getId()), e);
             }
         }
         return count;
@@ -136,7 +137,7 @@ public class FileSystemStorageEngine implements StorageEngine {
             // 2. 读取文件内容
             Path filePath = Paths.get(basePath, "documents", document.getFilePath());
             if (!Files.exists(filePath)) {
-                log.warn("Document file not found: {}", filePath);
+                log.warn(I18N.get("storage_engine.log.document_file_not_found", filePath));
                 return null;
             }
 
@@ -151,8 +152,8 @@ public class FileSystemStorageEngine implements StorageEngine {
             return document;
 
         } catch (Exception e) {
-            log.error("Failed to retrieve document: {}", id, e);
-            throw new RuntimeException("Failed to retrieve document", e);
+            log.error(I18N.get("storage_engine.log.failed_retrieve", id), e);
+            throw new RuntimeException(I18N.get("storage_engine.error.failed_retrieve_document", id), e);
         }
     }
 
@@ -174,11 +175,11 @@ public class FileSystemStorageEngine implements StorageEngine {
             // 3. 删除元数据
             metadataManager.delete(id);
 
-            log.debug("Document deleted: {}", id);
+            log.debug(I18N.get("storage_engine.log.document_deleted", id));
             return true;
 
         } catch (Exception e) {
-            log.error("Failed to delete document: {}", id, e);
+            log.error(I18N.get("storage_engine.log.failed_delete", id), e);
             return false;
         }
     }
@@ -199,11 +200,11 @@ public class FileSystemStorageEngine implements StorageEngine {
             document.setUpdatedAt(Instant.now());
             store(document);
 
-            log.debug("Document updated: {}", id);
+            log.debug(I18N.get("storage_engine.log.document_updated", id));
             return true;
 
         } catch (Exception e) {
-            log.error("Failed to update document: {}", id, e);
+            log.error(I18N.get("storage_engine.error.failed_delete_document", id), e);
             return false;
         }
     }
@@ -215,7 +216,7 @@ public class FileSystemStorageEngine implements StorageEngine {
             try {
                 return retrieve(doc.getId());
             } catch (Exception e) {
-                log.error("Failed to retrieve document: {}", doc.getId(), e);
+                log.error(I18N.get("storage_engine.log.failed_retrieve", doc.getId()), e);
                 return null;
             }
         }).filter(doc -> doc != null);
@@ -259,15 +260,15 @@ public class FileSystemStorageEngine implements StorageEngine {
                             try {
                                 Files.delete(path);
                             } catch (IOException e) {
-                                log.error("Failed to delete file: {}", path, e);
+                                log.error(I18N.get("storage_engine.log.failed_delete", path.toString()), e);
                             }
                         });
             }
 
-            log.info("Storage cleared");
+            log.info(I18N.get("storage_engine.log.storage_cleared"));
         } catch (Exception e) {
-            log.error("Failed to clear storage", e);
-            throw new RuntimeException("Failed to clear storage", e);
+            log.error(I18N.get("storage_engine.log.clear_storage_failed"), e);
+            throw new RuntimeException(I18N.get("storage_engine.error.clear_storage"), e);
         }
     }
 

@@ -1,6 +1,7 @@
 package top.yumbo.ai.rag.impl.storage;
 
 import lombok.extern.slf4j.Slf4j;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -31,8 +32,8 @@ public class SHA256DocumentHasher {
             byte[] hash = digest.digest(content);
             return Base64.getEncoder().encodeToString(hash);
         } catch (NoSuchAlgorithmException e) {
-            log.error("Failed to compute hash: algorithm not found", e);
-            throw new RuntimeException("Failed to compute hash", e);
+            log.error(I18N.get("sha256_document_hasher.log.failed_compute"), e);
+            throw new RuntimeException(I18N.get("sha256_document_hasher.error.failed_compute"), e);
         }
     }
 
