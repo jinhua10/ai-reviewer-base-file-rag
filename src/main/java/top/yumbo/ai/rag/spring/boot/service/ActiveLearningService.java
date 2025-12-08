@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.feedback.DocumentWeightService;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 
 import java.util.*;
@@ -224,7 +225,7 @@ public class ActiveLearningService {
                     isRelevant ? top.yumbo.ai.rag.feedback.QARecord.FeedbackType.LIKE
                               : top.yumbo.ai.rag.feedback.QARecord.FeedbackType.DISLIKE);
 
-            log.info(I18N.get("active_learning.log.feedback_processed", documentName, 
+            log.info(I18N.get("active_learning.log.feedback_processed", documentName,
                     I18N.get(isRelevant ? "active_learning.feedback.relevant" : "active_learning.feedback.irrelevant"), adjustment));
         }
     }

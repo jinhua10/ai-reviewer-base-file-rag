@@ -200,234 +200,455 @@ knowledge_qa_service:
   total_documents: "      - Total documents: {0}"
   using_session_docs: "Using session-stored documents: {0}"
 
-# File System Storage Engine
-storage_engine:
+# Knowledge QA API messages and logs
+knowledge_qa:
+  api:
+    message:
+      all_indexed: "All documents indexed"
+      incremental_complete: "Incremental indexing completed"
+      system_running: "Knowledge QA system is running"
+      needs_indexing: "Knowledge base needs indexing"
+      rebuild_complete: "Knowledge base rebuild completed"
+    status:
+      up: "Running"
   log:
-    initialized: "FileSystemStorageEngine initialized at: {}"
-    failed_init_dirs: "Failed to initialize directories"
-    failed_init_storage_dirs: "Failed to initialize storage directories"
-    document_with_same_content: "Document with same content already exists: {}"
-    document_stored: "Document stored: {}"
-    failed_store: "Failed to store document"
-    failed_store_batch: "Failed to store document in batch: {}"
-    document_file_not_found: "Document file not found: {}"
-    failed_retrieve: "Failed to retrieve document: {}"
-    document_deleted: "Document deleted: {}"
-    failed_delete: "Failed to delete document: {}"
-    document_updated: "Document updated: {}"
-    storage_cleared: "Storage cleared"
-    clear_storage_failed: "Failed to clear storage"
+    received_question: "Received question: {0}"
+    get_statistics: "Retrieving knowledge QA statistics"
+    incremental_request: "Incremental indexing requested: {0}"
+    statistics_result: "Statistics result: {0}"
+    search_documents: "Search documents for question: {0} (found {1})"
+    session_question: "Session question [{0}]: {1}"
+    rebuild_request: "Rebuild requested: {0}"
+    indexing_in_progress: "Indexing in progress"
+    indexing_idle: "System idle, ready for indexing"
+# Vision LLM Strategy Messages
+vision_llm:
+  log:
+    api_format_detected: "Detected {0} API format"
+    api_format_default: "Using default OpenAI Chat Completions API format"
+    processing_image: "Using Vision LLM to process image: {0}"
+    processing_image_file: "Using Vision LLM to process image file: {0}"
+    content_extracted: "Vision LLM extracted content [{0}]: {1} characters"
+    processing_failed: "Vision LLM processing failed: {0}"
+    sending_request: "Sending Vision API request: {0} (format: {1})"
+    sending_request_batch: "Sending batch Vision API request: {0} (format: {1})"
+    received_response: "Received Vision API response, elapsed: {0}ms"
+    token_usage: "Token usage - Prompt: {0}, Completion: {1}, Total: {2}"
+    ollama_complete_chat: "Ollama processing completed (/api/chat format)"
+    ollama_complete_generate: "Ollama processing completed (/api/generate format)"
+    service_available: "✅ Vision LLM available"
+    api_format: "   - API Format: {0}"
+    model: "   - Model: {0}"
+    endpoint: "   - Endpoint: {0}"
+    service_unavailable: "⚠️  Vision LLM service unavailable: {0}"
+    check_service: "💡 Hint: Please check if the service is running properly"
+    unavailable_no_apikey: "⚠️  Vision LLM unavailable: API Key not configured"
+    hint_set_apikey: "💡 Hint: Set vision-llm.api-key in configuration file"
+    service_response_error: "Service response error: HTTP {0}"
+    unsupported_format: "⚠️  Skipping unsupported image format: {0} (.{1}), Vision API only supports jpg/png/gif/webp/bmp"
   error:
-    failed_init_dirs: "Failed to initialize directories"
-    failed_init_storage_dirs: "Failed to initialize storage directories"
-    failed_store_document: "Failed to store document"
-    failed_retrieve_document: "Failed to retrieve document: {}"
-    failed_delete_document: "Failed to delete document: {}"
-    clear_storage: "Failed to clear storage"
+    api_error: "Vision API error: HTTP {0}"
+    api_error_with_body: "Vision API error: HTTP {0}, Body: {1}"
+    no_response_body: "No response body"
+    parse_openai_failed: "Failed to parse OpenAI API response: {0}"
+    parse_ollama_failed: "Failed to parse Ollama API response: {0}"
+    unavailable: "[Image: {0} - Vision LLM unavailable]"
+    processing_failed: "[Image: {0} - Vision LLM processing failed: {1}]"
+    unsupported_format: "[Image: {0} - Unsupported format .{1}, Vision API only supports jpg/png/gif/webp/bmp]"
+  prompt:
+    # Concise prompt: extract key information, avoid redundancy
+    extract_text_concise: |
+      Please analyze this image and extract **key information**. Be concise but don't miss important content:
 
-# Audit Event
-audit:
-  event:
-    title: "Audit Event"
-    event_id: "Event ID"
-    event_type: "Event Type"
-    user_id: "User ID"
-    username: "Username"
-    action: "Action"
-    resource: "Resource"
-    details: "Details"
-    success: "Success"
-    timestamp: "Timestamp"
-    ip_address: "IP Address"
+      1. **Image Theme**: One sentence summarizing core content and purpose
 
-# Audit Log Service
-audit_log:
-  log:
-    logged: "Audit logged: {}"
-    write_failed: "Failed to write audit log"
-    init_failed: "Audit log initialization failed"
-  document_operation: "Document operation"
-  search_operation: "Search operation"
-  auth_event: "Authentication event"
+      2. **Core Text**: Extract all important text content
+         - Titles, main labels, key annotations
+         - Important data/numbers/parameters
+         - Core conclusions or key points
 
-# Document Chunker
-document_chunker:
-  interface:
-    title: "Document chunker interface"
-    chunk_method: "Chunk a document"
-    chunk_method_desc: "Split document content into multiple document chunks"
-    chunk_method_no_query: "Chunk a document without query context"
-    chunk_method_no_query_desc: "Split document content without query context"
-    get_name: "Get chunker name"
-    get_description: "Get chunker description"
-  param:
-    content: "Document content"
-    query: "User query (optional - used by smart chunkers)"
-    return: "List of document chunks"
+      3. **Key Structural Information** (based on image type, keep only essential content):
+         【Architecture/System Diagrams】:
+         - All component/module names
+         - Connections between components and data flow
+         - Tech stack, protocols (if any)
 
-# Document Chunk
-document_chunk:
-  class:
-    title: "Document chunk"
-    description: "Represents a fragment of a chunked document"
-  field:
-    content: "Chunk content"
-    title: "Chunk title (optional)"
-    index: "Chunk index (zero-based)"
-    total_chunks: "Total number of chunks"
-    start_position: "Start position in original document"
-    end_position: "End position in original document"
+         【Flowcharts】: Key steps and branch logic
 
-# Cache Engine
-cache_engine:
-  interface:
-    title: "Cache engine interface"
-    description: "Provides multi-level cache support"
-  method:
-    get_document: "Get cached document"
-    put_document: "Cache document"
-    get_query_result: "Get cached query result"
-    put_query_result: "Cache query result"
-    invalidate_document: "Invalidate document cache"
-  param:
-    doc_id: "Document ID"
-    query_key: "Query key"
-    result: "Query result"
-    document: "Document object"
+         【Charts/Graphs】: Core data points, trend conclusions
 
-# Index Engine
-index_engine:
-  interface:
-    title: "Index engine interface"
-    description: "Responsible for document indexing and search"
-  method:
-    index_document: "Index document"
-    index_batch: "Batch index documents"
-    update_index: "Update index"
-    delete_from_index: "Delete document from index"
-    search: "Search documents"
-  param:
-    documents: "List of documents"
-    new_document: "New document object"
-    query: "Query object"
-    return: "Search result"
+         【Tables】: Headers and key data
 
-# SQLite Metadata Manager
-sqlite_metadata_manager:
-  class:
-    title: "SQLite Metadata Manager"
-    description: "Stores document metadata using SQLite database"
-  log:
-    initialized: "SQLite metadata manager initialized: {}"
-    failed_init: "Failed to initialize SQLite database"
-    failed_execute_update: "Failed to execute update: {}"
-    document_saved: "Document metadata saved: {}"
-    failed_save: "Failed to save document metadata: {}"
-    document_found: "Document metadata found: {}"
-    failed_find: "Failed to find document metadata: {}"
-    document_updated: "Document metadata updated: {}"
-    failed_update: "Failed to update document metadata: {}"
-    document_deleted: "Document metadata deleted: {}"
-    failed_delete: "Failed to delete document metadata: {}"
-    cleared: "Metadata table cleared"
-    failed_clear: "Failed to clear metadata table"
-    failed_exists: "Failed to check document existence"
-    failed_count: "Failed to get document count"
-    failed_get_all_ids: "Failed to get all document IDs"
-    failed_find_by_hash: "Failed to find documents by hash"
-    failed_close: "Failed to close database connection"
-    retrieved_ids: "Retrieved {} document IDs"
-    connection_closed: "SQLite connection closed"
-    connection_close_failed: "Failed to close SQLite connection"
-    all_cleared: "All document metadata cleared"
-    clear_failed: "Failed to clear document metadata"
+         【Others】: Main content elements
 
-# SHA-256 Document Hasher
-sha256_document_hasher:
-  class:
-    title: "SHA-256 Document Hasher"
-    description: "Computes hash values of document content for deduplication"
-  method:
-    compute_hash: "Compute content hash"
-    compute_hash_string: "Compute string content hash"
-  param:
-    content_bytes: "Content byte array"
-    content_string: "Content string"
-    return: "Base64 encoded hash value"
-  log:
-    failed_compute: "Failed to compute hash: algorithm not found"
+      **Output Requirements**:
+      - Be concise, avoid redundant descriptions and subjective comments
+      - But must retain all key information, don't miss important content
+      - For complex diagrams like architecture, preserve complete component and relationship information
+
+    # Detailed prompt: full analysis
+    extract_text: |
+      Please comprehensively analyze this image and provide output in the following structure:
+      
+      1. **Image Overview**: Summarize the main content, type, and purpose of the image in 1-2 sentences
+      
+      2. **Text Content**: Extract all text from the image completely
+         - Titles, labels, annotations
+         - Component names, module names
+         - Descriptions, legends
+         - Maintain hierarchical and positional relationships of text
+      
+      3. **Structured Information** (describe in detail based on image type):
+      
+         【Architecture/System Diagrams】:
+         - List all components/modules/nodes with their names
+         - Explain connections between components (who connects to whom, direction)
+         - Describe data flow or information flow directions
+         - Explain hierarchical relationships of components (frontend, backend, database, etc.)
+         - Note technology stacks, protocols, ports used
+      
+         【Flowcharts】:
+         - List all process steps in order
+         - Explain conditional branches and decision logic
+         - Mark start and end points
+      
+         【Charts/Graphs】:
+         - Chart type (bar/line/pie chart, etc.)
+         - Axis meanings and units
+         - Specific data points and values
+         - Data trends and key findings
+      
+         【Tables】:
+         - Header information
+         - Extract data completely by rows and columns
+         - Maintain table structure relationships
+      
+         【Screenshots/Interfaces】:
+         - Interface type and functionality
+         - Main functional modules
+         - Interactive elements like menus, buttons
+      
+         【Other Images】:
+         - Describe main content and composition
+         - Key visual elements
+      
+      4. **Key Information Extraction**:
+         - Core technical points
+         - Important data or parameters
+         - Key conclusions or points
+         - Information requiring special attention
+      
+      Output Requirements:
+      - Information must be complete, accurate, and structured
+      - For architecture diagrams, must detail component connections
+      - Technical terms, numbers, formulas must be precisely identified
+      - Use clear hierarchical structure to organize content
+      - No subjective comments, only state objective information
+kb_service:
+  image:
+    description: "Image description: {0}"
+    filename: "Filename: {0}"
+    image_number: "Image {0}/{1}"
+    original_file: "Original file: {0}"
+    section_end: "End of section"
+    section_title: "Section: {0}"
+    url: "URL: {0}"
+llm:
   error:
-    failed_compute: "Failed to compute hash"
-    connection_closed: "Database connection closed"
-
-# Application
-app:
+    openai_failed: "OpenAI API call failed: {0}"
+    openai_http_error: "OpenAI API error: HTTP {0}, {1}"
+    parse_failed: "Failed to parse OpenAI response: {0}"
   log:
+    mock_init: "✅ Mock LLM client initialized (for testing only)"
+    mock_request: "Mock LLM received request, prompt length: {0}"
+    mock_response: "📝 Mock LLM returned simulated answer"
+    openai_error: "OpenAI API error: HTTP {0}, Body: {1}"
+    openai_failed: "OpenAI API call failed"
+    openai_init: "✅ OpenAI LLM client initialized"
+    openai_request: "Sending request to OpenAI: {0}"
+    openai_response: "OpenAI response content: {0}"
+  mock:
+    default_answer: "This is a simulated answer.\n\nBased on the provided context, I understand your question. However, as a Mock LLM, I can only provide simulated responses.\n\nPlease configure a real LLM service (e.g., OpenAI) to get accurate answers.\n\n(Note: This is a simulated answer from Mock LLM)"
+    marriage_answer: "According to the document content, marriage statistics include the distribution of unmarried, married, divorced, widowed and other statuses.\n\n(Note: This is a simulated answer from Mock LLM, please refer to the document content for actual data)"
+    population_answer: "According to the document content, the total population of China is approximately 1.4 billion.\n\n(Note: This is a simulated answer from Mock LLM, please refer to the document content for actual data)"
+log:
+  admin:
+    cache_cleared: "Cache cleared"
+    cache_cleared_success: "Cache cleared successfully"
+    clear_cache_failed: "Failed to clear cache"
+    clear_cache_failed_detail: "Failed to clear cache: {0}"
+    index_optimize_failed: "Index optimization failed"
+    index_optimize_failed_detail: "Index optimization failed: {0}"
+    index_optimized: "Index optimized"
+    index_optimized_success: "Index optimized successfully"
+    stats_failed: "Failed to retrieve statistics"
+    stats_failed_detail: "Failed to retrieve statistics: {0}"
+  app:
     started: "✅ Application started successfully, Address: {0}"
     start_failed: "❌ Application startup failed"
-    startup_failed: "Application startup failed"
-
-# Document QA Service
-doc_qa:
-  log:
-    create_temp_dir: "Creating document QA temp directory: {0}"
-    create_temp_dir_failed: "Failed to create temp directory"
-    start_qa: "📄 Starting document QA: {0} (Session ID: {1})"
-    question: "❓ Question: {0}"
-    batch_mode: "📦 Document is large, enabling batch processing mode"
-    direct_mode: "📝 Document is small, processing directly"
-    qa_complete: "✅ Document QA completed: {0} (Time: {1}ms)"
-    qa_error: "❌ Document QA failed"
-    direct_start: "📄 Starting direct document analysis (without knowledge base): Document={0}, Session ID={1}"
-    direct_question: "❓ Analysis question: {0}"
-    direct_content_length: "📏 Document content length: {0} characters"
-    direct_exceed_limit: "📦 Document content exceeds limit ({0}), using memo mechanism for batch processing"
-    direct_full_analysis: "📝 Direct full document analysis"
-    direct_split_batches: "📦 Document split into {0} batches for analysis"
-    direct_process_batch: "🔄 Processing batch {0}/{1}, content length: {2} characters"
-    direct_complete: "✅ Direct document analysis completed: Document={0}, Time={1}ms"
-    direct_failed: "❌ Direct document analysis failed"
-    split_batches: "📦 Document split into {0} batches"
-    process_batch: "🔄 Processing batch {0}/{1} (Size: {2} characters)"
-    batch_key_points: "💡 Batch {0} key information extracted ({1} characters)"
-    batch_complete: "✅ Batch {0}/{1} processing completed"
-    analysis_failed: "Analysis failed"
-    final_report_failed: "Failed to generate final report"
-    direct_process_failed: "Failed to process document directly"
-  error:
-    document_not_found: "Document not found: {0}"
-    processing_failed: "Document processing failed"
-  prompt:
-    analysis_task: "# Document Analysis Task\n\n"
-    document_info: "## Document Information\n"
-    filename: "- Filename: {0}\n"
-    content_length: "- Content Length: {0} characters\n\n"
-    user_question: "## User Question\n"
-    full_content: "## Full Document Content\n"
-    analysis_requirements: "\n\n## Analysis Requirements\n"
-    req_read_content: "1. Carefully read the complete document content above\n"
-    req_answer_question: "2. Directly answer the user's question based on the document content\n"
-    req_structured_answer: "3. Provide a structured, organized answer\n"
-    req_quote_data: "4. If there is key data, please quote accurately\n"
-    req_organize_content: "5. Use headings, lists, etc. to organize content\n"
-
-# PPT Analysis Service
-ppt_analysis:
-  log:
-    start_analysis: "📊 Starting progressive PPT analysis: {0} ({1} slides)"
-    analyze_slide: "🔍 Analyzing slide {0}/{1}"
-    slide_complete: "✅ Slide {0} analysis completed, key points: {1}"
-    analysis_complete: "🎉 PPT progressive analysis completed, time: {0}ms"
-    analysis_failed: "PPT analysis failed"
-    slide_failed: "Slide {0} analysis failed"
-    generate_summary: "📊 Generating PPT comprehensive summary..."
-    summary_complete: "✅ Comprehensive summary generated"
-    summary_failed: "Failed to generate comprehensive summary"
-
-# Knowledge Base Service
-kb_service:
-  log:
-    vector_disabled: "Vector search enabled."
+  api:
+    stopped: "API server stopped"
+  audit:
+    init_failed: "Audit log initialization failed"
+    logged: "Audit logged: {0}"
+    write_failed: "Failed to write audit log"
+  auth:
+    logged_in: "User logged in: {0}"
+    logged_out: "User logged out: {0}"
+    registered: "User registered: {0}"
+  session:
+    create: "Creating session: id={0}, totalDocuments={1}, perQuery={2}"
+    no_next: "No next page for session: {0}"
+    next: "Session {0} advanced to offset {1}"
+    no_prev: "No previous page for session: {0}"
+    prev: "Session {0} moved back to offset {1}"
+    invalid_page: "Invalid page number"
+    page_out_of_range: "Requested page {0} out of range (totalPages={1})"
+    goto_page: "Going to page {0} for session {1}, offset {2}"
+    deleted: "Session deleted: {0}"
+    cleaned: "Cleaned expired session: {0}"
+    cleaned_count: "Cleaned {0} expired sessions"
+    not_found: "Session not found: {0}"
+    evicted: "📊 Session limit exceeded, evicted oldest session: {0} (current {1}/{2})"
+  cache:
+    init: "✅ Search cache initialized (max size: {0}, TTL: {1} minutes)"
+    hit: "🎯 Cache hit: {0}"
+    miss: "📭 Cache miss: {0} (search took {1}ms)"
+    cleared: "🗑️ All caches cleared"
+    search_cleared: "🗑️ Search cache cleared"
+  ppl:
+    rerank_start: "🔄 Starting PPL Rerank for {0} documents..."
+    rerank_completed: "✅ PPL Rerank completed in {0}ms"
+    rerank_failed: "⚠️ PPL Rerank failed, using original order: {0}"
+  hybrid:
+    found_docs: "Hybrid search found {0} documents"
+    keyword_search: "Hybrid keyword search executed: {0}"
+    completed: "Hybrid search completed: Time {0}ms"
+    detail_item: "{0}. {1} (score={2})"
+    extract_keywords: "Extracted keywords: {0}"
+    filtered: "Filtered {0} items"
+    lucene_found: "Lucene found {0} documents"
+    lucene_top_header: "Top Lucene results:"
+    lucene_top_item: "{0}. {1} (luceneScore={2})"
+    top5_header: "Top 5 combined results:"
+    top5_item: "{0}. {1} (score={2})"
+    topk_header: "Top K results:"
+    vector_found: "Vector search found {0} documents"
+    feedback_weight_applied: "📊 Applied feedback weight adjustments to {0} documents"
+    feedback_weight_detail: "📊 Document weight adjusted: {0} | Original: {1} | Weight: {2} | Adjusted: {3}"
+    query_expanded: "🔍 Query expanded: {0} -> {1}"
+    expand_failed: "⚠️ Query expansion failed, using original query: {0}"
+  similar:
+    found: "Found {0} similar documents"
+    init: "✅ SimilarQAService initialized with {0} stopwords"
+    query_empty: "Query is empty, skipping similar QA search"
+    service_not_init: "QARecordService not initialized, skipping similar QA search"
+    no_keywords: "No valid keywords in query: {0}"
+    keywords: "Query keywords: {0}"
+    config_missing: "⚠️ SimilarQAConfig not configured, using defaults"
+    no_history: "No historical QA records"
+    failed: "Similar QA search failed"
+    cache_init: "✅ Similar QA cache initialized (max size: {0}, TTL: {1} minutes)"
+    cache_hit: "🎯 Similar QA cache hit: {0}"
+    cache_cleared: "🗑️ Similar QA cache cleared"
+  query_expansion:
+    init: "✅ Query expansion service initialized (synonyms: {0} groups, stopwords: {1})"
+    reverse_index: "✅ Synonym reverse index built ({0} entries)"
+    start: "🔍 Starting query expansion: {0}"
+  chunk:
+    ai_completed: "AI semantic chunking completed: {0} chars -> {1} chunks, Time taken: {2}ms"
+    ai_failed: "AI semantic chunking failed, falling back to smart keyword chunking"
+    ai_not_enabled: "AI chunking not enabled in configuration"
+    ai_parse_failed: "Failed to parse AI semantic chunking response: {0}"
+    ai_start: "Starting AI semantic chunking, content length: {0} chars"
+    content_truncate: "Content too large ({0} chars), truncated to {1} chars to prevent OOM"
+    coverage_low: "Low coverage, adding sequential chunking"
+    delete_failed: "Failed to delete file: {0}"
+    deleted_all: "All chunks of the document deleted: {0}"
+    keywords_extracted: "Extracted {0} keywords from query: {1}"
+    max_chunks_reached: "Maximum chunk limit ({0}) reached, stopping chunking"
+    no_keywords_fallback: "No keywords found, falling back to simple chunking"
+    read_meta_failed: "Failed to read chunk metadata: {0}"
+    save_failed: "Failed to save document chunk: {0} (Index: {1})"
+    saved: "{0} document chunks saved to document: {1}"
+    simple_summary: "Simple chunking: {0} chars -> {1} chunks (size={2}, overlap={3})"
+    smart_summary: "Smart keyword chunking: {0} chars -> {1} chunks, {2} keywords"
+    storage:
+      created: "Document chunk storage directory created: {0}"
+      init_failed: "Document chunk storage initialization failed"
+    truncate_warning: "Content too long ({0} chars), truncated to {1} chars for AI chunking"
+  chunker:
+    ai_disabled: "AI chunking not enabled, falling back to SMART_KEYWORD strategy"
+    creating: "Creating document chunker: strategy={0}, chunkSize={1}, overlap={2}"
+    llm_null: "LLM client is null, falling back to SMART_KEYWORD strategy"
+    unknown_strategy: "Unknown chunking strategy: {0}, using SMART_KEYWORD"
+  docs:
+    classpath_in_jar: "Classpath path is inside JAR, writing not supported"
+    classpath_load_failed: "Failed to load resource from classpath: {0} - {1}"
+    classpath_not_exists: "Classpath resource does not exist: {0}"
+    classpath_realpath: "Using classpath real path: {0}"
+    classpath_resource_found: "✅ Resource found from classpath: {0}"
+    create:
+      failed: "Failed to create document: {0}"
+      success: "Document created successfully"
+    create_failed: "Failed to create document directory: {0}"
+    created: "Document created: {0}"
+    delete:
+      failed: "Failed to delete document: {0}"
+      success: "Document deleted successfully"
+    deleted: "Document deleted: {0}"
+    directory_ready: "Document directory is ready: {0}"
+    file_exists_renamed: "File already exists, renamed to: {0}"
+    get:
+      failed: "Failed to retrieve document: {0}"
+    invalid_directory: "Invalid directory: {0}"
+    list:
+      exception: "Exception while listing documents: {0}"
+      failed: "Failed to list documents: {0}"
+    not_found: "Document not found: {0}"
+    process_failed: "Failed to process file: {0}"
+    saved: "Document saved: {0}"
+    scanned_types: "Scanned file types: {0}"
+    total: "Total documents: {0}"
+    update:
+      failed: "Failed to update document: {0}"
+      success: "Document updated successfully"
+    updated: "Document updated: {0}"
+    upload_to_external: "Uploaded documents will be saved to external path: ./data/documents"
+    using_default_path: "Using default path: ./data/documents"
+    using_filesystem: "Using filesystem path: {0}"
+    walk_failed: "Failed to traverse directory: {0}"
+  factory:
+    create_caffeine: "Creating Caffeine cache engine"
+    create_filesystem: "Creating filesystem storage engine"
+    create_lucene: "Creating Lucene index engine"
+  feedback:
+    document_failed: "Failed to process document feedback"
+    document_received: "Document feedback received {0}: recordId={1}, document={2}"
+    get_pending_failed: "Failed to retrieve pending QA records"
+    get_record_failed: "Failed to retrieve QA record"
+    get_recent_failed: "Failed to retrieve recent QA records"
+    get_statistics_failed: "Failed to retrieve QA statistics"
+    load_failed: "Failed to load document weights"
+    overall_failed: "Failed to process overall feedback"
+    overall_received: "Overall feedback received: recordId={0}, rating={1}"
+    overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
+    rating_failed: "Failed to process rating"
+    rating_submitted: "Rating submitted {0} [{1}]: {2} - {3} stars (Impact: {4})"
+    rating_updated: "📊 Document weight updated (by rating): {0} -> Weight={1} ({2} stars, Adjustment {3}, 👍{4} 👎{5})"
+    save_failed: "Failed to save document weights"
+    weight_disabled: "Dynamic weight adjustment disabled"
+    weight_reset: "🔄 Document weight reset: {0} -> {1}"
+    weight_updated: "📊 Document weight updated: {0} -> Weight={1} (👍{2} 👎{3})"
+    weights_cleared: "🧹 All document weights cleared"
+    weights_loaded: "📂 Document weights loaded: {0} documents"
+    weights_saved: "💾 Document weights saved: {0} documents"
+    weights_file_not_exists: "📂 Document weight file not found, using default weights"
+  image:
+    saved: "Image saved: {0} (Document: {1})"
+    delete_failed: "Failed to delete file: {0}"
+    deleted_all: "All images of the document deleted: {0}"
+    excel:
+      extracted: "Extracted {0} images from Excel"
+      legacy:
+        extracted: "Extracted {0} images from legacy Excel"
+        processing: "Processing legacy Excel images"
+      processing: "Processing Excel images"
+    pdf:
+      extracted: "Extracted {0} images from PDF"
+      processing: "Processing PDF images"
+    ppt:
+      found: "PPT images found: {0}"
+      processing: "Processing PPT images"
+      extracted: "Extracted {0} images from PPT"
+    read_info_failed: "Failed to read image information: {0}"
+    service:
+      saved: "Image saved: {0}"
+      extracted: "Extracted {0} images"
+      init: "Image service initialized"
+      no_images: "No images found"
+      start: "Starting image extraction"
+      success: "Image processing completed"
+      using_extractor: "Using image extractor: {0}"
+    storage:
+      created: "Image storage directory created: {0}"
+      init_failed: "Image storage initialization failed"
+  imageproc:
+    llm_fallback_vision: "⚠️  Primary LLM does not support image input, falling back to vision-llm configuration"
+    check_llm_support: "Checking if LLM client supports images: Model={0}, Image support={1}"
+    tessdata_default: "System default"
+    activated: "✅ Image processing strategy activated: {0}"
+    add_ocr: "   Adding OCR strategy:"
+    add_vision: "   Adding Vision LLM strategy:"
+    add_llm_vision: "✅ Adding LLM Vision strategy (reusing main LLM client)"
+    init: "🖼️  Initializing image processing functionality..."
+    extraction_mode: "📸 Image extraction mode: {0}"
+    language: "      - Recognition language: {0}"
+    llm_vision_client_type: "   - Client type: {0}"
+    llm_vision_model: "   - Model: {0}"
+    llm_vision_no_client: "⚠️  Cannot add LLM Vision strategy: LLMClient not initialized"
+    llm_vision_no_image_support: "⚠️  Cannot add LLM Vision strategy: Model {0} does not support image input"
+    llm_vision_available: "✅ LLM Vision strategy available"
+    llm_vision_unavailable: "⚠️  LLM Vision strategy unavailable"
+    ocr_available: "   ✅ OCR strategy available"
+    ocr_hint: "   💡 Hint: Add dependency net.sourceforge.tess4j:tess4j:5.9.0"
+    ocr_unavailable: "   ⚠️ OCR strategy unavailable: Missing tess4j dependency"
+    placeholder: "   Using placeholder strategy (default)"
+    strategy: "   Configured strategy: {0}"
+    strategy_selected: "✅ Selected image processing strategy: {0}"
+    strategy_none: "⚠️  No available image processing strategy, using placeholder"
+    extract_failed: "Image content extraction failed: {0}"
+    extract_error: "[Image: {0} - Extraction failed]"
+    image_placeholder: "[Image: {0}]"
+    tessdata: "      - Tessdata path: {0}"
+    vision_apikey_hint: "   💡 Hint: Set environment variable VISION_LLM_API_KEY or configure knowledge.qa.image-processing.vision-llm.api-key"
+    vision_available: "   ✅ Vision LLM strategy available"
+    vision_endpoint: "      - Endpoint: {0}"
+    vision_model: "      - Model: {0}"
+    vision_no_apikey: "   ⚠️ Vision LLM enabled but API Key not configured"
+    vision_unavailable: "   ⚠️ Vision LLM strategy unavailable"
+    position:
+      simple_desc: "Image {0}: {1}"
+      full_desc: "Image {0}: {1} (Position: {2}, Coordinates: {3},{4}, Size: {5}x{6})"
+      top: "top"
+      bottom: "bottom"
+      middle: "middle"
+      left: "left"
+      right: "right"
+      center: "center"
+  office:
+    pptx_start: "Starting to process PPTX file: {0}, total {1} slides"
+    pptx_complete: "✅ PPTX processing completed: {0}"
+    pptx_failed: "Failed to process PPTX file: {0}"
+    docx_start: "Starting to process DOCX file: {0}"
+    docx_complete: "✅ DOCX processing completed: {0}"
+    docx_failed: "Failed to process DOCX file: {0}"
+    xlsx_start: "Starting to process XLSX file: {0}, total {1} sheets"
+    xlsx_complete: "✅ XLSX processing completed: {0}"
+    xlsx_failed: "Failed to process XLSX file: {0}"
+    slide_title: "\n\n========== Slide {0} ==========\n"
+    slide_text: "【Text Content】\n"
+    sheet_title: "\n\n========== Sheet: {0} ==========\n"
+    image_section: "\n\n========== Document Images ==========\n"
+    image_content: "\n【Image Content】\n"
+    extract_image: "📷 Extracting image: {0} ({1}KB)"
+    extract_success: "✅ Image content extracted successfully: {0} -> {1} characters"
+    extract_empty: "⚠️  Image content is empty: {0}"
+    slide_images: "Slide {0} contains {1} images"
+    sheet_images: "Sheet {0} contains {1} images"
+    docx_images: "✅ Extracted {0} images from DOCX"
+    xlsx_extract_failed: "Failed to extract XLSX images"
+    process_failed: "\n[Processing failed: {0}]\n"
+    batch_config: "Batch processing config: {0} slides per batch"
+    processing_slides: "📦 Processing slides {0}-{1}/{2}"
+    use_cache: "💾 Using cache: Slide {0} ({1} images)"
+    need_process: "📸 Need to process {0} images (from {1} slides)"
+    batch_complete: "✅ Batch analysis completed: {0} images -> {1} characters"
+    cache_stats: "💾 Cache statistics: {0} cached, {1} processed, {2} total"
+    save_image: "💾 Saving image: {0} -> {1}/{2}"
+    save_image_failed: "Failed to save image: {0} - {1}"
+  kb:
+    vector_enabled: "Vector search enabled."
     progress: "Processing progress:"
     path_not_exists: "Path does not exist: {0}"
     scan_classpath: "Scanning classpath resources: {0}"
@@ -477,7 +698,7 @@ kb_service:
     exists: "📚 Existing knowledge base detected ({0} documents)"
     files_to_index: "📝 Files to index: {0}"
     final_batch: "📦 Processing final batch: {0} documents"
-    first_create: "📚 Creating knowledge base for first time"
+    first_create: "📚 Creating knowledge base for the first time"
     found_files: "✅ Found {0} document files"
     gc_before: "🗑️  Executing GC to free memory"
     hint_put_docs: "💡 Hint: Place documents in {0} directory"
@@ -492,7 +713,7 @@ kb_service:
     parallel_mode: "🚀 Using parallel processing mode ({0} threads)"
     parallel_progress: "📊 Parallel progress: {0}%"
     parallel_memory: "💾 Memory usage: {0} MB"
-    processing_file: "📄 Processing file: {0}, size: {0} KB"
+    processing_file: "📄 正在处理文件：{0}，大小：{0} KB"
     processing_start: "\n📝 Starting document processing..."
     scanning: "📂 Scanning documents: {0}"
     serial_mode: "📝 Using serial processing mode"
@@ -510,165 +731,963 @@ kb_service:
     ppl_chunking_complete: "✅ PPL chunking completed: {0} chunks"
     ppl_chunking_failed: "⚠️ PPL chunking failed, falling back to traditional chunking: {0}"
     file_item: "   - {0}"
-
-# Knowledge QA Service Logs
-log:
   kqa:
+    response_time: "\n⏱️  Response time: {0}ms"
+    build_separator: "----------------------------------------"
+    build_success: "Knowledge base build succeeded"
+    build_time: "Knowledge base build time: {0} ms"
+    build_total: "Total items processed: {0}"
+    memory_after: "Memory after build: {0} MB"
+    memory_before: "Memory before build: {0} MB"
+    tracking_saved: "KB tracking saved: {0}"
+    vector_enabled: "Vector indexing enabled: {0}"
     sep: "================================================================================="
-    init_start: "🚀 Initializing knowledge QA service"
+    # Added missing kb/log keys
+    build_complete: "Knowledge base build completed: {0}"
+    answer_header: "\n💡 Answer:"
+    build_failed: "Knowledge base build failed: {0}"
+    docs_dir_missing: "⚠️ Document directory does not exist: {0}"
+    incremental_complete: "Incremental indexing completed"
+    incremental_error: "Incremental indexing error"
+    incremental_failed: "Incremental indexing failed: {0}"
+    incremental_mode: "   🔄 Starting incremental knowledge base indexing..."
     init_done: "✅ Knowledge base Q&A system initialized successfully!"
     init_failed: "❌ Knowledge Q&A service initialization failed"
-    step: "\n🚀 Step {0}: {1}"
     init_kb: "Initializing knowledge base"
+    init_start: "🚀 Initializing knowledge Q&A service"
+    kb_not_initialized: "Knowledge base not initialized"
+    load_chunks_images_failed: "Failed to load chunks/images information"
+    more_docs_available: "ℹ️ {0} more related documents not included in this answer"
+    rebuild_complete: "Knowledge base rebuilt successfully"
+    rebuild_error: "Knowledge base rebuild error"
+    rebuild_failed: "Knowledge base rebuild failed: {0}"
     rebuild_mode: "   🚀 Starting full knowledge base rebuild..."
-    incremental_mode: "   🔄 Starting incremental knowledge base indexing..."
-    storage_path: "   - Storage path: {0}"
-    source_path: "   - Source path: {0}"
-    build_failed: "Knowledge base build failed: {0}"
-  kb:
-    vector_init_failed: "Vector search initialization failed"
+    recover_failed: "Knowledge base recovery failed"
+    recover_kb: "Recovering knowledge base"
+    reinit_complete: "Knowledge base reinitialized successfully"
+    reinit_kb: "Reinitializing knowledge base"
     scanned_files_count: "📂 Filesystem scan completed, found {0} supported documents"
     scan_failed: "❌ Filesystem scan failed"
-
-# Document QA Service Prompts
+    source_path: "   - Source path: {0}"
+    sources_header: "\n📚 Data Sources (Total {0} documents):"
+    step: "\n🚀 Step {0}: {1}"
+    storage_path: "   - Storage path: {0}"
+    system_not_initialized: "Knowledge Q&A system not initialized"
+    used_docs_count: "📚 Used {0} documents to generate this answer"
+  llm:
+    api_key_deepseek: "      - DeepSeek: export AI_API_KEY=your-deepseek-key"
+    api_key_hint: "💡 Hint: Set environment variables:"
+    api_key_missing: "⚠️ LLM API Key not configured"
+    api_key_openai: "      - OpenAI: export OPENAI_API_KEY=your-openai-key"
+    client_created: "🤖 Created {0} LLM client"
+    fallback_mock: "💡 Falling back to Mock mode"
+    model: "   - Model: {0}"
+    api_url: "   - API: {0}"
+    mock_created: "🤖 Created Mock LLM client (for testing only)"
+    mock_hint: "💡 To use real LLM, configure:"
+    mock_provider: "      knowledge.qa.llm.provider=openai"
+    mock_apikey: "      And set corresponding API Key and URL"
+    mock_warning: "⚠️ Mock mode will return fixed simulated answers"
+  memory:
+    usage: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}%)"
+    usage_phase: "Phase {0} - Memory used: {1} MB / Max: {2} MB ({3}% )"
+    warning: "Phase {0} - High memory usage: {1}%"
+    gc_trigger: "⚠️  High memory usage ({0}%), triggering garbage collection"
+    gc_done: "✅ Garbage collection completed: {0}% -> {1}%"
+  optimization:
+    chunker:
+      batch_completed: "Batch chunking completed: {0} documents -> {1} chunks"
+      chunked: "Document {0} chunked into {1} parts"
+      initialized: "DocumentChunker initialized - chunkSize: {0}, overlap: {1}, smartSplit: {2}, maxContentLength: {3}, maxChunks: {4}"
+    context:
+      built: "Smart context built: {0} chars from {1} documents ({2}% of max)"
+      initialized_with_chunker: "SmartContextBuilder initialized (with chunker): strategy={0}, maxContext={1} chars, maxDoc={2} chars, storage={3}"
+      remaining_chars: "\n[... {0} more chars not displayed, content extracted by keyword priority]"
+    memory:
+      gc_freed: "GC completed, approximately {0}MB memory freed"
+      gc_no_freed: "GC completed, no significant memory freed"
+      suggest_gc: "Suggest executing garbage collection, current memory usage: {0}MB"
+  search_dispatcher:
+    init: "✅ Search strategy dispatcher initialized with {0} strategies"
+    no_strategies: "⚠️ No search strategies registered"
+    strategy_registered: "  ✅ Registered strategy: {0} - {1} (priority: {2})"
+    selected_strategy: "🎯 Selected search strategy: {0} ({1})"
+    search_completed: "✅ Strategy {0} search completed, found {1} documents in {2}ms"
+    search_failed: "❌ Strategy {0} search failed"
+    no_suitable_strategy: "⚠️ No suitable search strategy found"
+    strategy_not_found: "⚠️ Strategy {0} not found"
+    using_strategy: "📍 Using specified strategy: {0}"
+    fallback: "⚠️ Falling back to default strategy: {0}"
+    fallback_failed: "❌ Fallback strategy also failed"
+    strategy_score: "   Strategy {0} suitability score: {1}"
+    evaluate_failed: "⚠️ Failed to evaluate strategy {0}"
+    default_changed: "📍 Default strategy changed to: {0}"
+    threshold_changed: "📍 Suitability threshold changed to: {0}"
+    strategy_added: "✅ Dynamically registered strategy: {0}"
+  score_fusion:
+    init: "✅ Score fusion service initialized with {0} contributors"
+    no_contributors: "⚠️ No score contributors registered"
+    contributor_registered: "  ✅ Registered contributor: {0} (weight: {1}, priority: {2})"
+    no_enabled_contributors: "⚠️ No enabled score contributors"
+    zero_weight: "⚠️ All contributor weights are zero"
+    contributor_done: "   Contributor {0} done, {1} scores in {2}ms"
+    contributor_failed: "❌ Contributor {0} execution failed"
+    contributor_added: "✅ Dynamically added contributor: {0}"
+    contributor_removed: "✅ Removed contributor: {0}"
+  score_contributor:
+    lucene:
+      done: "   Lucene scoring done, {0} documents"
+    vector:
+      no_engine: "Vector engine not available, skipping vector scoring"
+      done: "   Vector scoring done, {0} documents"
+    feedback:
+      disabled: "Feedback service not available, skipping feedback scoring"
+      done: "   Feedback scoring done, {0} documents"
+  strategy:
+    hybrid:
+      completed: "✅ Hybrid strategy search completed, {0} documents"
+    keyword:
+      completed: "✅ Keyword strategy search completed, {0} documents"
+    vector:
+      no_engine: "Vector engine not available"
+      completed: "✅ Vector strategy search completed, {0} documents"
+  qa:
+    archive:
+      init: "Initializing QA archiving service"
+    archive_failed: "QA archiving failed"
+    archived: "High-rated QA archived: rating={0}, Path={1}"
+    document_feedback: "Document feedback {0} [{1}]: {2} - {3}"
+    feedback_applied: "Feedback applied to document weight: {0}"
+    feedback_pending: "Feedback pending review: {0}"
+    find_failed: "Failed to find record: {0}"
+    load_failed: "Failed to load QA records: {0}"
+    marked_as_quality: "QA record marked as high-quality content: [{0}]"
+    overall_rating_submitted: "Overall rating submitted {0} [{1}]: {2} stars"
+    pending_failed: "Failed to retrieve pending review records"
+    rating_applied: "Star rating applied to document weight: {0} ({1} stars -> Adjustment {2})"
+    rating_pending: "Star rating pending review: {0} ({1} stars)"
+    rating_submitted: "Star rating submitted {0} [{1}]: {2} - {3} stars (Weight adjustment: {4})"
+    recent_failed: "Failed to retrieve recent records"
+    record_notfound: "Record not found: {0}"
+    record_save_failed: "Failed to save QA record"
+    record_saved: "QA record saved: {0} - {1}"
+    record_update_failed: "Failed to update QA record: {0}"
+    record_updated: "QA record updated: {0}"
+    records_dir: "QA records storage directory: {0}"
+    records_dir_failed: "Failed to create QA records directory: {0}"
+    stats_failed: "Failed to calculate QA statistics"
+    user_feedback: "User feedback [{0}]: Rating={1}, Content={2}"
+  rag:
+    batch_indexed: "Batch indexed {0} documents"
+    cache_hit: "Query result from cache: {0}"
+    closed: "Local File RAG closed successfully"
+    close_error: "Error while closing Local File RAG"
+    closing: "Closing Local File RAG..."
+    delete_failed: "Failed to delete document: {0}"
+    deleted_count: "{0} documents deleted"
+    deleting_all: "Deleting all documents..."
+    doc_deleted: "Document deleted: {0}"
+    doc_indexed: "Document indexed successfully: {0}"
+    doc_updated: "Document updated: {0}"
+    enable_cache: "Cache enabled: {0}"
+    enable_compression: "Compression enabled: {0}"
+    found_to_delete: "Found {0} documents to delete"
+    init: "Local File RAG initialized successfully"
+    init_done: "Local File RAG initialized successfully"
+    load_content_failed: "Failed to load document content: {0}"
+    loaded_content: "Document content loaded: {0}, Length: {1}"
+    no_documents: "No documents to delete"
+    optimized: "Index optimization completed"
+    optimizing: "Optimizing index..."
+    search_completed: "Search completed, Time taken: {0}ms, Found {1} results"
+    simple_init: "Initializing simple RAG service..."
+    simple_init_done: "Simple RAG service initialized successfully"
+    storage: "Storage path: {0}"
+  filetracking:
+    loaded: "File tracking loaded with {0} entries."
+    load_failed: "Failed to load file tracking: {0}"
+    saved: "File tracking saved with {0} entries."
+    save_failed: "Failed to save file tracking: {0}"
+    check_failed: "Failed to check file tracking for {0}"
+    mark_failed: "Failed to mark file as indexed: {0}"
+    clear_failed: "Failed to clear file tracking: {0}"
+    cleared: "File tracking cleared."
+  model:
+    checking: "🔍 Checking model files..."
+    dir_and_file: "📂 Model directory and files are ready"
+    found: "✅ Model found: {0}"
+    passed: "✅ Model check passed"
+    sep: "===================================================="
+  storage:
+    ai_image_analyzer_init: "Initializing AI image analyzer: enabled={0}, model={1}"
+    chunk_storage_init: "Initializing document chunk storage service, Path: {0}"
+    document_image_extraction_init: "Initializing document image extraction service: AI analysis={0}"
+    image_storage_init: "Initializing image storage service, Path: {0}"
+  optimizer:
+    commit: "Committing optimizer changes"
+    done: "Optimization completed"
+    optimize: "Optimizing index"
+    saving_vectors: "Saving vector index..."
+    vectors_saved: "Vector index saved: {0} vectors"
+    save_failed: "Failed to save vector index"
+    embedding_closed: "Embedding engine closed"
+  tika:
+    init: "Tika Document Parser initialized."
+    max_content: "Max content length: {0} MB"
+    extract_image_metadata: "Extract image metadata: {0}"
+    include_image_placeholders: "Include image placeholders: {0}"
+    active_image_strategy: "Active image strategy: {0}"
+    ocr_config: "OCR configuration details:"
+    enable_ocr: "Enable OCR: {0}"
+    tessdata: "Tesseract data path: {0}"
+    not_set: "Not set"
+    ocr_language: "OCR language: {0}"
+    ocr_disabled: "OCR is disabled: {0}"
+    file_not_exists: "File does not exist: {0}"
+    detected_mime: "Detected MIME type: {0}, filename: {1}"
+    office_pptx: "Processing PPTX file: {0}"
+    office_docx: "Processing DOCX file: {0}"
+    office_xlsx: "Processing XLSX file: {0}"
+    office_done: "Office file processed: {0}, content length: {1}"
+    parsed_file: "File parsed: {0}, content length: {1}"
+    parse_failed: "File parsing failed: {0}"
+    image_section_start: "\nImage metadata:\n"
+    image_item: "Image {0}: {1} = {2}\n"
+    embedded_section: "\nEmbedded resources:\n"
+    embedded_item: "Embedded resource count: {0}\n"
+    image_placeholder: "[Image placeholder {0}]"
+    empty_bytes: "Byte array is empty."
+    parsed_bytes: "Byte array parsed, MIME type: {0}, content length: {1}"
+    parse_bytes_failed: "Byte array parsing failed, MIME type: {0}"
+    detect_failed: "MIME type detection failed: {0}"
+vector_index:
+  log:
+    init: "✅ Simple vector index engine initialized"
+    index_path: "   - Index path: {0}"
+    dimension: "   - Vector dimension: {0}"
+    current_count: "   - Current vector count: {0}"
+    search_method: "   - Search method: Linear scan (suitable for <100K)"
+    add_vector: "Add vector: docId={0}, dim={1}"
+    batch_add: "Batch added {0} vectors"
+    index_empty: "Index is empty, returning empty result"
+    search_complete: "Vector search completed: scanned={0}, filtered={1}, found={2}, time={3}ms"
+    delete_vector: "Delete vector: docId={0}"
+    save_start: "Start saving vector index..."
+    save_complete: "✅ Vector index saved: {0} vectors, file size: {1} KB"
+    load_start: "Start loading vector index..."
+    load_complete: "✅ Vector index loaded: {0} vectors"
+    clear_complete: "✅ Vector index cleared"
+  error:
+    dimension_mismatch: "Vector dimension mismatch: expected {0}, actual {1}"
+    query_dimension_mismatch: "Query vector dimension mismatch: expected {0}, actual {1}"
+    vector_dimension_mismatch: "Vector dimension mismatch"
+    index_dimension_mismatch: "Vector dimension mismatch: index={0}, expected={1}"
+# LLM Result Document Service
+llm_result:
+  log:
+    result_saved: "✅ LLM result saved: {0} -> {1}"
+    save_failed: "Failed to save LLM result"
+    read_failed: "Failed to read document: {0}"
+    pdf_not_implemented: "PDF export not implemented, returning Markdown bytes"
+    document_deleted: "✅ Document deleted: {0}"
+    delete_failed: "Failed to delete document: {0}"
+    download_image_failed: "Failed to download image: {0}"
+    add_to_kb: "📚 Auto-added to knowledge base: {0}"
+  error:
+    save_failed: "Failed to save LLM result: {0}"
+  markdown:
+    generated_time: "Generated Time"
+    source_document: "Source Document"
+    analysis_question: "Analysis Question"
+    analysis_type: "Analysis Type"
+    key_points: "📌 Key Points"
+    related_images: "🖼️ Related Images"
+    image_number: "Image {0}"
+    footer: "This document was generated by AI intelligent analysis"
+# Document Parser
+doc_parser:
+  log:
+    ppt_parsing: "📊 Parsing PPT document: {0}"
+    ppt_slide_count: "Slide count: {0}"
+    ppt_parse_complete: "PPT parsing complete: {0} segments"
+    pdf_parsing: "📄 Parsing PDF document: {0}"
+    pdf_page_count: "Page count: {0}"
+    pdf_parse_complete: "PDF parsing complete: {0} segments"
+    word_parsing: "📝 Parsing Word document: {0}"
+    word_parse_complete: "Word parsing complete: {0} segments"
+    parse_failed: "Document parsing failed: {0}"
+  error:
+    unsupported_format: "Unsupported document format: {0}"
+    file_not_found: "File not found: {0}"
+    parse_error: "Parse error: {0}"
+# Token Estimator
+token_estimator:
+  log:
+    estimate_complete: "Token estimate: {0} chars ≈ {1} tokens"
+# LLM Result Collector
+llm_collector:
+  log:
+    qa_result_saved: "✅ QA result auto-saved"
+    qa_collect_failed: "Failed to collect QA result"
+    doc_analysis_saved: "✅ Document analysis result auto-saved"
+    doc_analysis_collect_failed: "Failed to collect document analysis result"
+    image_analysis_saved: "✅ Image analysis result auto-saved"
+    image_analysis_collect_failed: "Failed to collect image analysis result"
+    session_start: "📝 Session collection started: {0} ({1})"
+    session_not_found: "Session not found: {0}"
+    session_add: "➕ Added to session {0}: {1}"
+    session_empty: "Session is empty or not found: {0}"
+    session_saved: "✅ Session results saved: {0} ({1} segments)"
+    session_save_failed: "Failed to save session results: {0}"
+    session_cancelled: "❌ Session cancelled: {0}"
+  title:
+    qa_prefix: "Q&A: "
+    doc_analysis_prefix: "Document Analysis: "
+    image_analysis: "Image Analysis"
+    progressive_analysis: "Progressive Analysis"
+  section:
+    analysis_process: "Analysis Process"
+    comprehensive_summary: "Comprehensive Summary"
+# ============================================================
+# PPL Service Configuration (PPLConfiguration)
+# ============================================================
+ppl:
+  log:
+    onnx_init_start: "🚀 Initializing ONNX PPL service..."
+    onnx_init_success: "✅ ONNX PPL service initialized successfully"
+    onnx_init_failed: "❌ ONNX PPL service initialization failed: {0}"
+    facade_init_start: "🚀 Initializing PPL service facade..."
+    facade_init_success: "✅ PPL service facade initialized successfully, default provider: {0}"
+# ============================================================
+# DocumentManagementController
+# ============================================================
+doc_management:
+  log:
+    pagination: "Pagination: Page {0}, {1} items per page, total {2} pages, returning {3} items"
+    sort_complete: "Sorting completed: {0} {1}"
+    search_mode_failed: "Search mode '{0}' processing failed: {1}"
+    date_filter_failed: "Date filter processing failed: {0}"
+    delete_document: "Deleting document: {0}"
+    delete_failed: "Failed to delete document"
+    download_document: "Downloading document: {0}"
+    filename_bytes: "Filename bytes: {0}"
+    find_path: "Finding path: {0}"
+    file_not_exists: "❌ File does not exist: {0} (Path: {1})"
+    possible_reasons: "💡 Possible reasons:"
+    reason_deleted: "   1. File only exists in knowledge base index but source file has been deleted"
+    reason_special_chars: "   2. Filename contains special characters causing path parsing error"
+    reason_not_uploaded: "   3. File was never uploaded to documents directory"
+    file_not_readable: "File is not readable: {0}"
+    download_failed: "Failed to download document: {0}"
+    batch_download: "Batch downloading documents: {0} items"
+    filename_list: "Filename list: {0}"
+    find_file: "Finding file: {0} -> {1}"
+    added_to_zip: "Added to ZIP: {0}"
+    file_not_exists_skip: "File does not exist, skipping: {0} (Path: {1})"
+    add_to_zip_failed: "Failed to add file to ZIP: {0}"
+    temp_zip_deleted: "Temporary ZIP file deleted: {0}"
+    delete_temp_zip_failed: "Failed to delete temporary ZIP file: {0}"
+    batch_download_failed: "Batch download failed"
+    get_file_types: "Retrieving list of uploaded document file types"
+    get_file_types_failed: "Failed to retrieve file type list"
+    get_file_types_success: "Successfully retrieved file type list, total {0} types"
+    get_file_types_error: "Failed to retrieve file type list: {0}"
+# ============================================================
+# DocumentQAController and DocumentQAService
+# ============================================================
 doc_qa:
   log:
-    create_temp_dir: "Creating document QA temp directory: {0}"
-    create_temp_dir_failed: "Failed to create temp directory"
+    receive_request: "Received document QA request: Document={0}, Parse path={1}, Question={2}"
+    qa_failed: "Document QA failed"
+    ppt_request: "Received PPT progressive analysis request: Document={0}, Parse path={1}, Question={2}"
+    ppt_failed: "PPT analysis failed"
+    cleanup_failed: "Failed to clean up session"
+    create_temp_dir: "Creating document QA temporary directory: {0}"
+    create_temp_dir_failed: "Failed to create temporary directory"
     start_qa: "📄 Starting document QA: {0} (Session ID: {1})"
     question: "❓ Question: {0}"
     batch_mode: "📦 Document is large, enabling batch processing mode"
     direct_mode: "📝 Document is small, processing directly"
-    qa_complete: "✅ Document QA completed: {0} (Time: {1}ms)"
+    qa_complete: "✅ Document QA completed: {0} (Elapsed time: {1}ms)"
     qa_error: "❌ Document QA failed"
-    direct_start: "📄 Starting direct document analysis (without knowledge base): Document={0}, Session ID={1}"
-    direct_question: "❓ Analysis question: {0}"
-    direct_content_length: "📏 Document content length: {0} characters"
-    direct_exceed_limit: "📦 Document content exceeds limit ({0}), using memo mechanism for batch processing"
-    direct_full_analysis: "📝 Direct full document analysis"
-    direct_split_batches: "📦 Document split into {0} batches for analysis"
-    direct_process_batch: "🔄 Processing batch {0}/{1}, content length: {2} characters"
-    direct_complete: "✅ Direct document analysis completed: Document={0}, Time={1}ms"
-    direct_failed: "❌ Direct document analysis failed"
+    direct_process_failed: "Failed to process document directly"
     split_batches: "📦 Document split into {0} batches"
     process_batch: "🔄 Processing batch {0}/{1} (Size: {2} characters)"
     batch_key_points: "💡 Batch {0} key information extracted ({1} characters)"
     batch_complete: "✅ Batch {0}/{1} processing completed"
+    batch_process_failed: "Failed to process document in batches"
+    generate_summary: "📊 Starting final summary generation..."
+    summary_complete: "✅ Final summary generation completed ({0} characters)"
+    generate_summary_failed: "Failed to generate final summary"
+    batch_result_saved: "💾 Batch result saved: {0}"
+    save_batch_failed: "Failed to save batch result"
+    report_saved: "📊 Final report saved: {0}"
+    save_report_failed: "Failed to save final report"
+    temp_file_deleted: "🗑️ Temporary file deleted: {0}"
+    delete_temp_failed: "Failed to delete temporary file: {0}"
+    file_process_failed: "File processing failed"
+    doc_analysis_request: "📄 Received document analysis request: {0}, Question: {1}"
+    # Direct analysis (without knowledge base) related
+    direct_start: "📄 Starting direct document analysis (without knowledge base): Document={0}, Session ID={1}"
+    direct_question: "❓ Analysis question: {0}"
+    direct_content_length: "📏 Document content length: {0} characters"
+    direct_exceed_limit: "📦 Document content exceeds limit ({0}), using memo mechanism for batch processing"
+    direct_full_analysis: "📝 Performing full document analysis directly"
+    direct_split_batches: "📦 Document split into {0} batches for analysis"
+    direct_process_batch: "🔄 Processing batch {0}/{1}, content length: {2} characters"
+    direct_complete: "✅ Direct document analysis completed: Document={0}, Elapsed time={1}ms"
+    direct_failed: "❌ Direct document analysis failed"
+    # Document parsing related
+    read_text_file: "📝 Reading text file directly: {0}"
+    parse_with_utils: "🔍 Parsing document with DocumentUtils: {0}"
+    parse_empty_fallback: "⚠️ Document parsing result is empty, trying direct read: {0}"
+    parse_success: "✅ Document parsed successfully: {0}, content length: {1} characters"
+    parse_failed_fallback: "⚠️ DocumentUtils parsing failed, trying direct read: {0}, error: {1}"
     analysis_failed: "Analysis failed"
     final_report_failed: "Failed to generate final report"
-    direct_process_failed: "Failed to process document directly"
+# ============================================================
+# DocumentProgressiveAnalysisController
+# ============================================================
+doc_progressive_ctrl:
+  log:
+    receive_request: "📄 Received document analysis request: {0}, Question: {1}"
+    file_process_failed: "File processing failed"
+# ============================================================
+# PPTProgressiveAnalysisService
+# ============================================================
+ppt_analysis:
+  log:
+    start_analysis: "📊 Starting progressive PPT analysis: {0} ({1} slides)"
+    analyze_slide: "🔍 Analyzing slide {0}/{1}"
+    slide_complete: "✅ Slide {0} analysis completed, key points: {1}"
+    analysis_complete: "🎉 PPT progressive analysis completed, elapsed time: {0}ms"
+    analysis_failed: "PPT analysis failed"
+    slide_failed: "Slide {0} analysis failed"
+    generate_summary: "📊 Generating comprehensive PPT summary..."
+    direct_llm_summary: "📝 Directly calling LLM to generate final summary"
+    summary_complete: "✅ Comprehensive summary generation completed"
+    summary_failed: "Failed to generate comprehensive summary"
+# ============================================================
+# SearchConfigService
+# ============================================================
+search_config:
+  log:
+    lucene_updated: "✅ Dynamic configuration updated: luceneTopK = {0}"
+    vector_updated: "✅ Dynamic configuration updated: vectorTopK = {0}"
+    hybrid_updated: "✅ Dynamic configuration updated: hybridTopK = {0}"
+    docs_per_query_updated: "✅ Dynamic configuration updated: documentsPerQuery = {0}"
+    min_score_updated: "✅ Dynamic configuration updated: minScoreThreshold = {0}"
+    batch_update_complete: "✅ Batch configuration update completed"
+    reset_to_default: "✅ Configuration reset to default values (yml configuration)"
+# ============================================================
+# SlideContentCacheService
+# ============================================================
+slide_cache:
+  log:
+    init_success: "✅ Slide cache service initialized"
+    create_cache_dir: "Creating slide cache directory: {0}"
+    init_failed: "Failed to initialize slide cache"
+    save_failed: "Failed to save slide cache"
+    hash_failed: "Failed to calculate slide hash"
+    clear_failed: "Failed to clear cache"
+    delete_ppt_cache_failed: "Failed to delete PPT cache"
+    load_cache_index: "Loading slide cache index: {0} PPT files"
+    load_cache_index_failed: "Failed to load cache index, new index will be created"
+    save_cache_index: "Saving slide cache index: {0} PPT files"
+# SimilarQAService
+# ============================================================
+similar_qa:
+  log:
+    no_valid_keywords: "No valid keywords in query question: {0}"
+    query_keywords: "Query keywords: {0}"
+# ============================================================
+# DocumentPreprocessingService
+# ============================================================
+doc_preprocess:
+  log:
+    ppl_disabled: "📦 PPL service not enabled"
+    ppl_enabled: "✅ PPL service enabled"
+# ============================================================
+# KnowledgeQAService Supplement
+# ============================================================
+knowledge_qa_extra:
+  log:
+    vector_init_failed_warning: "⚠️ Vector search initialization failed, system will only use text search functionality"
+    model_incomplete_hint: "💡 Hint: embedding model file is incomplete or corrupted"
+    solutions: "📝 Solutions:"
+    solution_disable_vector: "   1. Set knowledge.qa.vector-search.enabled: false in application.yml"
+    solution_download_model: "   2. Or download complete ONNX model files (including .onnx and .onnx_data files)"
+# ============================================================
+# KnowledgeBaseService
+# ============================================================
+kb_service_extra:
+  log:
+    slide_cache_init: "✅ Slide cache service initialized"
+# ============================================================
+# LLMResultDocumentController
+# ============================================================
+llm_result_ctrl:
+  log:
+    save_failed: "Failed to save result"
+    batch_save_failed: "Batch save failed"
+# ============================================================
+# DocumentMemoManagerImpl
+# ============================================================
+memo_manager:
+  log:
+    start_document: "📄 Starting document analysis: {0} (Total {1} segments)"
+    add_segment: "📝 Adding segment analysis: {0} - {1}"
+    mark_independent: "⭐ Marked as independent important entry: {0}"
+    user_mark_important: "⭐ User marked segment {0} as important"
+    recall_memos: "📋 Recalled {0} related memos, total {1} tokens"
+    skip_compress: "⏭️ Skipping compression: {0} (Already sufficiently concise)"
+    llm_compress_complete: "✅ LLM compression completed: {0} -> {1} tokens"
+    llm_compress_failed: "⚠️ LLM compression failed, using truncation: {0}"
+    memo_cleared: "🧹 Memos cleared"
+    export_json_failed: "Failed to export JSON"
+    move_to_long_term: "📦 Moved to long-term memos: {0} ({1} tokens)"
+    remove_old_entry: "🗑️ Removed old entry: {0}"
+    new_document: "📄 Starting new document: {0}"
+    segment_added: "📝 Added segment {0}: {1}"
+    memo_entry_created: "📌 Created memo entry: {0}"
+    context_built: "📋 Context construction completed: {0} short-term memories, {1} memos"
+# ============================================================
+# DocumentProgressiveAnalysisService
+# ============================================================
+doc_progressive:
+  log:
+    start_analysis: "📚 Starting progressive document analysis: {0} (Parser: {1})"
+    total_segments: "📄 Total {0} segments in document"
+    analyze_segment: "🔍 Analyzing segment {0}/{1}: {2}"
+    stage_output: "📊 Generating stage output: {0}"
+    segment_complete: "✅ Segment {0} analysis completed"
+    analysis_complete: "🎉 Document analysis completed, elapsed time: {0}ms"
+    analysis_failed: "Document analysis failed: {0}"
+    segment_failed: "Segment {0} analysis failed"
+    generate_summary: "📊 Generating comprehensive document summary..."
+    summary_complete: "✅ Comprehensive summary generation completed"
+    summary_failed: "Failed to generate comprehensive summary"
+    unsupported_type: "Unsupported document type: {0}"
+    analyzing_segment: "Analyzing segment {0}/{1}: {2}"
+    segment_analysis_complete: "Segment analysis completed"
+    generating_summary: "Generating final summary..."
   error:
-    document_not_found: "Document not found: {0}"
-    processing_failed: "Document processing failed"
+    unsupported_type: "Unsupported document type: {0}"
   prompt:
-    analysis_task: "# Document Analysis Task\\n\\n"
-    document_info: "## Document Information\\n"
-    filename: "- Filename: {0}\\n"
-    content_length: "- Content Length: {0} characters\\n\\n"
-    user_question: "## User Question\\n"
-    full_content: "## Full Document Content\\n"
-    analysis_requirements: "\\n\\n## Analysis Requirements\\n"
-    req_read_content: "1. Carefully read the complete document content above\\n"
-    req_answer_question: "2. Directly answer the user's question based on the document content\\n"
-    req_structured_answer: "3. Provide a structured, organized answer\\n"
-    req_quote_data: "4. If there is key data, please quote accurately\\n"
-    req_organize_content: "5. Use headings, lists, etc. to organize content\\n"
-    batch_analysis_task: "# Document Batch Analysis Task\\n\\n"
-    background_info: "## Background Information\\n"
-    current_batch: "## Current Batch Content\\n"
-    analysis_req: "## Analysis Requirements\\n"
-    req_analyze_current: "1. Carefully analyze the content of the current batch\\n"
-    req_combine_memory: "2. Understand the overall context by combining with previous key points\\n"
-    req_extract_key: "3. Extract the 3-5 most important key information from this batch\\n"
-    req_focus_question: "4. Focus on content related to the user's question\\n"
-    req_keep_open: "5. This is not the final part, keep it open-ended\\n"
-    req_final_summary: "5. This is the final part, can provide a complete summary\\n"
-    output_format: "\\nPlease output in the following format:\\n"
-    output_format_analysis: "### Current Batch Analysis\\n[Your analysis]\\n\\n"
-    output_format_key: "### Key Points\\n[Use - to list 3-5 key points]\\n\\n"
-    previous_memory: "## Key Points from Previous Content (Memory Context)\\n"
-    final_summary_task: "# Document Analysis Final Summary Task\\n\\n"
-    background_summary: "## Background\\n"
-    background_description: "You have completed analyzing all content of a document in batches, now need to generate a final comprehensive report.\\n\\n"
-    doc_info: "## Document Information\\n"
-    analysis_batches: "- Number of analysis batches: {0}\\n\\n"
-    key_points_summary: "## Key Points Summary from All Batches\\n"
-    current_part: "### Part {0}\\n"
-    final_requirements: "## Generation Requirements\\n"
-    req_overall_understand: "1. **Overall Understanding**: Synthesize key information from all batches\\n"
-    req_answer_question_directly: "2. **Answer Question**: Answer the user's question directly and clearly\\n"
-    req_structure_clear: "3. **Clear Structure**: Use headings, lists, etc. to organize content\\n"
-    req_extract_core: "4. **Extract Core**: Highlight the 3-5 most core viewpoints\\n"
-    req_coherent_expression: "5. **Coherent Expression**: Ensure content is coherent and logically smooth\\n"
-    generate_final_report: "Please generate the final comprehensive analysis report:\\n"
+    segment_analysis: |
+      You are analyzing a document segment by segment.
 
-# Query Expansion Service
-query_expansion:
-  init: "📊 Query expansion service initialized: {} synonym entries, {} stopwords"
-  reverse_index: "🔄 Synonym reverse index built: {} entries"
+      ## Current Progress
+      Progress: {0}/{1} ({2}%)
+
+      ## Historical Key Points
+      {3}
+
+      ## Current Segment
+      Title: {4}
+      Content: {5}
+
+      ## User Question
+      {6}
+
+      Please analyze the core content of the current segment and extract key points.
+    final_summary: |
+      Please generate a complete summary report based on the following analysis points.
+
+      ## User Question
+      {0}
+
+      ## Segment Analysis Points
+      {1}
+
+      Please generate a well-structured and comprehensive summary report.
+# ============================================================
+# KeywordInvertedIndex
+# ============================================================
+keyword_index:
   log:
-    init: "Query expansion service initialized: {} synonym entries, {} stopwords"
-    reverse_index: "Synonym reverse index built: {} entries"
-    expand_query: "Expanding query: {}"
-    add_synonyms: "Adding synonyms: {}"
-    llm_rewrite_success: "LLM rewrite successful: {}"
-    llm_rewrite_failed: "LLM rewrite failed: {}"
-    synonym_replace: "Synonym replacement: {} -> {}"
-    filter_stopwords: "Filtering stopwords: {}"
-    add_phrases: "Adding phrases: {}"
-    expansion_complete: "Query expansion completed: {} -> {}"
-
-# Active Learning Service
-active_learning:
+    index_entry: "Index entry: {0} ({1} keywords)"
+    index_cleared: "Keyword index cleared"
+    index_built: "🔍 Keyword index construction completed: {0} entries"
+    search_complete: "Search completed: {0} matches found"
+# ============================================================
+# MemoAggregator
+# ============================================================
+memo_aggregator:
   log:
-    init: "Active learning service initialized"
-    recommendation_generated: "Generated active learning recommendations: uncertain={}, potential={}, history={}"
-    uncertain_docs_found: "Found uncertain documents: {}"
-    potential_docs_found: "Found potentially relevant documents: {}"
-    history_recommendations: "History-based recommendations: {}"
-    confidence_calculated: "Recommendation confidence: {}"
-    reason_generated: "Generated recommendation reason: {}"
-    save_history: "Saved query history: {}"
-    cache_updated: "Updated query cache: {}"
-
-# Log Related
-log:
-  image:
-    service:
-      init: "Image extraction service initialized: extractors={}, AI analysis enabled={}"
-      extract_failed: "Failed to extract images: {}"
-      start: "Starting image extraction: {}"
-      no_extractor: "No extractor found for document type: {}"
-      using_extractor: "Using extractor: {}"
-      no_images: "No images found in document: {}"
-      extracted: "Extracted image count: {}"
-      saved: "Saved image: {} (type: {}, size: {}KB)"
-      save_failed: "Failed to save image: {}"
-      success: "Image extraction completed: {} images (document: {})"
-      failed: "Image extraction failed: {}"
-  query_expansion:
-    init: "Query expansion service initialized: {} synonym entries, {} stopwords"
-    reverse_index: "Synonym reverse index built: {} entries"
-    expand_query: "Expanding query: {}"
-    add_synonyms: "Adding synonyms: {}"
-    llm_rewrite_success: "LLM rewrite successful: {}"
-    llm_rewrite_failed: "LLM rewrite failed: {}"
-    synonym_replace: "Synonym replacement: {} -> {}"
-    filter_stopwords: "Filtering stopwords: {}"
-    add_phrases: "Adding phrases: {}"
-    expansion_complete: "Query expansion completed: {} -> {}"
+    aggregate_by_topic: "Aggregating by topic: {0} entries -> {1} topic groups"
+    llm_aggregate_failed: "LLM aggregation failed, using simple aggregation: {0}"
+    aggregation_start: "🔄 Starting memo aggregation: {0} entries"
+    aggregation_complete: "✅ Aggregation completed: {0} -> {1} entries"
+    merge_similar: "Merging similar entries: {0} entries -> 1 entry"
+    compress_large: "Compressing large entry: {0} characters -> {1} characters"
+# ============================================================
+# MemoDocumentExporter
+# ============================================================
+memo_exporter:
+  log:
+    export_json_failed: "Failed to export JSON"
+    exported_to: "Memos exported to: {0}"
+    export_markdown: "📄 Exporting Markdown: {0}"
+    export_json: "📋 Exporting JSON: {0}"
+    export_html: "🌐 Exporting HTML: {0}"
+    export_failed: "Export failed: {0}"
+  title:
+    document_memo: "Document Analysis Memos"
+    key_points: "Key Points"
+    memo_entries: "Memo Entries"
+    generated_by: "Generated by AI Intelligent Analysis System"
+# ============================================================
+# RelevanceRecallService
+# ============================================================
+relevance_recall:
+  log:
+    recall_complete: "📌 Recalled {0} relevant entries, total tokens: {1}"
+# ============================================================
+# StageOutputManagerImpl
+# ============================================================
+stage_output:
+  log:
+    generate_output: "📊 Generating stage output ({0}%)"
+    output_complete: "✅ Stage output generation completed: {0}"
+    manager_cleared: "🧹 Stage output manager cleared"
+    generate_failed: "Failed to generate stage summary, using simple summary: {0}"
+    stage_checkpoint: "📍 Stage checkpoint: {0}%"
+    stage_summary_saved: "💾 Stage summary saved: Stage {0}"
+    final_summary_saved: "📋 Final summary saved"
+  title:
+    stage_summary: "Stage Summary ({0}%)"
+    final_summary: "Final Summary"
+# ============================================================
+# DocumentParserFactory
+# ============================================================
+parser_factory:
+  log:
+    registered_parsers: "📚 {0} document parsers registered"
+    select_parser: "Selecting parser: {0} for {1}"
+    no_parser_found: "No supported parser found: {0}"
+    register_parser: "Registering parser: {0} - {1}"
+# ============================================================
+# PDFDocumentParser
+# ============================================================
+pdf_parser:
+  log:
+    parse_file: "📄 Parsing PDF file: {0} ({1} pages)"
+    parse_page: "  Parsing page {0}: {1} ({2} characters)"
+    parse_failed: "Failed to parse PDF file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+    content_truncated: "...[Content truncated due to length]"
+  title:
+    default_page: "Page {0}"
+# ============================================================
+# PPTDocumentParser
+# ============================================================
+ppt_parser:
+  log:
+    parse_file: "📊 Parsing PPT file: {0} ({1} slides)"
+    parse_slide: "  Parsing slide {0}: {1}"
+    parse_failed: "Failed to parse PPT file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+  title:
+    default_slide: "Slide {0}"
+  content:
+    image_info: "[Image: {0}, Type: {1}]"
+    table_header: "[Table]"
+# ============================================================
+# WordDocumentParser
+# ============================================================
+word_parser:
+  log:
+    parse_file: "📝 Parsing Word file: {0}"
+    parse_chapter: "  Parsing chapter {0}: {1} ({2} characters)"
+    parse_complete: "✅ Word file parsing completed: {0} segments"
+    parse_failed: "Failed to parse Word file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+  title:
+    continued: "Continued..."
+    default_content: "Document Content"
+# ============================================================
+# PPL ONNX Service
+# ============================================================
+ppl_onnx:
+  log:
+    init_start: "🚀 Initializing ONNX PPL Service..."
+    model_path: "📦 Model path: {0}"
+    tokenizer_path: "📦 Tokenizer path: {0}"
+    env_created: "✅ ONNX Runtime environment created"
+    model_loaded: "✅ ONNX model loaded from: {0}"
+    tokenizer_loaded: "✅ Tokenizer loaded from: {0}"
+    cache_init: "✅ PPL cache initialized (size: {0}, TTL: {1}s)"
+    init_success: "✅ ONNX PPL Service initialized successfully"
+    init_failed: "❌ Failed to initialize ONNX PPL Service"
+    shutdown_start: "🛑 Shutting down ONNX PPL Service..."
+    session_closed: "✅ ONNX session closed"
+    tokenizer_closed: "✅ Tokenizer closed"
+    cache_cleared: "✅ PPL cache cleared"
+    shutdown_success: "✅ ONNX PPL Service shut down successfully"
+    shutdown_error: "Error during shutdown"
+    calc_ppl_failed: "Failed to calculate perplexity for text: {0}"
+    health_check_failed: "Health check failed"
+    rerank_detail: "📊 PPL Rerank - Doc: {0} | Original: {1} | PPL: {2} | PPL Score: {3} | Final: {4}"
+  error:
+    init_failed: "ONNX initialization failed"
+    calc_ppl_failed: "Failed to calculate perplexity"
+    chunk_failed: "Failed to chunk document"
+    rerank_failed: "Failed to rerank documents"
+# ============================================================
+# Search Strategy Framework
+# ============================================================
+strategy:
+  search:
+    hybrid:
+      name: "Hybrid Search Strategy"
+      description: "Combines Lucene keyword search and vector semantic search, suitable for most scenarios"
+    keyword:
+      name: "Keyword Search Strategy"
+      description: "Uses only Lucene keyword search, suitable for exact match scenarios"
+    vector:
+      name: "Vector Search Strategy"
+      description: "Uses only vector semantic search, suitable for semantic similarity scenarios"
+  dispatcher:
+    log:
+      init_start: "📦 Initializing Strategy Dispatcher..."
+      strategy_registered: "  ✅ Registered strategy: {0} - {1}"
+      init_complete: "✅ Strategy Dispatcher initialized with {0} strategies"
+      no_suitable_strategy: "No suitable strategy found"
+      selected_strategies: "🎯 Selected strategies: {0}"
+      executing_single: "Executing single strategy: {0}"
+      executing_combined: "Executing combined strategies: {0}"
+      merging_results: "Merging analysis results..."
+      evaluate_failed: "Failed to evaluate strategy {0}: {1}"
+  abstract:
+    log:
+      analysis_start: "🚀 Starting analysis, strategy: {0}, documents: {1}"
+      analysis_complete: "✅ Analysis completed, strategy: {0}, time: {1}ms"
+      analysis_failed: "❌ Analysis failed, strategy: {0}"
+      llm_call_failed: "LLM call failed"
+  parallel_summary:
+    log:
+      generating_summaries: "Generating document summaries in parallel..."
+      summary_progress: "Completed {0}/{1} document summaries"
+      generating_report: "Generating comprehensive analysis report..."
+      summary_failed: "Failed to generate document summary: {0}"
+      parallel_failed: "Parallel summary generation failed"
+    error:
+      no_documents: "No document content to analyze"
+      summary_failed: "Summary generation failed"
+      document_empty: "Document content is empty"
+  structured_compare:
+    log:
+      preparing_content: "Preparing document contents..."
+      executing_comparison: "Executing comparison analysis..."
+      extracting_results: "Extracting comparison results..."
+    error:
+      min_documents: "Comparison analysis requires at least 2 documents"
+  entity_relation:
+    log:
+      extracting_entities: "Extracting document entities..."
+      analyzing_relations: "Analyzing entity relationships..."
+      building_graph: "Building relationship graph..."
+    error:
+      min_documents: "Relationship analysis requires at least 2 documents"
+  question_driven:
+    log:
+      retrieving_content: "Retrieving relevant content..."
+      generating_answer: "Generating answer..."
+      organizing_results: "Organizing results..."
+    error:
+      no_documents: "No documents to analyze"
+# ============================================================
+# Smart Analysis Service
+# ============================================================
+smart_analysis:
+  log:
+    loaded_from_slide_cache: "📦 Loaded PPT content from slide cache: {0} ({1} chars)"
+    no_slide_cache: "No slide cache found for: {0}"
+    load_slide_cache_failed: "Failed to load from slide cache: {0}"
+    start: "📊 Starting smart analysis, documents: {0}, goal: {1}"
+    complete: "✅ Smart analysis completed, success: {0}, time: {1}ms"
+    failed: "❌ Smart analysis failed"
+    loading_documents: "Loading document contents..."
+    document_loaded: "Loaded document: {0} ({1} characters)"
+    document_not_found: "Document not found: {0}"
+    document_load_failed: "Failed to load document: {0}"
+    document_truncated: "Document {0} content truncated: {1} -> {2} characters"
+    no_documents_loaded: "Unable to load any document content"
+  error:
+    file_not_found: "File not found: {0}"
+    binary_file: "Binary file, cannot parse text content"
+    parse_failed: "Cannot parse document: {0}"
+score_contributor:
+  lucene:
+    description: "Score contribution based on Lucene keyword matching"
+  vector:
+    description: "Score contribution based on vector semantic similarity"
   feedback:
-    weight_disabled: "Dynamic weight adjustment disabled"
-    weight_updated: "Document weight updated: {} weight={} (likes:{}, dislikes:{})"
-  qa:
-    record_saved: "QA record saved: {} (file: {})"
-    save_failed: "Failed to save QA record"
-
-# Active Learning Service Feedback
-active_learning:
-  feedback:
-    relevant: "relevant"
-    irrelevant: "irrelevant"
-    processed: "🎯 Active learning feedback: {} -> {} ({})"
+    description: "Score adjustment based on user feedback weights"
+# ============================================================
+# Document Parser Service
+# ============================================================
+doc_parser_service:
   log:
-    potential_doc_reason: "This document has received high ratings in the past but did not appear in current search results"
+    parse_failed: "Document parsing failed {0}: {1}"
+  error:
+    file_not_found: "File not found: {0}"
+    binary_file: "Binary file, cannot parse text content"
+    parse_failed: "Cannot parse document: {0}"
+
+# ============================================================
+# Chunking Strategy
+# ============================================================
+chunking_strategy:
+  simple:
+    initialized: "📝 Using simple chunking strategy (fallback)"
+    completed: "📝 Simple chunking completed: {0} chunks"
+  ppl:
+    initialized: "✅ PPL Chunking Strategy enabled"
+    unavailable: "PPL Chunking Strategy unavailable"
+  llm:
+    initialized: "✅ LLM Chunking Strategy enabled"
+    using_custom_template: "   Using custom prompt template"
+    using_default_template: "   Using default prompt template"
+    unavailable: "LLM Chunking Strategy unavailable"
+    start: "🤖 Starting LLM intelligent chunking, document length: {0} characters"
+    doc_small: "📝 Document is small, no chunking needed"
+    doc_large: "📚 Large document, using segmented strategy"
+    doc_medium: "📖 Medium document, direct LLM chunking"
+    completed: "✅ LLM chunking completed: {0} chunks, time: {1}ms"
+    failed: "❌ LLM chunking failed"
+    calling_llm: "🤖 Calling LLM for chunking analysis..."
+    no_valid_chunks: "⚠️ LLM returned no valid chunks, using original text"
+    fallback_warning: "⚠️ LLM chunking failed, falling back to simple chunking: {0}"
+    coarse_split: "📑 Large document coarsely split into {0} segments"
+    processing_segment: "   Processing segment {0}/{1}, length: {2}"
+    using_fallback: "📝 Using fallback chunking strategy"
+  factory:
+    initialized: "📦 Chunking strategy factory initialized"
+    ppl_available: "   - PPL Service: Available"
+    ppl_unavailable: "   - PPL Service: Unavailable"
+    llm_available: "   - LLM Client: Available"
+    llm_unavailable: "   - LLM Client: Unavailable"
+    unknown_strategy: "⚠️ Unknown strategy type: {0}, using default strategy"
+    auto_select_llm: "🤖 Auto-selected: LLM chunking strategy"
+    auto_select_ppl: "📊 Auto-selected: PPL chunking strategy"
+    fallback_simple: "⚠️ Both PPL and LLM unavailable, using simple chunking strategy"
+
+# ============================================================
+# HOPE Three-Layer Memory Architecture
+# ============================================================
+hope:
+  # Permanent Layer
+  permanent:
+    disabled: "🔒 HOPE permanent layer disabled"
+    init_success: "✅ HOPE permanent layer initialized, skill templates: {0}, factual knowledge: {1}"
+    init_failed: "❌ HOPE permanent layer initialization failed"
+    skill_saved: "💾 Skill template saved: {0} - {1}"
+    factual_saved: "💾 Factual knowledge saved: {0}"
+    skill_hit: "🎯 Skill template hit: {0}"
+    factual_hit: "🎯 Factual knowledge hit: {0}"
+    factual_disabled: "⚠️ Factual knowledge disabled due to low satisfaction: {0}"
+    persist_failed: "❌ Failed to persist data"
+    load_failed: "❌ Failed to load data"
+    skills_loaded: "📦 Loaded {0} skill templates"
+    facts_loaded: "📦 Loaded {0} factual knowledge entries"
+
+  # Ordinary Layer - Phase 2
+  ordinary:
+    disabled: "🔒 HOPE ordinary layer disabled"
+    init_success: "✅ HOPE ordinary layer initialized, loaded {0} recent QAs"
+    init_failed: "❌ HOPE ordinary layer initialization failed"
+    saved: "💾 Recent QA saved: {0}, rating: {1}"
+    updated: "📝 Recent QA updated: {0}"
+    direct_hit: "🎯 Ordinary layer direct hit: {0}, similarity: {1}"
+    reference_hit: "📚 Ordinary layer reference hit: {0}, similarity: {1}"
+    cleaned: "🧹 Cleaned {0} expired QAs"
+    promote_failed: "❌ Promotion failed: {0}"
+    persist_failed: "❌ Ordinary layer persist failed"
+    load_failed: "❌ Ordinary layer load failed"
+    loaded: "📦 Loaded {0} recent QAs"
+
+  # High-frequency Layer - Phase 3
+  high_frequency:
+    disabled: "🔒 HOPE high-frequency layer disabled"
+    init_success: "✅ HOPE high-frequency layer initialized, max sessions: {0}, timeout: {1}min"
+    session_created: "📝 New session created: {0}"
+    context_updated: "📝 Session context updated: {0}, turns: {1}"
+    context_found: "🔍 Session context found: {0}"
+    definition_added: "📖 Temp definition added: {0} (session: {1})"
+    auto_definition: "🔍 Auto-extracted definition: {0}"
+    session_cleared: "🧹 Session cleared: {0}"
+
+  # Manager
+  manager:
+    disabled: "⚠️ HOPE system disabled"
+    learn_success: "✅ Learning successful: question=\"{0}\", rating={1}"
+    learn_failed: "❌ Learning failed"
+    promote_attempted: "📤 Attempting promotion to permanent layer: {0}"
+
+  # Query related
+  query:
+    classified: "📋 Question classified: type={0}, complexity={1}, confidence={2}"
+    direct_hit: "🚀 Permanent layer direct hit, confidence: {0}"
+    completed: "✅ HOPE query completed: {0}, source={1}, time={2}ms"
+    error: "❌ HOPE query error"
+    needs_llm: "🔄 Needs LLM processing"
+
+  # Strategy related
+  strategy:
+    direct_answer: "🚀 Strategy: Direct answer (source: {0}, confidence: {1})"
+    template_answer: "📝 Strategy: Template enhanced (template: {0})"
+    reference_answer: "📚 Strategy: Reference enhanced (similarity: {0})"
+    full_rag: "🔍 Strategy: Full RAG"
+    decided: "🎯 Response strategy decided: {0}"
+
+  # Learning related
+  learn:
+    recorded: "📝 Learning record saved, rating: {0}"
+    error: "❌ Failed to save learning record"
+    promoted: "⬆️ Knowledge promoted to permanent layer: {0}"
+
+  # Monitor Service - Phase 4
+  monitor:
+    init_success: "📊 HOPE monitor service initialized"
+    hourly_report: "📊 HOPE hourly performance report"
+    metrics_reset: "🔄 HOPE metrics reset"
+    report_title: "=== HOPE Performance Report ({0}) ==="
+    total_queries: "Total Queries: {0}"
+    direct_answers: "Direct Answers: {0} ({1}%)"
+    llm_savings: "LLM Savings Rate: {0}%"
+    avg_response: "Avg Response Time: {0}ms"
+    permanent_hits: "Permanent Layer Hits: {0}"
+    ordinary_hits: "Ordinary Layer Hits: {0}"
+    high_freq_hits: "High-freq Layer Hits: {0}"
+
+  # LLM Integration
+  llm:
+    integration_enabled: "🔗 HOPE LLM integration enabled, underlying model: {0}"
+    direct_answer: "⚡ HOPE direct answer, source: {0}, time: {1}ms"
+    template_used: "📝 Using skill template: {0}"
+    reference_used: "📚 Using similar QA references: {0} items"
+
+  # Quality Service
+  quality:
+    low_confidence: "⚠️ Low confidence knowledge: {0}"
+    stale_knowledge: "⚠️ Stale knowledge: {0}"
+    high_error: "⚠️ High error rate knowledge: {0}"
+  # Answer Comparison
+  comparison:
+    feedback:
+      received: "Comparison feedback received: comparisonId={0}, choice={1}"
+      success: "✅ Comparison feedback submitted successfully"
+    submit:
+      failed: "❌ Failed to submit comparison feedback"
+    analysis:
+      failed: "Difference analysis failed"
+    not:
+      found: "Comparison record not found"
+    stats:
+      not:
+        found: "Vote statistics not found"
