@@ -1691,3 +1691,20 @@ hope:
     stats:
       not:
         found: "投票统计未找到"
+
+storage_engine:
+  log:
+    initialized: "文件系统存储引擎已初始化，基础路径：{0}"
+    failed_init_dirs: "初始化存储目录失败"
+    document_with_same_content: "发现相同内容的文档，ID: {0}"
+    document_stored: "文档已存储，ID: {0}"
+    failed_store: "存储文档失败"
+    failed_store_batch: "批量存储文档失败，ID: {0}"
+    document_file_not_found: "文档文件不存在: {0}"
+    failed_retrieve: "检索文档失败，ID: {0}"
+    document_deleted: "文档已删除，ID: {0}"
+    failed_delete: "删除文档失败，ID: {0}"
+  error:
+    failed_init_storage_dirs: "初始化存储目录失败"
+    failed_store_document: "存储文档失败"
+    failed_retrieve_document: "检索文档失败，ID: {0}"
