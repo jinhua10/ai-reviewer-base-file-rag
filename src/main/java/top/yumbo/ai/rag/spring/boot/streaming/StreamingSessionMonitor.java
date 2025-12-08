@@ -57,6 +57,22 @@ public class StreamingSessionMonitor {
     }
 
     /**
+     * 获取会话
+     * (Get session)
+     */
+    public StreamingSession getSession(String sessionId) {
+        return activeSessions.get(sessionId);
+    }
+
+    /**
+     * 用户主动中断
+     * (User interrupts actively)
+     */
+    public void onUserInterrupt(String sessionId) {
+        onClientDisconnect(sessionId, "用户中断 (User interrupt)");
+    }
+
+    /**
      * 客户端断开连接时调用
      * (Called when client disconnects)
      */

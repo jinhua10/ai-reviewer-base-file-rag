@@ -1677,3 +1677,17 @@ hope:
     low_confidence: "⚠️ 低置信度知识: {0}"
     stale_knowledge: "⚠️ 过时知识: {0}"
     high_error: "⚠️ 高错误率知识: {0}"
+  # 答案对比学习 (Answer Comparison)
+  comparison:
+    feedback:
+      received: "收到对比反馈: comparisonId={0}, choice={1}"
+      success: "✅ 对比反馈已提交成功"
+    submit:
+      failed: "❌ 提交对比反馈失败"
+    analysis:
+      failed: "差异分析失败"
+    not:
+      found: "对比记录未找到"
+    stats:
+      not:
+        found: "投票统计未找到"

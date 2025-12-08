@@ -1,0 +1,373 @@
+/**
+ * LLM Streaming Answer Component Styles / LLM 流式答案组件样式
+ * @author AI Reviewer Team
+ * @since 2025-12-09
+ */
+
+/* ==========================================================================
+   Container / 容器
+   ========================================================================== */
+
+.llm-streaming-answer {
+    background: linear-gradient(135deg, #e6f3ff 0%, #fff 100%);
+    border: 2px solid #4a90e2;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+    transition: all 0.3s;
+}
+
+.llm-streaming-answer:hover {
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.25);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   Header / 头部
+   ========================================================================== */
+
+.llm-answer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #4a90e2;
+}
+
+.llm-answer-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+/* Status Badge (状态徽章) */
+.llm-status-badge {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.llm-status-connecting {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.llm-status-active {
+    background: #dbeafe;
+    color: #1e40af;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.llm-status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.llm-status-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.llm-status-interrupted {
+    background: #fed7aa;
+    color: #9a3412;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* ==========================================================================
+   Content / 内容
+   ========================================================================== */
+
+.llm-answer-content {
+    min-height: 120px;
+    position: relative;
+}
+
+/* Streaming Indicator (流式指示器) */
+.llm-streaming-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 0;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.typing-dots span {
+    width: 8px;
+    height: 8px;
+    background: #4a90e2;
+    border-radius: 50%;
+    animation: typing 1.4s ease-in-out infinite;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+/* Answer Text (答案文本) */
+.llm-answer-text {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #4a90e2;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1f2937;
+}
+
+.llm-answer-text p {
+    margin: 0 0 12px 0;
+}
+
+.llm-answer-text p:last-child {
+    margin-bottom: 0;
+}
+
+.llm-answer-text h1,
+.llm-answer-text h2,
+.llm-answer-text h3,
+.llm-answer-text h4 {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    color: #111827;
+}
+
+.llm-answer-text code {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #dc2626;
+}
+
+.llm-answer-text pre {
+    background: #1f2937;
+    color: #f3f4f6;
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 12px 0;
+}
+
+.llm-answer-text pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+}
+
+.llm-answer-text ul,
+.llm-answer-text ol {
+    margin: 12px 0;
+    padding-left: 24px;
+}
+
+.llm-answer-text li {
+    margin: 6px 0;
+}
+
+/* Empty State (空状态) */
+.llm-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    background: #dbeafe;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.llm-empty-state p {
+    margin: 0;
+    font-size: 15px;
+    color: #1e40af;
+    font-weight: 500;
+}
+
+/* Error State (错误状态) */
+.llm-error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 120px;
+    background: #fee2e2;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.llm-error-state p {
+    margin: 0;
+    font-size: 15px;
+    color: #991b1b;
+    font-weight: 500;
+}
+
+.llm-retry-button {
+    padding: 8px 20px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.llm-retry-button:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Footer / 底部
+   ========================================================================== */
+
+.llm-answer-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #93c5fd;
+}
+
+.llm-metadata-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.llm-metadata-icon {
+    font-size: 16px;
+}
+
+/* Streaming Progress (流式进度) */
+.llm-streaming-progress {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a90e2, #2563eb, #4a90e2);
+    background-size: 200% 100%;
+    animation: progressAnimation 2s linear infinite;
+}
+
+@keyframes progressAnimation {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 200% 0%;
+    }
+}
+
+/* ==========================================================================
+   Dark Mode Support / 深色模式支持
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .llm-streaming-answer {
+        background: linear-gradient(135deg, #1a2332 0%, #1e1e1e 100%);
+        border-color: #3b82f6;
+    }
+
+    .llm-answer-header {
+        border-bottom-color: #3b82f6;
+    }
+
+    .llm-answer-header h3 {
+        color: #60a5fa;
+    }
+
+    .llm-answer-text {
+        background: #2a2a2a;
+        border-left-color: #3b82f6;
+        color: #e0e0e0;
+    }
+
+    .llm-answer-text h1,
+    .llm-answer-text h2,
+    .llm-answer-text h3,
+    .llm-answer-text h4 {
+        color: #f3f4f6;
+    }
+
+    .llm-answer-text code {
+        background: #374151;
+        color: #fca5a5;
+    }
+
+    .llm-answer-text pre {
+        background: #111827;
+    }
+
+    .llm-empty-state {
+        background: #1e3a5f;
+    }
+
+    .llm-empty-state p {
+        color: #93c5fd;
+    }
+
+    .llm-error-state {
+        background: #3a1f1f;
+    }
+
+    .llm-error-state p {
+        color: #fca5a5;
+    }
+
+    .llm-metadata-item {
+        color: #9ca3af;
+    }
+
+    .progress-bar {
+        background: #374151;
+    }
+}
+

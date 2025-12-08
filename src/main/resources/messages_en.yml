@@ -1677,3 +1677,17 @@ hope:
     low_confidence: "⚠️ Low confidence knowledge: {0}"
     stale_knowledge: "⚠️ Stale knowledge: {0}"
     high_error: "⚠️ High error rate knowledge: {0}"
+  # Answer Comparison
+  comparison:
+    feedback:
+      received: "Comparison feedback received: comparisonId={0}, choice={1}"
+      success: "✅ Comparison feedback submitted successfully"
+    submit:
+      failed: "❌ Failed to submit comparison feedback"
+    analysis:
+      failed: "Difference analysis failed"
+    not:
+      found: "Comparison record not found"
+    stats:
+      not:
+        found: "Vote statistics not found"

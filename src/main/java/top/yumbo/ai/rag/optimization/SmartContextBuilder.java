@@ -1,11 +1,14 @@
 package top.yumbo.ai.rag.optimization;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import top.yumbo.ai.rag.chunking.ChunkingConfig;
 import top.yumbo.ai.rag.chunking.ChunkingStrategy;
 import top.yumbo.ai.rag.chunking.DocumentChunk;
 import top.yumbo.ai.rag.chunking.DocumentChunker;
 import top.yumbo.ai.rag.chunking.DocumentChunkerFactory;
+import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.Document;
 import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
  * @since 2025-11-22
  */
 @Slf4j
+@Component
 public class SmartContextBuilder {
 
     private static final int DEFAULT_MAX_CONTEXT_LENGTH = 8000;  // 总上下文限制
@@ -47,8 +51,17 @@ public class SmartContextBuilder {
     private final int maxDocLength;
     private final boolean preserveFullContent;  // 是否保留完整内容
     private final DocumentChunker chunker;       // 文档切分器（新增）
-    private top.yumbo.ai.rag.chunking.storage.ChunkStorageService chunkStorageService;  // 文档块存储服务
+    private ChunkStorageService chunkStorageService;  // 文档块存储服务
     private String currentDocumentId;            // 当前处理的文档ID
+
+    /**
+     * Spring 自动装配构造函数
+     */
+    @Autowired
+    public SmartContextBuilder(
+            @Autowired(required = false) ChunkStorageService chunkStorageService) {
+        this(DEFAULT_MAX_CONTEXT_LENGTH, DEFAULT_MAX_DOC_LENGTH, true, null, null, null, chunkStorageService);
+    }
 
     public SmartContextBuilder() {
         this(DEFAULT_MAX_CONTEXT_LENGTH, DEFAULT_MAX_DOC_LENGTH, true);

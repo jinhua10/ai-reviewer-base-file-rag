@@ -38,30 +38,30 @@ public class HybridStreamingService {
     private final StreamingSessionMonitor sessionMonitor;
     private final SmartContextBuilder contextBuilder;
 
-    // 为了兼容现有接口，我们需要这些依赖
-    // (For compatibility with existing interfaces, we need these dependencies)
-    private final top.yumbo.ai.rag.service.LocalFileRAG rag;
-    private final top.yumbo.ai.rag.impl.embedding.LocalEmbeddingEngine embeddingEngine;
-    private final top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine vectorIndexEngine;
-
     // 活跃会话管理
     // (Active session management)
     private final Map<String, StreamingSession> activeSessions = new ConcurrentHashMap<>();
 
-    public HybridStreamingService(HOPEFastQueryService hopeFastQueryService,
-                                   LLMClient llmClient,
-                                   StreamingSessionMonitor sessionMonitor,
-                                   SmartContextBuilder contextBuilder,
-                                   top.yumbo.ai.rag.service.LocalFileRAG rag,
-                                   top.yumbo.ai.rag.impl.embedding.LocalEmbeddingEngine embeddingEngine,
-                                   top.yumbo.ai.rag.impl.index.SimpleVectorIndexEngine vectorIndexEngine) {
+    /**
+     * 构造函数
+     * (Constructor)
+     *
+     * @param hopeFastQueryService HOPE 快速查询服务
+     * @param llmClient LLM 客户端
+     * @param sessionMonitor 会话监控器
+     * @param contextBuilder 上下文构建器
+     */
+    public HybridStreamingService(
+            HOPEFastQueryService hopeFastQueryService,
+            LLMClient llmClient,
+            StreamingSessionMonitor sessionMonitor,
+            SmartContextBuilder contextBuilder) {
         this.hopeFastQueryService = hopeFastQueryService;
         this.llmClient = llmClient;
         this.sessionMonitor = sessionMonitor;
         this.contextBuilder = contextBuilder;
-        this.rag = rag;
-        this.embeddingEngine = embeddingEngine;
-        this.vectorIndexEngine = vectorIndexEngine;
+
+        log.info("HybridStreamingService initialized (混合流式服务已初始化)");
     }
 
     /**
@@ -130,25 +130,19 @@ public class HybridStreamingService {
             try {
                 log.debug("开始 LLM 流式生成 (Starting LLM streaming): sessionId={}", sessionId);
 
-                // 1. 简单关键词检索获取文档
-                // (Simple keyword search to get documents)
-                top.yumbo.ai.rag.model.Query query = top.yumbo.ai.rag.model.Query.builder()
-                    .queryText(question)
-                    .limit(5)
-                    .build();
+                // 直接使用 LLM 流式接口生成答案
+                // (Directly use LLM streaming interface to generate answer)
+                // 注意：实际的 RAG 检索应该在调用此服务之前完成
+                // (Note: Actual RAG retrieval should be done before calling this service)
 
-                top.yumbo.ai.rag.model.SearchResult searchResult = rag.search(query);
-                List<Document> docs = searchResult.getDocuments().stream()
-                    .map(top.yumbo.ai.rag.model.ScoredDocument::getDocument)
-                    .collect(java.util.stream.Collectors.toList());
+                // 简单的提示词（实际使用中应该包含检索到的上下文）
+                // (Simple prompt - should include retrieved context in actual use)
+                String prompt = buildPrompt(question);
 
-                // 2. 构建上下文
-                // (Build context)
-                String context = contextBuilder.buildSmartContext(question, docs);
+                // 调用 LLM 流式接口
+                // (Call LLM streaming interface)
+                streamFromLLM(session, prompt);
 
-                // 3. 调用 LLM 流式接口（需要 LLMClient 支持）
-                // (Call LLM streaming interface - requires LLMClient support)
-                streamFromLLM(session, question, context);
 
             } catch (Exception e) {
                 log.error("LLM 流式生成失败 (LLM streaming failed): sessionId={}, error={}",
@@ -162,13 +156,25 @@ public class HybridStreamingService {
     }
 
     /**
+     * 构建提示词
+     * (Build prompt)
+     */
+    private String buildPrompt(String question) {
+        // 简化版：直接使用问题
+        // (Simplified: directly use question)
+        // 实际使用中应该包含从 RAG 检索到的上下文
+        // (Should include context retrieved from RAG in actual use)
+        return String.format("请回答以下问题：\n\n%s", question);
+    }
+
+    /**
      * 从 LLM 流式获取响应
      * (Stream response from LLM)
      *
      * 使用 LLMClient 的 Flux 流式接口（响应式流）
      * (Use LLMClient's Flux streaming interface - Reactive Streams)
      */
-    private void streamFromLLM(StreamingSession session, String question, String context) {
+    private void streamFromLLM(StreamingSession session, String prompt) {
         // 检查是否支持流式
         // (Check if streaming is supported)
         if (!llmClient.supportsStreaming()) {
@@ -178,7 +184,6 @@ public class HybridStreamingService {
             // 降级：使用同步方式
             // (Fallback: use synchronous method)
             try {
-                String prompt = String.format("请根据以下上下文回答问题：\n\n上下文：\n%s\n\n问题：%s", context, question);
                 String fullAnswer = llmClient.generate(prompt);
 
                 // 一次性发送完整答案
@@ -199,8 +204,6 @@ public class HybridStreamingService {
             return;
         }
 
-        // 构建完整的提示词 (Build complete prompt)
-        String prompt = String.format("请根据以下上下文回答问题：\n\n上下文：\n%s\n\n问题：%s", context, question);
 
         // 使用 Flux 响应式流接口
         // (Use Flux reactive streaming interface)

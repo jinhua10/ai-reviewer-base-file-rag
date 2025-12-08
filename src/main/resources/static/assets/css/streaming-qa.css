@@ -1,0 +1,170 @@
+/**
+ * Streaming QA Component Styles / 流式问答组件样式
+ * @author AI Reviewer Team
+ * @since 2025-12-09
+ */
+
+/* ==========================================================================
+   Container / 容器
+   ========================================================================== */
+
+.streaming-qa-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ==========================================================================
+   Question Section / 问题部分
+   ========================================================================== */
+
+.streaming-question-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+}
+
+.streaming-question-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.streaming-input-group {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.streaming-question-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.streaming-question-input:focus {
+    outline: none;
+    border-color: #4a90e2;
+}
+
+.streaming-ask-button {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+    min-width: 120px;
+}
+
+.streaming-ask-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.streaming-ask-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Response Container / 响应容器
+   ========================================================================== */
+
+.streaming-response-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+    .streaming-response-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================================
+   Error Display / 错误显示
+   ========================================================================== */
+
+.streaming-error {
+    background: #fff3f3;
+    border: 1px solid #ffcccc;
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.streaming-error p {
+    margin: 0;
+    color: #d93025;
+    font-size: 14px;
+}
+
+/* ==========================================================================
+   Animations / 动画
+   ========================================================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.streaming-response-container > * {
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* ==========================================================================
+   Dark Mode Support / 深色模式支持
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .streaming-question-section {
+        background: #1e1e1e;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .streaming-question-section h2 {
+        color: #e0e0e0;
+    }
+
+    .streaming-question-input {
+        background: #2a2a2a;
+        border-color: #404040;
+        color: #e0e0e0;
+    }
+
+    .streaming-question-input:focus {
+        border-color: #667eea;
+    }
+
+    .streaming-error {
+        background: #3a1f1f;
+        border-color: #7a3333;
+    }
+
+    .streaming-error p {
+        color: #ff6b6b;
+    }
+}
+

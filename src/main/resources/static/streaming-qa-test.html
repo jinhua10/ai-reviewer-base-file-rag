@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流式问答测试页面 - Streaming QA Test Page</title>
+
+    <!-- CSS Styles -->
+    <link rel="stylesheet" href="/assets/css/streaming-qa.css">
+    <link rel="stylesheet" href="/assets/css/hope-answer-card.css">
+    <link rel="stylesheet" href="/assets/css/llm-streaming-answer.css">
+    <link rel="stylesheet" href="/assets/css/comparison-feedback.css">
+
+    <!-- External Libraries -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Highlight.js for code highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+    <!-- Language Module (i18n) -->
+    <script src="/js/lang/lang.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .test-page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-page-header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .test-page-header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .language-switcher {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .language-switcher button {
+            padding: 8px 16px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .language-switcher button:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        #streaming-qa-root {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .test-info {
+            background: #fff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .test-info h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .test-info ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .test-info li {
+            padding: 4px 0;
+            color: #666;
+        }
+
+        .test-info li::before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1a1a1a;
+                color: #e0e0e0;
+            }
+
+            .test-info {
+                background: #2a2a2a;
+            }
+
+            .test-info li {
+                color: #b0b0b0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="test-page-header">
+        <h1>🚀 流式问答测试页面</h1>
+        <p>Streaming QA Test Page - Dual-Track Response (HOPE + LLM)</p>
+    </div>
+
+    <!-- Language Switcher -->
+    <div class="language-switcher">
+        <button id="lang-switch-btn" onclick="toggleLanguage()">🌐 English</button>
+    </div>
+
+    <!-- Test Info -->
+    <div id="streaming-qa-root">
+        <div class="test-info">
+            <h3>📋 测试说明 (Test Instructions)</h3>
+            <ul>
+                <li>输入问题后点击"提问"按钮</li>
+                <li>HOPE 快速答案将在 &lt;300ms 内显示</li>
+                <li>LLM 详细答案将实时流式生成</li>
+                <li>回答完成后可以进行对比反馈</li>
+                <li>支持中英文切换（点击右上角按钮）</li>
+                <li>支持深色模式（自动检测系统设置）</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Language Module Initialization -->
+    <script>
+        // Initialize language module
+        if (typeof window.LanguageModule === 'undefined') {
+            console.error('❌ Language module not loaded!');
+            window.LanguageModule = {
+                useTranslation: () => ({
+                    t: (key) => key
+                }),
+                getCurrentLanguage: () => 'zh',
+                setLanguage: (lang) => console.log('Set language:', lang)
+            };
+        }
+
+        // Toggle language
+        function toggleLanguage() {
+            const currentLang = window.LanguageModule.getCurrentLanguage();
+            const newLang = currentLang === 'zh' ? 'en' : 'zh';
+            window.LanguageModule.setLanguage(newLang);
+
+            const btn = document.getElementById('lang-switch-btn');
+            btn.textContent = newLang === 'zh' ? '🌐 English' : '🌐 中文';
+
+            // Force re-render
+            location.reload();
+        }
+
+        console.log('✅ Test page loaded successfully');
+    </script>
+
+    <!-- Load Components -->
+    <script type="text/babel" src="/js/components/streaming/HOPEAnswerCard.jsx"></script>
+    <script type="text/babel" src="/js/components/streaming/LLMStreamingAnswer.jsx"></script>
+    <script type="text/babel" src="/js/components/streaming/ComparisonFeedback.jsx"></script>
+    <script type="text/babel" src="/js/components/streaming/StreamingQA.jsx"></script>
+
+    <!-- Render Component -->
+    <script type="text/babel">
+        // Wait for all components to load
+        setTimeout(() => {
+            const rootElement = document.getElementById('streaming-qa-root');
+
+            if (!rootElement) {
+                console.error('❌ Root element not found!');
+                return;
+            }
+
+            if (typeof StreamingQA === 'undefined') {
+                console.error('❌ StreamingQA component not loaded!');
+                return;
+            }
+
+            console.log('✅ Rendering StreamingQA component...');
+
+            const root = ReactDOM.createRoot(rootElement);
+            root.render(React.createElement(StreamingQA, null));
+
+            console.log('✅ StreamingQA component rendered successfully');
+        }, 500);
+    </script>
+</body>
+</html>
+
