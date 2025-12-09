@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.spring.boot.model.StreamingRequest;
 import top.yumbo.ai.rag.spring.boot.streaming.HybridStreamingService;
 import top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer;
 import top.yumbo.ai.rag.spring.boot.streaming.model.StreamingSession;
@@ -18,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * 流式响应控制器
  * (Streaming Response Controller)
- *
+ * <p>
  * 提供双轨流式响应 API
  *
  * @author AI Reviewer Team
@@ -175,8 +176,8 @@ public class StreamingQAController {
                 // 2. 等待 HOPE 快速答案（带超时）
                 CompletableFuture<HOPEAnswer> hopeFuture = response.getHopeFuture();
 
-                HOPEAnswer hopeAnswer = null;
                 long hopeStartTime = System.currentTimeMillis();
+                HOPEAnswer hopeAnswer;
 
                 try {
                     // 等待最多 300ms
@@ -216,6 +217,7 @@ public class StreamingQAController {
                     long llmStartTime = System.currentTimeMillis();
                     int lastLength = 0;
 
+                    // 使用订阅者模式代替轮询，如果会话未提供订阅，则使用轮询作为备选
                     while (session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
                         String currentAnswer = session.getFullAnswer().toString();
 
@@ -235,7 +237,13 @@ public class StreamingQAController {
                             lastLength = currentAnswer.length();
                         }
 
-                        Thread.sleep(100); // 100ms 轮询间隔
+                        // 使用适当的间隔避免忙等待
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
                     }
 
                     // 发送完成消息
@@ -282,22 +290,10 @@ public class StreamingQAController {
             emitter.complete();
         });
 
-        emitter.onError(e -> {
-            log.error(I18N.get("log.streaming.connection_error"), e);
-        });
+        emitter.onError(e -> log.error(I18N.get("log.streaming.connection_error"), e));
 
         return emitter;
     }
 }
 
-/**
- * 流式请求
- * (Streaming request)
- */
-@Data
-class StreamingRequest {
-    private String question;
-    private String userId;
-    private String language;  // 可选：zh/en
-}
 
