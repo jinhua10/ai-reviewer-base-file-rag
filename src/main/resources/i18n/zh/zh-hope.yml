@@ -1,0 +1,44 @@
+# 中文 HOPE 消息
+# 文件: src/main/resources/i18n/zh/zh-hope.yml
+
+hope:
+  # 层名称 (Layer names)
+  layer:
+    permanent: "低频层 (技能知识库)"
+    ordinary: "中频层 (近期知识)"
+    high_frequency: "高频层 (实时上下文)"
+
+  # 直接回答 (Direct answer)
+  direct_answer_success: "🚀 HOPE 直接回答成功！来源: {0}, 响应时间: {1}ms"
+  reference_used: "📚 HOPE 参考知识: {0}"
+
+  # 监控标签 (Monitor labels)
+  monitor:
+    title: "HOPE 三层记忆架构"
+    subtitle: "智能知识缓存与学习系统"
+    disabled: "HOPE 系统未启用"
+
+    # 指标 (Metrics)
+    llm_savings: "LLM 节省率"
+    direct_answers: "直接回答"
+    avg_response: "平均响应"
+    total_queries: "总查询数"
+
+    # 三层统计 (Layer stats)
+    layer_stats: "三层命中统计"
+    permanent_hits: "低频层命中"
+    ordinary_hits: "中频层命中"
+    high_freq_hits: "高频层命中"
+
+    # 建议 (Suggestions)
+    suggestions: "优化建议"
+    test_query: "测试 HOPE 查询"
+    reset_metrics: "重置指标"
+
+  # 策略 (Strategy)
+  strategy:
+    direct_answer: "直接回答"
+    template_answer: "模板回答"
+    reference_answer: "参考回答"
+    full_rag: "完整 RAG"
+

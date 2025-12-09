@@ -1,0 +1,44 @@
+# English HOPE Messages
+# File: src/main/resources/i18n/en/en-hope.yml
+
+hope:
+  # Layer names
+  layer:
+    permanent: "Permanent Layer (Skill Knowledge)"
+    ordinary: "Ordinary Layer (Recent Knowledge)"
+    high_frequency: "High-frequency Layer (Real-time Context)"
+
+  # Direct answer
+  direct_answer_success: "🚀 HOPE direct answer success! Source: {0}, Response time: {1}ms"
+  reference_used: "📚 HOPE reference knowledge: {0}"
+
+  # Monitor labels
+  monitor:
+    title: "HOPE Three-Layer Memory"
+    subtitle: "Intelligent Knowledge Cache & Learning System"
+    disabled: "HOPE System Disabled"
+
+    # Metrics
+    llm_savings: "LLM Savings"
+    direct_answers: "Direct Answers"
+    avg_response: "Avg Response"
+    total_queries: "Total Queries"
+
+    # Layer stats
+    layer_stats: "Layer Hit Statistics"
+    permanent_hits: "Permanent Hits"
+    ordinary_hits: "Ordinary Hits"
+    high_freq_hits: "High-freq Hits"
+
+    # Suggestions
+    suggestions: "Optimization Suggestions"
+    test_query: "Test HOPE Query"
+    reset_metrics: "Reset Metrics"
+
+  # Strategy
+  strategy:
+    direct_answer: "Direct Answer"
+    template_answer: "Template Answer"
+    reference_answer: "Reference Answer"
+    full_rag: "Full RAG"
+

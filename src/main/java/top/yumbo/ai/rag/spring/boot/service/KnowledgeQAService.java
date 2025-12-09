@@ -584,15 +584,28 @@ public class KnowledgeQAService {
             // 设置会话ID，支持分页引用
             aiAnswer.setSessionId(sessionId);
 
-            // 从 HOPEEnhancedLLMClient 获取 HOPE 信息
-            // (Get HOPE info from HOPEEnhancedLLMClient)
+            // 从 HOPEEnhancedLLMClient 获取 HOPE 信息 (Get HOPE info from HOPEEnhancedLLMClient)
             HOPEEnhancedLLMClient.LastQuery lastQuery = HOPEEnhancedLLMClient.getLastQuery();
             if (lastQuery != null) {
                 aiAnswer.setHopeSource(lastQuery.getHopeSource());
                 aiAnswer.setDirectAnswer(lastQuery.isDirectAnswer());
-                aiAnswer.setStrategyUsed(lastQuery.isDirectAnswer() ? "DIRECT_ANSWER" : "FULL_RAG");
+                aiAnswer.setHopeConfidence(lastQuery.getConfidence());
+                aiAnswer.setStrategyUsed(lastQuery.getStrategyUsed());
+
+                // 如果是 HOPE 直接回答，在答案前添加标识 (If HOPE direct answer, add badge)
+                if (lastQuery.isDirectAnswer()) {
+                    long hopeResponseTime = lastQuery.getResponseTime();
+                    String hopeLayer = getHopeLayerName(lastQuery.getHopeSource());
+
+                    log.info(I18N.get("hope.direct_answer_success", hopeLayer, hopeResponseTime));
+
+                    // 在答案前添加 HOPE 标识 (Add HOPE badge before answer)
+                    // 不修改原答案，只设置 HOPE 字段，由前端展示
+                } else {
+                    log.info(I18N.get("hope.reference_used", lastQuery.getHopeSource()));
+                }
             } else {
-                // 如果没有 HOPE 信息，使用默认值
+                // 如果没有 HOPE 信息，使用默认值 (If no HOPE info, use defaults)
                 aiAnswer.setStrategyUsed("FULL_RAG");
                 aiAnswer.setDirectAnswer(false);
             }
@@ -1247,7 +1260,7 @@ public class KnowledgeQAService {
     }
 
     /**
-     * 保存问答记录
+     * 保存问答记录 (Save QA record)
      */
     private String saveQARecord(String question, String answer,
                                List<String> retrievedDocs, List<String> usedDocs,
@@ -1267,6 +1280,31 @@ public class KnowledgeQAService {
         } catch (Exception e) {
             log.warn(I18N.get("knowledge_qa_service.save_qa_failed", e));
             return null;
+        }
+    }
+
+    /**
+     * 获取 HOPE 层的友好名称 (Get friendly name for HOPE layer)
+     *
+     * @param hopeSource HOPE 来源 (HOPE source)
+     * @return 友好名称 (Friendly name)
+     */
+    private String getHopeLayerName(String hopeSource) {
+        if (hopeSource == null) {
+            return "Unknown";
+        }
+        switch (hopeSource.toUpperCase()) {
+            case "PERMANENT":
+            case "PERMANENT_LAYER":
+                return I18N.get("hope.layer.permanent");  // "低频层 (技能知识库)"
+            case "ORDINARY":
+            case "ORDINARY_LAYER":
+                return I18N.get("hope.layer.ordinary");   // "中频层 (近期知识)"
+            case "HIGH_FREQUENCY":
+            case "HIGH_FREQUENCY_LAYER":
+                return I18N.get("hope.layer.high_frequency");  // "高频层 (实时上下文)"
+            default:
+                return hopeSource;
         }
     }
 

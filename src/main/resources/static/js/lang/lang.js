@@ -22,6 +22,8 @@ const translations = {
         tabDocumentsSearch: '文档搜索和管理',
         tabLLMResults: 'AI分析历史',
         tabStats: '统计信息',
+        tabHope: 'HOPE监控',
+        hopeTabTooltip: 'HOPE三层记忆架构 - 智能知识缓存与学习系统',
 
         // QA Tab
         qaPlaceholder: '请输入您的问题...',
@@ -743,6 +745,8 @@ const translations = {
         tabDocumentsSearch: 'Documents Search & Management',
         tabLLMResults: 'AI Analysis History',
         tabStats: 'Statistics',
+        tabHope: 'HOPE Monitor',
+        hopeTabTooltip: 'HOPE Three-Layer Memory - Intelligent Knowledge Cache & Learning System',
 
         // QA Tab
         qaPlaceholder: 'Enter your question...',

@@ -226,6 +226,13 @@ function App() {
                                 >
                                     📊 {t('tabStats')}
                                 </button>
+                                <button
+                                    className={`tab ${activeTab === 'hope' ? 'active' : ''}`}
+                                    onClick={() => setActiveTab('hope')}
+                                    title={t('hopeTabTooltip') || 'HOPE三层记忆架构监控'}
+                                >
+                                    🧠 {t('tabHope') || 'HOPE监控'}
+                                </button>
                             </div>
 
                             <div className="tab-content">
@@ -247,6 +254,11 @@ function App() {
                                 </div>
                                 <div className={`tab-content-panel ${activeTab === 'stats' ? '' : 'hidden'}`}>
                                     <StatisticsTab />
+                                </div>
+                                <div className={`tab-content-panel ${activeTab === 'hope' ? '' : 'hidden'}`}>
+                                    {window.HOPEDashboardPanel && React.createElement(window.HOPEDashboardPanel, {
+                                        collapsed: false
+                                    })}
                                 </div>
                             </div>
                         </main>

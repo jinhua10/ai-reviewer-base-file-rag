@@ -1,5 +1,8 @@
 package top.yumbo.ai.rag.hope.integration;
 
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import top.yumbo.ai.rag.hope.HOPEKnowledgeManager;
 import top.yumbo.ai.rag.hope.ResponseStrategy;
@@ -24,6 +27,11 @@ import java.util.List;
 @Slf4j
 public class HOPEEnhancedLLMClient implements LLMClient {
 
+    /**
+     * -- GETTER --
+     *  获取底层 LLM 客户端
+     */
+    @Getter
     private final LLMClient delegate;
     private final HOPEKnowledgeManager hopeManager;
     private final HOPEMonitorService hopeMonitor;
@@ -146,9 +154,10 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                         hopeMonitor.recordQuery(strategy, hopeResult, elapsed);
                     }
 
-                    // 记录最后查询
+                    // 记录最后查询 (Record last query)
                     lastQuery.set(new LastQuery(prompt, hopeResult.getAnswer(),
-                        hopeResult.getSourceLayer(), true, elapsed));
+                        hopeResult.getSourceLayer(), true, elapsed,
+                        hopeResult.getConfidence(), strategy.name()));
 
                     log.info("HOPE direct answer from {} in {}ms",
                         hopeResult.getSourceLayer(), elapsed);
@@ -204,8 +213,9 @@ public class HOPEEnhancedLLMClient implements LLMClient {
             hopeManager.learn(prompt, result, autoLearnRating, sessionId);
         }
 
-        // 5. 记录最后查询
-        lastQuery.set(new LastQuery(prompt, result, null, false, elapsed));
+        // 5. 记录最后查询 (Record last query)
+        lastQuery.set(new LastQuery(prompt, result, null, false, elapsed,
+                0.0, "FULL_RAG"));
 
         return result;
     }
@@ -226,14 +236,7 @@ public class HOPEEnhancedLLMClient implements LLMClient {
     }
 
     /**
-     * 获取底层 LLM 客户端
-     */
-    public LLMClient getDelegate() {
-        return delegate;
-    }
-
-    /**
-     * 最后查询信息（用于反馈学习）
+     * 最后查询信息（用于反馈学习）(Last query information for feedback learning)
      */
     public static class LastQuery {
         private final String question;
@@ -241,14 +244,25 @@ public class HOPEEnhancedLLMClient implements LLMClient {
         private final String hopeSource;
         private final boolean directAnswer;
         private final long responseTimeMs;
+        private final double confidence;        // HOPE 置信度 (HOPE confidence)
+        private final String strategyUsed;      // 使用的策略 (Strategy used)
 
         public LastQuery(String question, String answer, String hopeSource,
                          boolean directAnswer, long responseTimeMs) {
+            this(question, answer, hopeSource, directAnswer, responseTimeMs, 0.0, null);
+        }
+
+        public LastQuery(String question, String answer, String hopeSource,
+                         boolean directAnswer, long responseTimeMs,
+                         double confidence, String strategyUsed) {
             this.question = question;
             this.answer = answer;
             this.hopeSource = hopeSource;
             this.directAnswer = directAnswer;
             this.responseTimeMs = responseTimeMs;
+            this.confidence = confidence;
+            this.strategyUsed = strategyUsed != null ? strategyUsed :
+                (directAnswer ? "DIRECT_ANSWER" : "FULL_RAG");
         }
 
         public String getQuestion() { return question; }
@@ -256,11 +270,15 @@ public class HOPEEnhancedLLMClient implements LLMClient {
         public String getHopeSource() { return hopeSource; }
         public boolean isDirectAnswer() { return directAnswer; }
         public long getResponseTimeMs() { return responseTimeMs; }
+        public long getResponseTime() { return responseTimeMs; }  // 别名 (Alias)
+        public double getConfidence() { return confidence; }
+        public String getStrategyUsed() { return strategyUsed; }
     }
 
     /**
      * HOPE LLM 配置
      */
+    @Data
     public static class HOPELLMConfig {
         private boolean hopeQueryEnabled = true;
         private boolean autoLearnEnabled = true;
@@ -268,16 +286,6 @@ public class HOPEEnhancedLLMClient implements LLMClient {
         private int autoLearnRating = 3;        // 自动学习默认评分
         private int minRatingForLearning = 4;   // 手动反馈学习最小评分
 
-        public boolean isHopeQueryEnabled() { return hopeQueryEnabled; }
-        public void setHopeQueryEnabled(boolean hopeQueryEnabled) { this.hopeQueryEnabled = hopeQueryEnabled; }
-        public boolean isAutoLearnEnabled() { return autoLearnEnabled; }
-        public void setAutoLearnEnabled(boolean autoLearnEnabled) { this.autoLearnEnabled = autoLearnEnabled; }
-        public boolean isReferenceEnhanceEnabled() { return referenceEnhanceEnabled; }
-        public void setReferenceEnhanceEnabled(boolean referenceEnhanceEnabled) { this.referenceEnhanceEnabled = referenceEnhanceEnabled; }
-        public int getAutoLearnRating() { return autoLearnRating; }
-        public void setAutoLearnRating(int autoLearnRating) { this.autoLearnRating = autoLearnRating; }
-        public int getMinRatingForLearning() { return minRatingForLearning; }
-        public void setMinRatingForLearning(int minRatingForLearning) { this.minRatingForLearning = minRatingForLearning; }
     }
 }
 

@@ -60,6 +60,7 @@ public final class I18N {
                 "feedback",         // 反馈系统 (Feedback system)
                 "retriever",        // 检索器 (Retriever)
                 "streaming",        // 流式响应 (Streaming)
+                "hope",             // HOPE 三层记忆架构 (HOPE three-layer memory)
                 "error"             // 错误信息 (Error messages)
         };
 
