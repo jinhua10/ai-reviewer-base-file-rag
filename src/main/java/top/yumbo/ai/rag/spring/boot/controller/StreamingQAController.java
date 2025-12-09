@@ -139,6 +139,155 @@ public class StreamingQAController {
 
         return ResponseEntity.ok(status);
     }
+
+    /**
+     * 双轨流式响应（HOPE + LLM）
+     * (Dual-track streaming response - HOPE + LLM)
+     *
+     * 同时返回 HOPE 快速答案和 LLM 流式生成
+     * (Returns both HOPE quick answer and LLM streaming generation)
+     *
+     * GET /api/qa/stream/dual-track?question=xxx&sessionId=xxx
+     *
+     * @param question 用户问题 (User question)
+     * @param sessionId HOPE 会话ID（可选）(HOPE session ID, optional)
+     * @return SSE 流，包含 HOPE 答案和 LLM 块 (SSE stream with HOPE answer and LLM chunks)
+     */
+    @GetMapping(value = "/dual-track", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter dualTrackStreaming(
+            @RequestParam String question,
+            @RequestParam(required = false) String sessionId) {
+
+        log.info(I18N.get("log.streaming.dual_track_start", question));
+
+        SseEmitter emitter = new SseEmitter(60000L); // 60 秒超时
+
+        // 生成 HOPE 会话 ID（如果没有提供）
+        String hopeSessionId = sessionId != null ? sessionId :
+            "hope_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+
+        // 异步处理双轨响应
+        CompletableFuture.runAsync(() -> {
+            try {
+                // 1. 启动双轨服务
+                var response = streamingService.ask(question, hopeSessionId);
+
+                // 2. 等待 HOPE 快速答案（带超时）
+                CompletableFuture<HOPEAnswer> hopeFuture = response.getHopeFuture();
+
+                HOPEAnswer hopeAnswer = null;
+                long hopeStartTime = System.currentTimeMillis();
+
+                try {
+                    // 等待最多 300ms
+                    hopeAnswer = hopeFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    long hopeTime = System.currentTimeMillis() - hopeStartTime;
+
+                    // 发送 HOPE 答案
+                    if (hopeAnswer != null && hopeAnswer.getAnswer() != null && !hopeAnswer.getAnswer().isEmpty()) {
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage hopeMsg =
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.hopeAnswer(
+                                hopeAnswer.getAnswer(),
+                                hopeAnswer.getSource(),
+                                hopeAnswer.getConfidence(),
+                                hopeTime,
+                                hopeAnswer.isCanDirectAnswer() ? "DIRECT_ANSWER" : "REFERENCE"
+                            );
+
+                        emitter.send(SseEmitter.event()
+                            .name("hope")
+                            .data(hopeMsg));
+
+                        log.info(I18N.get("log.streaming.hope_sent", hopeTime));
+                    }
+                } catch (java.util.concurrent.TimeoutException e) {
+                    log.warn(I18N.get("log.streaming.hope_timeout"));
+                    // HOPE 超时，继续 LLM 生成
+                } catch (Exception e) {
+                    log.error(I18N.get("log.streaming.hope_error"), e);
+                }
+
+                // 3. 已经在 streamingService.ask() 中启动了 LLM 生成
+                // 通过会话 ID 获取流式输出
+                StreamingSession session = streamingService.getSession(response.getSessionId());
+                if (session != null) {
+                    // 监听 LLM 流式输出
+                    int chunkIndex = 0;
+                    long llmStartTime = System.currentTimeMillis();
+                    int lastLength = 0;
+
+                    while (session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
+                        String currentAnswer = session.getFullAnswer().toString();
+
+                        // 发送新的块（仅发送新增内容）
+                        if (currentAnswer.length() > lastLength) {
+                            String newChunk = currentAnswer.substring(lastLength);
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(
+                                    newChunk,
+                                    chunkIndex++
+                                );
+
+                            emitter.send(SseEmitter.event()
+                                .name("llm")
+                                .data(llmMsg));
+
+                            lastLength = currentAnswer.length();
+                        }
+
+                        Thread.sleep(100); // 100ms 轮询间隔
+                    }
+
+                    // 发送完成消息
+                    long llmTime = System.currentTimeMillis() - llmStartTime;
+                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(
+                            chunkIndex,
+                            llmTime
+                        );
+
+                    emitter.send(SseEmitter.event()
+                        .name("complete")
+                        .data(completeMsg));
+
+                    log.info(I18N.get("log.streaming.llm_complete", chunkIndex, llmTime));
+                }
+
+                emitter.complete();
+                log.info(I18N.get("log.streaming.dual_track_complete"));
+
+            } catch (Exception e) {
+                log.error(I18N.get("log.streaming.dual_track_error"), e);
+
+                try {
+                    top.yumbo.ai.rag.spring.boot.model.StreamMessage errorMsg =
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.error(
+                            I18N.get("error.streaming.failed", e.getMessage())
+                        );
+
+                    emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data(errorMsg));
+
+                    emitter.completeWithError(e);
+                } catch (Exception sendError) {
+                    log.error(I18N.get("log.streaming.error_send_failed"), sendError);
+                }
+            }
+        });
+
+        // 设置超时和错误回调
+        emitter.onTimeout(() -> {
+            log.warn(I18N.get("log.streaming.timeout"));
+            emitter.complete();
+        });
+
+        emitter.onError(e -> {
+            log.error(I18N.get("log.streaming.connection_error"), e);
+        });
+
+        return emitter;
+    }
 }
 
 /**

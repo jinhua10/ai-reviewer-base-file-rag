@@ -1,0 +1,20 @@
+# 中文流式响应消息
+# File: src/main/resources/i18n/zh/zh-streaming.yml
+
+log:
+  streaming:
+    dual_track_start: "🚀 开始双轨流式响应：{0}"
+    hope_sent: "💡 HOPE 答案已发送，耗时: {0}ms"
+    hope_timeout: "⏰ HOPE 查询超时（>300ms），继续 LLM 生成"
+    hope_error: "❌ HOPE 查询失败"
+    llm_complete: "✅ LLM 生成完成，共 {0} 个块，耗时: {1}ms"
+    dual_track_complete: "🎉 双轨流式响应完成"
+    dual_track_error: "❌ 双轨流式响应失败"
+    timeout: "⏰ 流式响应超时"
+    connection_error: "❌ 流式连接错误"
+    error_send_failed: "❌ 发送错误消息失败"
+
+error:
+  streaming:
+    failed: "流式响应失败: {0}"
+

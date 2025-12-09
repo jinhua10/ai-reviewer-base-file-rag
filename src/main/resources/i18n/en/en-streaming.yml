@@ -1,0 +1,20 @@
+# English Streaming Response Messages
+# File: src/main/resources/i18n/en/en-streaming.yml
+
+log:
+  streaming:
+    dual_track_start: "🚀 Starting dual-track streaming response: {0}"
+    hope_sent: "💡 HOPE answer sent, time: {0}ms"
+    hope_timeout: "⏰ HOPE query timeout (>300ms), continuing with LLM generation"
+    hope_error: "❌ HOPE query failed"
+    llm_complete: "✅ LLM generation complete, {0} chunks, time: {1}ms"
+    dual_track_complete: "🎉 Dual-track streaming response complete"
+    dual_track_error: "❌ Dual-track streaming response failed"
+    timeout: "⏰ Streaming response timeout"
+    connection_error: "❌ Streaming connection error"
+    error_send_failed: "❌ Failed to send error message"
+
+error:
+  streaming:
+    failed: "Streaming response failed: {0}"
+
