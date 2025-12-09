@@ -372,6 +372,20 @@ function QATab() {
         document.body.appendChild(modal);
     };
 
+    // HOPE 层名称转换辅助函数 (HOPE layer name helper function)
+    const getHopeLayerName = (hopeSource) => {
+        if (!hopeSource) return '';
+        const source = hopeSource.toUpperCase();
+        if (source.includes('PERMANENT')) {
+            return t('hopeLayerPermanent') || '低频层 (技能知识库)';
+        } else if (source.includes('ORDINARY')) {
+            return t('hopeLayerOrdinary') || '中频层 (近期知识)';
+        } else if (source.includes('HIGH') || source.includes('FREQUENCY')) {
+            return t('hopeLayerHighFrequency') || '高频层 (实时上下文)';
+        }
+        return hopeSource;
+    };
+
     // ============================================================================
     // 表情评价功能函数 / Emoji Rating Functions
     // ============================================================================
@@ -672,6 +686,29 @@ function QATab() {
                                 </button>
                             )}
                         </div>
+
+                        {/* HOPE 标识 (HOPE Badge) */}
+                        {answer.hopeSource && (
+                            <div className={`hope-badge ${answer.directAnswer ? 'hope-direct' : 'hope-reference'}`}>
+                                {answer.directAnswer ? (
+                                    <>
+                                        <span className="hope-icon">💡</span>
+                                        <span className="hope-label">{t('hopeDirectAnswer') || 'HOPE 快速答案'}</span>
+                                        <span className="hope-source">{getHopeLayerName(answer.hopeSource)}</span>
+                                        <span className="hope-time">{answer.responseTimeMs}ms</span>
+                                        {answer.hopeConfidence > 0 && (
+                                            <span className="hope-confidence">{t('hopeConfidence') || '置信度'}: {(answer.hopeConfidence * 100).toFixed(0)}%</span>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="hope-icon">📚</span>
+                                        <span className="hope-label">{t('hopeReferenceUsed') || '参考 HOPE 知识'}</span>
+                                        <span className="hope-source">{getHopeLayerName(answer.hopeSource)}</span>
+                                    </>
+                                )}
+                            </div>
+                        )}
 
                         <div
                             className="qa-answer-text answer-text"
@@ -1326,4 +1363,3 @@ if (typeof window !== 'undefined') {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = QATab;
 }
-

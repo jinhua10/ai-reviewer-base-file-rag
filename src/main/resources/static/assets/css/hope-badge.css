@@ -1,0 +1,137 @@
+/* HOPE Badge Styles (HOPE 标识样式) */
+/* File: src/main/resources/static/assets/css/hope-badge.css */
+
+.hope-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    margin: 12px 0;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.hope-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* HOPE 直接回答样式 (HOPE Direct Answer Style) */
+.hope-badge.hope-direct {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.hope-badge.hope-direct .hope-icon {
+    font-size: 18px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* HOPE 参考知识样式 (HOPE Reference Style) */
+.hope-badge.hope-reference {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* HOPE 标识元素 (HOPE Badge Elements) */
+.hope-icon {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hope-label {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+.hope-source {
+    background: rgba(255, 255, 255, 0.25);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.hope-time {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hope-time::before {
+    content: '⚡';
+    font-size: 12px;
+}
+
+.hope-confidence {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+}
+
+/* 脉冲动画 (Pulse Animation) */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* 响应式设计 (Responsive Design) */
+@media (max-width: 768px) {
+    .hope-badge {
+        flex-wrap: wrap;
+        padding: 8px 12px;
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .hope-source,
+    .hope-time,
+    .hope-confidence {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+}
+
+/* 深色模式支持 (Dark Mode Support) */
+@media (prefers-color-scheme: dark) {
+    .hope-badge {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .hope-badge:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* 打印样式 (Print Styles) */
+@media print {
+    .hope-badge {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #ccc !important;
+    }
+
+    .hope-icon {
+        display: none;
+    }
+}
+
