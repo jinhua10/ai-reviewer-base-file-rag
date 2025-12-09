@@ -1,0 +1,410 @@
+/* DualTrackAnswer Styles (双轨答案组件样式) */
+/* File: src/main/resources/static/assets/css/dual-track-answer.css */
+
+.dual-track-container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* 头部 (Header) */
+.dual-track-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.dual-track-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 10px 0;
+}
+
+.dual-track-subtitle {
+    font-size: 16px;
+    color: #718096;
+    margin: 0;
+}
+
+/* 双轨内容区 (Dual-track content) */
+.dual-track-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 20px;
+}
+
+/* 单个轨道 (Single track) */
+.track {
+    background: #f7fafc;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.track:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* HOPE 轨道 (HOPE track) */
+.hope-track {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    animation: slideInLeft 0.5s ease-out;
+}
+
+/* LLM 轨道 (LLM track) */
+.llm-track {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    animation: slideInRight 0.5s ease-out;
+}
+
+/* 轨道头部 (Track header) */
+.track-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.track-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.track-icon {
+    font-size: 24px;
+}
+
+.track-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.meta-time,
+.meta-chunks {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+/* 停止按钮 (Stop button) */
+.track-stop {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.track-stop:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* 轨道主体 (Track body) */
+.track-body {
+    padding: 20px;
+    min-height: 250px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* 加载状态 (Loading state) */
+.track-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    gap: 16px;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.track-loading p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 答案内容 (Answer content) */
+.track-answer {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.answer-content {
+    font-size: 15px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.95);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.answer-content.streaming {
+    position: relative;
+}
+
+/* 光标闪烁 (Cursor blink) */
+.cursor-blink {
+    display: inline-block;
+    margin-left: 2px;
+    animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* 答案元数据 (Answer metadata) */
+.answer-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.meta-source,
+.meta-confidence,
+.meta-strategy {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* 空状态 (Empty state) */
+.track-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+/* 底部统计 (Footer stats) */
+.dual-track-footer {
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-top: 20px;
+}
+
+.footer-stats {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    gap: 24px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #718096;
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2d3748;
+}
+
+.stat-value.highlight {
+    color: #667eea;
+    font-size: 24px;
+}
+
+/* 错误状态 (Error state) */
+.dual-track-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.error-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.error-message {
+    font-size: 16px;
+    color: #e53e3e;
+    margin-bottom: 24px;
+    max-width: 500px;
+}
+
+.error-retry {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.error-retry:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 动画 (Animations) */
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 响应式设计 (Responsive design) */
+@media (max-width: 1024px) {
+    .dual-track-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .hope-track,
+    .llm-track {
+        animation: fadeIn 0.5s ease-out;
+    }
+}
+
+@media (max-width: 768px) {
+    .dual-track-container {
+        padding: 15px;
+    }
+
+    .dual-track-title {
+        font-size: 24px;
+    }
+
+    .dual-track-subtitle {
+        font-size: 14px;
+    }
+
+    .track-body {
+        min-height: 200px;
+        max-height: 400px;
+    }
+
+    .footer-stats {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
+
+/* 深色模式支持 (Dark mode support) */
+@media (prefers-color-scheme: dark) {
+    .dual-track-container {
+        background: #1a202c;
+    }
+
+    .dual-track-title {
+        color: #f7fafc;
+    }
+
+    .dual-track-subtitle {
+        color: #a0aec0;
+    }
+
+    .dual-track-footer {
+        background: #2d3748;
+    }
+
+    .stat-label {
+        color: #a0aec0;
+    }
+
+    .stat-value {
+        color: #f7fafc;
+    }
+}
+
+/* 打印样式 (Print styles) */
+@media print {
+    .track-stop,
+    .error-retry {
+        display: none;
+    }
+
+    .hope-track,
+    .llm-track {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #e2e8f0;
+    }
+
+    .answer-content {
+        color: black !important;
+    }
+}
+

@@ -51,6 +51,14 @@ function QATab() {
     });
     const [showHOPEDashboard, setShowHOPEDashboard] = useState(false);
 
+    // 双轨模式状态 (Dual-track mode state)
+    const [useDualTrack, setUseDualTrack] = useState(() => {
+        // 从 localStorage 读取用户偏好
+        const saved = localStorage.getItem('useDualTrack');
+        return saved === 'true' || false;
+    });
+    const [showDualTrack, setShowDualTrack] = useState(false);
+
     // ============================================================================
     // 副作用 / Effects
     // ============================================================================
