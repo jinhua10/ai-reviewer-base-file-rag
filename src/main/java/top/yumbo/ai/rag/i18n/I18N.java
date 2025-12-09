@@ -34,11 +34,11 @@ public final class I18N {
     static {
         // 加载中文消息 (Load Chinese messages)
         // 扫描所有 i18n/zh-*.yml 文件 (Scan all i18n/zh-*.yml files)
-        loadMessagesWithPrefix("i18n/zh-", messagesZh, "Chinese");
+        loadMessagesWithPrefix("i18n/zh/zh-", messagesZh, "Chinese");
 
         // 加载英文消息 (Load English messages)
         // 扫描所有 i18n/en-*.yml 文件 (Scan all i18n/en-*.yml files)
-        loadMessagesWithPrefix("i18n/en-", messagesEn, "English");
+        loadMessagesWithPrefix("i18n/en/en-", messagesEn, "English");
     }
 
     /**
