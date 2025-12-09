@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * 提供后端日志国际化支持（静态工具类）
  * (Provides backend log internationalization support - static utility class)
- *
+ * <p>
  * 使用静态方法 `getMessage(key, args...)` 在任何场景下获取日志模板（支持非 Spring 启动）。
  * (Use static method `getMessage(key, args...)` to get log templates in any scenario)
  *
@@ -45,21 +45,22 @@ public final class I18N {
      * 加载指定前缀的所有国际化文件
      * (Load all i18n files with specified prefix)
      *
-     * @param prefix 文件前缀，如 "i18n/zh-" (File prefix, e.g. "i18n/zh-")
-     * @param target 目标消息Map (Target message map)
+     * @param prefix   文件前缀，如 "i18n/zh-" (File prefix, e.g. "i18n/zh-")
+     * @param target   目标消息Map (Target message map)
      * @param language 语言名称（用于日志） (Language name for logging)
      */
     private static void loadMessagesWithPrefix(String prefix, Map<String, String> target, String language) {
         // 预定义的模块列表 (Predefined module list)
         String[] modules = {
-            "common",           // 通用消息 (Common messages)
-            "role-detector",    // 角色检测 (Role detection)
-            "vector-index",     // 向量索引 (Vector index)
-            "concept-evolution",// 概念演化 (Concept evolution)
-            "feedback",         // 反馈系统 (Feedback system)
-            "retriever",        // 检索器 (Retriever)
-            "streaming",        // 流式响应 (Streaming)
-            "error"             // 错误信息 (Error messages)
+                "messages",         // 基础老代码的消息 (Base messages)
+                "common",           // 通用消息 (Common messages)
+                "role-detector",    // 角色检测 (Role detection)
+                "vector-index",     // 向量索引 (Vector index)
+                "concept-evolution",// 概念演化 (Concept evolution)
+                "feedback",         // 反馈系统 (Feedback system)
+                "retriever",        // 检索器 (Retriever)
+                "streaming",        // 流式响应 (Streaming)
+                "error"             // 错误信息 (Error messages)
         };
 
         int totalLoaded = 0;
@@ -191,7 +192,7 @@ public final class I18N {
      * 根据指定语言获取消息（用于 API 响应）
      * (Get message with specified language for API responses)
      *
-     * @param key 消息键 / Message key
+     * @param key  消息键 / Message key
      * @param lang 语言参数 (zh/en/null) / Language parameter (zh/en/null)
      * @param args 格式化参数 / Format arguments
      * @return 国际化消息 / Internationalized message
