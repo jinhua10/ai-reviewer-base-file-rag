@@ -255,7 +255,7 @@ function DualTrackAnswer({ question, sessionId, onComplete }) {
             </div>
 
             {/* 底部信息栏 (Bottom info bar) */}
-            {!llmLoading && hopeAnswer && (
+            {!llmLoading && hopeAnswer && llmAnswer && (
                 <div className="dual-track-footer">
                     <div className="footer-stats">
                         <span className="stat">
@@ -273,10 +273,85 @@ function DualTrackAnswer({ question, sessionId, onComplete }) {
                             </span>
                         </span>
                     </div>
+
+                    {/* 对比和选择面板 (Comparison and choice panel) */}
+                    <div className="dual-track-choice">
+                        <div className="choice-title">
+                            {t('chooseAnswer') || '请选择您更满意的答案：'}
+                        </div>
+                        <div className="choice-buttons">
+                            <button
+                                className="choice-btn choice-btn-hope"
+                                onClick={() => {
+                                    // 反馈到 HOPE
+                                    if (window.api && window.api.submitDualTrackChoice) {
+                                        window.api.submitDualTrackChoice(question, 'HOPE', hopeAnswer, llmAnswer, sessionId);
+                                    }
+                                    showToast(t('choiceHopeSubmitted') || '✅ 已选择 HOPE 答案，感谢反馈！', 'success');
+                                }}
+                            >
+                                💡 {t('chooseHope') || '采用 HOPE 答案'}
+                            </button>
+                            <button
+                                className="choice-btn choice-btn-llm"
+                                onClick={() => {
+                                    // 反馈到 HOPE
+                                    if (window.api && window.api.submitDualTrackChoice) {
+                                        window.api.submitDualTrackChoice(question, 'LLM', hopeAnswer, llmAnswer, sessionId);
+                                    }
+                                    showToast(t('choiceLlmSubmitted') || '✅ 已选择 LLM 答案，感谢反馈！', 'success');
+                                }}
+                            >
+                                🤖 {t('chooseLlm') || '采用 LLM 答案'}
+                            </button>
+                            <button
+                                className="choice-btn choice-btn-both"
+                                onClick={() => {
+                                    // 反馈到 HOPE
+                                    if (window.api && window.api.submitDualTrackChoice) {
+                                        window.api.submitDualTrackChoice(question, 'BOTH', hopeAnswer, llmAnswer, sessionId);
+                                    }
+                                    showToast(t('choiceBothSubmitted') || '✅ 已选择两个都采用，感谢反馈！', 'success');
+                                }}
+                            >
+                                ✨ {t('chooseBoth') || '都采用'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
     );
+
+    // Toast 提示函数 (Toast notification function)
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `dual-track-toast toast-${type}`;
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            padding: 12px 20px;
+            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10000;
+            font-size: 14px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
 }
 
 // 导出到全局 (Export to global)

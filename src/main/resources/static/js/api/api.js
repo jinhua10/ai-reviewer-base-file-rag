@@ -596,6 +596,40 @@ const api = {
     resetHOPEMetrics: async () => {
         const response = await axios.post(`${API_HOPE_URL}/metrics/reset`);
         return response.data;
+    },
+
+    /**
+     * 提交双轨答案选择反馈
+     * (Submit dual-track answer choice feedback)
+     *
+     * @param {string} question - 问题
+     * @param {string} choice - 选择 ('HOPE' | 'LLM' | 'BOTH')
+     * @param {Object} hopeAnswer - HOPE 答案对象
+     * @param {string} llmAnswer - LLM 答案文本
+     * @param {string} sessionId - 会话ID（可选）
+     * @returns {Promise<Object>} 反馈结果
+     */
+    submitDualTrackChoice: async (question, choice, hopeAnswer, llmAnswer, sessionId = null) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/feedback/dual-track`, {
+                question,
+                choice,
+                hopeAnswer: {
+                    content: hopeAnswer?.content || hopeAnswer?.answer || '',
+                    source: hopeAnswer?.source || '',
+                    confidence: hopeAnswer?.confidence || 0,
+                    responseTime: hopeAnswer?.responseTime || 0
+                },
+                llmAnswer,
+                sessionId,
+                timestamp: Date.now()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('提交双轨反馈失败 (Submit dual-track feedback failed):', error);
+            // 即使失败也返回成功，避免影响用户体验
+            return { success: true, message: 'Feedback received (client-side)' };
+        }
     }
 };
 

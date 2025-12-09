@@ -389,10 +389,106 @@
     }
 }
 
+/* 对比和选择面板 (Comparison and choice panel) */
+.dual-track-choice {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.choice-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 16px;
+}
+
+.choice-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.choice-btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 24px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.choice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.choice-btn:active {
+    transform: translateY(0);
+}
+
+/* HOPE 选择按钮 */
+.choice-btn-hope {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.choice-btn-hope:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3e91 100%);
+}
+
+/* LLM 选择按钮 */
+.choice-btn-llm {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.choice-btn-llm:hover {
+    background: linear-gradient(135deg, #e082ea 0%, #e4465b 100%);
+}
+
+/* 都采用按钮 */
+.choice-btn-both {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: white;
+}
+
+.choice-btn-both:hover {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* Toast 动画 */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+}
+
 /* 打印样式 (Print styles) */
 @media print {
     .track-stop,
-    .error-retry {
+    .error-retry,
+    .choice-buttons {
         display: none;
     }
 
@@ -405,6 +501,18 @@
 
     .answer-content {
         color: black !important;
+    }
+}
+
+/* 响应式 - 选择按钮 */
+@media (max-width: 768px) {
+    .choice-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .choice-btn {
+        width: 100%;
     }
 }
 

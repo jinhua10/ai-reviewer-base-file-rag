@@ -716,6 +716,15 @@ const translations = {
         errorStreamFailed: '流式响应失败',
         errorConnectionFailed: '连接失败',
         errorConnectionLost: '连接中断',
+
+        // 对比和选择 (Comparison and choice)
+        chooseAnswer: '请选择您更满意的答案：',
+        chooseHope: '采用 HOPE 答案',
+        chooseLlm: '采用 LLM 答案',
+        chooseBoth: '都采用',
+        choiceHopeSubmitted: '✅ 已选择 HOPE 答案，感谢反馈！',
+        choiceLlmSubmitted: '✅ 已选择 LLM 答案，感谢反馈！',
+        choiceBothSubmitted: '✅ 已选择两个都采用，感谢反馈！',
         hopeLLMSavings: 'LLM 节省率',
         hopeDirectAnswers: '直接回答',
         hopeAvgResponse: '平均响应',
@@ -1483,6 +1492,15 @@ const translations = {
         errorStreamFailed: 'Streaming response failed',
         errorConnectionFailed: 'Connection failed',
         errorConnectionLost: 'Connection lost',
+
+        // Comparison and Choice
+        chooseAnswer: 'Please choose which answer you prefer:',
+        chooseHope: 'Choose HOPE Answer',
+        chooseLlm: 'Choose LLM Answer',
+        chooseBoth: 'Choose Both',
+        choiceHopeSubmitted: '✅ HOPE answer selected, thank you for your feedback!',
+        choiceLlmSubmitted: '✅ LLM answer selected, thank you for your feedback!',
+        choiceBothSubmitted: '✅ Both answers selected, thank you for your feedback!',
         hopeLayerStats: 'Layer Hit Statistics',
         hopePermanent: 'Low-Freq',
         hopeOrdinary: 'Mid-Freq',
