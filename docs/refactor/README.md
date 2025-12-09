@@ -12,27 +12,23 @@
 refactor/
 ├── README.md                                    (本文档)
 ├── SESSION_RECOVERY_GUIDE.md                    (会话恢复指南)
-├── 20251209-22-29-00-IMPLEMENTATION_PLAN.md    (主实施计划)
+├── 20251209-22-29-00-IMPLEMENTATION_PLAN.md    (主实施计划 - 持续更新)
+├── 20251209-23-00-00-CODE_STANDARDS.md         (代码规范 - 必读)
 │
 ├── phase-1/                                     (Phase 1 相关文档)
-│   ├── 20251210-xx-xx-Phase1-Role-Model.md
-│   └── 20251210-xx-xx-Phase1-Complete.md
+│   └── 20251210-xx-xx-Phase1-Progress.md        (持续更新)
 │
 ├── phase-2/                                     (Phase 2 相关文档)
-│   ├── 20251211-xx-xx-Phase2-Vector-Index.md
-│   └── 20251211-xx-xx-Phase2-Complete.md
+│   └── 20251211-xx-xx-Phase2-Progress.md        (持续更新)
 │
-├── design/                                      (设计文档)
-│   ├── HIERARCHICAL_SEMANTIC_RAG.md
-│   └── ROLE_BASED_KNOWLEDGE_ARCHITECTURE.md
+├── done/                                        (已完成的阶段性报告)
+│   ├── 20251209-22-40-00-Refactor-Init-Report.md
+│   ├── 20251215-xx-xx-Phase1-Complete.md
+│   └── 20251220-xx-xx-Phase2-Complete.md
 │
-├── reports/                                     (进度报告)
-│   ├── 20251209-Weekly-Report.md
-│   └── 20251216-Weekly-Report.md
-│
-└── issues/                                      (问题追踪)
-    ├── 20251210-Bug-Vector-Index.md
-    └── 20251211-Performance-Issue.md
+└── design/                                      (设计文档参考)
+    ├── HIERARCHICAL_SEMANTIC_RAG.md
+    └── ROLE_BASED_KNOWLEDGE_ARCHITECTURE.md
 ```
 
 ---
@@ -101,17 +97,75 @@ Refactor: 重构文档
 ## 🎯 核心文档
 
 ### 必读文档（新手入门）
-1. **SESSION_RECOVERY_GUIDE.md** - 如何在新 Session 中恢复工作
-2. **20251209-22-29-00-IMPLEMENTATION_PLAN.md** - 主实施计划
-3. **HIERARCHICAL_SEMANTIC_RAG.md** - 系统设计理念
+1. **20251209-23-00-00-CODE_STANDARDS.md** ⚠️ **代码规范（每次编码前必读）**
+2. **SESSION_RECOVERY_GUIDE.md** - 如何在新 Session 中恢复工作
+3. **20251209-22-29-00-IMPLEMENTATION_PLAN.md** - 主实施计划
+4. **HIERARCHICAL_SEMANTIC_RAG.md** - 系统设计理念
 
-### 进行中的文档
-- 查看实施计划中的"当前进度"
-- 查看最新的 Phase 文档
+### 进行中的文档（持续更新）
+- `20251209-22-29-00-IMPLEMENTATION_PLAN.md` - 主实施计划
+- `phase-{N}/yyyyMMdd-HH-mm-ss-Phase{N}-Progress.md` - Phase 进度文档
 
-### 历史文档
-- phase-*/xx-Complete.md - 已完成的 Phase 报告
-- reports/xx-Weekly-Report.md - 周报
+### 已完成的文档（归档）
+- `done/yyyyMMdd-HH-mm-ss-Phase{N}-Complete.md` - Phase 完成报告
+- `done/20251209-22-40-00-Refactor-Init-Report.md` - 初始化报告
+
+---
+
+## 💻 代码规范（重要！）
+
+### 每次新 Session 开始编码前
+
+**必须告诉 Copilot**：
+```
+"遵守 20251209-23-00-00-CODE_STANDARDS.md 中的所有代码规范"
+```
+
+### 核心规范速查
+
+#### 1. 注释格式
+```java
+/**
+ * 角色检测器 (Role Detector)
+ * 
+ * 负责分析用户问题，识别所属角色
+ * (Responsible for analyzing user questions and identifying roles)
+ */
+public class RoleDetector {
+    // 提取关键词 (Extract keywords)
+    List<String> keywords = extractKeywords(question);
+}
+```
+
+#### 2. 日志国际化
+```java
+// ❌ 错误
+log.info("开始处理");
+
+// ✅ 正确
+log.info(I18n.get("role.detector.start"), question);
+```
+
+#### 3. YAML 文件格式
+```yaml
+# 文件: src/main/resources/i18n/role-detector.yml
+
+# 中文版本
+role:
+  detector:
+    start: "开始角色检测: question={}"
+    success: "角色检测成功: role={}"
+
+---
+
+# English Version
+role:
+  detector:
+    start: "Starting role detection: question={}"
+    success: "Role detection succeeded: role={}"
+```
+
+**详细规范**: 查看 `20251209-23-00-00-CODE_STANDARDS.md`
 
 ---
 

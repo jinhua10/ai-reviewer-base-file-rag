@@ -1,0 +1,35 @@
+# English Common Messages
+# File: src/main/resources/i18n/en-common.yml
+
+# Application Startup
+app:
+  startup:
+    starting: "🚀 Application starting..."
+    started: "✅ Application started successfully in {0}ms"
+    failed: "❌ Application startup failed: {0}"
+  shutdown:
+    stopping: "⏹️ Application stopping..."
+    stopped: "✅ Application stopped"
+
+# Common Operations
+common:
+  success: "✅ Operation succeeded"
+  failed: "❌ Operation failed: {0}"
+  processing: "⏳ Processing..."
+  completed: "✅ Completed"
+  timeout: "⏱️ Operation timeout"
+
+# Data Validation
+validation:
+  required: "❗ Required field: {0}"
+  invalid: "❌ Invalid {0}: {1}"
+  format-error: "❌ Format error: {0}"
+
+# File Operations
+file:
+  uploading: "📤 Uploading file: {0}"
+  uploaded: "✅ File uploaded successfully: {0}"
+  upload-failed: "❌ File upload failed: {0}"
+  processing: "⚙️ Processing file: {0}"
+  processed: "✅ File processed: {0}"
+

@@ -1,0 +1,30 @@
+# English Role Detector Messages
+# File: src/main/resources/i18n/en-role-detector.yml
+
+role:
+  detector:
+    # Basic Operations
+    start: "🚀 Starting role detection: question={0}"
+    success: "✅ Role detection succeeded: role={0}, confidence={1}"
+    failed: "❌ Role detection failed: {0}"
+
+    # Keyword Matching
+    keyword-match: "🔍 Keyword matching: keywords={0}, matchCount={1}"
+    keyword-extract: "📝 Extracting keywords: {0}"
+
+    # AI Analysis
+    ai-analysis: "🤖 AI analyzing..."
+    ai-result: "🧠 AI analysis result: roles={0}"
+
+    # Confidence
+    low-confidence: "⚠️ Low confidence in role detection: score={0}"
+    high-confidence: "✅ High confidence in role detection: score={0}"
+
+    # Multiple Roles
+    multiple-roles: "🎯 Multiple roles detected: {0}"
+    no-role: "❓ No clear role detected, using default: {0}"
+
+    # User History
+    history-loaded: "📊 User preference loaded: userId={0}, preference={1}"
+    history-not-found: "📊 User preference not found: userId={0}"
+

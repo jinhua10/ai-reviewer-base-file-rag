@@ -1,0 +1,30 @@
+# 中文角色检测消息 (Chinese Role Detector Messages)
+# 文件: src/main/resources/i18n/zh-role-detector.yml
+
+role:
+  detector:
+    # 基本操作 (Basic Operations)
+    start: "🚀 开始角色检测: question={0}"
+    success: "✅ 角色检测成功: role={0}, confidence={1}"
+    failed: "❌ 角色检测失败: {0}"
+
+    # 关键词匹配 (Keyword Matching)
+    keyword-match: "🔍 关键词匹配: keywords={0}, matchCount={1}"
+    keyword-extract: "📝 提取关键词: {0}"
+
+    # AI 分析 (AI Analysis)
+    ai-analysis: "🤖 AI 智能分析中..."
+    ai-result: "🧠 AI 分析结果: roles={0}"
+
+    # 置信度 (Confidence)
+    low-confidence: "⚠️ 角色检测置信度较低: score={0}"
+    high-confidence: "✅ 角色检测置信度高: score={0}"
+
+    # 多角色 (Multiple Roles)
+    multiple-roles: "🎯 检测到多个角色: {0}"
+    no-role: "❓ 未检测到明确角色，使用默认角色: {0}"
+
+    # 用户历史 (User History)
+    history-loaded: "📊 加载用户历史偏好: userId={0}, preference={1}"
+    history-not-found: "📊 未找到用户历史偏好: userId={0}"
+

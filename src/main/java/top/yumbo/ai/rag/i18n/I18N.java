@@ -33,33 +33,60 @@ public final class I18N {
 
     static {
         // 加载中文消息 (Load Chinese messages)
-        try (InputStream is = I18N.class.getClassLoader()
-                .getResourceAsStream("messages_zh.yml")) {
-            if (is != null) {
-                Yaml yaml = new Yaml();
-                Map<String, Object> data = yaml.load(is);
-                flattenYaml("", data, messagesZh);
-                log.debug("Loaded {} Chinese message keys from messages_zh.yml", messagesZh.size());
-            } else {
-                log.warn("messages_zh.yml not found in classpath");
-            }
-        } catch (Exception e) {
-            log.error("Failed to load messages_zh.yml", e);
-        }
+        // 扫描所有 i18n/zh-*.yml 文件 (Scan all i18n/zh-*.yml files)
+        loadMessagesWithPrefix("i18n/zh-", messagesZh, "Chinese");
 
         // 加载英文消息 (Load English messages)
-        try (InputStream is = I18N.class.getClassLoader()
-                .getResourceAsStream("messages_en.yml")) {
-            if (is != null) {
-                Yaml yaml = new Yaml();
-                Map<String, Object> data = yaml.load(is);
-                flattenYaml("", data, messagesEn);
-                log.debug("Loaded {} English message keys from messages_en.yml", messagesEn.size());
-            } else {
-                log.warn("messages_en.yml not found in classpath");
+        // 扫描所有 i18n/en-*.yml 文件 (Scan all i18n/en-*.yml files)
+        loadMessagesWithPrefix("i18n/en-", messagesEn, "English");
+    }
+
+    /**
+     * 加载指定前缀的所有国际化文件
+     * (Load all i18n files with specified prefix)
+     *
+     * @param prefix 文件前缀，如 "i18n/zh-" (File prefix, e.g. "i18n/zh-")
+     * @param target 目标消息Map (Target message map)
+     * @param language 语言名称（用于日志） (Language name for logging)
+     */
+    private static void loadMessagesWithPrefix(String prefix, Map<String, String> target, String language) {
+        // 预定义的模块列表 (Predefined module list)
+        String[] modules = {
+            "common",           // 通用消息 (Common messages)
+            "role-detector",    // 角色检测 (Role detection)
+            "vector-index",     // 向量索引 (Vector index)
+            "concept-evolution",// 概念演化 (Concept evolution)
+            "feedback",         // 反馈系统 (Feedback system)
+            "retriever",        // 检索器 (Retriever)
+            "streaming",        // 流式响应 (Streaming)
+            "error"             // 错误信息 (Error messages)
+        };
+
+        int totalLoaded = 0;
+        for (String module : modules) {
+            String filename = prefix + module + ".yml";
+            try (InputStream is = I18N.class.getClassLoader().getResourceAsStream(filename)) {
+                if (is != null) {
+                    Yaml yaml = new Yaml();
+                    Map<String, Object> data = yaml.load(is);
+                    int beforeSize = target.size();
+                    flattenYaml("", data, target);
+                    int loaded = target.size() - beforeSize;
+                    totalLoaded += loaded;
+                    log.debug("Loaded {} {} keys from {}", loaded, language, filename);
+                } else {
+                    log.debug("{} not found (optional)", filename);
+                }
+            } catch (Exception e) {
+                log.error("Failed to load {}", filename, e);
             }
-        } catch (Exception e) {
-            log.error("Failed to load messages_en.yml", e);
+        }
+
+        if (totalLoaded == 0) {
+            log.warn("No {} message keys loaded! Check if {} files exist in classpath",
+                    language, prefix + "*.yml");
+        } else {
+            log.info("Loaded total {} {} message keys", totalLoaded, language);
         }
     }
 

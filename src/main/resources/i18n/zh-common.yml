@@ -1,0 +1,35 @@
+# 中文通用消息 (Chinese Common Messages)
+# 文件: src/main/resources/i18n/zh-common.yml
+
+# 应用启动 (Application Startup)
+app:
+  startup:
+    starting: "🚀 应用启动中..."
+    started: "✅ 应用启动成功，耗时 {0}ms"
+    failed: "❌ 应用启动失败: {0}"
+  shutdown:
+    stopping: "⏹️ 应用关闭中..."
+    stopped: "✅ 应用已关闭"
+
+# 通用操作 (Common Operations)
+common:
+  success: "✅ 操作成功"
+  failed: "❌ 操作失败: {0}"
+  processing: "⏳ 处理中..."
+  completed: "✅ 完成"
+  timeout: "⏱️ 操作超时"
+
+# 数据验证 (Data Validation)
+validation:
+  required: "❗ 必填字段: {0}"
+  invalid: "❌ 无效的 {0}: {1}"
+  format-error: "❌ 格式错误: {0}"
+
+# 文件操作 (File Operations)
+file:
+  uploading: "📤 上传文件: {0}"
+  uploaded: "✅ 文件上传成功: {0}"
+  upload-failed: "❌ 文件上传失败: {0}"
+  processing: "⚙️ 处理文件: {0}"
+  processed: "✅ 文件处理完成: {0}"
+
