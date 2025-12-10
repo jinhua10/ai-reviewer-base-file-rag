@@ -1,0 +1,50 @@
+# ============================================================
+# DocumentProgressiveAnalysisService
+# ============================================================
+doc_progressive:
+  log:
+    start_analysis: "📚 Starting progressive document analysis: {0} (Parser: {1})"
+    total_segments: "📄 Document has {0} segments"
+    analyze_segment: "🔍 Analyzing segment {0}/{1}: {2}"
+    stage_output: "📊 Generating stage output: {0}"
+    segment_complete: "✅ Segment {0} analysis complete"
+    analysis_complete: "🎉 Document analysis complete, time: {0}ms"
+    analysis_failed: "Document analysis failed: {0}"
+    segment_failed: "Segment {0} analysis failed"
+    generate_summary: "📊 Generating document comprehensive summary..."
+    summary_complete: "✅ Comprehensive summary generation complete"
+    summary_failed: "Failed to generate comprehensive summary"
+    unsupported_type: "Unsupported document type: {0}"
+    analyzing_segment: "Analyzing segment {0}/{1}: {2}"
+    segment_analysis_complete: "Segment analysis complete"
+    generating_summary: "Generating final summary..."
+  error:
+    unsupported_type: "Unsupported document type: {0}"
+  prompt:
+    segment_analysis: |
+      You are analyzing a document segment by segment.
+
+      ## Current Progress
+      Progress: {0}/{1} ({2}%)
+
+      ## Historical Key Points
+      {3}
+
+      ## Current Segment
+      Title: {4}
+      Content: {5}
+
+      ## User Question
+      {6}
+
+      Please analyze the core content of the current segment and extract key points.
+    final_summary: |
+      Please generate a complete summary report based on the following analysis points.
+
+      ## User Question
+      {0}
+
+      ## Segment Analysis Points
+      {1}
+
+      Please generate a structured and complete summary report.

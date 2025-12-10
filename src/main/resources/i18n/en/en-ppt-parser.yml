@@ -1,0 +1,15 @@
+# ============================================================
+# PPTDocumentParser
+# ============================================================
+ppt_parser:
+  log:
+    parse_file: "📊 Parsing PPT file: {0} ({1} slides)"
+    parse_slide: "  Parsing slide {0}: {1}"
+    parse_failed: "Failed to parse PPT file: {0}"
+  error:
+    file_not_found: "File does not exist: {0}"
+  title:
+    default_slide: "Slide {0}"
+  content:
+    image_info: "[Image: {0}, Type: {1}]"
+    table_header: "[Table]"

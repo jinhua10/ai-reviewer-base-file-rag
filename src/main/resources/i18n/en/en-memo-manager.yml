@@ -1,0 +1,21 @@
+# ============================================================
+# DocumentMemoManagerImpl
+# ============================================================
+memo_manager:
+  log:
+    start_document: "📄 Starting document analysis: {0} (total {1} segments)"
+    add_segment: "📝 Adding segment analysis: {0} - {1}"
+    mark_independent: "⭐ Marked as independent important entry: {0}"
+    user_mark_important: "⭐ User marked segment {0} as important"
+    recall_memos: "📋 Recalled {0} related memos, total {1} tokens"
+    skip_compress: "⏭️ Skip compression: {0} (already concise enough)"
+    llm_compress_complete: "✅ LLM compression complete: {0} -> {1} tokens"
+    llm_compress_failed: "⚠️ LLM compression failed, using truncation: {0}"
+    memo_cleared: "🧹 Memo cleared"
+    export_json_failed: "JSON export failed"
+    move_to_long_term: "📦 Moved to long-term memo: {0} ({1} tokens)"
+    remove_old_entry: "🗑️ Removed old entry: {0}"
+    new_document: "📄 Starting new document: {0}"
+    segment_added: "📝 Added segment {0}: {1}"
+    memo_entry_created: "📌 Memo entry created: {0}"
+    context_built: "📋 Context built: {0} short-term memories, {1} memos"

@@ -1,0 +1,21 @@
+# Knowledge Q&A API messages and logs
+knowledge_qa:
+  api:
+    message:
+      all_indexed: "All documents have been indexed"
+      incremental_complete: "Incremental indexing complete"
+      system_running: "Knowledge Q&A system is running"
+      needs_indexing: "Knowledge base needs indexing"
+      rebuild_complete: "Knowledge base rebuild complete"
+    status:
+      up: "Running"
+  log:
+    received_question: "Received question: {0}"
+    get_statistics: "Getting knowledge Q&A statistics"
+    incremental_request: "Received incremental indexing request: {0}"
+    statistics_result: "Statistics result: {0}"
+    search_documents: "Searching documents for question: {0} (found {1})"
+    session_question: "Session question [{0}]: {1}"
+    rebuild_request: "Received rebuild request: {0}"
+    indexing_in_progress: "Indexing in progress"
+    indexing_idle: "System idle, indexing available"

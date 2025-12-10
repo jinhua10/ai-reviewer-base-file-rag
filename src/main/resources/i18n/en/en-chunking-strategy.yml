@@ -1,0 +1,37 @@
+# ============================================================
+# Chunking Strategy
+# ============================================================
+chunking_strategy:
+  simple:
+    initialized: "📝 Using simple chunking strategy (fallback)"
+    completed: "📝 Simple chunking complete: {0} chunks"
+  ppl:
+    initialized: "✅ PPL Chunking Strategy enabled"
+    unavailable: "PPL Chunking Strategy unavailable"
+  llm:
+    initialized: "✅ LLM Chunking Strategy enabled"
+    using_custom_template: "   Using custom prompt template"
+    using_default_template: "   Using default prompt template"
+    unavailable: "LLM Chunking Strategy unavailable"
+    start: "🤖 Starting LLM intelligent chunking, document length: {0} characters"
+    doc_small: "📝 Document small, no chunking needed"
+    doc_large: "📚 Extra large document, using segment strategy"
+    doc_medium: "📖 Medium document, direct LLM chunking"
+    completed: "✅ LLM chunking complete: {0} chunks, time: {1}ms"
+    failed: "❌ LLM chunking failed"
+    calling_llm: "🤖 Calling LLM for chunking analysis..."
+    no_valid_chunks: "⚠️ LLM did not return valid chunks, using original text"
+    fallback_warning: "⚠️ LLM chunking failed, falling back to simple chunking: {0}"
+    coarse_split: "📑 Extra large document coarsely split into {0} segments"
+    processing_segment: "   Processing segment {0}/{1}, length: {2}"
+    using_fallback: "📝 Using fallback chunking strategy"
+  factory:
+    initialized: "📦 Chunking strategy factory initialized"
+    ppl_available: "   - PPL Service: Available"
+    ppl_unavailable: "   - PPL Service: Unavailable"
+    llm_available: "   - LLM Client: Available"
+    llm_unavailable: "   - LLM Client: Unavailable"
+    unknown_strategy: "⚠️ Unknown strategy type: {0}, using default strategy"
+    auto_select_llm: "🤖 Auto-select: LLM chunking strategy"
+    auto_select_ppl: "📊 Auto-select: PPL chunking strategy"
+    fallback_simple: "⚠️ PPL and LLM both unavailable, using simple chunking strategy"

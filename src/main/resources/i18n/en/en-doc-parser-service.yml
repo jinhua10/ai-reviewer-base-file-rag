@@ -1,0 +1,10 @@
+# ============================================================
+# Document Parser Service
+# ============================================================
+doc_parser_service:
+  log:
+    parse_failed: "Document parsing failed {0}: {1}"
+  error:
+    file_not_found: "File does not exist: {0}"
+    binary_file: "Binary file, cannot parse text content"
+    parse_failed: "Cannot parse document: {0}"

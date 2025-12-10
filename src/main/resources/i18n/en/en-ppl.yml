@@ -1,0 +1,16 @@
+# PPL service related messages
+ppl:
+  log:
+    onnx_init_start: "🚀 Initializing ONNX PPL service..."
+    onnx_init_success: "✅ ONNX PPL service initialized successfully"
+    onnx_init_failed: "❌ ONNX PPL service initialization failed: {0}"
+    facade_init_start: "🚀 Initializing PPL service facade..."
+    facade_init_success: "✅ PPL service facade initialized successfully, default provider: {0}"
+  rerank_start: "🔄 Starting PPL Rerank, total {0} documents..."
+  rerank_completed: "✅ PPL Rerank completed, time {0}ms"
+  rerank_failed: "⚠️ PPL Rerank failed, using original ranking: {0}"
+  error:
+    init_failed: "ONNX initialization failed"
+    calc_ppl_failed: "Perplexity calculation failed"
+    chunk_failed: "Document chunking failed"
+    rerank_failed: "Document reranking failed"

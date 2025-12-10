@@ -1,0 +1,98 @@
+# Feedback Module - English Messages
+# Generated: 2025-12-10
+
+feedback:
+  api:
+    emoji:
+      "1": "😞 Completely useless"
+      "2": "🙁 Not very helpful"
+      "3": "😐 Average"
+      "4": "😊 Very helpful"
+      "5": "🤩 Extremely useful"
+    error:
+      invalid_feedback_type: "feedbackType must be LIKE or DISLIKE"
+      invalid_rating: "Rating must be between 1-5"
+      missing_params: "{0} cannot be empty"
+      processing_failed: "Processing failed: {0}"
+      record_not_found: "Record not found"
+    impact:
+      document:
+        "1": "This document is not helpful, system will significantly reduce its recommendation weight ⚠️"
+        "2": "This document has limited help, system will reduce its recommendation weight 📉"
+        "3": "This document performs average, system will maintain its current weight ➡️"
+        "4": "This document is very helpful, system will increase its recommendation weight 📈"
+        "5": "This document is extremely useful! System will prioritize recommendations 🚀"
+      overall:
+        "1": "Sorry we couldn't help you! We will focus on improvements 🙏"
+        "2": "Thank you for your feedback! We will analyze and optimize 🔧"
+        "3": "Thank you for your rating! We will continue to optimize 💡"
+        "4": "Thank you for your feedback! This will help us improve answer quality 👍"
+        "5": "Excellent! This answer will be recommended to other users 🌟"
+    message:
+      thank_you: "Thank you for your feedback!"
+      document_impact: "Your rating helps improve document quality (rating: {0} stars)"
+      overall_impact: "Your rating helps improve answer quality (rating: {0} stars)"
+    success:
+      feedback_received: "Feedback received, thank you for your valuable opinion!"
+      thank_you: "Thank you for your rating!"
+
+# Log Messages
+log:
+  feedback:
+    overall_received: "Received overall feedback: recordId={0}, rating={1}"
+    overall_failed: "Failed to submit overall feedback"
+    document_received: "{0} received document feedback: recordId={1}, document={2}"
+    document_failed: "Failed to submit document feedback"
+    get_record_failed: "Failed to get Q&A record"
+    get_recent_failed: "Failed to get recent Q&A records"
+    get_pending_failed: "Failed to get pending records"
+    get_statistics_failed: "Failed to get statistics"
+    rating_submitted: "{0} document rating submitted: recordId={1}, document={2}, rating={3}, impact={4}"
+    rating_failed: "Failed to submit rating"
+    overall_rating_submitted: "{0} overall rating submitted: recordId={1}, rating={2}"
+
+    # Emoji Rating Descriptions
+    emoji:
+      description:
+        "1": "😞 Very disappointed"
+        "2": "🙁 Not very satisfied"
+        "3": "😐 Average"
+        "4": "😊 Quite satisfied"
+        "5": "🤩 Very satisfied"
+
+    # Weight Management Logs
+    weight_disabled: "Dynamic weight adjustment disabled"
+    weight_updated: "Document {0} weight updated to {1} (likes:{2}, dislikes:{3})"
+    weight_reset: "Document {0} weight reset to {1}"
+    weights_cleared: "All document weights cleared"
+    weights_saved: "Weight data saved ({0} documents)"
+    save_failed: "Failed to save weight data"
+    weights_file_not_exists: "Weight file does not exist, using default weights"
+    weights_loaded: "Weight data loaded ({0} documents)"
+    load_failed: "Failed to load weight data"
+    rating_updated: "Document {0} star rating updated: weight={1} {2} adjustment={3} (likes:{4}, dislikes:{5})"
+  # QA Record Management Logs
+  qa:
+    record_saved: "Q&A record saved: ID={0}, file={1}"
+    record_save_failed: "Failed to save Q&A record"
+    find_failed: "Failed to find Q&A record: ID={0}"
+    record_updated: "Q&A record updated: ID={0}"
+    record_notfound: "Q&A record not found: ID={0}"
+    record_update_failed: "Failed to update Q&A record: ID={0}"
+    user_feedback: "User feedback: recordId={0}, rating={1}, feedback={2}"
+    archived: "High-rated ({0}) Q&A archived to: {1}"
+    archive_failed: "Q&A archiving failed"
+    document_feedback: "{0} document feedback: recordId={1}, document={2}, type={3}"
+    feedback_applied: "Document {0} feedback applied to weight optimization"
+    feedback_pending: "Document {0} feedback submitted, pending review"
+    rating_submitted: "{0} document rating submitted: recordId={1}, document={2}, rating={3}, adjustment={4}"
+    rating_applied: "Document {0} weight applied: rating={1}, adjustment={2}"
+    rating_pending: "Document {0} rating submitted, pending review: rating={1}"
+    overall_rating_submitted: "{0} overall rating submitted: recordId={1}, rating={2}"
+    marked_as_quality: "Q&A record marked as quality content: ID={0}"
+    recent_failed: "Failed to get recent Q&A records"
+    pending_failed: "Failed to get pending records"
+    stats_failed: "Failed to get statistics"
+    load_failed: "Failed to load Q&A records: file={0}"
+    records_dir: "Q&A records storage directory: {0}"
+    records_dir_failed: "Failed to create Q&A records directory: {0}"

@@ -1,0 +1,28 @@
+# ============================================================
+# Smart Analysis Service
+# ============================================================
+smart_analysis:
+  log:
+    loaded_from_slide_cache: "📦 Loaded PPT content from slide cache: {0} ({1} characters)"
+    no_slide_cache: "Slide cache not found: {0}"
+    load_slide_cache_failed: "Failed to load slide cache: {0}"
+    start: "📊 Starting smart analysis, document count: {0}, target: {1}"
+    complete: "✅ Smart analysis complete, success: {0}, time: {1}ms"
+    failed: "❌ Smart analysis failed"
+    loading_documents: "Loading document content..."
+    document_loaded: "Document loaded: {0} ({1} characters)"
+    document_not_found: "Document not found: {0}"
+    document_load_failed: "Failed to load document: {0}"
+    document_truncated: "Document {0} content truncated: {1} -> {2} characters"
+    no_documents_loaded: "Could not load any document content"
+  error:
+    file_not_found: "File does not exist: {0}"
+    binary_file: "Binary file, cannot parse text content"
+    parse_failed: "Cannot parse document: {0}"
+score_contributor:
+  lucene:
+    description: "Scoring contribution based on Lucene keyword matching"
+  vector:
+    description: "Scoring contribution based on vector semantic similarity"
+  feedback:
+    description: "Scoring adjustment based on user feedback weights"

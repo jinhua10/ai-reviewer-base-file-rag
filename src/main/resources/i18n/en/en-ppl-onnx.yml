@@ -1,0 +1,28 @@
+# ============================================================
+# PPL ONNX Service
+# ============================================================
+ppl_onnx:
+  log:
+    init_start: "🚀 Initializing ONNX PPL service..."
+    model_path: "📦 Model path: {0}"
+    tokenizer_path: "📦 Tokenizer path: {0}"
+    env_created: "✅ ONNX Runtime environment created"
+    model_loaded: "✅ ONNX model loaded: {0}"
+    tokenizer_loaded: "✅ Tokenizer loaded: {0}"
+    cache_init: "✅ PPL cache initialized (size: {0}, TTL: {1} seconds)"
+    init_success: "✅ ONNX PPL service initialized successfully"
+    init_failed: "❌ ONNX PPL service initialization failed"
+    shutdown_start: "🛑 Shutting down ONNX PPL service..."
+    session_closed: "✅ ONNX session closed"
+    tokenizer_closed: "✅ Tokenizer closed"
+    cache_cleared: "✅ PPL cache cleared"
+    shutdown_success: "✅ ONNX PPL service shut down successfully"
+    shutdown_error: "Error occurred during shutdown"
+    calc_ppl_failed: "Failed to calculate perplexity: {0}"
+    health_check_failed: "Health check failed"
+    rerank_detail: "📊 PPL Rerank - Document: {0} | Original score: {1} | PPL: {2} | PPL score: {3} | Final score: {4}"
+  error:
+    init_failed: "ONNX initialization failed"
+    calc_ppl_failed: "Perplexity calculation failed"
+    chunk_failed: "Document chunking failed"
+    rerank_failed: "Document reranking failed"

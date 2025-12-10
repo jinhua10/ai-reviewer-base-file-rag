@@ -1,0 +1,10 @@
+# Document service related messages
+document_service:
+  error:
+    cannot_create_dir: "Failed to create document directory: {0}"
+    filename_empty: "Filename is empty"
+    file_too_large: "File too large: {0} MB (max: {1} MB)"
+    illegal_path: "Illegal file path"
+    unsupported_format: "Unsupported file format: {0}"
+  log:
+    scanned_types: "Scanned file types: {0}"

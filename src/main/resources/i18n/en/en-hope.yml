@@ -1,0 +1,212 @@
+# English HOPE Messages
+# File: src/main/resources/i18n/en/en-hope.yml
+# ============================================================
+# HOPE Three-Layer Memory Architecture
+# ============================================================
+hope:
+  # Permanent Layer
+  permanent:
+    disabled: "🔒 HOPE permanent layer disabled"
+    init_success: "✅ HOPE permanent layer initialized successfully, skill templates: {0}, factual knowledge: {1}"
+    init_failed: "❌ HOPE permanent layer initialization failed"
+    skill_saved: "💾 Skill template saved: {0} - {1}"
+    factual_saved: "💾 Factual knowledge saved: {0}"
+    skill_hit: "🎯 Skill template hit: {0}"
+    factual_hit: "🎯 Factual knowledge hit: {0}"
+    factual_disabled: "⚠️ Factual knowledge disabled due to low satisfaction: {0}"
+    persist_failed: "❌ Data persistence failed"
+    load_failed: "❌ Data loading failed"
+    skills_loaded: "📦 Loaded {0} skill templates"
+    facts_loaded: "📦 Loaded {0} factual knowledge items"
+
+  # Ordinary Layer - Phase 2
+  ordinary:
+    disabled: "🔒 HOPE ordinary layer disabled"
+    init_success: "✅ HOPE ordinary layer initialized successfully, loaded {0} recent Q&A items"
+    init_failed: "❌ HOPE ordinary layer initialization failed"
+    saved: "💾 Recent Q&A saved: {0}, rating: {1}"
+    updated: "📝 Recent Q&A updated: {0}"
+    direct_hit: "🎯 Ordinary layer direct hit: {0}, similarity: {1}"
+    reference_hit: "📚 Ordinary layer reference hit: {0}, similarity: {1}"
+    cleaned: "🧹 Cleaned {0} expired Q&A items"
+    promote_failed: "❌ Promotion failed: {0}"
+    persist_failed: "❌ Ordinary layer persistence failed"
+    load_failed: "❌ Ordinary layer loading failed"
+    loaded: "📦 Loaded {0} recent Q&A items"
+
+  # High-frequency Layer - Phase 3
+  high_frequency:
+    disabled: "🔒 HOPE high-frequency layer disabled"
+    init_success: "✅ HOPE high-frequency layer initialized successfully, max sessions: {0}, timeout: {1} minutes"
+    session_created: "📝 Created new session: {0}"
+    context_updated: "📝 Session context updated: {0}, current turn: {1}"
+    context_found: "🔍 Found session context: {0}"
+    definition_added: "📖 Added temporary definition: {0} (session: {1})"
+    auto_definition: "🔍 Auto-extracted definition: {0}"
+    session_cleared: "🧹 Session cleared: {0}"
+
+  # Manager
+  manager:
+    disabled: "⚠️ HOPE system not enabled"
+    learn_success: "✅ Learning successful: question=\"{0}\", rating={1}"
+    learn_failed: "❌ Learning failed"
+    promote_attempted: "📤 Attempted promotion to permanent layer: {0}"
+
+  # Query related
+  query:
+    classified: "📋 Question classified: type={0}, complexity={1}, confidence={2}"
+    direct_hit: "🚀 Permanent layer direct hit, confidence: {0}"
+    completed: "✅ HOPE query complete: {0}, source={1}, time={2}ms"
+    error: "❌ HOPE query error"
+    needs_llm: "🔄 Requires LLM processing"
+
+  # Strategy related
+  strategy:
+    direct_answer: "🚀 Strategy: Direct answer (source: {0}, confidence: {1})"
+    template_answer: "📝 Strategy: Template enhanced (template: {0})"
+    reference_answer: "📚 Strategy: Reference enhanced (similarity: {0})"
+    full_rag: "🔍 Strategy: Full RAG"
+    decided: "🎯 Response strategy decided: {0}"
+    answer_now: "Please answer now"
+    needs_llm: "Requires LLM"
+    # Strategy decider labels
+    label_strategy: "Strategy: "
+    label_question_type: "Question type: "
+    label_complexity: "Complexity: "
+    label_needs_llm: "Needs LLM: "
+    label_hit_layer: "Hit layer: "
+    label_confidence: "Confidence: "
+    label_skill_template: "Skill template: "
+
+  # Learning related
+  learn:
+    recorded: "📝 Learning record saved, rating: {0}"
+    error: "❌ Learning record save failed"
+    promoted: "⬆️ Knowledge promoted to permanent layer: {0}"
+
+  # Monitor Service - Phase 4
+  monitor:
+    init_success: "📊 HOPE monitor service initialized successfully"
+    hourly_report: "📊 HOPE hourly performance report"
+    metrics_reset: "🔄 HOPE monitor metrics reset"
+    report_title: "=== HOPE Performance Report ({0}) ==="
+    total_queries: "Total queries: {0}"
+    direct_answers: "Direct answers: {0} ({1}%)"
+    llm_savings: "LLM savings rate: {0}%"
+    avg_response: "Average response time: {0}ms"
+    permanent_hits: "Permanent layer hits: {0}"
+    ordinary_hits: "Ordinary layer hits: {0}"
+    high_freq_hits: "High-frequency layer hits: {0}"
+    title: "HOPE Three-Layer Memory Architecture"
+    subtitle: "Intelligent Knowledge Cache and Learning System"
+    disabled: "HOPE system not enabled"
+
+    # Layer stats
+    layer_stats: "Three-layer hit statistics"
+
+    # Suggestions
+    suggestions: "Optimization Suggestions"
+    test_query: "Test HOPE Query"
+    reset_metrics: "Reset Metrics"
+
+    # Monitor service messages
+    record_query_failed: "Failed to record query metrics: {0}"
+    query_stats: "  Total queries: {}, direct answers: {}, template enhanced: {}, full RAG: {}"
+    performance_metrics: "  LLM savings rate: {:.1f}%, average response time: {:.0f}ms"
+    layer_hit_stats: "  Layer hits - Permanent: {}, Ordinary: {}, High-freq: {}"
+
+    # Health check messages
+    low_savings_rate: "LLM savings rate below {0}%"
+    high_response_time: "Average response time exceeds {0}ms"
+    high_error_rate: "Error rate exceeds {0}%"
+
+    # Optimization suggestions
+    suggestion_low_direct_rate: "💡 Direct answer rate is low, suggest adding more factual knowledge to permanent layer"
+    suggestion_low_permanent_hit: "💡 Permanent layer hit rate is low, suggest checking skill template and factual knowledge configuration"
+    suggestion_poor_learning: "💡 Ordinary layer learning effect is poor, suggest adjusting similarity threshold or promotion conditions"
+    suggestion_few_promotions: "💡 Few knowledge promotions, suggest lowering promotion threshold to accumulate more permanent knowledge"
+    suggestion_good_performance: "✅ Direct answers are {0}x faster than full RAG, HOPE performs well"
+    suggestion_no_optimization: "✅ HOPE system running normally, no optimization needed"
+
+  # LLM Integration
+  llm:
+    integration_enabled: "🔗 HOPE LLM integration enabled, underlying model: {0}"
+    direct_answer: "⚡ HOPE direct answer, source: {0}, time: {1}ms"
+    template_used: "📝 Using skill template: {0}"
+    reference_used: "📚 Using similar Q&A reference: {0} items"
+
+  # Quality Service
+  quality:
+    low_confidence: "⚠️ Low confidence knowledge: {0}"
+    stale_knowledge: "⚠️ Stale knowledge: {0}"
+    high_error: "⚠️ High error rate knowledge: {0}"
+    insufficient_skills: "Insufficient skill templates (current: {0})"
+    add_more_skills: "Suggest adding more skill templates, such as: troubleshooting, performance optimization, security auditing, etc."
+    insufficient_facts: "Insufficient factual knowledge (current: {0})"
+    add_more_facts: "Suggest extracting more factual knowledge from README, configuration files, etc."
+    high_disabled_rate: "Skill template disable rate too high ({0})"
+    check_disabled_skills: "Check disabled skill templates, improve or delete low-quality templates"
+    no_qa_records: "No Q&A records in ordinary layer"
+    use_and_feedback: "Start using the system and provide feedback to accumulate knowledge"
+    low_rating: "Q&A average rating is low ({0})"
+    check_low_rating: "Check low-rated Q&A, analyze reasons and improve retrieval or prompts"
+    no_promotions: "No knowledge promoted to permanent layer"
+    check_promotion: "Suggest lowering promotion threshold, or check Q&A quality"
+    low_reuse: "Q&A reuse rate is low, suggest optimizing similarity matching algorithm"
+  # Answer Comparison
+  comparison:
+    feedback:
+      received: "Received comparison feedback: comparisonId={0}, choice={1}"
+      success: "✅ Comparison feedback submitted successfully"
+    submit:
+      failed: "❌ Failed to submit comparison feedback"
+    analysis:
+      failed: "Difference analysis failed"
+    not:
+      found: "Comparison record not found"
+    stats:
+      not:
+        found: "Voting statistics not found"
+
+  # Layer names
+  layer:
+    permanent: "Permanent Layer (Skill Knowledge Base)"
+    ordinary: "Ordinary Layer (Recent Knowledge)"
+    high_frequency: "High-frequency Layer (Real-time Context)"
+
+  # Direct answer
+  direct_answer_success: "🚀 HOPE direct answer successful! Source: {0}, response time: {1}ms"
+  reference_used: "📚 HOPE reference knowledge: {0}"
+
+  # Controller messages
+  controller:
+    metrics_reset_success: "Monitor metrics reset successfully"
+    hope_disabled: "HOPE system not enabled"
+    promotion_triggered: "Promotion check triggered"
+    question_required: "Question parameter is required"
+    definition_params_required: "sessionId, term and definition parameters are required"
+    definition_added: "Added definition for session: {0}"
+    session_cleared: "Session cleared: {0}"
+
+  # Model related messages
+  model:
+    # Session Context
+    session_created: "New session created"
+    turn_added: "Conversation turn added"
+    temp_definition_added: "Temporary definition added: {0}"
+    context_summary_built: "Conversation context summary built"
+    # Context building strings
+    current_topic_label: "Current topic: "
+    session_definitions_label: "Session definitions:"
+    recent_conversations_label: "Recent conversations:"
+    user_label: "User"
+    assistant_label: "Assistant"
+    
+    # Factual Knowledge
+    factual_access_recorded: "Factual knowledge access recorded"
+    factual_feedback_recorded: "Factual knowledge feedback recorded"
+    factual_disabled_low_satisfaction: "Factual knowledge disabled due to low satisfaction: {0}"
+    
+    # Skill Template
+    skill_usage_recorded: "Skill template usage recorded: {0}"
+    skill_success_rate: "Skill template success rate: {0}%"

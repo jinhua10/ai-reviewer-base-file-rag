@@ -1,0 +1,29 @@
+# Document management related messages
+document_management:
+  api:
+    error:
+      delete_failed: "Deletion failed: {0}"
+      file_empty: "File is empty"
+      index_failed: "Indexing failed: {0}"
+      list_failed: "List retrieval failed: {0}"
+      not_found: "Document does not exist"
+      upload_failed: "Upload failed: {0}"
+    success:
+      batch_result: "Success: {0}, Failed: {1}"
+      batch_upload: "Batch upload complete"
+      delete: "Document deletion successful"
+      index: "Document indexing successful"
+      list_loaded: "Document list retrieved successfully: returned {0} documents, total {1}"
+      upload: "Document upload successful"
+  log:
+    scanned_types: "Scanned file types: {0}"
+    batch_upload: "Batch uploading documents: {0}"
+    upload_success: "Document upload successful: {0}"
+    upload_failed: "Document upload failed"
+    file_upload_failed: "File upload failed: {0}"
+    list_documents: "Getting document list: page={0}, per_page={1}, sort_field={2}, sort_direction={3}"
+    list_failed: "Failed to get document list"
+    auto_index_trigger: "📦 Auto-triggering incremental indexing..."
+    auto_index_success: "✅ Auto incremental indexing complete"
+    auto_index_failed: "⚠️ Auto incremental indexing failed: {0}"
+    trigger_auto_index_failed: "⚠️ Failed to trigger auto indexing: {0}"

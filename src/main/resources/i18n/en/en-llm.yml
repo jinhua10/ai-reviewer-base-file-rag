@@ -1,0 +1,18 @@
+llm:
+  error:
+    openai_failed: "OpenAI API call failed: {0}"
+    openai_http_error: "OpenAI API error: HTTP {0}, {1}"
+    parse_failed: "Failed to parse OpenAI response: {0}"
+  log:
+    mock_init: "✅ Mock LLM client initialized (for testing only)"
+    mock_request: "Mock LLM received request, prompt length: {0}"
+    mock_response: "📝 Mock LLM returning simulated answer"
+    openai_error: "OpenAI API error: HTTP {0}, response body: {1}"
+    openai_failed: "OpenAI API call failed"
+    openai_init: "✅ OpenAI LLM client initialized"
+    openai_request: "Sending request to OpenAI: {0}"
+    openai_response: "OpenAI response content: {0}"
+  mock:
+    default_answer: "This is a simulated answer.\n\nBased on the provided context, I understand your question. However, as a Mock LLM, I can only provide simulated responses.\n\nPlease configure a real LLM service (such as OpenAI) to get accurate answers.\n\n(Note: This is a simulated answer from Mock LLM)"
+    marriage_answer: "According to the document content, marriage statistics include distributions of unmarried, married, divorced, and widowed statuses.\n\n(Note: This is a simulated answer from Mock LLM, actual data please refer to document content)"
+    population_answer: "According to the document content, China's total population is about 1.4 billion.\n\n(Note: This is a simulated answer from Mock LLM, actual data please refer to document content)"

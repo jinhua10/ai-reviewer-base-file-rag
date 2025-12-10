@@ -1,0 +1,7 @@
+image:
+  log:
+    get_failed: "Failed to get image: {0}/{1}"
+    list_failed: "Failed to get document image list: {0}"
+  saved: "Image saved: {0} (document: {1})"
+  service:
+    saved: "Image saved: {0}"

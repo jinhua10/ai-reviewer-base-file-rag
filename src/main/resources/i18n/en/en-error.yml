@@ -1,0 +1,19 @@
+# Error related messages
+error:
+  auth:
+    invalid_credentials: "Invalid credentials"
+    permission_denied: "Permission denied: {0}"
+    user_exists: "User already exists"
+  chunk:
+    expected_json_array: "Expected JSON array, but received: {0}"
+    no_valid_chunks: "No valid chunks found in AI response"
+    no_valid_json: "No valid JSON found in response"
+  docs:
+    create_failed: "Failed to create document: {0}"
+  file:
+    directory_not_exists: "Directory does not exist: {0}"
+    empty: "File content is empty: {0}"
+    index_failed: "File indexing failed: {0}"
+    not_a_directory: "Not a directory: {0}"
+    not_a_file: "Not a file: {0}"
+    not_exists: "File does not exist: {0}"

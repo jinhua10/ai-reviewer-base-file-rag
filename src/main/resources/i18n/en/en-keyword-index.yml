@@ -1,0 +1,9 @@
+# ============================================================
+# KeywordInvertedIndex
+# ============================================================
+keyword_index:
+  log:
+    index_entry: "Index entry: {0} ({1} keywords)"
+    index_cleared: "Keyword index cleared"
+    index_built: "🔍 Keyword index built: {0} entries"
+    search_complete: "Search complete: found {0} matches"

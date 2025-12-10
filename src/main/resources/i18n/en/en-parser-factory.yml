@@ -1,0 +1,9 @@
+# ============================================================
+# DocumentParserFactory
+# ============================================================
+parser_factory:
+  log:
+    registered_parsers: "📚 Registered {0} document parsers"
+    select_parser: "Selecting parser: {0} for {1}"
+    no_parser_found: "No supported parser found: {0}"
+    register_parser: "Registering parser: {0} - {1}"

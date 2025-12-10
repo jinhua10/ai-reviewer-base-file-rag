@@ -33,72 +33,104 @@ public final class I18N {
 
     static {
         // 加载中文消息 (Load Chinese messages)
-        // 扫描所有 i18n/zh-*.yml 文件 (Scan all i18n/zh-*.yml files)
-        loadMessagesWithPrefix("i18n/zh/zh-", messagesZh, "Chinese");
+        // 动态扫描 i18n/zh/ 目录下的所有 yml 文件 (Dynamically scan all yml files in i18n/zh/ directory)
+        loadMessagesWithPrefix("i18n/zh/", messagesZh, "Chinese");
 
         // 加载英文消息 (Load English messages)
-        // 扫描所有 i18n/en-*.yml 文件 (Scan all i18n/en-*.yml files)
-        loadMessagesWithPrefix("i18n/en/en-", messagesEn, "English");
+        // 动态扫描 i18n/en/ 目录下的所有 yml 文件 (Dynamically scan all yml files in i18n/en/ directory)
+        loadMessagesWithPrefix("i18n/en/", messagesEn, "English");
     }
 
     /**
-     * 加载指定前缀的所有国际化文件
-     * (Load all i18n files with specified prefix)
+     * 加载指定目录下的所有 yml 文件
+     * (Load all yml files in specified directory)
      *
-     * @param prefix   文件前缀，如 "i18n/zh-" (File prefix, e.g. "i18n/zh-")
-     * @param target   目标消息Map (Target message map)
-     * @param language 语言名称（用于日志） (Language name for logging)
+     * @param directory 目录路径，如 "i18n/zh/" (Directory path, e.g. "i18n/zh/")
+     * @param target    目标消息Map (Target message map)
+     * @param language  语言名称（用于日志） (Language name for logging)
      */
-    private static void loadMessagesWithPrefix(String prefix, Map<String, String> target, String language) {
-        // 预定义的模块列表 (Predefined module list)
-        String[] modules = {
-                "log",              // 日志消息 (Log messages)
-                "vision-llm",       // 视觉大模型 (Vision LLM)
-                "messages",         // 基础老代码的消息 (Base messages)
-                "common",           // 通用消息 (Common messages)
-                "role-detector",    // 角色检测 (Role detection)
-                "vector-index",     // 向量索引 (Vector index)
-                "concept-evolution",// 概念演化 (Concept evolution)
-                "feedback",         // 反馈系统 (Feedback system)
-                "retriever",        // 检索器 (Retriever)
-                "streaming",        // 流式响应 (Streaming)
-                "hope",             // HOPE 三层记忆架构 (HOPE three-layer memory)
-                "error",            // 错误信息 (Error messages)
-                "api",              // API相关消息 (API related messages)
-                "batch",            // 批量处理相关消息 (Batch processing related messages)
-                "context",          // 上下文相关消息 (Context related messages)
-                "document-management", // 文档管理相关消息 (Document management related messages)
-                "document-service",  // 文档服务相关消息 (Document service related messages)
-                "ppl",              // PPL服务相关消息 (PPL service related messages)
-                "chunking",         // 分块相关消息 (Chunking related messages)
-                "rerank"            // 重排序相关消息 (Reranking related messages)
-        };
-
+    private static void loadMessagesWithPrefix(String directory, Map<String, String> target, String language) {
         int totalLoaded = 0;
-        for (String module : modules) {
-            String filename = prefix + module + ".yml";
-            try (InputStream is = I18N.class.getClassLoader().getResourceAsStream(filename)) {
-                if (is != null) {
-                    Yaml yaml = new Yaml();
-                    Map<String, Object> data = yaml.load(is);
-                    int beforeSize = target.size();
-                    flattenYaml("", data, target);
-                    int loaded = target.size() - beforeSize;
-                    totalLoaded += loaded;
-                    log.debug("Loaded {} {} keys from {}", loaded, language, filename);
-                } else {
-                    log.debug("{} not found (optional)", filename);
-                }
-            } catch (Exception e) {
-                log.error("Failed to load {}", filename, e);
+
+        try {
+            // 获取目录下的所有资源 (Get all resources in directory)
+            ClassLoader classLoader = I18N.class.getClassLoader();
+            java.net.URL resource = classLoader.getResource(directory);
+
+            if (resource == null) {
+                log.warn("Directory not found: {}", directory);
+                return;
             }
+
+            // 处理不同的资源类型 (Handle different resource types)
+            if ("file".equals(resource.getProtocol())) {
+                // 文件系统路径 (File system path)
+                java.io.File dir = new java.io.File(resource.toURI());
+                if (dir.exists() && dir.isDirectory()) {
+                    java.io.File[] files = dir.listFiles((d, name) -> name.endsWith(".yml"));
+                    if (files != null) {
+                        for (java.io.File file : files) {
+                            String filename = directory + file.getName();
+                            totalLoaded += loadSingleYmlFile(filename, target, language);
+                        }
+                    }
+                }
+            } else if ("jar".equals(resource.getProtocol())) {
+                // JAR 文件路径 (JAR file path)
+                String jarPath = resource.getPath();
+                if (jarPath.contains("!")) {
+                    String[] parts = jarPath.split("!");
+                    String jarFilePath = parts[0].substring(5); // 移除 "file:" 前缀 (Remove "file:" prefix)
+                    try (java.util.jar.JarFile jarFile = new java.util.jar.JarFile(jarFilePath)) {
+                        java.util.Enumeration<java.util.jar.JarEntry> entries = jarFile.entries();
+                        while (entries.hasMoreElements()) {
+                            java.util.jar.JarEntry entry = entries.nextElement();
+                            String entryName = entry.getName();
+                            // 检查是否在目标目录且是 yml 文件 (Check if in target directory and is yml file)
+                            if (entryName.startsWith(directory) && entryName.endsWith(".yml") && !entry.isDirectory()) {
+                                totalLoaded += loadSingleYmlFile(entryName, target, language);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to scan directory: {}", directory, e);
         }
 
         if (totalLoaded == 0) {
-            log.warn("No {} message keys loaded! Check if {} files exist in classpath",
-                    language, prefix + "*.yml");
+            log.warn("No {} message keys loaded from directory: {}", language, directory);
         } else {
-            log.info("Loaded total {} {} message keys", totalLoaded, language);
+            log.info("Loaded total {} {} message keys from directory: {}", totalLoaded, language, directory);
+        }
+    }
+
+    /**
+     * 加载单个 yml 文件
+     * (Load single yml file)
+     *
+     * @param filename 文件路径 (File path)
+     * @param target   目标消息Map (Target message map)
+     * @param language 语言名称 (Language name)
+     * @return 加载的键数量 (Number of keys loaded)
+     */
+    private static int loadSingleYmlFile(String filename, Map<String, String> target, String language) {
+        try (InputStream is = I18N.class.getClassLoader().getResourceAsStream(filename)) {
+            if (is != null) {
+                Yaml yaml = new Yaml();
+                Map<String, Object> data = yaml.load(is);
+                int beforeSize = target.size();
+                flattenYaml("", data, target);
+                int loaded = target.size() - beforeSize;
+                log.debug("Loaded {} {} keys from {}", loaded, language, filename);
+                return loaded;
+            } else {
+                log.debug("{} not found (optional)", filename);
+                return 0;
+            }
+        } catch (Exception e) {
+            log.error("Failed to load {}", filename, e);
+            return 0;
         }
     }
 

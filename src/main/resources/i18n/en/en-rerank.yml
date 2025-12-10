@@ -1,0 +1,6 @@
+# Reranking related messages
+rerank:
+  start: "🔄 Starting reranking, total {0} documents..."
+  completed: "✅ Reranking completed, time {0}ms"
+  failed: "⚠️ Reranking failed, using original ranking: {0}"
+  ppl_detail: "📊 PPL Rerank - Document: {0} | Original score: {1} | PPL: {2} | PPL score: {3} | Final score: {4}"

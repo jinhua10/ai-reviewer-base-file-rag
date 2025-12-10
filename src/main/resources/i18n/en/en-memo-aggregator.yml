@@ -1,0 +1,11 @@
+# ============================================================
+# MemoAggregator
+# ============================================================
+memo_aggregator:
+  log:
+    aggregate_by_topic: "Aggregate by topic: {0} entries -> {1} topic groups"
+    llm_aggregate_failed: "LLM aggregation failed, using simple aggregation: {0}"
+    aggregation_start: "🔄 Starting memo aggregation: {0} entries"
+    aggregation_complete: "✅ Aggregation complete: {0} -> {1} entries"
+    merge_similar: "Merge similar entries: {0} entries -> 1 entry"
+    compress_large: "Compress large entries: {0} characters -> {1} characters"
