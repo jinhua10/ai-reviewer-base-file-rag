@@ -5,3 +5,6 @@ image:
   saved: "Image saved: {0} (document: {1})"
   service:
     saved: "Image saved: {0}"
+log:
+  image:
+    context_extracted: "✅ Image context extracted: {0} regions, duration: {1}ms"

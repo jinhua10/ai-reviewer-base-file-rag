@@ -13,6 +13,7 @@ log:
     timeout: "⏰ 流式响应超时"
     connection_error: "❌ 流式连接错误"
     error_send_failed: "❌ 发送错误消息失败"
+    session_saved_to_hope: "✅ 会话已保存到 HOPE: sessionId={0}, duration={1}ms"
 
 error:
   streaming:

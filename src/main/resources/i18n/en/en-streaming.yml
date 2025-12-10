@@ -13,6 +13,7 @@ log:
     timeout: "⏰ Streaming response timeout"
     connection_error: "❌ Streaming connection error"
     error_send_failed: "❌ Failed to send error message"
+    session_saved_to_hope: "✅ Session saved to HOPE: sessionId={0}, duration={1}ms"
 
 error:
   streaming:

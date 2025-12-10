@@ -5,3 +5,6 @@ image:
   saved: "图片已保存：{0}（文档：{1}）"
   service:
     saved: "图片已保存：{0}"
+log:
+  image:
+    context_extracted: "✅ 图片上下文已提取: {0} 个区域, 耗时: {1}ms"
