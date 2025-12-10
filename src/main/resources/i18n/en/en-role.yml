@@ -1,0 +1,33 @@
+# 角色系统英文国际化文件
+# Role System English Internationalization File
+# File: src/main/resources/i18n/en/en-role.yml
+
+role:
+  config:
+    disabled: "🔕 Role system is disabled"
+    loaded: "✅ Role configuration loaded, {0} roles in total"
+    file:
+      notfound: "⚠️ Role config file not found: {0}, loading default config"
+    format:
+      invalid: "⚠️ Invalid role config file format, loading default config"
+    load:
+      error: "❌ Failed to load role config: {0}"
+    loading:
+      path: "📂 Loading role configuration: {0}"
+      default: "📂 Loading default role configuration"
+    default:
+      loaded: "✅ Default role configuration loaded, {0} roles in total"
+    role:
+      loaded: "✅ Role loaded successfully: id={0}, name={1}"
+      parse:
+        error: "❌ Failed to parse role config: id={0}, error={1}"
+
+  manager:
+    initialized: "✅ Role manager initialized"
+    role:
+      notfound: "⚠️ Role not found: {0}, using default role"
+    usage:
+      recorded: "📊 Role usage recorded: {0}, total usage {1} times"
+    reloading: "🔄 Reloading role configuration..."
+    reloaded: "✅ Role configuration reloaded, {0} roles in total"
+

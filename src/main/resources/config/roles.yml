@@ -1,0 +1,141 @@
+# RAG 2.0 角色配置文件
+# RAG 2.0 Role Configuration File
+# 文件位置: src/main/resources/config/roles.yml
+
+roles:
+  # 1. 开发者角色 (Developer Role)
+  - id: developer
+    name: "开发者 (Developer)"
+    description: "专注于代码、编程、技术架构等开发相关问题 (Focus on code, programming, technical architecture)"
+    keywords:
+      - "代码"
+      - "编程"
+      - "开发"
+      - "bug"
+      - "debug"
+      - "code"
+      - "programming"
+      - "development"
+      - "algorithm"
+      - "architecture"
+      - "java"
+      - "python"
+      - "javascript"
+      - "api"
+      - "database"
+    weight: 1.2
+    enabled: true
+    prompt: "你是一个专业的软件开发顾问，擅长解答编程、代码和技术架构问题。"
+    tags:
+      - "technical"
+      - "development"
+    indexPath: "data/vector-index/role_developer.index"
+    priority: 10
+
+  # 2. 数据科学家角色 (Data Scientist Role)
+  - id: data_scientist
+    name: "数据科学家 (Data Scientist)"
+    description: "专注于数据分析、机器学习、AI模型等问题 (Focus on data analysis, ML, AI models)"
+    keywords:
+      - "数据"
+      - "机器学习"
+      - "深度学习"
+      - "模型"
+      - "训练"
+      - "data"
+      - "machine learning"
+      - "deep learning"
+      - "model"
+      - "training"
+      - "neural network"
+      - "tensorflow"
+      - "pytorch"
+      - "sklearn"
+      - "pandas"
+      - "numpy"
+    weight: 1.3
+    enabled: true
+    prompt: "你是一个资深的数据科学家，擅长数据分析、机器学习和AI模型相关问题。"
+    tags:
+      - "technical"
+      - "ai"
+      - "data"
+    indexPath: "data/vector-index/role_data_scientist.index"
+    priority: 9
+
+  # 3. 产品经理角色 (Product Manager Role)
+  - id: product_manager
+    name: "产品经理 (Product Manager)"
+    description: "专注于产品设计、需求分析、用户体验等问题 (Focus on product design, requirements, UX)"
+    keywords:
+      - "产品"
+      - "需求"
+      - "用户体验"
+      - "设计"
+      - "原型"
+      - "product"
+      - "requirement"
+      - "ux"
+      - "ui"
+      - "design"
+      - "prototype"
+      - "user story"
+      - "roadmap"
+    weight: 1.0
+    enabled: true
+    prompt: "你是一个经验丰富的产品经理，擅长产品设计、需求分析和用户体验优化。"
+    tags:
+      - "product"
+      - "design"
+    indexPath: "data/vector-index/role_product_manager.index"
+    priority: 8
+
+  # 4. 运维工程师角色 (DevOps Engineer Role)
+  - id: devops
+    name: "运维工程师 (DevOps Engineer)"
+    description: "专注于部署、监控、CI/CD、云服务等运维问题 (Focus on deployment, monitoring, CI/CD, cloud)"
+    keywords:
+      - "部署"
+      - "运维"
+      - "监控"
+      - "docker"
+      - "kubernetes"
+      - "deployment"
+      - "devops"
+      - "monitoring"
+      - "ci/cd"
+      - "cloud"
+      - "aws"
+      - "azure"
+      - "jenkins"
+      - "prometheus"
+    weight: 1.1
+    enabled: true
+    prompt: "你是一个专业的运维工程师，擅长系统部署、监控和云服务管理。"
+    tags:
+      - "technical"
+      - "operations"
+    indexPath: "data/vector-index/role_devops.index"
+    priority: 7
+
+  # 5. 通用角色 (General Role)
+  - id: general
+    name: "通用助手 (General Assistant)"
+    description: "处理通用问题和无法明确分类的问题 (Handle general and unclassified questions)"
+    keywords:
+      - "通用"
+      - "一般"
+      - "其他"
+      - "帮助"
+      - "general"
+      - "help"
+      - "question"
+      - "other"
+    weight: 1.0
+    enabled: true
+    prompt: "你是一个通用AI助手，能够回答各种类型的问题。"
+    tags:
+      - "general"
+    indexPath: "data/vector-index/role_general.index"
+    priority: 0
+
