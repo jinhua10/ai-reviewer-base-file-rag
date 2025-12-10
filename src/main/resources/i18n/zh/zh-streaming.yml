@@ -3,6 +3,18 @@
 
 log:
   streaming:
+    session_registered: "✅ 会话已注册: sessionId={0}"
+    session_not_found: "⚠️ 会话未找到: sessionId={0}"
+    client_disconnected: "🔌 客户端断开连接: sessionId={0}, reason={1}, progress={2}%"
+    draft_saved: "💾 草稿已保存: sessionId={0}, progress={1}%"
+    partial_result_saved: "💾 部分结果已保存: sessionId={0}, chars={1}, duration={2}s"
+    discard_incomplete_session: "🗑️ 丢弃不完整会话: sessionId={0}"
+    session_not_completed: "⚠️ 会话未完成: sessionId={0}, status={1}"
+    session_invalid_or_saved: "ℹ️ 会话无效或已保存: sessionId={0}"
+    hope_manager_disabled: "⚠️ HOPE 管理器已禁用"
+    session_saved_to_hope: "✅ 会话已保存到 HOPE: sessionId={0}"
+    save_to_hope_failed: "❌ 保存到 HOPE 失败: sessionId={0}, error={1}"
+    cleaning_timeout_sessions: "🧹 清理超时会话: count={0}"
     dual_track_start: "🚀 开始双轨流式响应：{0}"
     hope_sent: "💡 HOPE 答案已发送，耗时: {0}ms"
     hope_timeout: "⏰ HOPE 查询超时（>300ms），继续 LLM 生成"
@@ -13,7 +25,6 @@ log:
     timeout: "⏰ 流式响应超时"
     connection_error: "❌ 流式连接错误"
     error_send_failed: "❌ 发送错误消息失败"
-    session_saved_to_hope: "✅ 会话已保存到 HOPE: sessionId={0}, duration={1}ms"
 
 error:
   streaming:

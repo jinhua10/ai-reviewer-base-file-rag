@@ -3,6 +3,18 @@
 
 log:
   streaming:
+    session_registered: "✅ Session registered: sessionId={0}"
+    session_not_found: "⚠️ Session not found: sessionId={0}"
+    client_disconnected: "🔌 Client disconnected: sessionId={0}, reason={1}, progress={2}%"
+    draft_saved: "💾 Draft saved: sessionId={0}, progress={1}%"
+    partial_result_saved: "💾 Partial result saved: sessionId={0}, chars={1}, duration={2}s"
+    discard_incomplete_session: "🗑️ Discard incomplete session: sessionId={0}"
+    session_not_completed: "⚠️ Session not completed: sessionId={0}, status={1}"
+    session_invalid_or_saved: "ℹ️ Session invalid or already saved: sessionId={0}"
+    hope_manager_disabled: "⚠️ HOPE manager disabled"
+    session_saved_to_hope: "✅ Session saved to HOPE: sessionId={0}"
+    save_to_hope_failed: "❌ Save to HOPE failed: sessionId={0}, error={1}"
+    cleaning_timeout_sessions: "🧹 Cleaning timeout sessions: count={0}"
     dual_track_start: "🚀 Starting dual-track streaming response: {0}"
     hope_sent: "💡 HOPE answer sent, duration: {0}ms"
     hope_timeout: "⏰ HOPE query timeout (>300ms), continuing with LLM generation"
@@ -13,7 +25,6 @@ log:
     timeout: "⏰ Streaming response timeout"
     connection_error: "❌ Streaming connection error"
     error_send_failed: "❌ Failed to send error message"
-    session_saved_to_hope: "✅ Session saved to HOPE: sessionId={0}, duration={1}ms"
 
 error:
   streaming:
