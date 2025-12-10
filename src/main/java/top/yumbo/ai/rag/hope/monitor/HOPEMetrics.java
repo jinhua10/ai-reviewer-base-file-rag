@@ -77,7 +77,7 @@ public class HOPEMetrics {
             }
             case "TEMPLATE_ANSWER" -> {
                 templateAnswers.incrementAndGet();
-                TemplateAnswerTime.addAndGet(responseTimeMs);
+                templateAnswerTime.addAndGet(responseTimeMs);
             }
             case "FULL_RAG" -> {
                 fullRAGAnswers.incrementAndGet();
