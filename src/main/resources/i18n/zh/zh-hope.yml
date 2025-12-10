@@ -79,4 +79,14 @@ hope:
     no_promotions: "没有知识晋升到低频层"
     check_promotion: "建议降低晋升阈值，或检查问答质量"
     low_reuse: "问答复用率低，建议优化相似度匹配算法"
+    
+  # 控制器消息 (Controller messages)
+  controller:
+    metrics_reset_success: "监控指标重置成功"
+    hope_disabled: "HOPE 系统未启用"
+    promotion_triggered: "晋升检查已触发"
+    question_required: "问题参数是必需的"
+    definition_params_required: "sessionId、term 和 definition 参数是必需的"
+    definition_added: "已为会话添加定义: {0}"
+    session_cleared: "会话已清除: {0}"
 

@@ -79,4 +79,14 @@ hope:
     no_promotions: "No knowledge has been promoted to permanent layer"
     check_promotion: "Consider lowering promotion thresholds or review Q&A quality"
     low_reuse: "Low Q&A reuse rate, consider optimizing similarity matching algorithm"
+    
+  # Controller messages
+  controller:
+    metrics_reset_success: "Monitoring metrics reset successfully"
+    hope_disabled: "HOPE system is disabled"
+    promotion_triggered: "Promotion check triggered"
+    question_required: "Question parameter is required"
+    definition_params_required: "sessionId, term, and definition parameters are required"
+    definition_added: "Definition added for session: {0}"
+    session_cleared: "Session cleared: {0}"
 
