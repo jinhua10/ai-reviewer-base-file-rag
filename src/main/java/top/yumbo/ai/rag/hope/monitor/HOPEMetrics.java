@@ -11,7 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * HOPE 性能指标收集器 (HOPE Performance Metrics Collector)
+ * HOPE 性能指标收集器
+ * (HOPE Performance Metrics Collector)
  * 
  * 负责收集、存储和计算 HOPE 系统的各种性能指标
  * (Responsible for collecting, storing and calculating various performance metrics of HOPE system)

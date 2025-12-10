@@ -82,6 +82,10 @@ public class OrdinaryLayerService {
 
     /**
      * 查询中频层
+     * (Query ordinary layer)
+     * 
+     * @param question 用户问题 (User question)
+     * @return 查询结果 (Query result)
      */
     public OrdinaryQueryResult query(String question) {
         long startTime = System.currentTimeMillis();
@@ -99,7 +103,7 @@ public class OrdinaryLayerService {
             result.setSimilarity(bestMatch.getSimilarity());
             result.setAllMatches(matches);
 
-            // 记录访问
+            // 1. 记录访问 (Record access)
             bestMatch.getQa().recordAccess();
 
             // 判断是否可直接使用
@@ -133,7 +137,7 @@ public class OrdinaryLayerService {
                 RecentQA qa = bestMatch.getQa();
                 // 设置相似度评分
                 qa.setSimilarityScore(bestMatch.getSimilarity());
-                // 记录访问
+                // 1. 记录访问 (Record access)
                 qa.recordAccess();
                 return qa;
             }
@@ -144,12 +148,16 @@ public class OrdinaryLayerService {
 
     /**
      * 查找相似问答（内部方法）
+     * (Find similar Q&A - internal method)
+     * 
+     * @param question 用户问题 (User question)
+     * @return 相似匹配列表 (List of similar matches)
      */
     private List<SimilarMatch> findSimilarQAs(String question) {
         List<SimilarMatch> matches = new ArrayList<>();
         String[] queryWords = extractKeywords(question);
 
-        // 1. 通过关键词索引获取候选
+        // 1. 通过关键词索引获取候选 (Get candidates through keyword index)
         Set<String> candidateIds = new HashSet<>();
         for (String word : queryWords) {
             Set<String> ids = keywordIndex.get(word.toLowerCase());
@@ -158,7 +166,7 @@ public class OrdinaryLayerService {
             }
         }
 
-        // 2. 计算相似度
+        // 2. 计算相似度 (Calculate similarity)
         for (String id : candidateIds) {
             RecentQA qa = recentQAs.get(id);
             if (qa == null || qa.isPromoted()) {
@@ -171,7 +179,7 @@ public class OrdinaryLayerService {
             }
         }
 
-        // 3. 如果关键词索引没找到足够的，遍历所有
+        // 3. 如果关键词索引没找到足够的，遍历所有 (If keyword index doesn't find enough, traverse all)
         if (matches.size() < 3) {
             for (RecentQA qa : recentQAs.values()) {
                 if (qa.isPromoted() || candidateIds.contains(qa.getId())) {
@@ -185,7 +193,7 @@ public class OrdinaryLayerService {
             }
         }
 
-        // 4. 按相似度排序
+        // 4. 按相似度排序 (Sort by similarity)
         matches.sort((a, b) -> Double.compare(b.getSimilarity(), a.getSimilarity()));
 
         return matches.stream().limit(5).collect(Collectors.toList());
@@ -193,6 +201,13 @@ public class OrdinaryLayerService {
 
     /**
      * 计算问题相似度
+     * (Calculate question similarity)
+     * 
+     * @param question1 问题1 (Question 1)
+     * @param question2 问题2 (Question 2)
+     * @param keywords1 关键词1 (Keywords 1)
+     * @param keywords2 关键词2 (Keywords 2)
+     * @return 相似度分数 (Similarity score)
      */
     private double calculateSimilarity(String question1, String question2,
                                         String[] keywords1, String[] keywords2) {
@@ -200,12 +215,12 @@ public class OrdinaryLayerService {
             return 0.0;
         }
 
-        // 1. 精确匹配
+        // 1. 精确匹配 (Exact match)
         if (question1.equalsIgnoreCase(question2)) {
             return 1.0;
         }
 
-        // 2. 关键词 Jaccard 相似度
+        // 2. 关键词 Jaccard 相似度 (Keyword Jaccard similarity)
         Set<String> set1 = new HashSet<>();
         Set<String> set2 = new HashSet<>();
 
@@ -244,13 +259,17 @@ public class OrdinaryLayerService {
 
     /**
      * 提取关键词
+     * (Extract keywords)
+     * 
+     * @param text 文本内容 (Text content)
+     * @return 关键词数组 (Keyword array)
      */
     private String[] extractKeywords(String text) {
         if (text == null || text.isEmpty()) {
             return new String[0];
         }
 
-        // 简单的停用词过滤
+        // 简单的停用词过滤 (Simple stop words filtering)
         Set<String> stopWords = Set.of(
             "的", "是", "在", "了", "和", "有", "我", "你", "这", "那",
             "什么", "怎么", "如何", "为什么", "哪", "吗", "呢", "啊",
@@ -309,6 +328,11 @@ public class OrdinaryLayerService {
 
     /**
      * 保存问答到中频层
+     * (Save Q&A to ordinary layer)
+     * 
+     * @param question 用户问题 (User question)
+     * @param answer 回答内容 (Answer content)
+     * @param rating 评分 (Rating)
      */
     public void save(String question, String answer, int rating) {
         save(question, answer, rating, null);
@@ -316,12 +340,18 @@ public class OrdinaryLayerService {
 
     /**
      * 保存问答到中频层（带来源文档）
+     * (Save Q&A to ordinary layer with source documents)
+     * 
+     * @param question 用户问题 (User question)
+     * @param answer 回答内容 (Answer content)
+     * @param rating 评分 (Rating)
+     * @param sourceDocuments 来源文档 (Source documents)
      */
     public void save(String question, String answer, int rating, String sourceDocuments) {
-        // 检查是否已存在相似问题
+        // 1. 检查是否已存在相似问题 (Check if similar question already exists)
         OrdinaryQueryResult existingResult = query(question);
         if (existingResult.isFound() && existingResult.getSimilarity() > 0.9) {
-            // 更新现有记录的评分
+            // 2. 更新现有记录的评分 (Update existing record's rating)
             RecentQA existing = existingResult.getBestMatch();
             existing.recordRating(rating);
             persistData();
@@ -329,7 +359,7 @@ public class OrdinaryLayerService {
             return;
         }
 
-        // 创建新记录
+        // 3. 创建新记录 (Create new record)
         String id = "qa_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 4);
         String[] keywords = extractKeywords(question);
 

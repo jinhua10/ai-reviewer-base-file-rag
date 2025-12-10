@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
  * 低频层服务 - 管理技能知识和确定性知识
  * (Permanent Layer Service - Manages skill templates and factual knowledge)
  *
- * 特点：
- * - 存储稳定的、经过验证的知识
- * - 可直接回答，无需 LLM
- * - 极少更新，高置信度
+ * 特点 (Features):
+ * - 存储稳定的、经过验证的知识 (Store stable and verified knowledge)
+ * - 可直接回答，无需 LLM (Can answer directly without LLM)
+ * - 极少更新，高置信度 (Rarely updated, high confidence)
  *
  * @author AI Reviewer Team
  * @since 2.0.0
@@ -89,6 +89,10 @@ public class PermanentLayerService {
 
     /**
      * 查询低频层
+     * (Query permanent layer)
+     * 
+     * @param question 用户问题 (User question)
+     * @return 查询结果 (Query result)
      */
     public PermanentQueryResult query(String question) {
         long startTime = System.currentTimeMillis();
@@ -96,7 +100,7 @@ public class PermanentLayerService {
 
         String normalizedQuestion = question.toLowerCase().trim();
 
-        // 1. 查找确定性知识（优先，因为可以直接回答）
+        // 1. 查找确定性知识（优先，因为可以直接回答） (Find factual knowledge (priority, because can answer directly))
         FactualKnowledge fact = findFactualKnowledge(normalizedQuestion);
         if (fact != null && fact.getConfidence() >= config.getPermanent().getDirectAnswerConfidence()) {
             result.setDirectAnswer(true);
@@ -108,7 +112,7 @@ public class PermanentLayerService {
             log.debug(I18N.get("hope.permanent.factual_hit", fact.getId()));
         }
 
-        // 2. 查找技能模板
+        // 2. 查找技能模板 (Find skill templates)
         SkillTemplate template = findSkillTemplate(normalizedQuestion);
         if (template != null) {
             result.setSkillTemplate(template);
@@ -144,7 +148,7 @@ public class PermanentLayerService {
      * 查找匹配的确定性知识
      */
     private FactualKnowledge findFactualKnowledge(String question) {
-        // 1. 通过关键词索引快速查找
+        // 1. 通过关键词索引快速查找 (Quick search through keyword index)
         String[] words = question.split("\\s+");
         Set<String> candidateIds = new HashSet<>();
 
@@ -159,7 +163,7 @@ public class PermanentLayerService {
             }
         }
 
-        // 2. 对候选进行模式匹配
+        // 2. 对候选进行模式匹配 (Pattern matching for candidates)
         FactualKnowledge bestMatch = null;
         double bestScore = 0;
 
@@ -176,7 +180,7 @@ public class PermanentLayerService {
             }
         }
 
-        // 3. 如果关键词索引没找到，遍历所有知识
+        // 3. 如果关键词索引没找到，遍历所有知识 (If keyword index not found, traverse all knowledge)
         if (bestMatch == null) {
             for (FactualKnowledge fact : factualKnowledge.values()) {
                 if (!fact.isEnabled()) {
@@ -256,6 +260,9 @@ public class PermanentLayerService {
 
     /**
      * 保存技能模板
+     * (Save skill template)
+     * 
+     * @param template 技能模板 (Skill template)
      */
     public void saveSkillTemplate(SkillTemplate template) {
         if (template.getId() == null) {
@@ -274,6 +281,9 @@ public class PermanentLayerService {
 
     /**
      * 保存确定性知识
+     * (Save factual knowledge)
+     * 
+     * @param knowledge 确定性知识 (Factual knowledge)
      */
     public void saveFactualKnowledge(FactualKnowledge knowledge) {
         if (knowledge.getId() == null) {
@@ -451,6 +461,7 @@ public class PermanentLayerService {
 
     /**
      * 持久化数据到文件
+     * (Persist data to files)
      */
     private void persistData() {
         try {
@@ -526,15 +537,50 @@ public class PermanentLayerService {
 
     /**
      * 低频层查询结果
+     * (Permanent layer query result)
      */
     @lombok.Data
     public static class PermanentQueryResult {
+        /**
+         * 是否可直接回答
+         * (Whether can answer directly)
+         */
         private boolean directAnswer;
+        
+        /**
+         * 回答内容
+         * (Answer content)
+         */
         private String answer;
+        
+        /**
+         * 置信度
+         * (Confidence)
+         */
         private double confidence;
+        
+        /**
+         * 来源
+         * (Source)
+         */
         private String source;
+        
+        /**
+         * 技能模板
+         * (Skill template)
+         */
         private SkillTemplate skillTemplate;
+        
+        /**
+         * 确定性知识
+         * (Factual knowledge)
+         */
         private FactualKnowledge factualKnowledge;
+        
+        /**
+         * 处理时间（毫秒）
+         * (Processing time in milliseconds)
+         */
         private long processingTimeMs;
     }
 }
