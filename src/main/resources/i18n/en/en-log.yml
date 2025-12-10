@@ -187,6 +187,10 @@ log:
     weights_saved: "💾 Saved document weights: {0} documents"
     weights_file_not_exists: "📂 Document weights file not found, using default weights"
   image:
+    get_failed: "Failed to get image: {0}/{1}"
+    list_failed: "Failed to get document image list: {0}"
+    smart_extractor_strategy: "🧠 Using smart extraction strategy: {0}"
+    context_extracted: "✅ Image context extracted: {0} regions, duration: {1}ms"
     saved: "Image saved: {0} (document: {1})"
     delete_failed: "File deletion failed: {0}"
     deleted_all: "All images of document deleted: {0}"
