@@ -1,0 +1,23 @@
+# 概念系统中文国际化文件
+# Concept System Chinese Internationalization File
+# 文件: src/main/resources/i18n/zh/zh-concept.yml
+
+concept:
+  version:
+    creating:
+      initial: "📦 正在为概念创建初始版本: id={0}, name={1}"
+      new: "📝 创建新版本: conceptId={0}, changeType={1}"
+    initial:
+      created: "✅ 概念初始版本创建成功: id={0}, version={1}"
+    created: "✅ 新版本创建成功: conceptId={0}, version={1}"
+    history:
+      notfound: "⚠️ 概念历史不存在: conceptId={0}"
+    notfound: "⚠️ 版本不存在: conceptId={0}, version={1}"
+    rollback:
+      old: "🔄 正在回滚概念到指定版本: conceptId={0}, targetVersion={1}"
+      success: "✅ 概念回滚成功: conceptId={0}, targetVersion={1}"
+    cleanup:
+      start: "🧹 开始清理旧版本: conceptId={0}"
+      skip: "⏭️ 跳过版本清理（版本数未超过阈值）: conceptId={0}, versionCount={1}"
+      complete: "✅ 版本清理完成: conceptId={0}, removed={1}, kept={2}"
+

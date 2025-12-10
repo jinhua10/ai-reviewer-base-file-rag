@@ -81,6 +81,18 @@
 
 ## 📝 进度更新日志 (Progress Log)
 
+### 2025-12-11 02:45:00 - Phase 1.2 完成 ✅
+- ✅ 创建 ConceptUnit 实体类（280行）
+- ✅ 创建 ConceptType 枚举（100行）
+- ✅ 创建 ConceptVersion 实体类（150行）
+- ✅ 创建 ConceptHistory 实体类（240行）
+- ✅ 创建 VersionManager 服务（380行）
+- ✅ 创建国际化资源文件（中英文）
+- ✅ 编写单元测试（9个测试用例，全部通过）
+- ✅ 完成代码规范检查
+- ✅ 生成完成报告
+- 📌 **下一步**: 开始 Phase 1.3 - 数据存储层
+
 ### 2025-12-11 02:35:00 - Phase 1.1 完成 ✅
 - ✅ 创建 Role 实体类
 - ✅ 创建 RoleConfig 配置类
@@ -170,7 +182,7 @@
 
 ### 进度追踪
 - [x] 1.1 角色模型与配置 (100%) ✅
-- [ ] 1.2 概念单元扩展 (0%)
+- [x] 1.2 概念单元扩展 (100%) ✅
 - [ ] 1.3 数据存储层 (0%)
 
 ### 任务清单
@@ -206,23 +218,38 @@
 完成报告: docs/refactor/phase-1/20251211-02-32-00-Phase1.1-Complete.md
 ```
 
-#### 1.2 概念单元扩展 (2-3天)
+#### 1.2 概念单元扩展 (2-3天) ✅
+
+**状态**: ✅ 已完成 | **开始时间**: 2025-12-11 02:00 | **完成时间**: 2025-12-11 02:45 | **完成度**: 100%
 ```yaml
 任务:
-  - [ ] 扩展 ConceptUnit 类（添加版本字段）
-  - [ ] 创建 ConceptVersion 实体
-  - [ ] 创建 ConceptHistory 实体
-  - [ ] 实现版本管理服务
+  - [x] 创建 ConceptUnit 实体类（完整版本，280行）
+  - [x] 创建 ConceptType 枚举（13种类型）
+  - [x] 创建 ConceptVersion 实体（7种变更类型）
+  - [x] 创建 ConceptHistory 实体（版本历史管理）
+  - [x] 实现 VersionManager 服务（版本管理）
+  - [x] 编写单元测试
+  - [x] 国际化支持
   
 文件:
-  - src/main/java/top/yumbo/ai/rag/model/ConceptUnit.java (修改)
-  - src/main/java/top/yumbo/ai/rag/concept/ConceptVersion.java
-  - src/main/java/top/yumbo/ai/rag/concept/ConceptHistory.java
-  - src/main/java/top/yumbo/ai/rag/concept/VersionManager.java
+  - ✅ src/main/java/top/yumbo/ai/rag/concept/ConceptUnit.java
+  - ✅ src/main/java/top/yumbo/ai/rag/concept/ConceptType.java
+  - ✅ src/main/java/top/yumbo/ai/rag/concept/ConceptVersion.java
+  - ✅ src/main/java/top/yumbo/ai/rag/concept/ConceptHistory.java
+  - ✅ src/main/java/top/yumbo/ai/rag/concept/VersionManager.java
+  - ✅ src/main/resources/i18n/zh/zh-concept.yml
+  - ✅ src/main/resources/i18n/en/en-concept.yml
+  - ✅ src/test/java/top/yumbo/ai/rag/concept/VersionManagerTest.java
   
 验证:
-  - 概念可以保存多个版本
-  - 版本历史可查询
+  - ✅ 概念可以保存多个版本
+  - ✅ 版本历史可查询
+  - ✅ 支持版本比较和回滚
+  - ✅ 自动版本清理机制
+  - ✅ 9个单元测试全部通过
+  - ✅ 编译无错误
+  
+完成报告: docs/refactor/phase-1/20251211-02-44-00-Phase1.2-Complete.md
 ```
 
 #### 1.3 数据存储层 (2-3天)

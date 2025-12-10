@@ -1,0 +1,23 @@
+# 概念系统英文国际化文件
+# Concept System English Internationalization File
+# File: src/main/resources/i18n/en/en-concept.yml
+
+concept:
+  version:
+    creating:
+      new: "📝 Creating new version: conceptId={0}, changeType={1}"
+      initial: "📦 Creating initial version for concept: id={0}, name={1}"
+    initial:
+      created: "✅ Initial version created successfully: id={0}, version={1}"
+    created: "✅ New version created successfully: conceptId={0}, version={1}"
+    history:
+      notfound: "⚠️ Concept history not found: conceptId={0}"
+    notfound: "⚠️ Version not found: conceptId={0}, version={1}"
+    rollback:
+      old: "🔄 Rolling back concept to version: conceptId={0}, targetVersion={1}"
+      success: "✅ Concept rollback successful: conceptId={0}, targetVersion={1}"
+    cleanup:
+      start: "🧹 Starting version cleanup: conceptId={0}"
+      skip: "⏭️ Skipping version cleanup (count below threshold): conceptId={0}, versionCount={1}"
+      complete: "✅ Version cleanup completed: conceptId={0}, removed={1}, kept={2}"
+
