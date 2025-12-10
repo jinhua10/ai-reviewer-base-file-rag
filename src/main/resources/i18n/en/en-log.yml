@@ -588,7 +588,6 @@ log:
     image_storage_enabled: "✅ Image storage service enabled"
     ocr_config: "OCR configuration details:"
     enable_ocr: "Enable OCR: {0}"
-    tessdata: "Tesseract data path: {0}"
     not_set: "Not set"
     ocr_language: "OCR language: {0}"
     ocr_disabled: "OCR disabled: {0}"

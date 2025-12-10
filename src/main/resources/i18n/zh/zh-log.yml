@@ -588,7 +588,6 @@ log:
     image_storage_enabled: "✅ 图片存储服务已启用"
     ocr_config: "OCR 配置详情："
     enable_ocr: "启用 OCR：{0}"
-    tessdata: "Tesseract 数据路径：{0}"
     not_set: "未设置"
     ocr_language: "OCR 语言：{0}"
     ocr_disabled: "OCR 未启用：{0}"
