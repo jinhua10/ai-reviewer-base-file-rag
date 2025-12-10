@@ -10,9 +10,16 @@ function App() {
     const { t, toggleLanguage, language } = window.LanguageModule.useTranslation();
     const { useState, useEffect } = React;
 
-    // 状态管理
+    // 状态管理 (State management)
     const [activeTab, setActiveTab] = useState('qa');
     const [health, setHealth] = useState(null);
+
+    // 引导页面状态 (Welcome guide state)
+    const [showWelcomeGuide, setShowWelcomeGuide] = useState(() => {
+        // 检查是否是首次访问 (Check if it's the first visit)
+        const completed = localStorage.getItem('welcomeGuideCompleted');
+        return completed !== 'true';
+    });
 
     // AI分析面板状态
     const [showAIAnalysis, setShowAIAnalysis] = useState(false);
@@ -113,12 +120,12 @@ function App() {
         window.isDocumentInAIAnalysis = isDocumentInAIAnalysis;
     }, [addDocumentsToAIAnalysis, removeDocumentsFromAIAnalysis, isDocumentInAIAnalysis]);
 
-    // 健康检查
+    // 健康检查 (Health check)
     useEffect(() => {
         console.log(t('logAppMounted'));
         checkHealth();
 
-        // 每30秒检查一次服务状态
+        // 每30秒检查一次服务状态 (Check service status every 30 seconds)
         const intervalId = setInterval(() => {
             console.log(t('logAutoCheckingHealth'));
             checkHealth();
@@ -127,6 +134,19 @@ function App() {
         return () => {
             console.log(t('logCleaningInterval'));
             clearInterval(intervalId);
+        };
+    }, []);
+
+    // 监听引导页面完成事件 (Listen for welcome guide completion)
+    useEffect(() => {
+        const handleGuideCompleted = () => {
+            setShowWelcomeGuide(false);
+        };
+
+        window.addEventListener('welcomeGuideCompleted', handleGuideCompleted);
+
+        return () => {
+            window.removeEventListener('welcomeGuideCompleted', handleGuideCompleted);
         };
     }, []);
 
@@ -269,6 +289,11 @@ function App() {
                     </div>
                 </div>
             </div>
+
+            {/* 引导页面 (Welcome Guide) */}
+            {showWelcomeGuide && window.WelcomeGuide && (
+                React.createElement(window.WelcomeGuide)
+            )}
 
             {/* 拖拽分隔线 */}
             {showAIAnalysis && (

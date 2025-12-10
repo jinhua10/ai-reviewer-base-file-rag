@@ -749,6 +749,73 @@ const translations = {
         hopeAnswer: '答案',
         hopeStrategyDirect: '直接回答',
         hopeStrategyTemplate: '模板增强',
+
+        // 引导页面 (Welcome Guide)
+        welcomeTitle: '欢迎使用 RAG 2.0 知识演化系统',
+        welcomeSubtitle: '下一代智能知识管理与问答系统',
+        welcomeSkip: '跳过引导',
+        welcomeNext: '下一步',
+        welcomePrevious: '上一步',
+        welcomeStart: '开始使用',
+
+        // 步骤标题
+        welcomeStep1Title: '🤔 当前 AI Agent 面临的问题',
+        welcomeStep2Title: '💡 我们的解决方案',
+        welcomeStep3Title: '🎯 系统核心特性',
+        welcomeStep4Title: '🚀 知识演化机制',
+        welcomeStep5Title: '✨ 开始您的旅程',
+
+        // 步骤 1: 问题分析
+        welcomeProblem1Title: '静态知识库的局限',
+        welcomeProblem1Desc: '传统 RAG 系统使用固定向量维度，无法适应世界爆炸性的信息增长。就像用有限的抽屉存储无限的知识，最终会力不从心。',
+        welcomeProblem2Title: '缺乏知识演化',
+        welcomeProblem2Desc: '现有系统无法根据用户反馈自动更新知识，错误的信息会一直错下去，就像一本永远不会修订的教科书。',
+        welcomeProblem3Title: '上下文丢失',
+        welcomeProblem3Desc: '大模型虽然强大，但本质是有损的统计压缩。需要的时候才加载对应知识，按需构建，才能真正高效。',
+        welcomeProblemSummary: '这些问题阻碍了 AI 系统真正像人一样持续学习和进化。',
+
+        // 步骤 2: 解决方案
+        welcomeVisionTitle: '我们的愿景',
+        welcomeVisionDesc: '构建一个像人类大脑一样的知识系统——能够学习、记忆、忘却，并且不断演化。',
+        welcomeApproach1Title: '📚 概念化知识表示',
+        welcomeApproach1Desc: '将知识抽象为概念单元——最小的信息单位。文档是概念的组合，概念之间相互关联，形成知识图谱。',
+        welcomeApproach2Title: '🎭 多角色知识库',
+        welcomeApproach2Desc: '不同角色看世界的角度不同。开发者关注代码，设计师关注美学。按角色构建独立的向量索引，提高检索精度。',
+        welcomeApproach3Title: '♻️ 知识演化循环',
+        welcomeApproach3Desc: '用户的每次交互都是反馈。系统无感知地收集这些信号，通过投票机制更新概念，让知识库持续进化。',
+
+        // 步骤 3: 核心特性
+        welcomeFeature1Title: '🧠 HOPE 三层记忆',
+        welcomeFeature1Desc: '模仿人类记忆机制：高频层（实时上下文）、中频层（近期知识）、低频层（长期技能）。快速响应，节省成本。',
+        welcomeFeature2Title: '⚡ 流式双轨响应',
+        welcomeFeature2Desc: 'HOPE 快速答案（150ms）+ LLM 详细分析（3500ms）并行展示。用户立即看到结果，无需等待。',
+        welcomeFeature3Title: '🎯 智能策略调度',
+        welcomeFeature3Desc: '根据问题类型自动选择最优检索策略（关键词、向量、混合）。系统会学习并优化策略选择。',
+        welcomeFeature4Title: '🔍 多文档联合分析',
+        welcomeFeature4Desc: '智能感知用户意图，自动切换单文档或多文档分析。支持跨文档知识融合。',
+
+        // 步骤 4: 知识演化
+        welcomeEvolutionIntro: '这是 RAG 2.0 的核心创新——让知识真正「活」起来',
+        welcomeCycle1Title: '1️⃣ 初始知识引入',
+        welcomeCycle1Desc: '从 HOPE 低频和中频层抽取高可信度知识，形成系统的初始知识库。',
+        welcomeCycle2Title: '2️⃣ 无感知反馈收集',
+        welcomeCycle2Desc: '用户的点击、停留时间、评分等行为被系统智能捕获，无需用户主动操作。',
+        welcomeCycle3Title: '3️⃣ 概念冲突检测',
+        welcomeCycle3Desc: '当新旧概念冲突时，系统启动投票机制。多数票获胜的概念将成为新版本。',
+        welcomeCycle4Title: '4️⃣ 知识库更新',
+        welcomeCycle4Desc: '优胜概念自动更新到知识库，旧版本归档。系统持续优化，越用越聪明。',
+        welcomeEvolutionNote: '💡 提示：这个过程完全自动化，系统会像人一样不断学习和成长。',
+
+        // 步骤 5: 开始使用
+        welcomeReadyTitle: '准备好开始了吗？',
+        welcomeReadyDesc: 'RAG 2.0 已经为您准备就绪。让我们一起探索知识演化的奇妙旅程！',
+        welcomeFeatureListTitle: '您可以立即体验：',
+        welcomeFeatureList1: '📝 上传文档，系统自动提取概念',
+        welcomeFeatureList2: '💬 提问，体验 HOPE 快速响应',
+        welcomeFeatureList3: '🎨 查看 HOPE 仪表盘，监控系统学习',
+        welcomeFeatureList4: '📊 使用多文档分析，融合知识',
+        welcomeGuideReopen: '您可以随时在设置中重新打开此引导。',
+        welcomeStartButton: '开始探索',
         hopeStrategyReference: '参考增强',
         hopeStrategyRAG: 'RAG检索',
         hopeLoadError: '加载 HOPE 仪表盘失败',
@@ -1526,6 +1593,73 @@ const translations = {
         hopeLoadError: 'Failed to load HOPE dashboard',
         yes: 'Yes',
         no: 'No',
+
+        // Welcome Guide
+        welcomeTitle: 'Welcome to RAG 2.0 Knowledge Evolution System',
+        welcomeSubtitle: 'Next-Generation Intelligent Knowledge Management & QA System',
+        welcomeSkip: 'Skip Guide',
+        welcomeNext: 'Next',
+        welcomePrevious: 'Previous',
+        welcomeStart: 'Get Started',
+
+        // Step titles
+        welcomeStep1Title: '🤔 Current AI Agent Challenges',
+        welcomeStep2Title: '💡 Our Solution',
+        welcomeStep3Title: '🎯 Core Features',
+        welcomeStep4Title: '🚀 Knowledge Evolution Mechanism',
+        welcomeStep5Title: '✨ Begin Your Journey',
+
+        // Step 1: Problem analysis
+        welcomeProblem1Title: 'Limitations of Static Knowledge Base',
+        welcomeProblem1Desc: 'Traditional RAG systems use fixed vector dimensions, unable to adapt to explosive information growth. Like storing infinite knowledge in limited drawers.',
+        welcomeProblem2Title: 'Lack of Knowledge Evolution',
+        welcomeProblem2Desc: 'Existing systems cannot automatically update knowledge based on user feedback. Wrong information stays wrong, like a textbook that never gets revised.',
+        welcomeProblem3Title: 'Context Loss',
+        welcomeProblem3Desc: 'Large models are powerful but lossy statistical compression. Load knowledge on-demand and build context as needed for true efficiency.',
+        welcomeProblemSummary: 'These issues prevent AI systems from continuously learning and evolving like humans.',
+
+        // Step 2: Solution
+        welcomeVisionTitle: 'Our Vision',
+        welcomeVisionDesc: 'Build a knowledge system like the human brain—capable of learning, remembering, forgetting, and continuously evolving.',
+        welcomeApproach1Title: '📚 Conceptual Knowledge Representation',
+        welcomeApproach1Desc: 'Abstract knowledge into concept units—minimal information units. Documents are combinations of concepts, interconnected to form a knowledge graph.',
+        welcomeApproach2Title: '🎭 Multi-Role Knowledge Base',
+        welcomeApproach2Desc: 'Different roles see the world differently. Developers focus on code, designers on aesthetics. Build separate vector indices per role for higher retrieval precision.',
+        welcomeApproach3Title: '♻️ Knowledge Evolution Loop',
+        welcomeApproach3Desc: 'Every user interaction is feedback. The system invisibly collects these signals, updates concepts through voting, and continuously evolves the knowledge base.',
+
+        // Step 3: Core features
+        welcomeFeature1Title: '🧠 HOPE Three-Layer Memory',
+        welcomeFeature1Desc: 'Mimics human memory: high-frequency (real-time context), mid-frequency (recent knowledge), low-frequency (long-term skills). Fast response, cost-effective.',
+        welcomeFeature2Title: '⚡ Streaming Dual-Track Response',
+        welcomeFeature2Desc: 'HOPE quick answer (150ms) + LLM detailed analysis (3500ms) in parallel. Users see results instantly, no waiting.',
+        welcomeFeature3Title: '🎯 Intelligent Strategy Dispatch',
+        welcomeFeature3Desc: 'Automatically selects optimal retrieval strategy (keyword, vector, hybrid) based on question type. System learns and optimizes strategy selection.',
+        welcomeFeature4Title: '🔍 Multi-Document Joint Analysis',
+        welcomeFeature4Desc: 'Intelligently senses user intent, automatically switches between single or multi-document analysis. Supports cross-document knowledge fusion.',
+
+        // Step 4: Knowledge evolution
+        welcomeEvolutionIntro: 'This is RAG 2.0\'s core innovation—making knowledge truly \'alive\'',
+        welcomeCycle1Title: '1️⃣ Initial Knowledge Introduction',
+        welcomeCycle1Desc: 'Extract high-confidence knowledge from HOPE low and mid-frequency layers to form the system\'s initial knowledge base.',
+        welcomeCycle2Title: '2️⃣ Invisible Feedback Collection',
+        welcomeCycle2Desc: 'User behaviors like clicks, dwell time, ratings are intelligently captured by the system without explicit user action.',
+        welcomeCycle3Title: '3️⃣ Concept Conflict Detection',
+        welcomeCycle3Desc: 'When new and old concepts conflict, the system initiates a voting mechanism. The majority-voted concept becomes the new version.',
+        welcomeCycle4Title: '4️⃣ Knowledge Base Update',
+        welcomeCycle4Desc: 'Winning concepts automatically update the knowledge base, old versions are archived. The system continuously optimizes and gets smarter.',
+        welcomeEvolutionNote: '💡 Tip: This process is fully automated. The system learns and grows like humans.',
+
+        // Step 5: Get started
+        welcomeReadyTitle: 'Ready to Begin?',
+        welcomeReadyDesc: 'RAG 2.0 is ready for you. Let\'s explore the wonderful journey of knowledge evolution together!',
+        welcomeFeatureListTitle: 'You can experience immediately:',
+        welcomeFeatureList1: '📝 Upload documents, auto concept extraction',
+        welcomeFeatureList2: '💬 Ask questions, experience HOPE fast response',
+        welcomeFeatureList3: '🎨 View HOPE dashboard, monitor system learning',
+        welcomeFeatureList4: '📊 Use multi-document analysis, fuse knowledge',
+        welcomeGuideReopen: 'You can reopen this guide anytime in settings.',
+        welcomeStartButton: 'Start Exploring',
 
         // Console Logs
         logAppMounted: '📡 App mounted, checking health...',

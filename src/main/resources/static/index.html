@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="assets/css/prompt-recommendation.css">
     <link rel="stylesheet" href="assets/css/hierarchical-feedback.css">
     <link rel="stylesheet" href="assets/css/active-learning.css">
+    <link rel="stylesheet" href="assets/css/welcome-guide.css">
 
     <!-- React 库 (使用 CDN 或本地文件) -->
     <script crossorigin src="js/lib/react.production.min.js"></script>
@@ -77,6 +78,9 @@
     <!-- 双轨答案组件 -->
     <script type="text/babel" src="js/components/DualTrackAnswer.jsx"></script>
 
+    <!-- 引导页面组件 (Welcome Guide Component) -->
+    <script type="text/babel" src="js/components/WelcomeGuide.jsx"></script>
+
     <!-- Tab 组件 (依赖前面的组件) -->
     <script type="text/babel" src="js/components/tabs/DocumentsTabComponents.jsx"></script>
 
@@ -113,7 +117,8 @@
                     DocumentsTab: !!window.DocumentsTab,
                     StatisticsTab: !!window.StatisticsTab,
                     LLMResultsTab: !!window.LLMResultsTab,
-                    DocumentsTabComponents: !!window.DocumentsTabComponents
+                    DocumentsTabComponents: !!window.DocumentsTabComponents,
+                    WelcomeGuide: !!window.WelcomeGuide
                 };
 
                 console.log('Checking dependencies:', deps);
