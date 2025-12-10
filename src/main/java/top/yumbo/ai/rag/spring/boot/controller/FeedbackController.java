@@ -324,7 +324,7 @@ public class FeedbackController {
 
             if (success) {
                 // 记录日志 / Log the rating
-                String emojiText = I18N.getLang("feedback.emoji.description", lang, rating);
+                String emojiText = I18N.getLang("feedback.emoji.description." + rating, lang);
                 log.info(I18N.get("log.feedback.overall_rating_submitted",
                     emojiText, recordId, rating));
 

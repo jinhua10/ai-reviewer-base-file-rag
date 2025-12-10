@@ -1,0 +1,36 @@
+# Feedback Module - Chinese Messages (反馈模块 - 中文消息)
+# Generated: 2025-12-10
+
+# API 响应消息 (API Response Messages)
+feedback.api.success.feedback_received: "反馈已收到，感谢您的宝贵意见！"
+feedback.api.message.thank_you: "感谢您的反馈！"
+feedback.api.message.document_impact: "您的评分有助于提升文档质量（评分：{0}星）"
+feedback.api.message.overall_impact: "您的评分有助于改进回答质量（评分：{0}星）"
+
+# API 错误消息 (API Error Messages)
+feedback.api.error.missing_params: "缺少必需参数：{0}"
+feedback.api.error.invalid_rating: "评分必须在 1-5 之间"
+feedback.api.error.invalid_feedback_type: "无效的反馈类型"
+feedback.api.error.record_not_found: "问答记录不存在"
+feedback.api.error.processing_failed: "处理失败：{0}"
+
+# 日志消息 (Log Messages)
+log.feedback.overall_received: "收到整体反馈：记录ID={0}，评分={1}"
+log.feedback.overall_failed: "提交整体反馈失败"
+log.feedback.document_received: "{0} 收到文档反馈：记录ID={1}，文档={2}"
+log.feedback.document_failed: "提交文档反馈失败"
+log.feedback.get_record_failed: "获取问答记录失败"
+log.feedback.get_recent_failed: "获取最近问答记录失败"
+log.feedback.get_pending_failed: "获取待审核记录失败"
+log.feedback.get_statistics_failed: "获取统计信息失败"
+log.feedback.rating_submitted: "{0} 文档评分已提交：记录ID={1}，文档={2}，评分={3}，影响={4}"
+log.feedback.rating_failed: "提交评分失败"
+log.feedback.overall_rating_submitted: "{0} 整体评分已提交：记录ID={1}，评分={2}"
+
+# 表情评分描述 (Emoji Rating Descriptions)
+feedback.emoji.description.1: "😞 很失望"
+feedback.emoji.description.2: "🙁 不太满意"
+feedback.emoji.description.3: "😐 一般般"
+feedback.emoji.description.4: "😊 比较满意"
+feedback.emoji.description.5: "🤩 非常满意"
+

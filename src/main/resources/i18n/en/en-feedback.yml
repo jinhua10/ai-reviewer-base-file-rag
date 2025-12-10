@@ -1,0 +1,36 @@
+# Feedback Module - English Messages (反馈模块 - 英文消息)
+# Generated: 2025-12-10
+
+# API Response Messages
+feedback.api.success.feedback_received: "Feedback received, thank you for your valuable input!"
+feedback.api.message.thank_you: "Thank you for your feedback!"
+feedback.api.message.document_impact: "Your rating helps improve document quality (Rating: {0} stars)"
+feedback.api.message.overall_impact: "Your rating helps improve answer quality (Rating: {0} stars)"
+
+# API Error Messages
+feedback.api.error.missing_params: "Missing required parameters: {0}"
+feedback.api.error.invalid_rating: "Rating must be between 1 and 5"
+feedback.api.error.invalid_feedback_type: "Invalid feedback type"
+feedback.api.error.record_not_found: "QA record not found"
+feedback.api.error.processing_failed: "Processing failed: {0}"
+
+# Log Messages
+log.feedback.overall_received: "Overall feedback received: recordId={0}, rating={1}"
+log.feedback.overall_failed: "Failed to submit overall feedback"
+log.feedback.document_received: "{0} Document feedback received: recordId={1}, document={2}"
+log.feedback.document_failed: "Failed to submit document feedback"
+log.feedback.get_record_failed: "Failed to get QA record"
+log.feedback.get_recent_failed: "Failed to get recent QA records"
+log.feedback.get_pending_failed: "Failed to get pending records"
+log.feedback.get_statistics_failed: "Failed to get statistics"
+log.feedback.rating_submitted: "{0} Document rating submitted: recordId={1}, document={2}, rating={3}, impact={4}"
+log.feedback.rating_failed: "Failed to submit rating"
+log.feedback.overall_rating_submitted: "{0} Overall rating submitted: recordId={1}, rating={2}"
+
+# Emoji Rating Descriptions
+feedback.emoji.description.1: "😞 Very disappointed"
+feedback.emoji.description.2: "🙁 Not satisfied"
+feedback.emoji.description.3: "😐 Neutral"
+feedback.emoji.description.4: "😊 Satisfied"
+feedback.emoji.description.5: "🤩 Very satisfied"
+
