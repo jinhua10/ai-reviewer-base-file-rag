@@ -38,15 +38,18 @@ public class ResponseStrategyDecider {
     public ResponseStrategy decide(QuestionClassifier.Classification classification,
                                    HOPEQueryResult queryResult) {
 
-        // 如果 HOPE 未启用，直接使用完整 RAG
+        // 1. 如果 HOPE 未启用，直接使用完整 RAG
+        // (1. If HOPE is not enabled, use full RAG directly)
         if (!config.isEnabled()) {
             return ResponseStrategy.FULL_RAG;
         }
 
         double directAnswerThreshold = config.getStrategy().getDirectAnswerConfidence();
 
-        // 策略1: 直接回答
+        // 2. 策略1: 直接回答
+        // (2. Strategy 1: Direct Answer)
         // 条件：不需要 LLM + 置信度超过阈值
+        // (Condition: No LLM needed + confidence exceeds threshold)
         if (!queryResult.isNeedsLLM()
             && queryResult.getConfidence() >= directAnswerThreshold
             && queryResult.getAnswer() != null) {
@@ -56,8 +59,10 @@ public class ResponseStrategyDecider {
             return ResponseStrategy.DIRECT_ANSWER;
         }
 
-        // 策略2: 模板增强回答
+        // 3. 策略2: 模板增强回答
+        // (3. Strategy 2: Template Answer)
         // 条件：有技能模板 + 问题不太复杂
+        // (Condition: Has skill template + question not too complex)
         if (queryResult.hasSkillTemplate()
             && config.getStrategy().isEnableSkillTemplates()
             && classification.getComplexity() != QuestionClassifier.ComplexityLevel.COMPLEX) {
@@ -67,8 +72,10 @@ public class ResponseStrategyDecider {
             return ResponseStrategy.TEMPLATE_ANSWER;
         }
 
-        // 策略3: 参考增强回答
+        // 4. 策略3: 参考增强回答
+        // (4. Strategy 3: Reference Answer)
         // 条件：有相似问答参考 + 相似度较高
+        // (Condition: Has similar QA reference + high similarity)
         if (queryResult.hasSimilarReference()) {
             HOPEQueryResult.SimilarQA bestMatch = queryResult.getSimilarQAs().stream()
                 .max((a, b) -> Double.compare(a.getSimilarity(), b.getSimilarity()))
@@ -81,13 +88,20 @@ public class ResponseStrategyDecider {
             }
         }
 
-        // 策略4: 完整 RAG
+        // 5. 策略4: 完整 RAG
+        // (5. Strategy 4: Full RAG)
         log.info(I18N.get("hope.strategy.full_rag"));
         return ResponseStrategy.FULL_RAG;
     }
 
     /**
      * 获取策略说明
+     * (Get strategy explanation)
+     * 
+     * @param strategy 响应策略 (Response strategy)
+     * @param classification 问题分类结果 (Question classification result)
+     * @param queryResult HOPE查询结果 (HOPE query result)
+     * @return 策略说明文本 (Strategy explanation text)
      */
     public String getStrategyExplanation(ResponseStrategy strategy,
                                          QuestionClassifier.Classification classification,

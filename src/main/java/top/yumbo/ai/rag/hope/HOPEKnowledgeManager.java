@@ -71,9 +71,9 @@ public class HOPEKnowledgeManager {
      * 智能查询 - 按层级依次查询
      * (Smart query - Query layers in order)
      *
-     * @param question 用户问题
-     * @param sessionId 会话ID（用于高频层）
-     * @return 查询结果
+     * @param question 用户问题 (User question)
+     * @param sessionId 会话ID（用于高频层） (Session ID for high-frequency layer)
+     * @return 查询结果 (Query result)
      */
     public HOPEQueryResult smartQuery(String question, String sessionId) {
         if (!config.isEnabled()) {
@@ -191,6 +191,11 @@ public class HOPEKnowledgeManager {
 
     /**
      * 获取响应策略
+     * (Get response strategy)
+     * 
+     * @param question 用户问题 (User question)
+     * @param queryResult 查询结果 (Query result)
+     * @return 响应策略 (Response strategy)
      */
     public ResponseStrategy getStrategy(String question, HOPEQueryResult queryResult) {
         QuestionClassifier.Classification classification = questionClassifier.classify(question);
@@ -199,6 +204,12 @@ public class HOPEKnowledgeManager {
 
     /**
      * 构建优化的 Prompt（使用技能模板）
+     * (Build optimized prompt using skill template)
+     * 
+     * @param question 用户问题 (User question)
+     * @param template 技能模板 (Skill template)
+     * @param context 上下文信息 (Context information)
+     * @return 优化后的提示词 (Optimized prompt)
      */
     public String buildOptimizedPrompt(String question, SkillTemplate template, String context) {
         if (template == null || template.getPromptTemplate() == null) {
@@ -213,6 +224,12 @@ public class HOPEKnowledgeManager {
 
     /**
      * 学习新知识 - 根据反馈调整层级
+     * (Learn new knowledge - Adjust layers based on feedback)
+     * 
+     * @param question 用户问题 (User question)
+     * @param answer 回答内容 (Answer content)
+     * @param rating 评分 (Rating)
+     * @param sessionId 会话ID (Session ID)
      */
     public void learn(String question, String answer, int rating, String sessionId) {
         if (!config.isEnabled()) {
@@ -240,6 +257,11 @@ public class HOPEKnowledgeManager {
 
     /**
      * 添加临时定义到高频层
+     * (Add temporary definition to high-frequency layer)
+     * 
+     * @param sessionId 会话ID (Session ID)
+     * @param term 术语 (Term)
+     * @param definition 定义 (Definition)
      */
     public void addTempDefinition(String sessionId, String term, String definition) {
         if (config.isEnabled() && sessionId != null) {
@@ -249,6 +271,9 @@ public class HOPEKnowledgeManager {
 
     /**
      * 清除会话
+     * (Clear session)
+     * 
+     * @param sessionId 会话ID (Session ID)
      */
     public void clearSession(String sessionId) {
         if (config.isEnabled() && sessionId != null) {
@@ -258,6 +283,10 @@ public class HOPEKnowledgeManager {
 
     /**
      * 记录反馈
+     * (Record feedback)
+     * 
+     * @param queryResult 查询结果 (Query result)
+     * @param positive 是否为正面反馈 (Whether it's positive feedback)
      */
     public void recordFeedback(HOPEQueryResult queryResult, boolean positive) {
         if (queryResult.getFactualKnowledge() != null) {
@@ -272,6 +301,9 @@ public class HOPEKnowledgeManager {
 
     /**
      * 获取统计信息
+     * (Get statistics information)
+     * 
+     * @return 统计信息 (Statistics information)
      */
     public Map<String, Object> getStatistics() {
         Map<String, Object> stats = new HashMap<>();
@@ -284,6 +316,9 @@ public class HOPEKnowledgeManager {
 
     /**
      * 检查 HOPE 是否启用
+     * (Check if HOPE is enabled)
+     * 
+     * @return 是否启用 (Whether enabled)
      */
     public boolean isEnabled() {
         return config.isEnabled();

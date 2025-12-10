@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
  * 中频层服务 - 管理近期知识
  * (Ordinary Layer Service - Manages recent knowledge)
  *
- * 特点：
- * - 存储近期高分问答
- * - 定期清理过期数据
- * - 支持知识晋升到低频层
+ * 特点 (Features):
+ * - 存储近期高分问答 (Store recent high-rated Q&A)
+ * - 定期清理过期数据 (Periodically clean expired data)
+ * - 支持知识晋升到低频层 (Support knowledge promotion to permanent layer)
  *
  * @author AI Reviewer Team
  * @since 2.0.0

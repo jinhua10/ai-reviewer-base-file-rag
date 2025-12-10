@@ -75,6 +75,11 @@ public class HOPELLMIntegrationConfig {
 
     /**
      * 包装 LLM 客户端为 HOPE 增强版本（自定义配置）
+     * (Wrap LLM client as HOPE enhanced version with custom configuration)
+     * 
+     * @param originalClient 原始 LLM 客户端 (Original LLM client)
+     * @param config 自定义配置 (Custom configuration)
+     * @return HOPE 增强的 LLM 客户端 (HOPE enhanced LLM client)
      */
     public LLMClient wrapWithHOPE(LLMClient originalClient, HOPEEnhancedLLMClient.HOPELLMConfig config) {
         if (originalClient == null) {
@@ -90,6 +95,9 @@ public class HOPELLMIntegrationConfig {
 
     /**
      * 获取默认配置
+     * (Get default configuration)
+     * 
+     * @return 默认配置 (Default configuration)
      */
     public HOPEEnhancedLLMClient.HOPELLMConfig getDefaultConfig() {
         return defaultConfig;

@@ -210,6 +210,10 @@ public class QuestionClassifier {
 
     /**
      * 检测问题类型
+     * (Detect question type)
+     * 
+     * @param question 问题文本 (Question text)
+     * @return 问题类型 (Question type)
      */
     private QuestionType detectQuestionType(String question) {
         // 优先检查创作型（通常需要完整 RAG）
@@ -244,6 +248,11 @@ public class QuestionClassifier {
 
     /**
      * 评估问题复杂度
+     * (Assess question complexity)
+     * 
+     * @param question 问题文本 (Question text)
+     * @param type 问题类型 (Question type)
+     * @return 复杂度等级 (Complexity level)
      */
     private ComplexityLevel assessComplexity(String question, QuestionType type) {
         // 事实型问题通常简单
@@ -269,6 +278,11 @@ public class QuestionClassifier {
 
     /**
      * 计算置信度
+     * (Calculate confidence score)
+     * 
+     * @param question 问题文本 (Question text)
+     * @param type 问题类型 (Question type)
+     * @return 置信度分数 (Confidence score)
      */
     private double calculateConfidence(String question, QuestionType type) {
         if (type == QuestionType.UNKNOWN) {
@@ -295,6 +309,12 @@ public class QuestionClassifier {
 
     /**
      * 建议查询层
+     * (Suggest query layer)
+     * 
+     * @param type 问题类型 (Question type)
+     * @param complexity 复杂度等级 (Complexity level)
+     * @param confidence 置信度分数 (Confidence score)
+     * @return 建议的查询层 (Suggested query layer)
      */
     private String suggestLayer(QuestionType type, ComplexityLevel complexity, double confidence) {
         // 简单的事实型问题 -> 优先查低频层
@@ -314,6 +334,10 @@ public class QuestionClassifier {
 
     /**
      * 提取关键词
+     * (Extract keywords)
+     * 
+     * @param question 问题文本 (Question text)
+     * @return 关键词数组 (Keyword array)
      */
     private String[] extractKeywords(String question) {
         // 简单的关键词提取：移除停用词，分词
@@ -330,6 +354,11 @@ public class QuestionClassifier {
 
     /**
      * 检查字符串是否包含数组中的任意关键词
+     * (Check if string contains any keyword from array)
+     * 
+     * @param text 文本内容 (Text content)
+     * @param keywords 关键词数组 (Keyword array)
+     * @return 是否包含关键词 (Whether contains keywords)
      */
     private boolean containsAny(String text, String[] keywords) {
         for (String keyword : keywords) {

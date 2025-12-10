@@ -74,6 +74,11 @@ public class HighFrequencyLayerService {
 
     /**
      * 查询高频层
+     * (Query high-frequency layer)
+     * 
+     * @param sessionId 会话ID (Session ID)
+     * @param question 用户问题 (User question)
+     * @return 查询结果 (Query result)
      */
     public HighFreqQueryResult query(String sessionId, String question) {
         HighFreqQueryResult result = new HighFreqQueryResult();
@@ -90,14 +95,14 @@ public class HighFrequencyLayerService {
         result.setFound(true);
         result.setSessionContext(context);
 
-        // 1. 检查是否有相关的临时定义
+        // 1. 检查是否有相关的临时定义 (Check for relevant temporary definitions)
         List<String> relevantDefinitions = findRelevantDefinitions(context, question);
         if (!relevantDefinitions.isEmpty()) {
             result.setHasRelevantContext(true);
             result.getContexts().addAll(relevantDefinitions);
         }
 
-        // 2. 构建对话上下文摘要
+        // 2. 构建对话上下文摘要 (Build conversation context summary)
         String contextSummary = context.buildContextSummary();
         if (!contextSummary.isEmpty()) {
             result.setHasRelevantContext(true);
@@ -115,6 +120,10 @@ public class HighFrequencyLayerService {
 
     /**
      * 获取或创建会话
+     * (Get or create session)
+     * 
+     * @param sessionId 会话ID (Session ID)
+     * @return 会话上下文 (Session context)
      */
     public SessionContext getOrCreateSession(String sessionId) {
         if (sessionId == null || sessionId.isEmpty()) {
@@ -137,21 +146,26 @@ public class HighFrequencyLayerService {
 
     /**
      * 更新会话上下文
+     * (Update session context)
+     * 
+     * @param sessionId 会话ID (Session ID)
+     * @param question 用户问题 (User question)
+     * @param answer 回答内容 (Answer content)
      */
     public void updateContext(String sessionId, String question, String answer) {
         SessionContext context = getOrCreateSession(sessionId);
 
-        // 添加对话历史
+        // 1. 添加对话历史 (Add conversation history)
         context.addTurn("user", question);
         context.addTurn("assistant", answer);
 
-        // 检测并更新当前话题
+        // 2. 检测并更新当前话题 (Detect and update current topic)
         String detectedTopic = detectTopic(question);
         if (detectedTopic != null) {
             context.setCurrentTopic(detectedTopic);
         }
 
-        // 限制历史记录数量
+        // 3. 限制历史记录数量 (Limit history record count)
         int maxHistory = config.getHighFrequency().getMaxHistoryPerSession();
         trimHistory(context, maxHistory);
 
@@ -164,6 +178,11 @@ public class HighFrequencyLayerService {
 
     /**
      * 添加临时定义
+     * (Add temporary definition)
+     * 
+     * @param sessionId 会话ID (Session ID)
+     * @param term 术语 (Term)
+     * @param definition 定义 (Definition)
      */
     public void addTempDefinition(String sessionId, String term, String definition) {
         SessionContext context = getOrCreateSession(sessionId);
@@ -174,6 +193,9 @@ public class HighFrequencyLayerService {
 
     /**
      * 清除会话
+     * (Clear session)
+     * 
+     * @param sessionId 会话ID (Session ID)
      */
     public void clearSession(String sessionId) {
         if (sessionId != null) {
@@ -304,6 +326,9 @@ public class HighFrequencyLayerService {
 
     /**
      * 获取统计信息
+     * (Get statistics information)
+     * 
+     * @return 统计信息 (Statistics information)
      */
     public Map<String, Object> getStatistics() {
         Map<String, Object> stats = new HashMap<>();
@@ -320,15 +345,50 @@ public class HighFrequencyLayerService {
 
     /**
      * 高频层查询结果
+     * (High-frequency layer query result)
      */
     @Data
     public static class HighFreqQueryResult {
+        /**
+         * 是否找到匹配
+         * (Whether found a match)
+         */
         private boolean found;
+        
+        /**
+         * 是否有相关上下文
+         * (Whether has relevant context)
+         */
         private boolean hasRelevantContext;
+        
+        /**
+         * 会话上下文
+         * (Session context)
+         */
         private SessionContext sessionContext;
+        
+        /**
+         * 上下文列表
+         * (Context list)
+         */
         private List<String> contexts = new ArrayList<>();
+        
+        /**
+         * 对话摘要
+         * (Conversation summary)
+         */
         private String conversationSummary;
+        
+        /**
+         * 是否是话题延续
+         * (Whether is topic continuation)
+         */
         private boolean topicContinuation;
+        
+        /**
+         * 当前话题
+         * (Current topic)
+         */
         private String currentTopic;
     }
 }

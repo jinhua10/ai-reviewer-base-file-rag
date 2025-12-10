@@ -76,43 +76,91 @@ public class SessionContext {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ConversationTurn {
-        /** 角色 user / assistant (Role: user / assistant) */
+        /**
+         * 角色 user / assistant
+         * (Role: user / assistant)
+         */
         private String role;
-        /** 内容 (Content) */
+        /**
+         * 内容
+         * (Content)
+         */
         private String content;
+        /**
+         * 时间戳
+         * (Timestamp)
+         */
         private LocalDateTime timestamp;
-        private String topic;     // 该轮对话的话题（可选）
+        /**
+         * 该轮对话的话题（可选）
+         * (Topic for this conversation turn (optional))
+         */
+        private String topic;
     }
 
     /**
      * 临时定义
+     * (Temporary definition)
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TempDefinition {
+        /**
+         * 术语
+         * (Term)
+         */
         private String term;
+        /**
+         * 定义
+         * (Definition)
+         */
         private String definition;
+        /**
+         * 创建时间
+         * (Creation time)
+         */
         private LocalDateTime createdAt;
-        private boolean sessionOnly;  // 仅本会话有效
+        /**
+         * 仅本会话有效
+         * (Valid for this session only)
+         */
+        private boolean sessionOnly;
     }
 
     /**
      * 用户偏好
+     * (User preference)
      */
     @Data
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UserPreference {
-        private String responseStyle;     // 详细/简洁
-        private String preferredLanguage; // 中文/英文
+        /**
+         * 响应风格（详细/简洁）
+         * (Response style: detailed/concise)
+         */
+        private String responseStyle;
+        /**
+         * 首选语言（中文/英文）
+         * (Preferred language: Chinese/English)
+         */
+        private String preferredLanguage;
+        /**
+         * 常见话题
+         * (Common topics)
+         */
         private List<String> commonTopics;
     }
 
     /**
      * 添加对话轮次
+     * (Add conversation turn)
+     * 
+     * @param role 角色（user/assistant） (Role: user/assistant)
+     * @param content 内容 (Content)
      */
     public void addTurn(String role, String content) {
         if (history == null) {
@@ -129,6 +177,10 @@ public class SessionContext {
 
     /**
      * 添加临时定义
+     * (Add temporary definition)
+     * 
+     * @param term 术语 (Term)
+     * @param definition 定义 (Definition)
      */
     public void addTempDefinition(String term, String definition) {
         if (tempDefinitions == null) {
@@ -144,6 +196,10 @@ public class SessionContext {
 
     /**
      * 获取最近 N 轮对话
+     * (Get recent N conversation turns)
+     * 
+     * @param n 轮次数 (Number of turns)
+     * @return 最近的对话列表 (List of recent conversations)
      */
     public List<ConversationTurn> getRecentHistory(int n) {
         if (history == null || history.isEmpty()) {
@@ -199,6 +255,10 @@ public class SessionContext {
 
     /**
      * 检查是否过期
+     * (Check if expired)
+     * 
+     * @param timeoutMinutes 超时分钟数 (Timeout minutes)
+     * @return 是否过期 (Whether expired)
      */
     public boolean isExpired(int timeoutMinutes) {
         if (lastActiveAt == null) {
@@ -209,6 +269,9 @@ public class SessionContext {
 
     /**
      * 获取对话轮数
+     * (Get conversation turn count)
+     * 
+     * @return 对话轮数 (Conversation turn count)
      */
     public int getTurnCount() {
         return history != null ? history.size() : 0;

@@ -70,21 +70,25 @@ public class RecentQA {
 
     /**
      * 来源文档
+     * (Source documents)
      */
     private String sourceDocuments;
 
     /**
      * 创建时间
+     * (Creation time)
      */
     private LocalDateTime createdAt;
 
     /**
      * 最后访问时间
+     * (Last access time)
      */
     private LocalDateTime lastAccessedAt;
 
     /**
      * 是否已晋升到低频层
+     * (Whether promoted to permanent layer)
      */
     private boolean promoted;
 
@@ -114,6 +118,9 @@ public class RecentQA {
 
     /**
      * 获取平均评分
+     * (Get average rating)
+     * 
+     * @return 平均评分 (Average rating)
      */
     public double getAverageRating() {
         if (ratingCount == 0) {
@@ -124,6 +131,7 @@ public class RecentQA {
 
     /**
      * 记录访问
+     * (Record access)
      */
     public void recordAccess() {
         this.accessCount++;
@@ -132,6 +140,9 @@ public class RecentQA {
 
     /**
      * 记录新评分
+     * (Record new rating)
+     * 
+     * @param newRating 新评分 (New rating)
      */
     public void recordRating(int newRating) {
         this.totalRating += newRating;
@@ -141,6 +152,11 @@ public class RecentQA {
 
     /**
      * 检查是否符合晋升条件
+     * (Check if eligible for promotion)
+     * 
+     * @param minAccessCount 最小访问次数 (Minimum access count)
+     * @param minAvgRating 最小平均评分 (Minimum average rating)
+     * @return 是否符合晋升条件 (Whether eligible for promotion)
      */
     public boolean isEligibleForPromotion(int minAccessCount, double minAvgRating) {
         return !promoted
@@ -150,6 +166,10 @@ public class RecentQA {
 
     /**
      * 检查是否过期
+     * (Check if expired)
+     * 
+     * @param retentionDays 保留天数 (Retention days)
+     * @return 是否过期 (Whether expired)
      */
     public boolean isExpired(int retentionDays) {
         if (createdAt == null) {

@@ -59,18 +59,46 @@ public enum ResponseStrategy {
      */
     FULL_RAG("full_rag", "完整RAG", true);
 
+    /**
+     * 策略代码
+     * (Strategy code)
+     */
     @Getter
     private final String code;
+    
+    /**
+     * 策略名称
+     * (Strategy name)
+     */
     @Getter
     private final String name;
+    
+    /**
+     * 是否需要 LLM
+     * (Whether requires LLM)
+     */
     private final boolean requiresLLM;
 
+    /**
+     * 构造方法
+     * (Constructor)
+     * 
+     * @param code 策略代码 (Strategy code)
+     * @param name 策略名称 (Strategy name)
+     * @param requiresLLM 是否需要 LLM (Whether requires LLM)
+     */
     ResponseStrategy(String code, String name, boolean requiresLLM) {
         this.code = code;
         this.name = name;
         this.requiresLLM = requiresLLM;
     }
 
+    /**
+     * 检查是否需要 LLM
+     * (Check if requires LLM)
+     * 
+     * @return 是否需要 LLM (Whether requires LLM)
+     */
     public boolean requiresLLM() {
         return requiresLLM;
     }

@@ -58,52 +58,63 @@ public class FactualKnowledge {
 
     /**
      * 访问次数
+     * (Access count)
      */
     private long accessCount;
 
     /**
      * 正面反馈次数
+     * (Positive feedback count)
      */
     private long positiveCount;
 
     /**
      * 负面反馈次数
+     * (Negative feedback count)
      */
     private long negativeCount;
 
     /**
      * 最后访问时间
+     * (Last access time)
      */
     private LocalDateTime lastAccessed;
 
     /**
      * 创建时间
+     * (Creation time)
      */
     private LocalDateTime createdAt;
 
     /**
      * 最后更新时间
+     * (Last update time)
      */
     private LocalDateTime updatedAt;
 
     /**
      * 是否启用
+     * (Whether enabled)
      */
     private boolean enabled;
 
     /**
      * 获取满意度
+     * (Get satisfaction rate)
+     * 
+     * @return 满意度分数 (0-1) (Satisfaction score (0-1))
      */
     public double getSatisfactionRate() {
         long total = positiveCount + negativeCount;
         if (total == 0) {
-            return 1.0; // 默认满意
+            return 1.0; // 默认满意 (Default satisfied)
         }
         return (double) positiveCount / total;
     }
 
     /**
      * 记录访问
+     * (Record access)
      */
     public void recordAccess() {
         this.accessCount++;
@@ -112,6 +123,9 @@ public class FactualKnowledge {
 
     /**
      * 记录反馈
+     * (Record feedback)
+     * 
+     * @param positive 是否为正面反馈 (Whether it's positive feedback)
      */
     public void recordFeedback(boolean positive) {
         if (positive) {
@@ -123,6 +137,9 @@ public class FactualKnowledge {
 
     /**
      * 是否应该禁用（满意度过低）
+     * (Whether should be disabled due to low satisfaction rate)
+     * 
+     * @return 是否应该禁用 (Whether should be disabled)
      */
     public boolean shouldDisable() {
         long total = positiveCount + negativeCount;

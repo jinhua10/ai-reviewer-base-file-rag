@@ -58,6 +58,9 @@ public class HOPEEnhancedLLMClient implements LLMClient {
 
     /**
      * 设置当前会话ID（可选）
+     * (Set current session ID (optional))
+     * 
+     * @param sessionId 会话ID (Session ID)
      */
     public static void setSessionId(String sessionId) {
         currentSessionId.set(sessionId);
@@ -65,6 +68,7 @@ public class HOPEEnhancedLLMClient implements LLMClient {
 
     /**
      * 清除当前会话ID
+     * (Clear current session ID)
      */
     public static void clearSessionId() {
         currentSessionId.remove();
@@ -72,6 +76,9 @@ public class HOPEEnhancedLLMClient implements LLMClient {
 
     /**
      * 获取最后的查询信息（用于反馈学习）
+     * (Get last query information for feedback learning)
+     * 
+     * @return 最后的查询信息 (Last query information)
      */
     public static LastQuery getLastQuery() {
         return lastQuery.get();
@@ -79,6 +86,11 @@ public class HOPEEnhancedLLMClient implements LLMClient {
 
     /**
      * 手动触发学习（当用户给出反馈时调用）
+     * (Manually trigger learning (called when user gives feedback))
+     * 
+     * @param question 用户问题 (User question)
+     * @param answer 回答内容 (Answer content)
+     * @param rating 评分 (Rating)
      */
     public void learnFromFeedback(String question, String answer, int rating) {
         // 1. 检查HOPE管理器是否可用 (Check if HOPE manager is available)
@@ -151,7 +163,7 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                 HOPEQueryResult hopeResult = hopeManager.smartQuery(prompt, sessionId);
                 ResponseStrategy strategy = hopeManager.getStrategy(prompt, hopeResult);
 
-                log.debug("HOPE query: needsLLM={}, source={}, confidence={}",
+                log.debug(I18N.get("hope.query.debug_info"),
                     hopeResult.isNeedsLLM(), hopeResult.getSourceLayer(), hopeResult.getConfidence());
 
                 // 直接回答策略
@@ -167,7 +179,7 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                         hopeResult.getSourceLayer(), true, elapsed,
                         hopeResult.getConfidence(), strategy.name()));
 
-                    log.info("HOPE direct answer from {} in {}ms",
+                    log.info(I18N.get("hope.direct_answer.success"),
                         hopeResult.getSourceLayer(), elapsed);
                     return hopeResult.getAnswer();
                 }
@@ -178,7 +190,7 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                     String optimizedPrompt = hopeManager.buildOptimizedPrompt(prompt, template, null);
                     if (optimizedPrompt != null) {
                         prompt = optimizedPrompt;
-                        log.debug("Using skill template: {}", template.getName());
+                        log.debug(I18N.get("hope.template.used"), template.getName());
                     }
                 }
 
@@ -195,7 +207,7 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                 }
 
             } catch (Exception e) {
-                log.warn("HOPE query failed, fallback to direct LLM call: {}", e.getMessage());
+                log.warn(I18N.get("hope.query.failed"), e.getMessage());
             }
         }
 

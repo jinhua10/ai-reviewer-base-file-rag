@@ -53,21 +53,25 @@ public class HOPEConfig {
     public static class PermanentConfig {
         /**
          * 存储路径
+         * (Storage path)
          */
         private String storagePath = "./data/hope/permanent";
 
         /**
          * 晋升到低频层的最小访问次数
+         * (Minimum access count for promotion to permanent layer)
          */
         private int promotionMinAccessCount = 10;
 
         /**
          * 晋升到低频层的最小平均评分
+         * (Minimum average rating for promotion to permanent layer)
          */
         private double promotionMinAvgRating = 4.5;
 
         /**
          * 直接回答的最小置信度
+         * (Minimum confidence for direct answer)
          */
         private double directAnswerConfidence = 0.9;
     }
@@ -80,26 +84,31 @@ public class HOPEConfig {
     public static class OrdinaryConfig {
         /**
          * 存储路径
+         * (Storage path)
          */
         private String storagePath = "./data/hope/ordinary";
 
         /**
          * 保留时间（天）
+         * (Retention time in days)
          */
         private int retentionDays = 30;
 
         /**
          * 相似度阈值（高于此值可直接使用历史答案）
+         * (Similarity threshold for direct use of historical answers)
          */
         private double similarityThreshold = 0.95;
 
         /**
          * 作为参考的相似度阈值
+         * (Similarity threshold for reference)
          */
         private double referenceThreshold = 0.7;
 
         /**
          * 最大存储条目数
+         * (Maximum number of stored entries)
          */
         private int maxEntries = 10000;
     }
@@ -112,21 +121,25 @@ public class HOPEConfig {
     public static class HighFrequencyConfig {
         /**
          * 存储方式: memory / redis
+         * (Storage method: memory / redis)
          */
         private String storage = "memory";
 
         /**
          * 会话超时（分钟）
+         * (Session timeout in minutes)
          */
         private int sessionTimeoutMinutes = 30;
 
         /**
          * 最大会话数
+         * (Maximum number of sessions)
          */
         private int maxSessions = 1000;
 
         /**
          * 每个会话最大历史记录数
+         * (Maximum history records per session)
          */
         private int maxHistoryPerSession = 20;
     }
@@ -139,16 +152,19 @@ public class HOPEConfig {
     public static class StrategyConfig {
         /**
          * 直接回答的置信度阈值
+         * (Confidence threshold for direct answer)
          */
         private double directAnswerConfidence = 0.9;
 
         /**
          * 是否启用技能模板
+         * (Whether to enable skill templates)
          */
         private boolean enableSkillTemplates = true;
 
         /**
          * 是否启用问题分类
+         * (Whether to enable question classification)
          */
         private boolean enableQuestionClassification = true;
     }

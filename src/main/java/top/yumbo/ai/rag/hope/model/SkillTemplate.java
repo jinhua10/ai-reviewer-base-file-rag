@@ -73,21 +73,27 @@ public class SkillTemplate {
 
     /**
      * 最后使用时间
+     * (Last used time)
      */
     private LocalDateTime lastUsed;
 
     /**
      * 创建时间
+     * (Creation time)
      */
     private LocalDateTime createdAt;
 
     /**
      * 是否启用
+     * (Whether enabled)
      */
     private boolean enabled;
 
     /**
      * 获取成功率
+     * (Get success rate)
+     * 
+     * @return 成功率分数 (0-1) (Success rate score (0-1))
      */
     public double getSuccessRate() {
         if (usageCount == 0) {
@@ -98,6 +104,9 @@ public class SkillTemplate {
 
     /**
      * 记录一次使用
+     * (Record a usage)
+     * 
+     * @param success 是否成功 (Whether successful)
      */
     public void recordUsage(boolean success) {
         this.usageCount++;
