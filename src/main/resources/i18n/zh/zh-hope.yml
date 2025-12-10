@@ -34,6 +34,28 @@ hope:
     suggestions: "优化建议"
     test_query: "测试 HOPE 查询"
     reset_metrics: "重置指标"
+    
+    # 监控服务消息 (Monitor service messages)
+    init_success: "HOPE 监控服务初始化成功"
+    record_query_failed: "记录查询指标失败: {0}"
+    hourly_report: "====== HOPE 小时性能报告 ======"
+    query_stats: "  总查询: {}, 直接回答: {}, 模板增强: {}, 完整RAG: {}"
+    performance_metrics: "  LLM 节省率: {:.1f}%, 平均响应时间: {:.0f}ms"
+    layer_hit_stats: "  层级命中 - 低频: {}, 中频: {}, 高频: {}"
+    metrics_reset: "HOPE 指标重置成功"
+    
+    # 健康检查消息 (Health check messages)
+    low_savings_rate: "LLM 节省率低于 {0}%"
+    high_response_time: "平均响应时间超过 {0}ms"
+    high_error_rate: "错误率超过 {0}%"
+    
+    # 优化建议 (Optimization suggestions)
+    suggestion_low_direct_rate: "💡 直接回答率较低，建议添加更多确定性知识到低频层"
+    suggestion_low_permanent_hit: "💡 低频层命中率低，建议检查技能模板和确定性知识的配置"
+    suggestion_poor_learning: "💡 中频层学习效果不佳，建议调整相似度阈值或晋升条件"
+    suggestion_few_promotions: "💡 知识晋升很少，建议降低晋升阈值以积累更多永久知识"
+    suggestion_good_performance: "✅ 直接回答比完整 RAG 快 {0} 倍，HOPE 效果良好"
+    suggestion_no_optimization: "✅ HOPE 系统运行正常，无需优化"
 
   # 策略 (Strategy)
   strategy:
@@ -41,4 +63,20 @@ hope:
     template_answer: "模板回答"
     reference_answer: "参考回答"
     full_rag: "完整 RAG"
+    
+  # 质量评估消息 (Quality assessment messages)
+  quality:
+    insufficient_skills: "技能模板数量不足（当前: {0}）"
+    add_more_skills: "建议添加更多技能模板，如：错误排查、性能优化、安全审计等"
+    insufficient_facts: "确定性知识数量不足（当前: {0}）"
+    add_more_facts: "建议从 README、配置文件等提取更多确定性知识"
+    high_disabled_rate: "技能模板禁用率过高（{0}）"
+    check_disabled_skills: "检查禁用的技能模板，改进或删除低质量模板"
+    no_qa_records: "中频层无问答记录"
+    use_and_feedback: "开始使用系统并给予反馈，以积累知识"
+    low_rating: "问答平均评分较低（{0}）"
+    check_low_rating: "检查低分问答，分析原因并改进检索或提示词"
+    no_promotions: "没有知识晋升到低频层"
+    check_promotion: "建议降低晋升阈值，或检查问答质量"
+    low_reuse: "问答复用率低，建议优化相似度匹配算法"
 

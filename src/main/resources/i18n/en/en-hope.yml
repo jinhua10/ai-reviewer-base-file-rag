@@ -34,6 +34,28 @@ hope:
     suggestions: "Optimization Suggestions"
     test_query: "Test HOPE Query"
     reset_metrics: "Reset Metrics"
+    
+    # Monitor service messages
+    init_success: "HOPE monitor service initialized successfully"
+    record_query_failed: "Failed to record query metrics: {0}"
+    hourly_report: "====== HOPE Hourly Performance Report ======"
+    query_stats: "  Total Queries: {}, Direct Answers: {}, Template Answers: {}, Full RAG: {}"
+    performance_metrics: "  LLM Savings Rate: {:.1f}%, Avg Response Time: {:.0f}ms"
+    layer_hit_stats: "  Layer Hits - Permanent: {}, Ordinary: {}, High-freq: {}"
+    metrics_reset: "HOPE metrics reset successfully"
+    
+    # Health check messages
+    low_savings_rate: "LLM savings rate is below {0}%"
+    high_response_time: "Average response time exceeds {0}ms"
+    high_error_rate: "Error rate exceeds {0}%"
+    
+    # Optimization suggestions
+    suggestion_low_direct_rate: "💡 Direct answer rate is low, consider adding more deterministic knowledge to the permanent layer"
+    suggestion_low_permanent_hit: "💡 Permanent layer hit rate is low, review skill templates and factual knowledge configuration"
+    suggestion_poor_learning: "💡 Ordinary layer learning effectiveness is poor, consider adjusting similarity thresholds or promotion conditions"
+    suggestion_few_promotions: "💡 Knowledge promotions are rare, consider lowering promotion thresholds to accumulate more permanent knowledge"
+    suggestion_good_performance: "✅ Direct answers are {0} times faster than full RAG, HOPE is performing well"
+    suggestion_no_optimization: "✅ HOPE system is running normally, no optimization needed"
 
   # Strategy
   strategy:
@@ -41,4 +63,20 @@ hope:
     template_answer: "Template Answer"
     reference_answer: "Reference Answer"
     full_rag: "Full RAG"
+    
+  # Quality assessment messages
+  quality:
+    insufficient_skills: "Insufficient skill templates (current: {0})"
+    add_more_skills: "Consider adding more skill templates, such as: troubleshooting, performance optimization, security audit, etc."
+    insufficient_facts: "Insufficient factual knowledge (current: {0})"
+    add_more_facts: "Consider extracting more factual knowledge from README, configuration files, etc."
+    high_disabled_rate: "High skill template disabled rate ({0})"
+    check_disabled_skills: "Review disabled skill templates, improve or delete low-quality templates"
+    no_qa_records: "No Q&A records in ordinary layer"
+    use_and_feedback: "Start using the system and provide feedback to accumulate knowledge"
+    low_rating: "Low average Q&A rating ({0})"
+    check_low_rating: "Check low-scored Q&A pairs, analyze reasons and improve retrieval or prompts"
+    no_promotions: "No knowledge has been promoted to permanent layer"
+    check_promotion: "Consider lowering promotion thresholds or review Q&A quality"
+    low_reuse: "Low Q&A reuse rate, consider optimizing similarity matching algorithm"
 
