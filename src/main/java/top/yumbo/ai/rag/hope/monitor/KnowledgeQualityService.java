@@ -275,12 +275,47 @@ public class KnowledgeQualityService {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class QualityReport {
-        private int overallScore;                     // 综合评分 (Overall score)
-        private String status;                        // 评估状态 (Assessment status): excellent, good, fair, needs_improvement
-        private PermanentLayerAssessment permanentLayer; // 低频层评估 (Permanent layer assessment)
-        private OrdinaryLayerAssessment ordinaryLayer;   // 中频层评估 (Ordinary layer assessment)
-        private List<String> issues;                  // 问题列表 (List of issues)
-        private List<String> recommendations;         // 建议列表 (List of recommendations)
+        /**
+         * 综合评分 (Overall score)
+         * 0-100分，表示整体知识质量
+         * (0-100 points, representing overall knowledge quality)
+         */
+        private int overallScore;
+        
+        /**
+         * 评估状态 (Assessment status)
+         * 可能的值: excellent, good, fair, needs_improvement, disabled
+         * (Possible values: excellent, good, fair, needs_improvement, disabled)
+         */
+        private String status;
+        
+        /**
+         * 低频层评估 (Permanent layer assessment)
+         * 低频层的详细评估结果
+         * (Detailed assessment result of permanent layer)
+         */
+        private PermanentLayerAssessment permanentLayer;
+        
+        /**
+         * 中频层评估 (Ordinary layer assessment)
+         * 中频层的详细评估结果
+         * (Detailed assessment result of ordinary layer)
+         */
+        private OrdinaryLayerAssessment ordinaryLayer;
+        
+        /**
+         * 问题列表 (List of issues)
+         * 评估过程中发现的所有问题
+         * (All issues discovered during assessment)
+         */
+        private List<String> issues;
+        
+        /**
+         * 建议列表 (List of recommendations)
+         * 针对问题提供的改进建议
+         * (Improvement suggestions provided for issues)
+         */
+        private List<String> recommendations;
     }
 
     /**
@@ -291,13 +326,54 @@ public class KnowledgeQualityService {
      */
     @Data
     public static class PermanentLayerAssessment {
-        private int score;                           // 评分 (Score)
-        private int skillTemplateCount;               // 技能模板数量 (Skill template count)
-        private int factualKnowledgeCount;            // 确定性知识数量 (Factual knowledge count)
-        private int enabledSkills;                    // 启用的技能数量 (Enabled skills count)
-        private int enabledFacts;                     // 启用的知识数量 (Enabled facts count)
-        private List<String> issues = new ArrayList<>();          // 问题列表 (List of issues)
-        private List<String> recommendations = new ArrayList<>(); // 建议列表 (List of recommendations)
+        /**
+         * 评分 (Score)
+         * 0-100分，表示低频层知识质量
+         * (0-100 points, representing permanent layer knowledge quality)
+         */
+        private int score;
+        
+        /**
+         * 技能模板数量 (Skill template count)
+         * 系统中定义的技能模板总数
+         * (Total number of skill templates defined in the system)
+         */
+        private int skillTemplateCount;
+        
+        /**
+         * 确定性知识数量 (Factual knowledge count)
+         * 系统中定义的确定性知识总数
+         * (Total number of factual knowledge defined in the system)
+         */
+        private int factualKnowledgeCount;
+        
+        /**
+         * 启用的技能数量 (Enabled skills count)
+         * 当前处于启用状态的技能数量
+         * (Number of skills currently in enabled state)
+         */
+        private int enabledSkills;
+        
+        /**
+         * 启用的知识数量 (Enabled facts count)
+         * 当前处于启用状态的知识数量
+         * (Number of factual knowledge currently in enabled state)
+         */
+        private int enabledFacts;
+        
+        /**
+         * 问题列表 (List of issues)
+         * 评估过程中发现的问题
+         * (Issues discovered during assessment)
+         */
+        private List<String> issues = new ArrayList<>();
+        
+        /**
+         * 建议列表 (List of recommendations)
+         * 针对问题提供的改进建议
+         * (Improvement suggestions provided for issues)
+         */
+        private List<String> recommendations = new ArrayList<>();
     }
 
     /**
@@ -308,14 +384,61 @@ public class KnowledgeQualityService {
      */
     @Data
     public static class OrdinaryLayerAssessment {
-        private int score;                           // 评分 (Score)
-        private int totalQACount;                    // 问答对总数 (Total Q&A pair count)
-        private long promotedCount;                  // 晋升数量 (Promotion count)
-        private double averageRating;                // 平均评分 (Average rating)
-        private long totalAccess;                    // 总访问次数 (Total access count)
-        private double averageAccess;                // 平均访问次数 (Average access count)
-        private List<String> issues = new ArrayList<>();          // 问题列表 (List of issues)
-        private List<String> recommendations = new ArrayList<>(); // 建议列表 (List of recommendations)
+        /**
+         * 评分 (Score)
+         * 0-100分，表示中频层知识质量
+         * (0-100 points, representing ordinary layer knowledge quality)
+         */
+        private int score;
+        
+        /**
+         * 问答对总数 (Total Q&A pair count)
+         * 系统中存储的问答对总数
+         * (Total number of Q&A pairs stored in the system)
+         */
+        private int totalQACount;
+        
+        /**
+         * 晋升数量 (Promotion count)
+         * 从中频层晋升到低频层的知识数量
+         * (Number of knowledge promoted from ordinary layer to permanent layer)
+         */
+        private long promotedCount;
+        
+        /**
+         * 平均评分 (Average rating)
+         * 用户对问答对的平均评分(1-5分)
+         * (Average user rating for Q&A pairs, 1-5 points)
+         */
+        private double averageRating;
+        
+        /**
+         * 总访问次数 (Total access count)
+         * 所有问答对的总访问次数
+         * (Total access count for all Q&A pairs)
+         */
+        private long totalAccess;
+        
+        /**
+         * 平均访问次数 (Average access count)
+         * 每个问答对的平均访问次数
+         * (Average access count per Q&A pair)
+         */
+        private double averageAccess;
+        
+        /**
+         * 问题列表 (List of issues)
+         * 评估过程中发现的问题
+         * (Issues discovered during assessment)
+         */
+        private List<String> issues = new ArrayList<>();
+        
+        /**
+         * 建议列表 (List of recommendations)
+         * 针对问题提供的改进建议
+         * (Improvement suggestions provided for issues)
+         */
+        private List<String> recommendations = new ArrayList<>();
     }
 }
 
