@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * (Skill Template - Reusable processing patterns stored in permanent layer)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Data
 @Builder

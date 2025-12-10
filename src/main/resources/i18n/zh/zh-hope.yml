@@ -63,6 +63,16 @@ hope:
     template_answer: "模板回答"
     reference_answer: "参考回答"
     full_rag: "完整 RAG"
+    answer_now: "现在请回答"
+    needs_llm: "需要LLM"
+    # 策略决策器标签 (Strategy decider labels)
+    label_strategy: "策略: "
+    label_question_type: "问题类型: "
+    label_complexity: "复杂度: "
+    label_needs_llm: "需要LLM: "
+    label_hit_layer: "命中层: "
+    label_confidence: "置信度: "
+    label_skill_template: "技能模板: "
     
   # 质量评估消息 (Quality assessment messages)
   quality:
@@ -137,4 +147,29 @@ hope:
   learn:
     recorded: "HOPE 学习记录已保存，评分: {0}"
     promoted: "HOPE 中频层知识晋升到低频层: {0}"
+    
+  # 模型相关消息 (Model related messages)
+  model:
+    # 会话上下文 (Session Context)
+    session_created: "新会话已创建"
+    turn_added: "对话轮次已添加"
+    temp_definition_added: "临时定义已添加: {0}"
+    context_summary_built: "对话上下文摘要已构建"
+    # 对话上下文构建字符串 (Context building strings)
+    current_topic_label: "当前话题: "
+    session_definitions_label: "本次会话的定义:
+"
+    recent_conversations_label: "最近对话:
+"
+    user_label: "用户"
+    assistant_label: "助手"
+    
+    # 确定性知识 (Factual Knowledge)
+    factual_access_recorded: "确定性知识访问已记录"
+    factual_feedback_recorded: "确定性知识反馈已记录"
+    factual_disabled_low_satisfaction: "确定性知识因满意度低已禁用: {0}"
+    
+    # 技能模板 (Skill Template)
+    skill_usage_recorded: "技能模板使用已记录: {0}"
+    skill_success_rate: "技能模板成功率: {0}%"
 

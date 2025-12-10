@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * (Factual Knowledge - Facts stored in permanent layer that can be directly answered)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Data
 @Builder

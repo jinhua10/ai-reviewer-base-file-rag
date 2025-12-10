@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * (HOPE Knowledge Manager - Unified management of three-layer knowledge query and learning)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 @Service
@@ -182,7 +182,7 @@ public class HOPEKnowledgeManager {
         HOPEQueryResult result = resultBuilder.build();
 
         log.info(I18N.get("hope.query.completed",
-            result.isNeedsLLM() ? "需要LLM" : "直接回答",
+            result.isNeedsLLM() ? I18N.get("hope.strategy.needs_llm") : I18N.get("hope.strategy.direct_answer"),
             result.getSourceLayer(),
             processingTime));
 

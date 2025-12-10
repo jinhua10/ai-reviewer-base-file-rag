@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
  * (Question Classifier - Decides which layer to use for answering)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Component
 public class QuestionClassifier {

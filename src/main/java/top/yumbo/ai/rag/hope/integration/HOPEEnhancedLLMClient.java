@@ -185,12 +185,12 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                 // 参考增强：将相似问答作为上下文
                 if (hopeResult.hasSimilarReference() && config.isReferenceEnhanceEnabled()) {
                     StringBuilder contextBuilder = new StringBuilder();
-                    contextBuilder.append("参考以下相似问答：\n");
+                    contextBuilder.append(I18N.get("hope.reference_used")).append(":\n");
                     for (HOPEQueryResult.SimilarQA similar : hopeResult.getSimilarQAs()) {
                         contextBuilder.append("Q: ").append(similar.getQuestion()).append("\n");
                         contextBuilder.append("A: ").append(similar.getAnswer()).append("\n\n");
                     }
-                    contextBuilder.append("---\n现在请回答：\n").append(prompt);
+                    contextBuilder.append("---\n").append(I18N.get("hope.strategy.answer_now")).append("\n").append(prompt);
                     prompt = contextBuilder.toString();
                 }
 

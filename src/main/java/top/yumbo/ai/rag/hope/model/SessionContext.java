@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.List;
  * (Session Context - Real-time session info stored in high-frequency layer)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Data
 @Builder
@@ -164,12 +165,12 @@ public class SessionContext {
 
         // 添加当前话题
         if (currentTopic != null && !currentTopic.isEmpty()) {
-            summary.append("当前话题: ").append(currentTopic).append("\n\n");
+            summary.append(I18N.get("model.current_topic_label")).append(currentTopic).append("\n\n");
         }
 
         // 添加临时定义
         if (tempDefinitions != null && !tempDefinitions.isEmpty()) {
-            summary.append("本次会话的定义:\n");
+            summary.append(I18N.get("model.session_definitions_label"));
             for (TempDefinition def : tempDefinitions) {
                 summary.append("- ").append(def.getTerm())
                        .append(": ").append(def.getDefinition()).append("\n");
@@ -180,9 +181,10 @@ public class SessionContext {
         // 添加最近对话
         List<ConversationTurn> recent = getRecentHistory(5);
         if (!recent.isEmpty()) {
-            summary.append("最近对话:\n");
+            summary.append(I18N.get("model.recent_conversations_label"));
             for (ConversationTurn turn : recent) {
-                String roleLabel = "user".equals(turn.getRole()) ? "用户" : "助手";
+                String roleLabel = "user".equals(turn.getRole()) ? 
+                    I18N.get("model.user_label") : I18N.get("model.assistant_label");
                 // 截断过长的内容
                 String content = turn.getContent();
                 if (content.length() > 200) {

@@ -12,9 +12,10 @@ import top.yumbo.ai.rag.i18n.I18N;
  * (Response Strategy Decider)
  *
  * 根据问题分类和 HOPE 查询结果，决定使用哪种响应策略
+ * (Decide which response strategy to use based on question classification and HOPE query results)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 @Service
@@ -30,9 +31,9 @@ public class ResponseStrategyDecider {
     /**
      * 决定响应策略
      *
-     * @param classification 问题分类结果
-     * @param queryResult HOPE 查询结果
-     * @return 推荐的响应策略
+     * @param classification 问题分类结果 (Question classification result)
+     * @param queryResult HOPE 查询结果 (HOPE query result)
+     * @return 推荐的响应策略 (Recommended response strategy)
      */
     public ResponseStrategy decide(QuestionClassifier.Classification classification,
                                    HOPEQueryResult queryResult) {
@@ -93,18 +94,18 @@ public class ResponseStrategyDecider {
                                          HOPEQueryResult queryResult) {
         StringBuilder explanation = new StringBuilder();
 
-        explanation.append("策略: ").append(strategy.getName()).append("\n");
-        explanation.append("问题类型: ").append(classification.getType()).append("\n");
-        explanation.append("复杂度: ").append(classification.getComplexity()).append("\n");
-        explanation.append("需要LLM: ").append(strategy.requiresLLM()).append("\n");
+        explanation.append(I18N.get("hope.strategy.label_strategy")).append(strategy.getName()).append("\n");
+        explanation.append(I18N.get("hope.strategy.label_question_type")).append(classification.getType()).append("\n");
+        explanation.append(I18N.get("hope.strategy.label_complexity")).append(classification.getComplexity()).append("\n");
+        explanation.append(I18N.get("hope.strategy.label_needs_llm")).append(strategy.requiresLLM()).append("\n");
 
         if (queryResult.getSourceLayer() != null) {
-            explanation.append("命中层: ").append(queryResult.getSourceLayer()).append("\n");
-            explanation.append("置信度: ").append(String.format("%.2f", queryResult.getConfidence())).append("\n");
+            explanation.append(I18N.get("hope.strategy.label_hit_layer")).append(queryResult.getSourceLayer()).append("\n");
+            explanation.append(I18N.get("hope.strategy.label_confidence")).append(String.format("%.2f", queryResult.getConfidence())).append("\n");
         }
 
         if (queryResult.hasSkillTemplate()) {
-            explanation.append("技能模板: ").append(queryResult.getSkillTemplate().getName()).append("\n");
+            explanation.append(I18N.get("hope.strategy.label_skill_template")).append(queryResult.getSkillTemplate().getName()).append("\n");
         }
 
         return explanation.toString();

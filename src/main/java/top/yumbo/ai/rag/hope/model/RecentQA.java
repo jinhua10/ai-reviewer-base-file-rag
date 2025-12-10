@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * (Recent QA Record - High-rated QAs stored in ordinary layer)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Data
 @Builder

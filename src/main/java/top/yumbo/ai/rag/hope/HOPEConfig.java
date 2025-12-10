@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * (Designed based on Google HOPE paper)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Data
 @Component

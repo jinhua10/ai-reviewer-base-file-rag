@@ -63,6 +63,16 @@ hope:
     template_answer: "Template Answer"
     reference_answer: "Reference Answer"
     full_rag: "Full RAG"
+    answer_now: "Please answer now"
+    needs_llm: "Needs LLM"
+    # Strategy decider labels
+    label_strategy: "Strategy: "
+    label_question_type: "Question type: "
+    label_complexity: "Complexity: "
+    label_needs_llm: "Needs LLM: "
+    label_hit_layer: "Hit layer: "
+    label_confidence: "Confidence: "
+    label_skill_template: "Skill template: "
     
   # Quality assessment messages
   quality:
@@ -137,4 +147,29 @@ hope:
   learn:
     recorded: "HOPE learning record saved, rating: {0}"
     promoted: "HOPE ordinary layer knowledge promoted to permanent layer: {0}"
+    
+  # Model related messages
+  model:
+    # Session Context
+    session_created: "New session created"
+    turn_added: "Conversation turn added"
+    temp_definition_added: "Temporary definition added: {0}"
+    context_summary_built: "Conversation context summary built"
+    # Context building strings
+    current_topic_label: "Current topic: "
+    session_definitions_label: "Session definitions:
+"
+    recent_conversations_label: "Recent conversations:
+"
+    user_label: "User"
+    assistant_label: "Assistant"
+    
+    # Factual Knowledge
+    factual_access_recorded: "Factual knowledge access recorded"
+    factual_feedback_recorded: "Factual knowledge feedback recorded"
+    factual_disabled_low_satisfaction: "Factual knowledge disabled due to low satisfaction: {0}"
+    
+    # Skill Template
+    skill_usage_recorded: "Skill template usage recorded: {0}"
+    skill_success_rate: "Skill template success rate: {0}%"
 

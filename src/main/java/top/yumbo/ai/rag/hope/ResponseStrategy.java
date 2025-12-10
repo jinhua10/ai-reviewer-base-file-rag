@@ -7,7 +7,7 @@ import lombok.Getter;
  * (Response Strategy Enum)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 public enum ResponseStrategy {
 
