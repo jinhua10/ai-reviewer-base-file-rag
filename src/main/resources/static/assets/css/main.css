@@ -29,7 +29,7 @@ body {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 10003; /* 高于所有弹窗和悬浮按钮，确保始终可见 (Higher than all popups and floating buttons) */
+    z-index: 10001; /* 高于引导页面(10000)，确保在引导页面中也能切换语言和重新打开引导 (Above welcome guide for language switching) */
     display: flex;
     gap: 10px;
     align-items: center;
