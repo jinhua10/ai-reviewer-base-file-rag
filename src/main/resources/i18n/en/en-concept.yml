@@ -21,3 +21,41 @@ concept:
       skip: "⏭️ Skipping version cleanup (count below threshold): conceptId={0}, versionCount={1}"
       complete: "✅ Version cleanup completed: conceptId={0}, removed={1}, kept={2}"
 
+repository:
+  concept:
+    directory:
+      created: "📁 Concept storage directory created: {0}"
+    init:
+      success: "✅ Concept repository initialized successfully, loaded {0} concepts"
+      failed: "❌ Concept repository initialization failed: {0}"
+    saved: "💾 Concept saved: id={0}, name={1}"
+    batch:
+      saved: "💾 Batch saved {0} concepts successfully"
+    deleted: "🗑️ Concept deleted: id={0}"
+    cleared: "⚠️ Concept repository cleared"
+    file:
+      notfound: "ℹ️ Concept data file not found: {0}, will create new file"
+    loaded: "📂 Loaded {0} concepts from file"
+    load:
+      failed: "❌ Failed to load concept data: {0}"
+    persisted: "💾 Persisted {0} concepts to file"
+    persist:
+      failed: "❌ Failed to persist concept data: {0}"
+
+  history:
+    directory:
+      created: "📁 History storage directory created: {0}"
+    init:
+      success: "✅ History repository initialized successfully, loaded {0} records"
+      failed: "❌ History repository initialization failed: {0}"
+    saved: "💾 Concept history saved: conceptId={0}, versions={1}"
+    deleted: "🗑️ Concept history deleted: conceptId={0}"
+    cleared: "⚠️ History repository cleared"
+    file:
+      notfound: "ℹ️ History data file not found: {0}, will create new file"
+    loaded: "📂 Loaded {0} history records from file"
+    load:
+      failed: "❌ Failed to load history data: {0}"
+    persisted: "💾 Persisted {0} history records to file"
+    persist:
+      failed: "❌ Failed to persist history data: {0}"
