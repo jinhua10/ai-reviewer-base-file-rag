@@ -23,38 +23,39 @@ import java.util.concurrent.atomic.AtomicLong;
 @Data
 public class HOPEMetrics {
 
-    // 查询统计 (Query statistics)
+    // 1. 查询统计 (Query statistics)
     private final AtomicLong totalQueries = new AtomicLong(0);      // 总查询数 (Total query count)
     private final AtomicLong directAnswers = new AtomicLong(0);     // 直接回答数 (Direct answer count)
     private final AtomicLong templateAnswers = new AtomicLong(0);  // 模板回答数 (Template answer count)
     private final AtomicLong fullRAGAnswers = new AtomicLong(0);    // 完整RAG回答数 (Full RAG answer count)
 
-    // 层级命中统计 (Layer hit statistics)
+    // 2. 层级命中统计 (Layer hit statistics)
     private final AtomicLong permanentHits = new AtomicLong(0);      // 低频层命中数 (Permanent layer hit count)
     private final AtomicLong ordinaryHits = new AtomicLong(0);       // 中频层命中数 (Ordinary layer hit count)
     private final AtomicLong highFreqHits = new AtomicLong(0);       // 高频层命中数 (High frequency layer hit count)
 
-    // 响应时间统计（毫秒）(Response time statistics in milliseconds)
+    // 3. 响应时间统计（毫秒）(Response time statistics in milliseconds)
     private final AtomicLong totalResponseTime = new AtomicLong(0);   // 总响应时间 (Total response time)
     private final AtomicLong directAnswerTime = new AtomicLong(0);   // 直接回答总时间 (Total direct answer time)
     private final AtomicLong templateAnswerTime = new AtomicLong(0);  // 模板回答总时间 (Total template answer time)
     private final AtomicLong fullRAGTime = new AtomicLong(0);        // 完整RAG总时间 (Total full RAG time)
 
-    // 学习统计 (Learning statistics)
+    // 4. 学习统计 (Learning statistics)
     private final AtomicLong learnEvents = new AtomicLong(0);        // 学习事件数 (Learning event count)
     private final AtomicLong promotions = new AtomicLong(0);         // 晋升事件数 (Promotion event count)
 
-    // 错误统计 (Error statistics)
+    // 5. 错误统计 (Error statistics)
     private final AtomicLong errors = new AtomicLong(0);              // 错误数 (Error count)
 
-    // 按小时统计 (Hourly statistics)
+    // 6. 按小时统计 (Hourly statistics)
     private final Map<String, HourlyStats> hourlyStats = new ConcurrentHashMap<>();
 
-    // 统计起始时间 (Statistics start time)
+    // 7. 统计起始时间 (Statistics start time)
     private LocalDateTime startTime = LocalDateTime.now();
 
     /**
-     * 记录查询指标 (Record query metrics)
+     * 记录查询指标
+     * (Record query metrics)
      * 
      * 根据策略类型和命中层级更新相应的计数器和响应时间
      * (Updates corresponding counters and response times based on strategy type and hit layer)
@@ -76,7 +77,7 @@ public class HOPEMetrics {
             }
             case "TEMPLATE_ANSWER" -> {
                 templateAnswers.incrementAndGet();
-                templateAnswerTime.addAndGet(responseTimeMs);
+                TemplateAnswerTime.addAndGet(responseTimeMs);
             }
             case "FULL_RAG" -> {
                 fullRAGAnswers.incrementAndGet();
@@ -228,7 +229,8 @@ public class HOPEMetrics {
     }
 
     /**
-     * 重置所有统计数据 (Reset all statistical data)
+     * 重置所有统计数据
+     * (Reset all statistical data)
      * 
      * 将所有计数器清零，清除小时统计数据，并重置起始时间
      * (Clears all counters to zero, clears hourly statistics, and resets the start time)
