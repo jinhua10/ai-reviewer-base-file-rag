@@ -1,0 +1,45 @@
+# English Image Processing Messages
+# File: src/main/resources/i18n/en/en-image.yml
+
+log:
+  image:
+    get_failed: "Failed to get image: {0}/{1}"
+    list_failed: "Failed to get document image list: {0}"
+    context_extracted: "✅ Image context extracted: {0} regions, duration: {1}ms"
+    saved: "Image saved: {0} (document: {1})"
+    delete_failed: "File deletion failed: {0}"
+    deleted_all: "All images of document deleted: {0}"
+    excel:
+      extracted: "Extracted {0} images from Excel"
+      legacy:
+        extracted: "Extracted {0} images from legacy Excel"
+        processing: "Processing legacy Excel images"
+      processing: "Processing Excel images"
+    pdf:
+      extracted: "Extracted {0} images from PDF"
+      processing: "Processing PDF images"
+    ppt:
+      found: "Found PPT images: {0} images"
+      processing: "Processing PPT images"
+      extracted: "Extracted {0} images from PPT"
+    read_info_failed: "Failed to read image info: {0}"
+    storage:
+      created: "Image storage directory created: {0}"
+      init_failed: "Image storage initialization failed"
+    service:
+      init: "✅ Image service initialized with {0} extractors, AI analysis enabled={1}"
+      extract_failed: "❌ Image extraction failed: {0}"
+      start: "🚀 Starting image extraction: {0}"
+      no_extractor: "⚠️ No extractor found for {0}"
+      using_extractor: "🔧 Using image extractor: {0}"
+      no_images: "ℹ️ No images found in document {0}"
+      extracted: "📦 Extracted {0} images"
+      saved: "💾 Image saved: {0} (type: {1}, size: {2}KB)"
+      save_failed: "❌ Image save failed: {0}"
+      success: "🎉 Image processing successful, saved {0} images: {1}"
+      failed: "❌ Image processing failed: {0}"
+    smart_extractor_strategy: "🧠 Using smart extraction strategy: {0}"
+    ai_analysis_complete: "✅ AI analysis complete: {0}, content length={1} chars"
+    ai_analysis_failed: "❌ AI analysis failed: {0}, error={1}"
+    position_char_offset: "📍 Image character offset position: {0}"
+    no_content_for_position: "⚠️ No content available to calculate image position"

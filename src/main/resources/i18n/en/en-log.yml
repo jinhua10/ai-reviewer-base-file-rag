@@ -186,39 +186,7 @@ log:
     weights_loaded: "📂 Loaded document weights: {0} documents"
     weights_saved: "💾 Saved document weights: {0} documents"
     weights_file_not_exists: "📂 Document weights file not found, using default weights"
-  image:
-    get_failed: "Failed to get image: {0}/{1}"
-    list_failed: "Failed to get document image list: {0}"
-    smart_extractor_strategy: "🧠 Using smart extraction strategy: {0}"
-    context_extracted: "✅ Image context extracted: {0} regions, duration: {1}ms"
-    saved: "Image saved: {0} (document: {1})"
-    delete_failed: "File deletion failed: {0}"
-    deleted_all: "All images of document deleted: {0}"
-    excel:
-      extracted: "Extracted {0} images from Excel"
-      legacy:
-        extracted: "Extracted {0} images from legacy Excel"
-        processing: "Processing legacy Excel images"
-      processing: "Processing Excel images"
-    pdf:
-      extracted: "Extracted {0} images from PDF"
-      processing: "Processing PDF images"
-    ppt:
-      found: "Found PPT images: {0} images"
-      processing: "Processing PPT images"
-      extracted: "Extracted {0} images from PPT"
-    read_info_failed: "Failed to read image info: {0}"
-    service:
-      saved: "Image saved: {0}"
-      extracted: "Extracted {0} images"
-      init: "Image service initialized"
-      no_images: "No images found"
-      start: "Starting image extraction"
-      success: "Image processing complete"
-      using_extractor: "Using image extractor: {0}"
-    storage:
-      created: "Image storage directory created: {0}"
-      init_failed: "Image storage initialization failed"
+
   imageproc:
     llm_fallback_vision: "⚠️  Main LLM does not support image input, falling back to vision-llm configuration"
     check_llm_support: "Checking if LLM client supports images: model={0}, supports images={1}"
