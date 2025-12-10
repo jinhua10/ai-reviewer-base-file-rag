@@ -1,0 +1,63 @@
+# ============================================================
+# 检索策略框架 (Search Strategy Framework)
+# ============================================================
+strategy:
+  search:
+    hybrid:
+      name: "混合检索策略"
+      description: "结合 Lucene 关键词检索和向量语义检索，适用于大多数场景"
+    keyword:
+      name: "关键词检索策略"
+      description: "仅使用 Lucene 关键词检索，适合精确匹配场景"
+    vector:
+      name: "向量检索策略"
+      description: "仅使用向量语义检索，适合语义相似场景"
+  dispatcher:
+    log:
+      init_start: "📦 初始化策略调度器..."
+      strategy_registered: "  ✅ 注册策略: {0} - {1}"
+      init_complete: "✅ 策略调度器初始化完成，共 {0} 个策略"
+      no_suitable_strategy: "未找到合适的策略"
+      selected_strategies: "🎯 选择的策略: {0}"
+      executing_single: "执行单个策略: {0}"
+      executing_combined: "执行组合策略: {0}"
+      merging_results: "合并分析结果..."
+      evaluate_failed: "评估策略失败 {0}: {1}"
+  abstract:
+    log:
+      analysis_start: "🚀 开始分析，策略: {0}，文档数: {1}"
+      analysis_complete: "✅ 分析完成，策略: {0}，耗时: {1}ms"
+      analysis_failed: "❌ 分析失败，策略: {0}"
+      llm_call_failed: "LLM 调用失败"
+  parallel_summary:
+    log:
+      generating_summaries: "并行生成文档摘要..."
+      summary_progress: "已完成 {0}/{1} 文档摘要"
+      generating_report: "综合分析生成报告..."
+      summary_failed: "生成文档摘要失败: {0}"
+      parallel_failed: "并行摘要生成失败"
+    error:
+      no_documents: "没有可分析的文档内容"
+      summary_failed: "摘要生成失败"
+      document_empty: "文档内容为空"
+  structured_compare:
+    log:
+      preparing_content: "准备文档内容..."
+      executing_comparison: "执行对比分析..."
+      extracting_results: "提取对比结果..."
+    error:
+      min_documents: "对比分析至少需要2个文档"
+  entity_relation:
+    log:
+      extracting_entities: "提取文档实体..."
+      analyzing_relations: "分析实体关联..."
+      building_graph: "构建关系图谱..."
+    error:
+      min_documents: "关联分析至少需要2个文档"
+  question_driven:
+    log:
+      retrieving_content: "检索相关内容..."
+      generating_answer: "生成回答..."
+      organizing_results: "整理结果..."
+    error:
+      no_documents: "没有可分析的文档"

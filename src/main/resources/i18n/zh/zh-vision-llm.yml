@@ -1,0 +1,123 @@
+# Vision LLM 策略消息
+vision_llm:
+  log:
+    api_format_detected: "检测到 {0} API 格式"
+    api_format_default: "使用默认 OpenAI Chat Completions API 格式"
+    processing_image: "使用 Vision LLM 处理图片: {0}"
+    processing_image_file: "使用 Vision LLM 处理图片文件: {0}"
+    content_extracted: "Vision LLM 提取内容 [{0}]: {1} 字符"
+    processing_failed: "Vision LLM 处理失败: {0}"
+    sending_request: "发送 Vision API 请求: {0} (格式: {1})"
+    sending_request_batch: "发送批量 Vision API 请求: {0} (格式: {1})"
+    received_response: "收到 Vision API 响应，耗时: {0}ms"
+    token_usage: "Token 使用 - Prompt: {0}, Completion: {1}, Total: {2}"
+    ollama_complete_chat: "Ollama 处理完成（/api/chat 格式）"
+    ollama_complete_generate: "Ollama 处理完成（/api/generate 格式）"
+    service_available: "✅ Vision LLM 可用"
+    api_format: "   - API 格式: {0}"
+    model: "   - 模型: {0}"
+    endpoint: "   - 端点: {0}"
+    service_unavailable: "⚠️  Vision LLM 服务不可用: {0}"
+    check_service: "💡 提示: 请检查服务是否正常运行"
+    unavailable_no_apikey: "⚠️  Vision LLM 不可用: 未配置 API Key"
+    hint_set_apikey: "💡 提示: 在配置文件中设置 vision-llm.api-key"
+    service_response_error: "服务响应异常: HTTP {0}"
+    unsupported_format: "⚠️  跳过不支持的图片格式: {0} (.{1})，Vision API 仅支持 jpg/png/gif/webp/bmp"
+  error:
+    api_error: "Vision API 错误: HTTP {0}"
+    api_error_with_body: "Vision API 错误: HTTP {0}, Body: {1}"
+    no_response_body: "无响应体"
+    parse_openai_failed: "无法解析 OpenAI API 响应: {0}"
+    parse_ollama_failed: "无法解析 Ollama API 响应: {0}"
+    unavailable: "[图片: {0} - Vision LLM不可用]"
+    processing_failed: "[图片: {0} - Vision LLM处理失败: {1}]"
+    unsupported_format: "[图片: {0} - 不支持的格式 .{1}，Vision API 仅支持 jpg/png/gif/webp/bmp]"
+  prompt:
+    # 精简版提示词：提取关键信息，避免冗余（Concise prompt: extract key information, avoid redundancy）
+    extract_text_concise: |
+      请分析这张图片，提取**关键信息**，要求精简但不遗漏重要内容：
+
+      1. **图片主题**：一句话概括图片的核心内容和用途
+
+      2. **核心文字**：提取所有重要的文字内容
+         - 标题、主要标签、关键注释
+         - 重要数据/数值/参数
+         - 核心结论或要点
+
+      3. **关键结构信息**（根据图片类型，只保留核心内容）：
+         【架构图/系统图】：
+         - 所有组件/模块名称
+         - 组件间的连接关系和数据流向
+         - 技术栈、协议（如有）
+
+         【流程图】：关键步骤和分支逻辑
+
+         【图表/统计图】：核心数据点、趋势结论
+
+         【表格】：表头和关键数据
+
+         【其他】：主要内容要素
+
+      **输出要求**：
+      - 精简扼要，不添加冗余描述和主观评价
+      - 但必须保留所有关键信息，不遗漏重要内容
+      - 对于架构图等复杂图片，完整保留组件和关系信息
+
+    # 详细版提示词：完整分析（Detailed prompt: full analysis）
+    extract_text: |
+      请全面分析这张图片，按以下结构输出：
+      
+      1. **图片概述**：用1-2句话概括图片的主要内容、类型和用途
+      
+      2. **文字内容**：完整提取图片中的所有文字
+         - 标题、标签、注释
+         - 组件名称、模块名称
+         - 说明文字、图例
+         - 保持文字的层级关系和位置关系
+      
+      3. **结构化信息**（根据图片类型详细描述）：
+      
+         【架构图/系统图】：
+         - 列出所有组件/模块/节点及其名称
+         - 说明各组件之间的连接关系（谁连接谁、连接方向）
+         - 描述数据流或信息流的方向
+         - 说明各组件的层次关系（前端、后端、数据库等）
+         - 标注使用的技术栈、协议、端口等
+      
+         【流程图】：
+         - 按顺序列出所有流程步骤
+         - 说明条件分支和判断逻辑
+         - 标注起点和终点
+      
+         【图表/统计图】：
+         - 图表类型（柱状图/折线图/饼图等）
+         - 坐标轴含义和单位
+         - 具体数据点和数值
+         - 数据趋势和关键发现
+      
+         【表格】：
+         - 表头信息
+         - 按行列完整提取数据
+         - 保持表格的结构关系
+      
+         【截图/界面】：
+         - 界面类型和功能
+         - 主要功能模块
+         - 菜单、按钮等交互元素
+      
+         【其他图片】：
+         - 描述主要内容和构成
+         - 关键视觉元素
+      
+      4. **关键信息提炼**：
+         - 核心技术点
+         - 重要数据或参数
+         - 关键结论或要点
+         - 需要特别注意的信息
+      
+      输出要求：
+      - 信息要完整、准确、结构化
+      - 对于架构图，必须详细说明组件间的连接关系
+      - 专业术语、数字、公式要精确识别
+      - 使用清晰的层级结构组织内容
+      - 不添加主观评价，只陈述客观信息

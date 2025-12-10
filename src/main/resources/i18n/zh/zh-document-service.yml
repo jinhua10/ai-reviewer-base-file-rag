@@ -1,0 +1,10 @@
+# 文档服务相关消息 (Document service related messages)
+document_service:
+  error:
+    cannot_create_dir: "创建文档目录失败：{0}"
+    filename_empty: "文件名为空"
+    file_too_large: "文件过大：{0} MB（最大：{1} MB）"
+    illegal_path: "非法文件路径"
+    unsupported_format: "不支持的文件格式：{0}"
+  log:
+    scanned_types: "已扫描文件类型：{0}"

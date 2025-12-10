@@ -1,68 +1,72 @@
 # 中文 HOPE 消息
 # 文件: src/main/resources/i18n/zh/zh-hope.yml
-
+# ============================================================
+# HOPE 三层记忆架构 (HOPE Three-Layer Memory Architecture)
+# ============================================================
 hope:
-  # 层名称 (Layer names)
-  layer:
-    permanent: "低频层 (技能知识库)"
-    ordinary: "中频层 (近期知识)"
-    high_frequency: "高频层 (实时上下文)"
+  # 低频层 (Permanent Layer)
+  permanent:
+    disabled: "🔒 HOPE 低频层已禁用"
+    init_success: "✅ HOPE 低频层初始化成功，技能模板: {0}，确定性知识: {1}"
+    init_failed: "❌ HOPE 低频层初始化失败"
+    skill_saved: "💾 技能模板已保存: {0} - {1}"
+    factual_saved: "💾 确定性知识已保存: {0}"
+    skill_hit: "🎯 命中技能模板: {0}"
+    factual_hit: "🎯 命中确定性知识: {0}"
+    factual_disabled: "⚠️ 确定性知识因满意度过低已禁用: {0}"
+    persist_failed: "❌ 持久化数据失败"
+    load_failed: "❌ 加载数据失败"
+    skills_loaded: "📦 已加载 {0} 个技能模板"
+    facts_loaded: "📦 已加载 {0} 个确定性知识"
 
-  # 直接回答 (Direct answer)
-  direct_answer_success: "🚀 HOPE 直接回答成功！来源: {0}, 响应时间: {1}ms"
-  reference_used: "📚 HOPE 参考知识: {0}"
+  # 中频层 (Ordinary Layer) - Phase 2
+  ordinary:
+    disabled: "🔒 HOPE 中频层已禁用"
+    init_success: "✅ HOPE 中频层初始化成功，已加载 {0} 条近期问答"
+    init_failed: "❌ HOPE 中频层初始化失败"
+    saved: "💾 近期问答已保存: {0}，评分: {1}"
+    updated: "📝 近期问答已更新: {0}"
+    direct_hit: "🎯 中频层直接命中: {0}，相似度: {1}"
+    reference_hit: "📚 中频层参考命中: {0}，相似度: {1}"
+    cleaned: "🧹 已清理 {0} 条过期问答"
+    promote_failed: "❌ 晋升失败: {0}"
+    persist_failed: "❌ 中频层持久化失败"
+    load_failed: "❌ 中频层加载失败"
+    loaded: "📦 已加载 {0} 条近期问答"
 
-  # 监控标签 (Monitor labels)
-  monitor:
-    title: "HOPE 三层记忆架构"
-    subtitle: "智能知识缓存与学习系统"
-    disabled: "HOPE 系统未启用"
+  # 高频层 (High-frequency Layer) - Phase 3
+  high_frequency:
+    disabled: "🔒 HOPE 高频层已禁用"
+    init_success: "✅ HOPE 高频层初始化成功，最大会话数: {0}，超时: {1}分钟"
+    session_created: "📝 创建新会话: {0}"
+    context_updated: "📝 会话上下文已更新: {0}，当前轮数: {1}"
+    context_found: "🔍 找到会话上下文: {0}"
+    definition_added: "📖 添加临时定义: {0} (会话: {1})"
+    auto_definition: "🔍 自动提取定义: {0}"
+    session_cleared: "🧹 会话已清除: {0}"
 
-    # 指标 (Metrics)
-    llm_savings: "LLM 节省率"
-    direct_answers: "直接回答"
-    avg_response: "平均响应"
-    total_queries: "总查询数"
+  # 管理器 (Manager)
+  manager:
+    disabled: "⚠️ HOPE 系统未启用"
+    learn_success: "✅ 学习成功: 问题=\"{0}\", 评分={1}"
+    learn_failed: "❌ 学习失败"
+    promote_attempted: "📤 尝试晋升到低频层: {0}"
 
-    # 三层统计 (Layer stats)
-    layer_stats: "三层命中统计"
-    permanent_hits: "低频层命中"
-    ordinary_hits: "中频层命中"
-    high_freq_hits: "高频层命中"
+  # 查询相关
+  query:
+    classified: "📋 问题分类: 类型={0}, 复杂度={1}, 置信度={2}"
+    direct_hit: "🚀 低频层直接命中，置信度: {0}"
+    completed: "✅ HOPE 查询完成: {0}, 来源={1}, 耗时={2}ms"
+    error: "❌ HOPE 查询出错"
+    needs_llm: "🔄 需要 LLM 处理"
 
-    # 建议 (Suggestions)
-    suggestions: "优化建议"
-    test_query: "测试 HOPE 查询"
-    reset_metrics: "重置指标"
-    
-    # 监控服务消息 (Monitor service messages)
-    init_success: "HOPE 监控服务初始化成功"
-    record_query_failed: "记录查询指标失败: {0}"
-    hourly_report: "====== HOPE 小时性能报告 ======"
-    query_stats: "  总查询: {}, 直接回答: {}, 模板增强: {}, 完整RAG: {}"
-    performance_metrics: "  LLM 节省率: {:.1f}%, 平均响应时间: {:.0f}ms"
-    layer_hit_stats: "  层级命中 - 低频: {}, 中频: {}, 高频: {}"
-    metrics_reset: "HOPE 指标重置成功"
-    
-    # 健康检查消息 (Health check messages)
-    low_savings_rate: "LLM 节省率低于 {0}%"
-    high_response_time: "平均响应时间超过 {0}ms"
-    high_error_rate: "错误率超过 {0}%"
-    
-    # 优化建议 (Optimization suggestions)
-    suggestion_low_direct_rate: "💡 直接回答率较低，建议添加更多确定性知识到低频层"
-    suggestion_low_permanent_hit: "💡 低频层命中率低，建议检查技能模板和确定性知识的配置"
-    suggestion_poor_learning: "💡 中频层学习效果不佳，建议调整相似度阈值或晋升条件"
-    suggestion_few_promotions: "💡 知识晋升很少，建议降低晋升阈值以积累更多永久知识"
-    suggestion_good_performance: "✅ 直接回答比完整 RAG 快 {0} 倍，HOPE 效果良好"
-    suggestion_no_optimization: "✅ HOPE 系统运行正常，无需优化"
-
-  # 策略 (Strategy)
+  # 策略相关
   strategy:
-    direct_answer: "直接回答"
-    template_answer: "模板回答"
-    reference_answer: "参考回答"
-    full_rag: "完整 RAG"
+    direct_answer: "🚀 策略: 直接回答 (来源: {0}, 置信度: {1})"
+    template_answer: "📝 策略: 模板增强 (模板: {0})"
+    reference_answer: "📚 策略: 参考增强 (相似度: {0})"
+    full_rag: "🔍 策略: 完整RAG"
+    decided: "🎯 响应策略已决策: {0}"
     answer_now: "现在请回答"
     needs_llm: "需要LLM"
     # 策略决策器标签 (Strategy decider labels)
@@ -73,9 +77,69 @@ hope:
     label_hit_layer: "命中层: "
     label_confidence: "置信度: "
     label_skill_template: "技能模板: "
-    
-  # 质量评估消息 (Quality assessment messages)
+
+  # 学习相关
+  learn:
+    recorded: "📝 学习记录已保存，评分: {0}"
+    error: "❌ 学习记录保存失败"
+    promoted: "⬆️ 知识已晋升到低频层: {0}"
+
+  # 监控服务 (Monitor Service) - Phase 4
+  monitor:
+    init_success: "📊 HOPE 监控服务初始化成功"
+    hourly_report: "📊 HOPE 小时性能报告"
+    metrics_reset: "🔄 HOPE 监控指标已重置"
+    report_title: "=== HOPE 性能报告 ({0}) ==="
+    total_queries: "总查询数: {0}"
+    direct_answers: "直接回答: {0} ({1}%)"
+    llm_savings: "LLM 节省率: {0}%"
+    avg_response: "平均响应时间: {0}ms"
+    permanent_hits: "低频层命中: {0}"
+    ordinary_hits: "中频层命中: {0}"
+    high_freq_hits: "高频层命中: {0}"
+    title: "HOPE 三层记忆架构"
+    subtitle: "智能知识缓存与学习系统"
+    disabled: "HOPE 系统未启用"
+
+    # 三层统计 (Layer stats)
+    layer_stats: "三层命中统计"
+
+    # 建议 (Suggestions)
+    suggestions: "优化建议"
+    test_query: "测试 HOPE 查询"
+    reset_metrics: "重置指标"
+
+    # 监控服务消息 (Monitor service messages)
+    record_query_failed: "记录查询指标失败: {0}"
+    query_stats: "  总查询: {}, 直接回答: {}, 模板增强: {}, 完整RAG: {}"
+    performance_metrics: "  LLM 节省率: {:.1f}%, 平均响应时间: {:.0f}ms"
+    layer_hit_stats: "  层级命中 - 低频: {}, 中频: {}, 高频: {}"
+
+    # 健康检查消息 (Health check messages)
+    low_savings_rate: "LLM 节省率低于 {0}%"
+    high_response_time: "平均响应时间超过 {0}ms"
+    high_error_rate: "错误率超过 {0}%"
+
+    # 优化建议 (Optimization suggestions)
+    suggestion_low_direct_rate: "💡 直接回答率较低，建议添加更多确定性知识到低频层"
+    suggestion_low_permanent_hit: "💡 低频层命中率低，建议检查技能模板和确定性知识的配置"
+    suggestion_poor_learning: "💡 中频层学习效果不佳，建议调整相似度阈值或晋升条件"
+    suggestion_few_promotions: "💡 知识晋升很少，建议降低晋升阈值以积累更多永久知识"
+    suggestion_good_performance: "✅ 直接回答比完整 RAG 快 {0} 倍，HOPE 效果良好"
+    suggestion_no_optimization: "✅ HOPE 系统运行正常，无需优化"
+
+  # LLM 集成 (LLM Integration)
+  llm:
+    integration_enabled: "🔗 HOPE LLM 集成已启用，底层模型: {0}"
+    direct_answer: "⚡ HOPE 直接回答，来源: {0}，耗时: {1}ms"
+    template_used: "📝 使用技能模板: {0}"
+    reference_used: "📚 使用相似问答参考: {0} 条"
+
+  # 质量服务 (Quality Service)
   quality:
+    low_confidence: "⚠️ 低置信度知识: {0}"
+    stale_knowledge: "⚠️ 过时知识: {0}"
+    high_error: "⚠️ 高错误率知识: {0}"
     insufficient_skills: "技能模板数量不足（当前: {0}）"
     add_more_skills: "建议添加更多技能模板，如：错误排查、性能优化、安全审计等"
     insufficient_facts: "确定性知识数量不足（当前: {0}）"
@@ -89,7 +153,31 @@ hope:
     no_promotions: "没有知识晋升到低频层"
     check_promotion: "建议降低晋升阈值，或检查问答质量"
     low_reuse: "问答复用率低，建议优化相似度匹配算法"
-    
+  # 答案对比学习 (Answer Comparison)
+  comparison:
+    feedback:
+      received: "收到对比反馈: comparisonId={0}, choice={1}"
+      success: "✅ 对比反馈已提交成功"
+    submit:
+      failed: "❌ 提交对比反馈失败"
+    analysis:
+      failed: "差异分析失败"
+    not:
+      found: "对比记录未找到"
+    stats:
+      not:
+        found: "投票统计未找到"
+
+  # 层名称 (Layer names)
+  layer:
+    permanent: "低频层 (技能知识库)"
+    ordinary: "中频层 (近期知识)"
+    high_frequency: "高频层 (实时上下文)"
+
+  # 直接回答 (Direct answer)
+  direct_answer_success: "🚀 HOPE 直接回答成功！来源: {0}, 响应时间: {1}ms"
+  reference_used: "📚 HOPE 参考知识: {0}"
+
   # 控制器消息 (Controller messages)
   controller:
     metrics_reset_success: "监控指标重置成功"
@@ -100,54 +188,6 @@ hope:
     definition_added: "已为会话添加定义: {0}"
     session_cleared: "会话已清除: {0}"
 
-  # 集成层消息 (Integration layer messages)
-  llm:
-    integration_enabled: "HOPE LLM 集成组件已启用: {0}"
-  
-  # 高频层消息 (High-frequency layer messages)
-  high_frequency:
-    disabled: "HOPE 高频层已禁用"
-    init_success: "HOPE 高频层初始化成功，最大会话数: {0}, 超时时间: {1} 分钟"
-    session_created: "创建新会话: {0}"
-    context_updated: "会话 {0} 上下文已更新，当前轮数: {1}"
-    definition_added: "检测到临时定义: {0}"
-    session_cleared: "会话 {0} 已清除"
-    auto_definition: "自动提取临时定义: {0}"
-  
-  # 中频层消息 (Ordinary layer messages)
-  ordinary:
-    disabled: "HOPE 中频层已禁用"
-    init_success: "HOPE 中频层初始化成功，加载 {0} 条记录"
-    init_failed: "HOPE 中频层初始化失败"
-    loaded: "HOPE 中频层加载了 {0} 条记录"
-    load_failed: "HOPE 中频层数据加载失败"
-    direct_hit: "直接命中: {0}, 相似度: {1}"
-    reference_hit: "参考命中: {0}, 相似度: {1}"
-    saved: "HOPE 中频层保存记录: {0}, 评分: {1}"
-    updated: "HOPE 中频层更新记录: {0}"
-    cleaned: "HOPE 中频层清理了 {0} 条过期记录"
-    persist_failed: "HOPE 中频层数据持久化失败"
-  
-  # 低频层消息 (Permanent layer messages)
-  permanent:
-    disabled: "HOPE 低频层已禁用"
-    init_success: "HOPE 低频层初始化成功，技能模板: {0}, 确定性知识: {1}"
-    init_failed: "HOPE 低频层初始化失败"
-    skills_loaded: "HOPE 低频层加载了 {0} 个技能模板"
-    facts_loaded: "HOPE 低频层加载了 {0} 条确定性知识"
-    skill_saved: "HOPE 低频层保存技能模板: {0} ({1})"
-    factual_saved: "HOPE 低频层保存确定性知识: {0}"
-    factual_hit: "确定性知识命中: {0}"
-    skill_hit: "技能模板命中: {0}"
-    factual_disabled: "确定性知识已禁用: {0}"
-    persist_failed: "HOPE 低频层数据持久化失败"
-    load_failed: "HOPE 低频层数据加载失败"
-  
-  # 学习相关消息 (Learning related messages)
-  learn:
-    recorded: "HOPE 学习记录已保存，评分: {0}"
-    promoted: "HOPE 中频层知识晋升到低频层: {0}"
-    
   # 模型相关消息 (Model related messages)
   model:
     # 会话上下文 (Session Context)
@@ -157,10 +197,8 @@ hope:
     context_summary_built: "对话上下文摘要已构建"
     # 对话上下文构建字符串 (Context building strings)
     current_topic_label: "当前话题: "
-    session_definitions_label: "本次会话的定义:
-"
-    recent_conversations_label: "最近对话:
-"
+    session_definitions_label: "本次会话的定义:"
+    recent_conversations_label: "最近对话:"
     user_label: "用户"
     assistant_label: "助手"
     

@@ -1,0 +1,21 @@
+# 知识问答 API 消息和日志
+knowledge_qa:
+  api:
+    message:
+      all_indexed: "所有文档已完成索引"
+      incremental_complete: "增量索引完成"
+      system_running: "知识问答系统正在运行"
+      needs_indexing: "知识库需要索引"
+      rebuild_complete: "知识库重建完成"
+    status:
+      up: "运行中"
+  log:
+    received_question: "收到问题：{0}"
+    get_statistics: "正在获取知识问答统计数据"
+    incremental_request: "收到增量索引请求：{0}"
+    statistics_result: "统计结果：{0}"
+    search_documents: "为问题搜索文档：{0}（找到 {1} 个）"
+    session_question: "会话问题 [{0}]：{1}"
+    rebuild_request: "收到重建请求：{0}"
+    indexing_in_progress: "索引正在进行中"
+    indexing_idle: "系统空闲，可以进行索引"

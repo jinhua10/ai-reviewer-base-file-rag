@@ -1,36 +1,99 @@
 # Feedback Module - Chinese Messages (反馈模块 - 中文消息)
 # Generated: 2025-12-10
 
-# API 响应消息 (API Response Messages)
-feedback.api.success.feedback_received: "反馈已收到，感谢您的宝贵意见！"
-feedback.api.message.thank_you: "感谢您的反馈！"
-feedback.api.message.document_impact: "您的评分有助于提升文档质量（评分：{0}星）"
-feedback.api.message.overall_impact: "您的评分有助于改进回答质量（评分：{0}星）"
-
-# API 错误消息 (API Error Messages)
-feedback.api.error.missing_params: "缺少必需参数：{0}"
-feedback.api.error.invalid_rating: "评分必须在 1-5 之间"
-feedback.api.error.invalid_feedback_type: "无效的反馈类型"
-feedback.api.error.record_not_found: "问答记录不存在"
-feedback.api.error.processing_failed: "处理失败：{0}"
+feedback:
+  api:
+    emoji:
+      "1": "😞 完全无用"
+      "2": "🙁 帮助不大"
+      "3": "😐 一般"
+      "4": "😊 非常有帮助"
+      "5": "🤩 极其有用"
+    error:
+      invalid_feedback_type: "feedbackType 必须是 LIKE 或 DISLIKE"
+      invalid_rating: "评分必须在 1-5 之间"
+      missing_params: "{0} 不能为空"
+      processing_failed: "处理失败：{0}"
+      record_not_found: "记录不存在"
+    impact:
+      document:
+        "1": "该文档无帮助，系统将大幅降低其推荐权重 ⚠️"
+        "2": "该文档帮助有限，系统将降低其推荐权重 📉"
+        "3": "该文档表现一般，系统将保持其当前权重 ➡️"
+        "4": "该文档非常有帮助，系统将提高其推荐权重 📈"
+        "5": "该文档极其有用！系统将优先推荐 🚀"
+      overall:
+        "1": "很抱歉未能帮到您！我们将重点改进 🙏"
+        "2": "感谢您的反馈！我们将分析并优化 🔧"
+        "3": "感谢您的评分！我们将持续优化 💡"
+        "4": "感谢您的反馈！这将帮助我们提升回答质量 👍"
+        "5": "太棒了！该回答将推荐给其他用户 🌟"
+    message:
+      thank_you: "感谢您的反馈！"
+      document_impact: "您的评分有助于提升文档质量（评分：{0}星）"
+      overall_impact: "您的评分有助于改进回答质量（评分：{0}星）"
+    success:
+      feedback_received: "反馈已收到，感谢您的宝贵意见！"
+      thank_you: "感谢您的评分！"
 
 # 日志消息 (Log Messages)
-log.feedback.overall_received: "收到整体反馈：记录ID={0}，评分={1}"
-log.feedback.overall_failed: "提交整体反馈失败"
-log.feedback.document_received: "{0} 收到文档反馈：记录ID={1}，文档={2}"
-log.feedback.document_failed: "提交文档反馈失败"
-log.feedback.get_record_failed: "获取问答记录失败"
-log.feedback.get_recent_failed: "获取最近问答记录失败"
-log.feedback.get_pending_failed: "获取待审核记录失败"
-log.feedback.get_statistics_failed: "获取统计信息失败"
-log.feedback.rating_submitted: "{0} 文档评分已提交：记录ID={1}，文档={2}，评分={3}，影响={4}"
-log.feedback.rating_failed: "提交评分失败"
-log.feedback.overall_rating_submitted: "{0} 整体评分已提交：记录ID={1}，评分={2}"
+log:
+  feedback:
+    overall_received: "收到整体反馈：记录ID={0}，评分={1}"
+    overall_failed: "提交整体反馈失败"
+    document_received: "{0} 收到文档反馈：记录ID={1}，文档={2}"
+    document_failed: "提交文档反馈失败"
+    get_record_failed: "获取问答记录失败"
+    get_recent_failed: "获取最近问答记录失败"
+    get_pending_failed: "获取待审核记录失败"
+    get_statistics_failed: "获取统计信息失败"
+    rating_submitted: "{0} 文档评分已提交：记录ID={1}，文档={2}，评分={3}，影响={4}"
+    rating_failed: "提交评分失败"
+    overall_rating_submitted: "{0} 整体评分已提交：记录ID={1}，评分={2}"
 
-# 表情评分描述 (Emoji Rating Descriptions)
-feedback.emoji.description.1: "😞 很失望"
-feedback.emoji.description.2: "🙁 不太满意"
-feedback.emoji.description.3: "😐 一般般"
-feedback.emoji.description.4: "😊 比较满意"
-feedback.emoji.description.5: "🤩 非常满意"
+    # 表情评分描述 (Emoji Rating Descriptions)
+    emoji:
+      description:
+        "1": "😞 很失望"
+        "2": "🙁 不太满意"
+        "3": "😐 一般般"
+        "4": "😊 比较满意"
+        "5": "🤩 非常满意"
+
+    # 权重管理日志 (Weight Management Logs)
+    weight_disabled: "动态权重调整已禁用"
+    weight_updated: "文档 {0} 权重已更新为 {1} (点赞:{2}, 踩:{3})"
+    weight_reset: "文档 {0} 权重已重置为 {1}"
+    weights_cleared: "所有文档权重已清除"
+    weights_saved: "权重数据已保存 ({0} 个文档)"
+    save_failed: "保存权重数据失败"
+    weights_file_not_exists: "权重文件不存在，使用默认权重"
+    weights_loaded: "权重数据已加载 ({0} 个文档)"
+    load_failed: "加载权重数据失败"
+    rating_updated: "文档 {0} 星级评价已更新：权重={1} {2} 调整={3} (点赞:{4}, 踩:{5})"
+  # QA 记录管理日志 (QA Record Management Logs)
+  qa:
+    record_saved: "问答记录已保存：ID={0}，文件={1}"
+    record_save_failed: "保存问答记录失败"
+    find_failed: "查找问答记录失败：ID={0}"
+    record_updated: "问答记录已更新：ID={0}"
+    record_notfound: "未找到问答记录：ID={0}"
+    record_update_failed: "更新问答记录失败：ID={0}"
+    user_feedback: "用户反馈：记录ID={0}，评分={1}，反馈={2}"
+    archived: "高评分({0})问答已归档至：{1}"
+    archive_failed: "问答归档失败"
+    document_feedback: "{0} 文档反馈：记录ID={1}，文档={2}，类型={3}"
+    feedback_applied: "文档 {0} 反馈已应用到权重优化"
+    feedback_pending: "文档 {0} 反馈已提交，等待审核"
+    rating_submitted: "{0} 文档评分已提交：记录ID={1}，文档={2}，评分={3}，调整={4}"
+    rating_applied: "文档 {0} 权重已应用：评分={1}，调整={2}"
+    rating_pending: "文档 {0} 评分已提交，等待审核：评分={1}"
+    overall_rating_submitted: "{0} 整体评分已提交：记录ID={1}，评分={2}"
+    marked_as_quality: "问答记录已标记为优质内容：ID={0}"
+    recent_failed: "获取最近问答记录失败"
+    pending_failed: "获取待审核记录失败"
+    stats_failed: "获取统计信息失败"
+    load_failed: "加载问答记录失败：文件={0}"
+    records_dir: "问答记录存储目录：{0}"
+    records_dir_failed: "创建问答记录目录失败：{0}"
 

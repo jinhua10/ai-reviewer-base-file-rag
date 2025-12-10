@@ -1,0 +1,16 @@
+# ============================================================
+# MemoDocumentExporter
+# ============================================================
+memo_exporter:
+  log:
+    export_json_failed: "导出 JSON 失败"
+    exported_to: "备忘录已导出到: {0}"
+    export_markdown: "📄 导出 Markdown: {0}"
+    export_json: "📋 导出 JSON: {0}"
+    export_html: "🌐 导出 HTML: {0}"
+    export_failed: "导出失败: {0}"
+  title:
+    document_memo: "文档分析备忘录"
+    key_points: "关键要点"
+    memo_entries: "备忘录条目"
+    generated_by: "由 AI 智能分析系统生成"

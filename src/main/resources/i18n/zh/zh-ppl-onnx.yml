@@ -1,0 +1,28 @@
+# ============================================================
+# PPL ONNX Service (PPL ONNX 服务)
+# ============================================================
+ppl_onnx:
+  log:
+    init_start: "🚀 正在初始化 ONNX PPL 服务..."
+    model_path: "📦 模型路径: {0}"
+    tokenizer_path: "📦 分词器路径: {0}"
+    env_created: "✅ ONNX Runtime 环境已创建"
+    model_loaded: "✅ ONNX 模型已加载: {0}"
+    tokenizer_loaded: "✅ 分词器已加载: {0}"
+    cache_init: "✅ PPL 缓存已初始化 (大小: {0}, TTL: {1}秒)"
+    init_success: "✅ ONNX PPL 服务初始化成功"
+    init_failed: "❌ ONNX PPL 服务初始化失败"
+    shutdown_start: "🛑 正在关闭 ONNX PPL 服务..."
+    session_closed: "✅ ONNX 会话已关闭"
+    tokenizer_closed: "✅ 分词器已关闭"
+    cache_cleared: "✅ PPL 缓存已清理"
+    shutdown_success: "✅ ONNX PPL 服务已成功关闭"
+    shutdown_error: "关闭过程中发生错误"
+    calc_ppl_failed: "计算困惑度失败: {0}"
+    health_check_failed: "健康检查失败"
+    rerank_detail: "📊 PPL Rerank - 文档: {0} | 原始分数: {1} | PPL: {2} | PPL分数: {3} | 最终分数: {4}"
+  error:
+    init_failed: "ONNX 初始化失败"
+    calc_ppl_failed: "计算困惑度失败"
+    chunk_failed: "文档分块失败"
+    rerank_failed: "文档重排序失败"

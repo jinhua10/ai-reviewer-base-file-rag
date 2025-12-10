@@ -1,0 +1,18 @@
+llm:
+  error:
+    openai_failed: "OpenAI API 调用失败：{0}"
+    openai_http_error: "OpenAI API 错误：HTTP {0}，{1}"
+    parse_failed: "解析 OpenAI 响应失败：{0}"
+  log:
+    mock_init: "✅ Mock LLM 客户端已初始化（仅用于测试）"
+    mock_request: "Mock LLM 收到请求，提示词长度：{0}"
+    mock_response: "📝 Mock LLM 返回模拟回答"
+    openai_error: "OpenAI API 错误：HTTP {0}，响应体：{1}"
+    openai_failed: "OpenAI API 调用失败"
+    openai_init: "✅ OpenAI LLM 客户端已初始化"
+    openai_request: "正在向 OpenAI 发送请求：{0}"
+    openai_response: "OpenAI 响应内容：{0}"
+  mock:
+    default_answer: "这是模拟回答。\n\n根据提供的上下文，我理解您的问题。但作为 Mock LLM，我仅能提供模拟响应。\n\n请配置真实的 LLM 服务（如 OpenAI）以获取准确答案。\n\n（注：此为 Mock LLM 的模拟回答）"
+    marriage_answer: "根据文档内容，婚姻统计数据包括未婚、已婚、离异、丧偶等状态的分布情况。\n\n（注：此为 Mock LLM 的模拟回答，实际数据请参考文档内容）"
+    population_answer: "根据文档内容，中国总人口约为 14 亿。\n\n（注：此为 Mock LLM 的模拟回答，实际数据请参考文档内容）"

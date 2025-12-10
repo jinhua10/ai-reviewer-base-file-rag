@@ -1,0 +1,29 @@
+# 文档管理相关消息 (Document management related messages)
+document_management:
+  api:
+    error:
+      delete_failed: "删除失败：{0}"
+      file_empty: "文件为空"
+      index_failed: "索引建立失败：{0}"
+      list_failed: "获取列表失败：{0}"
+      not_found: "文档不存在"
+      upload_failed: "上传失败：{0}"
+    success:
+      batch_result: "成功：{0}，失败：{1}"
+      batch_upload: "批量上传完成"
+      delete: "文档删除成功"
+      index: "文档索引建立成功"
+      list_loaded: "文档列表获取成功：返回 {0} 个文档，总计 {1} 个"
+      upload: "文档上传成功"
+  log:
+    scanned_types: "已扫描文件类型：{0}"
+    batch_upload: "批量上传文档: {0}"
+    upload_success: "文档上传成功: {0}"
+    upload_failed: "文档上传失败"
+    file_upload_failed: "文件上传失败: {0}"
+    list_documents: "获取文档列表: 页码={0}, 每页数量={1}, 排序字段={2}, 排序方向={3}"
+    list_failed: "获取文档列表失败"
+    auto_index_trigger: "📦 自动触发增量索引..."
+    auto_index_success: "✅ 自动增量索引完成"
+    auto_index_failed: "⚠️ 自动增量索引失败: {0}"
+    trigger_auto_index_failed: "⚠️ 触发自动索引失败: {0}"

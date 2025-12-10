@@ -63,7 +63,15 @@ public final class I18N {
                 "retriever",        // 检索器 (Retriever)
                 "streaming",        // 流式响应 (Streaming)
                 "hope",             // HOPE 三层记忆架构 (HOPE three-layer memory)
-                "error"             // 错误信息 (Error messages)
+                "error",            // 错误信息 (Error messages)
+                "api",              // API相关消息 (API related messages)
+                "batch",            // 批量处理相关消息 (Batch processing related messages)
+                "context",          // 上下文相关消息 (Context related messages)
+                "document-management", // 文档管理相关消息 (Document management related messages)
+                "document-service",  // 文档服务相关消息 (Document service related messages)
+                "ppl",              // PPL服务相关消息 (PPL service related messages)
+                "chunking",         // 分块相关消息 (Chunking related messages)
+                "rerank"            // 重排序相关消息 (Reranking related messages)
         };
 
         int totalLoaded = 0;
