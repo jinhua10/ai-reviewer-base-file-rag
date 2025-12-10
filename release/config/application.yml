@@ -403,7 +403,7 @@ knowledge:
 
       # ONNX 配置
       onnx:
-        enabled: true
+        enabled: false
         model-path: ./models/qwen2.5-0.5b-instruct/model.onnx
         tokenizer-path: ./models/qwen2.5-0.5b-instruct/tokenizer.json
         max-batch-size: 8
@@ -422,7 +422,7 @@ knowledge:
 
       # OpenAI 配置
       openai:
-        enabled: false
+        enabled: true
         api-key: ${QW_API_KEY:}
         model: qwen-turbo
         api-url: https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
