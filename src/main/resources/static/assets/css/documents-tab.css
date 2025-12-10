@@ -731,5 +731,30 @@
     color: #667eea;
 }
 
+/* ============================================================================
+   实时过滤提示样式 (Real-time Filter Hint)
+   ============================================================================ */
+.documents-filter-hint {
+    padding: 10px 15px;
+    margin: 10px 0;
+    background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+    border: 1px solid #667eea40;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #667eea;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* 加载、错误、空状态等样式继承自 main.css */
 

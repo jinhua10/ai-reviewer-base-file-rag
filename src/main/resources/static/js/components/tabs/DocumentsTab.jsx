@@ -91,17 +91,18 @@ function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSele
         loadSupportedFileTypes();
     }, []);
 
-    // 首次加载文档
+    // 首次加载文档 (Load documents on mount)
     useEffect(() => {
         loadDocuments();
     }, []);
 
-    // 参数变化时重新加载（注意：filterText 不在这里，改为按回车触发）
+    // 参数变化时重新加载（注意：filterText 和 showAdvancedSearch 不在这里，改为手动触发）
+    // (Reload when parameters change - filterText and showAdvancedSearch not included, trigger manually)
     useEffect(() => {
         if (!loading) {
             loadDocuments();
         }
-    }, [currentPage, pageSize, sortBy, sortOrder, showAdvancedSearch]);
+    }, [currentPage, pageSize, sortBy, sortOrder]);
 
 
     // ============================================================================
@@ -423,8 +424,10 @@ function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSele
     };
 
     const applyFilters = () => {
+        // 只在用户点击"应用筛选"按钮时才发送后端请求，避免自动刷新
+        // (Only send backend request when user clicks "Apply Filters" button to avoid auto-refresh)
         setCurrentPage(1);
-        loadDocuments(); // 发送后端请求
+        loadDocuments(); // 发送后端请求 (Send backend request)
     };
 
     const resetFilters = () => {
@@ -463,6 +466,23 @@ function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSele
         if (advancedFilters.indexed !== 'all') count++;
         if (advancedFilters.startDate || advancedFilters.endDate) count++;
         return count;
+    };
+
+    // 检查是否有本地过滤条件（用于显示实时过滤提示）
+    const hasLocalAdvancedFilters = () => {
+        // 检查本地过滤条件是否与后端过滤条件不同（即正在进行实时过滤）
+        const isDifferent =
+            localAdvancedFilters.search !== advancedFilters.search ||
+            localAdvancedFilters.searchMode !== advancedFilters.searchMode ||
+            JSON.stringify(localAdvancedFilters.fileTypes) !== JSON.stringify(advancedFilters.fileTypes) ||
+            localAdvancedFilters.minSize !== advancedFilters.minSize ||
+            localAdvancedFilters.maxSize !== advancedFilters.maxSize ||
+            localAdvancedFilters.indexed !== advancedFilters.indexed ||
+            localAdvancedFilters.startDate !== advancedFilters.startDate ||
+            localAdvancedFilters.endDate !== advancedFilters.endDate;
+
+        // 只有当有差异时才显示提示
+        return isDifferent;
     };
 
     // 检查是否有本地过滤条件（用于显示实时过滤提示）
@@ -538,6 +558,13 @@ function DocumentsTab({ showAIAnalysis, setShowAIAnalysis, selectedDocs, setSele
                             language={language}
                             t={t}
                         />
+
+                        {/* 实时过滤提示 (Real-time filter hint) */}
+                        {showAdvancedSearch && hasLocalAdvancedFilters() && (
+                            <div className="documents-filter-hint">
+                                💡 {t('docsLocalFilterHint') || '正在进行实时过滤。点击"搜索"或"应用筛选"按钮进行完整搜索'}
+                            </div>
+                        )}
 
                         {/* 排序和分页控制栏 - 只在有文档时显示 */}
                         {totalCount > 0 && (
