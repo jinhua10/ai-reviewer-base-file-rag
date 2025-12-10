@@ -166,7 +166,7 @@ public class QARecordService {
 
         boolean updated = updateRecord(record);
 
-        // ✨ 新增：高评分自动归档（New feature: High rating auto-archive）
+        // ✨ 新增：高评分自动归档 (New feature: High rating auto-archive)
         if (updated && rating >= 4 && qaArchiveService != null) {
             try {
                 if (qaArchiveService.shouldArchive(record)) {
@@ -354,8 +354,7 @@ public class QARecordService {
         log.info(I18N.get("log.qa.overall_rating_submitted",
             emojiText, recordId.substring(0, Math.min(8, recordId.length())), rating));
 
-        // 如果评分较高（4-5星），可以将此问答记录标记为优质内容
-        // If rating is high (4-5 stars), mark this QA as high-quality content
+        // 如果评分较高（4-5星），可以将此问答记录标记为优质内容 (If rating is high (4-5 stars), mark this QA as high-quality content)
         if (rating >= 4) {
             record.setReviewStatus(QARecord.ReviewStatus.APPROVED);
             log.info(I18N.get("log.qa.marked_as_quality", recordId.substring(0, Math.min(8, recordId.length()))));
@@ -505,15 +504,15 @@ public class QARecordService {
                     try {
                         QARecord record = loadRecord(path);
                         if (record != null && record.getOverallRating() != null && record.getOverallRating() >= 4) {
-                            // 高评分记录
-                            PromptRecommendation rec = new PromptRecommendation();
+            // 高评分记录 (High rating record)
+            PromptRecommendation rec = new PromptRecommendation();
                             rec.setPrompt(record.getQuestion());
                             rec.setRating(record.getOverallRating());
                             rec.setUsageCount(1); // 简化版，后续可以统计实际使用次数
                             rec.setStrategy(detectStrategy(record.getQuestion()));
                             rec.setTimestamp(record.getTimestamp());
                             
-                            // 如果指定了策略类型，进行筛选
+                            // 如果指定了策略类型，进行筛选 (Filter if strategy type is specified)
                             if (strategyType == null || strategyType.isEmpty() || 
                                 rec.getStrategy().contains(strategyType) || strategyType.equals("all")) {
                                 recommendations.add(rec);
@@ -524,7 +523,7 @@ public class QARecordService {
                     }
                 });
 
-            // 按评分和使用次数排序
+            // 按评分和使用次数排序 (Sort by rating and usage count)
             return recommendations.stream()
                 .sorted((a, b) -> {
                     int ratingCompare = Integer.compare(b.getRating(), a.getRating());

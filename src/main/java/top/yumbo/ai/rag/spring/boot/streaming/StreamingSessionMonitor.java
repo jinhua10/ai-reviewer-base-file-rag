@@ -53,7 +53,7 @@ public class StreamingSessionMonitor {
      */
     public void registerSession(StreamingSession session) {
         activeSessions.put(session.getSessionId(), session);
-        log.debug("注册会话 (Session registered): sessionId={}", session.getSessionId());
+        log.debug(I18N.get("log.streaming.session_registered", session.getSessionId()));
     }
 
     /**
@@ -79,14 +79,13 @@ public class StreamingSessionMonitor {
     public void onClientDisconnect(String sessionId, String reason) {
         StreamingSession session = activeSessions.get(sessionId);
         if (session == null) {
-            log.debug("会话不存在 (Session not found): sessionId={}", sessionId);
+            log.debug(I18N.get("log.streaming.session_not_found", sessionId));
             return;
         }
 
         session.markInterrupted(reason);
 
-        log.warn("⚠️ 客户端断开 (Client disconnected): sessionId={}, reason={}, progress={:.1f}%",
-            sessionId, reason, session.getProgress() * 100);
+        log.warn(I18N.get("log.streaming.client_disconnected", sessionId, reason, session.getProgress() * 100));
 
         // 处理中断会话
         // (Handle interrupted session)
@@ -104,8 +103,7 @@ public class StreamingSessionMonitor {
             session.getChunksReceived() >= session.getTotalChunks() * 0.8) {
 
             saveDraft(session, "80%以上内容已生成 (>80% content generated)");
-            log.info("📝 保存草稿 (Draft saved): sessionId={}, progress={:.1f}%",
-                session.getSessionId(), session.getProgress() * 100);
+            log.info(I18N.get("log.streaming.draft_saved", session.getSessionId(), session.getProgress() * 100));
         }
 
         // 规则2：如果已生成 >200 字，且用户停留 >10s，可能是有用的
@@ -114,17 +112,15 @@ public class StreamingSessionMonitor {
                  session.getDurationSeconds() > 10) {
 
             saveDraft(session, "内容较长且停留时间充足 (Long content + sufficient dwell time)");
-            log.info("📝 保存部分结果 (Partial result saved): sessionId={}, length={}, duration={}s",
-                session.getSessionId(),
+            log.info(I18N.get("log.streaming.partial_result_saved", session.getSessionId(),
                 session.getFullAnswer().length(),
-                session.getDurationSeconds());
+                session.getDurationSeconds()));
         }
 
         // 规则3：其他情况，丢弃
         // (Rule 3: Discard in other cases)
         else {
-            log.info("🗑️ 丢弃不完整会话 (Discard incomplete session): sessionId={}, reason=内容太少",
-                session.getSessionId());
+            log.info(I18N.get("log.streaming.discard_incomplete_session", session.getSessionId()));
         }
 
         activeSessions.remove(session.getSessionId());
@@ -162,13 +158,12 @@ public class StreamingSessionMonitor {
     public void onSessionComplete(String sessionId) {
         StreamingSession session = activeSessions.get(sessionId);
         if (session == null) {
-            log.debug("会话不存在 (Session not found): sessionId={}", sessionId);
+            log.debug(I18N.get("log.streaming.session_not_found", sessionId));
             return;
         }
 
         if (session.getStatus() != SessionStatus.COMPLETED) {
-            log.debug("会话未正常完成 (Session not completed normally): sessionId={}, status={}",
-                sessionId, session.getStatus());
+            log.debug(I18N.get("log.streaming.session_not_completed", sessionId, session.getStatus()));
             activeSessions.remove(sessionId);
             return;
         }
@@ -178,8 +173,7 @@ public class StreamingSessionMonitor {
         if (session.isValid() && !session.isSavedToHOPE()) {
             saveToHOPE(session);
         } else {
-            log.debug("⚠️ 会话无效或已保存，不加入 HOPE (Session invalid or already saved): sessionId={}",
-                sessionId);
+            log.debug(I18N.get("log.streaming.session_invalid_or_saved", sessionId));
         }
 
         activeSessions.remove(sessionId);
@@ -191,7 +185,7 @@ public class StreamingSessionMonitor {
      */
     private void saveToHOPE(StreamingSession session) {
         if (hopeManager == null) {
-            log.debug("HOPE 管理器未启用，跳过保存 (HOPE manager not enabled, skip saving)");
+            log.debug(I18N.get("log.streaming.hope_manager_disabled"));
             return;
         }
 
@@ -215,12 +209,10 @@ public class StreamingSessionMonitor {
                 hopeManager.getOrdinaryLayer().save(qa);
                 session.setSavedToHOPE(true);
 
-                log.info("✅ 会话已保存到 HOPE 中频层 (Session saved to HOPE ordinary layer): sessionId={}",
-                    session.getSessionId());
+                log.info(I18N.get("log.streaming.session_saved_to_hope", session.getSessionId()));
 
             } catch (Exception e) {
-                log.error("❌ 保存到 HOPE 失败 (Failed to save to HOPE): sessionId={}, error={}",
-                    session.getSessionId(), e.getMessage());
+                log.error(I18N.get("log.streaming.save_to_hope_failed", session.getSessionId(), e.getMessage()));
             }
         });
     }
@@ -245,7 +237,7 @@ public class StreamingSessionMonitor {
         }
 
         if (!timeoutSessionIds.isEmpty()) {
-            log.warn("⚠️ 清理超时会话 (Cleaning up timeout sessions): count={}", timeoutSessionIds.size());
+            log.warn(I18N.get("log.streaming.cleaning_timeout_sessions", timeoutSessionIds.size()));
 
             for (String sessionId : timeoutSessionIds) {
                 onClientDisconnect(sessionId, "超时 (Timeout)");

@@ -52,6 +52,8 @@ public final class I18N {
     private static void loadMessagesWithPrefix(String prefix, Map<String, String> target, String language) {
         // 预定义的模块列表 (Predefined module list)
         String[] modules = {
+                "log",              // 日志消息 (Log messages)
+                "vision-llm",       // 视觉大模型 (Vision LLM)
                 "messages",         // 基础老代码的消息 (Base messages)
                 "common",           // 通用消息 (Common messages)
                 "role-detector",    // 角色检测 (Role detection)

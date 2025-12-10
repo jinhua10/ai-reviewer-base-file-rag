@@ -118,12 +118,12 @@ public class PPLOnnxService implements PPLService {
      */
     private void logModelInfo() {
         try {
-            log.info("📊 模型输入信息 (Model Input Info):");
+            log.info(I18N.get("log.onnx.model_input_info"));
             Map<String, NodeInfo> inputInfo = session.getInputInfo();
             for (Map.Entry<String, NodeInfo> entry : inputInfo.entrySet()) {
                 String name = entry.getKey();
                 NodeInfo info = entry.getValue();
-                log.info("  - 输入: {} (类型: {})", name, info.getInfo());
+                log.info(I18N.get("log.onnx.input_info", name, info.getInfo()));
 
                 // 检测是否使用 KV Cache (Check if using KV cache)
                 if (name.startsWith("past_key_values.")) {
@@ -147,34 +147,33 @@ public class PPLOnnxService implements PPLService {
                         if (shape.length >= 4) {
                             numHeads = (int) shape[1];  // num_heads 或 num_kv_heads
                             headDim = (int) shape[3];   // head_dim
-                            log.info("  📐 从模型提取 KV Cache 维度: num_heads={}, head_dim={}", numHeads, headDim);
+                            log.info(I18N.get("log.onnx.kv_cache_dimensions", numHeads, headDim));
                         }
                     }
                 }
             }
 
-            log.info("📊 模型输出信息 (Model Output Info):");
+            log.info(I18N.get("log.onnx.model_output_info"));
             Map<String, NodeInfo> outputInfo = session.getOutputInfo();
             for (Map.Entry<String, NodeInfo> entry : outputInfo.entrySet()) {
-                log.info("  - 输出: {} (类型: {})", entry.getKey(), entry.getValue().getInfo());
+                log.info(I18N.get("log.onnx.output_info", entry.getKey(), entry.getValue().getInfo()));
             }
 
             if (useKVCache) {
-                log.info("⚠️ 模型使用 KV Cache，共 {} 层, num_heads={}, head_dim={}",
-                        numLayers, numHeads, headDim);
+                log.info(I18N.get("log.onnx.using_kv_cache", numLayers, numHeads, headDim));
 
                 // 如果无法从模型提取，使用默认值并警告
                 if (numHeads == 0 || headDim == 0) {
-                    log.warn("⚠️ 无法从模型提取 KV Cache 维度，使用默认值");
+                    log.warn(I18N.get("log.onnx.cannot_extract_kv_cache_dimensions"));
                     numHeads = 2;   // GQA 模式常见值
                     headDim = 64;
                 }
             } else {
-                log.info("✅ 模型不使用 KV Cache，可直接推理");
+                log.info(I18N.get("log.onnx.not_using_kv_cache"));
             }
 
         } catch (OrtException e) {
-            log.warn("⚠️ 无法获取模型信息: {}", e.getMessage());
+            log.warn(I18N.get("log.onnx.cannot_get_model_info", e.getMessage()));
         }
     }
 
@@ -362,7 +361,7 @@ public class PPLOnnxService implements PPLService {
             inputs.put(valueName, valueTensor);
         }
 
-        log.debug("✅ 已添加 {} 层空 KV Cache (Added {} layers of empty KV Cache)", numLayers, numLayers);
+        log.debug(I18N.get("log.onnx.added_kv_cache_layers", numLayers, numLayers));
     }
 
     /**
@@ -678,7 +677,7 @@ public class PPLOnnxService implements PPLService {
         Set<Integer> imagePositions = detectImageMarkers(sentences);
 
         if (!imagePositions.isEmpty()) {
-            log.debug("   🖼️ 检测到 {} 个图片位置标记", imagePositions.size());
+            log.debug(I18N.get("log.onnx.detected_image_positions", imagePositions.size()));
         }
 
         // 计算每个句子的 PPL
@@ -702,7 +701,7 @@ public class PPLOnnxService implements PPLService {
             // 如果附近有图片标记，降低切分权重
             if (isNearImagePosition(i, imagePositions)) {
                 pplDelta *= 0.3;  // 大幅降低图片附近的切分概率
-                log.debug("   📍 位置 {} 靠近图片，PPL 权重降低至 {}", i, pplDelta);
+                log.debug(I18N.get("log.onnx.near_image_position", i, pplDelta));
             }
 
             // PPL 变化超过阈值，且当前块不为空
@@ -807,7 +806,7 @@ public class PPLOnnxService implements PPLService {
             // 检测图片标记格式：[图片-xxx：
             if (sentence.contains("[图片-") || sentence.contains("[Image-")) {
                 imagePositions.add(i);
-                log.debug("   🖼️ 句子 {} 包含图片标记", i);
+                log.debug(I18N.get("log.onnx.sentence_contains_image_marker", i));
             }
         }
 
@@ -971,7 +970,7 @@ public class PPLOnnxService implements PPLService {
             // PPL 应该是一个合理的正数 (PPL should be a reasonable positive number)
             boolean healthy = ppl > 0 && ppl < 10000;
             if (healthy && useKVCache) {
-                log.info("✅ ONNX 模型使用 KV Cache，已成功支持（使用 DirectBuffer 创建空张量）");
+                log.info(I18N.get("log.onnx.kv_cache_success"));
             }
             return healthy;
 

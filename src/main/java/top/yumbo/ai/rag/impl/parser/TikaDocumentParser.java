@@ -117,12 +117,12 @@ public class TikaDocumentParser implements DocumentParser {
         log.info(I18N.get("log.tika.extract_image_metadata", extractImageMetadata));
         log.info(I18N.get("log.tika.include_image_placeholders", includeImagePlaceholders));
         log.info(I18N.get("log.tika.active_image_strategy", imageExtractor.getActiveStrategy().getStrategyName()));
-        log.info("Vision LLM 批量大小: {} 张幻灯片/批次", this.visionBatchSize);
+        log.info(I18N.get("log.tika.vision_batch_size", this.visionBatchSize));
         if (cacheService != null) {
-            log.info("✅ 幻灯片缓存已启用");
+            log.info(I18N.get("log.tika.slide_cache_enabled"));
         }
         if (imageStorageService != null) {
-            log.info("✅ 图片存储服务已启用");
+            log.info(I18N.get("log.tika.image_storage_enabled"));
         }
     }
 

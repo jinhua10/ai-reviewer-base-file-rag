@@ -101,7 +101,11 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 计算文本困惑度（带降级）
+     * 计算文本困惑度（带降级）(Calculate text perplexity with fallback)
+     * 
+     * @param text 待计算的文本 (Text to calculate)
+     * @return 困惑度值 (Perplexity value)
+     * @throws PPLException 计算失败时抛出 (Thrown when calculation fails)
      */
     public double calculatePerplexity(String text) throws PPLException {
         return executeWithFallback(service -> service.calculatePerplexity(text),
@@ -109,7 +113,10 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 批量计算困惑度（带降级）
+     * 批量计算困惑度（带降级）(Batch calculate perplexity with fallback)
+     * 
+     * @param texts 待计算的文本列表 (List of texts to calculate)
+     * @return 文本到困惑度的映射 (Mapping from text to perplexity)
      */
     public Map<String, Double> batchCalculatePerplexity(List<String> texts) {
         try {
@@ -117,7 +124,7 @@ public class PPLServiceFacade {
                     "batchCalculatePerplexity");
         } catch (PPLException e) {
             log.error("❌ Batch calculate perplexity failed", e);
-            // 降级：返回所有失败的结果
+            // 降级：返回所有失败的结果 (Fallback: return results with all failures)
             Map<String, Double> results = new HashMap<>();
             texts.forEach(text -> results.put(text, Double.MAX_VALUE));
             return results;
@@ -125,7 +132,12 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 文档切分（带降级）
+     * 文档切分（带降级）(Document chunking with fallback)
+     * 
+     * @param content 文档内容 (Document content)
+     * @param query 查询问题 (Query question)
+     * @return 切分后的文档块列表 (List of document chunks after chunking)
+     * @throws PPLException 切分失败时抛出 (Thrown when chunking fails)
      */
     public List<DocumentChunk> chunk(String content, String query) throws PPLException {
         ChunkConfig chunkConfig = config.getChunking();
@@ -134,12 +146,17 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 文档重排序（带降级）
+     * 文档重排序（带降级）(Document reranking with fallback)
+     * 
+     * @param question 查询问题 (Query question)
+     * @param candidates 候选文档列表 (Candidate document list)
+     * @return 重排序后的文档列表 (Reranked document list)
+     * @throws PPLException 重排序失败时抛出 (Thrown when reranking fails)
      */
     public List<Document> rerank(String question, List<Document> candidates) throws PPLException {
         RerankConfig rerankConfig = config.getReranking();
 
-        // 检查是否启用
+        // 检查是否启用 (Check if enabled)
         if (!rerankConfig.isEnabled()) {
             log.debug("PPL Rerank is disabled, returning original order");
             return candidates;
@@ -150,7 +167,10 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 切换提供商
+     * 切换提供商 (Switch provider)
+     * 
+     * @param newProvider 新的提供商类型 (New provider type)
+     * @throws PPLException 切换失败时抛出 (Thrown when switch fails)
      */
     public synchronized void switchProvider(PPLProviderType newProvider) throws PPLException {
         PPLService service = getService(newProvider);
@@ -170,14 +190,18 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 获取所有可用的提供商
+     * 获取所有可用的提供商 (Get all available providers)
+     * 
+     * @return 提供商类型列表 (List of provider types)
      */
     public List<PPLProviderType> getAvailableProviders() {
         return new ArrayList<>(services.keySet());
     }
 
     /**
-     * 获取所有提供商的健康状态
+     * 获取所有提供商的健康状态 (Get health status of all providers)
+     * 
+     * @return 提供商类型到健康状态的映射 (Mapping from provider type to health status)
      */
     public Map<PPLProviderType, Boolean> getHealthStatus() {
         Map<PPLProviderType, Boolean> status = new HashMap<>();
@@ -186,7 +210,9 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 获取所有提供商的性能指标
+     * 获取所有提供商的性能指标 (Get performance metrics of all providers)
+     * 
+     * @return 提供商类型到性能指标的映射 (Mapping from provider type to performance metrics)
      */
     public Map<PPLProviderType, PPLMetrics> getAllMetrics() {
         Map<PPLProviderType, PPLMetrics> metrics = new HashMap<>();
@@ -195,12 +221,17 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 执行操作并支持降级
+     * 执行操作并支持降级 (Execute operation with fallback support)
+     * 
+     * @param operation 要执行的操作 (Operation to execute)
+     * @param operationName 操作名称 (Operation name)
+     * @return 操作结果 (Operation result)
+     * @throws PPLException 操作失败时抛出 (Thrown when operation fails)
      */
     private <T> T executeWithFallback(ServiceOperation<T> operation, String operationName)
             throws PPLException {
 
-        // 尝试当前提供商
+        // 尝试当前提供商 (Try current provider)
         PPLService service = getCurrentService();
         if (service != null) {
             try {
@@ -220,7 +251,7 @@ public class PPLServiceFacade {
                 log.warn("⚠️ {} failed using {}: {}",
                         operationName, currentProvider.getDisplayName(), e.getMessage());
 
-                // 尝试降级
+                // 尝试降级 (Try fallback)
                 if (config.isEnableFallback()) {
                     return tryFallback(operation, operationName, e);
                 } else {
@@ -233,7 +264,13 @@ public class PPLServiceFacade {
     }
 
     /**
-     * 尝试降级到备用提供商
+     * 尝试降级到备用提供商 (Try fallback to backup provider)
+     * 
+     * @param operation 要执行的操作 (Operation to execute)
+     * @param operationName 操作名称 (Operation name)
+     * @param originalException 原始异常 (Original exception)
+     * @return 操作结果 (Operation result)
+     * @throws PPLException 所有降级都失败时抛出 (Thrown when all fallbacks fail)
      */
     private <T> T tryFallback(ServiceOperation<T> operation, String operationName, Exception originalException)
             throws PPLException {
@@ -243,7 +280,7 @@ public class PPLServiceFacade {
         for (String providerName : config.getFallbackOrder()) {
             PPLProviderType type = PPLProviderType.fromString(providerName);
 
-            // 跳过当前提供商（已经失败）
+            // 跳过当前提供商（已经失败）(Skip current provider (already failed))
             if (type == currentProvider) {
                 continue;
             }
@@ -268,30 +305,42 @@ public class PPLServiceFacade {
             }
         }
 
-        // 所有降级都失败
+        // 所有降级都失败 (All fallbacks failed)
         throw new PPLException(currentProvider,
                 operationName + " failed and all fallbacks exhausted", originalException);
     }
 
     /**
-     * 获取当前服务实例
+     * 获取当前服务实例 (Get current service instance)
+     * 
+     * @return 当前服务实例 (Current service instance)
      */
     private PPLService getCurrentService() {
         return getService(currentProvider);
     }
 
     /**
-     * 获取指定提供商的服务实例
+     * 获取指定提供商的服务实例 (Get service instance of specified provider)
+     * 
+     * @param type 提供商类型 (Provider type)
+     * @return 服务实例 (Service instance)
      */
     private PPLService getService(PPLProviderType type) {
         return services.get(type);
     }
 
     /**
-     * 服务操作函数式接口
+     * 服务操作函数式接口 (Service operation functional interface)
      */
     @FunctionalInterface
     private interface ServiceOperation<T> {
+        /**
+         * 执行操作 (Execute operation)
+         * 
+         * @param 服务实例
+         * @return 操作结果
+         * @throws PPLException 操作失败时抛出
+         */
         T execute(PPLService service) throws PPLException;
     }
 }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class TestController {
             return ResponseEntity.ok(createErrorResponse("Benchmark service not available"));
         }
 
-        log.info("运行 HOPE 性能测试: question={}, iterations={}", question, iterations);
+        log.info(I18N.get("log.test.hope_benchmark", question, iterations));
 
         try {
             PerformanceBenchmarkService.BenchmarkResult result =
@@ -64,7 +65,7 @@ public class TestController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("HOPE 性能测试失败", e);
+            log.error(I18N.get("log.test.hope_benchmark_failed"), e);
             return ResponseEntity.ok(createErrorResponse(e.getMessage()));
         }
     }
@@ -83,7 +84,7 @@ public class TestController {
             return ResponseEntity.ok(createErrorResponse("Benchmark service not available"));
         }
 
-        log.info("运行 LLM 性能测试: question={}, iterations={}", question, iterations);
+        log.info(I18N.get("log.test.llm_benchmark", question, iterations));
 
         try {
             PerformanceBenchmarkService.BenchmarkResult result =
@@ -104,7 +105,7 @@ public class TestController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("LLM 性能测试失败", e);
+            log.error(I18N.get("log.test.llm_benchmark_failed"), e);
             return ResponseEntity.ok(createErrorResponse(e.getMessage()));
         }
     }
@@ -123,7 +124,7 @@ public class TestController {
             return ResponseEntity.ok(createErrorResponse("Benchmark service not available"));
         }
 
-        log.info("运行端到端性能测试: question={}, iterations={}", question, iterations);
+        log.info(I18N.get("log.test.end_to_end_benchmark", question, iterations));
 
         try {
             PerformanceBenchmarkService.BenchmarkResult result =
@@ -144,7 +145,7 @@ public class TestController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("端到端性能测试失败", e);
+            log.error(I18N.get("log.test.end_to_end_benchmark_failed"), e);
             return ResponseEntity.ok(createErrorResponse(e.getMessage()));
         }
     }
@@ -156,7 +157,7 @@ public class TestController {
      */
     @GetMapping("/basic-functions")
     public ResponseEntity<?> runBasicFunctionTests() {
-        log.info("运行基本功能测试套件");
+        log.info(I18N.get("log.test.basic_function_suite"));
 
         Map<String, Object> results = new HashMap<>();
         results.put("timestamp", System.currentTimeMillis());

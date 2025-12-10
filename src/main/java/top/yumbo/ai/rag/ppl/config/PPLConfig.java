@@ -7,7 +7,10 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * PPL 服务统一配置
+ * PPL 服务统一配置 (PPL Service Unified Configuration)
+ * 
+ * 包含所有 PPL 服务相关的配置参数，支持多种提供商
+ * (Contains all PPL service related configuration parameters, supporting multiple providers)
  *
  * @author AI Reviewer Team
  * @since 2025-12-04
@@ -18,42 +21,51 @@ public class PPLConfig {
 
     /**
      * 默认提供商：onnx, ollama, openai
+     * Default provider: onnx, ollama, openai
      */
     private String defaultProvider = "onnx";
 
     /**
      * 启用降级策略
+     * Enable fallback strategy
      * true: 当前提供商失败时自动切换到备用提供商
+     * true: Automatically switch to backup provider when current provider fails
      */
     private boolean enableFallback = true;
 
     /**
      * 降级顺序（优先级从高到低）
+     * Fallback order (priority from high to low)
      */
     private List<String> fallbackOrder = Arrays.asList("onnx", "ollama", "openai");
 
     /**
      * ONNX 配置
+     * ONNX configuration
      */
     private OnnxConfig onnx = new OnnxConfig();
 
     /**
      * Ollama 配置
+     * Ollama configuration
      */
     private OllamaConfig ollama = new OllamaConfig();
 
     /**
      * OpenAI 配置
+     * OpenAI configuration
      */
     private OpenAIConfig openai = new OpenAIConfig();
 
     /**
      * Chunking 配置
+     * Chunking configuration
      */
     private ChunkConfig chunking = new ChunkConfig();
 
     /**
      * Reranking 配置
+     * Reranking configuration
      */
     private RerankConfig reranking = new RerankConfig();
 

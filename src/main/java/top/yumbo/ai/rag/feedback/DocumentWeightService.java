@@ -120,8 +120,7 @@ public class DocumentWeightService {
             return 1.0; // 默认权重（Default weight）
         }
 
-        // 如果启用时间衰减，计算衰减后的权重
-        // (If time decay is enabled, calculate decayed weight)
+        // 如果启用时间衰减，计算衰减后的权重 (If time decay is enabled, calculate decayed weight)
         if (feedbackConfig.isEnableTimeDecay()) {
             return calculateDecayedWeight(docWeight);
         }
@@ -142,9 +141,8 @@ public class DocumentWeightService {
         double decayFactor = feedbackConfig.getDecayFactor();
 
         if (daysSinceUpdate > decayStartDays) {
-            // 超过衰减开始天数，应用衰减
-            // (Apply decay after decay start days)
-            long daysToDecay = daysSinceUpdate - decayStartDays;
+        // 超过衰减开始天数，应用衰减 (Apply decay after decay start days)
+        long daysToDecay = daysSinceUpdate - decayStartDays;
             double decay = Math.pow(decayFactor, daysToDecay);
             return 1.0 + (docWeight.getWeight() - 1.0) * decay;
         }
@@ -276,10 +274,10 @@ public class DocumentWeightService {
             }
         );
 
-        // 直接应用指定的权重调整（Directly apply the specified weight adjustment）
+        // 直接应用指定的权重调整 (Directly apply the specified weight adjustment)
         adjustWeightDirect(docWeight, weightAdjustment);
 
-        // 更新计数（根据星级）（Update counts (based on rating)）
+        // 更新计数（根据星级） (Update counts (based on rating))
         if (rating >= 4) {
             docWeight.setLikeCount(docWeight.getLikeCount() + 1);
         } else if (rating <= 2) {

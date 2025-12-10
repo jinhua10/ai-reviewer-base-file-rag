@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer;
 import top.yumbo.ai.rag.spring.boot.streaming.model.StreamingResponse;
 
@@ -46,7 +47,7 @@ public class PerformanceBenchmarkService {
             return BenchmarkResult.error("HOPE service not available");
         }
 
-        log.info("开始 HOPE 查询性能测试: {} 次迭代", iterations);
+        log.info(I18N.get("log.benchmark.hope_query_start", iterations));
         List<Long> durations = new ArrayList<>();
         int successCount = 0;
         int foundCount = 0;
@@ -66,7 +67,7 @@ public class PerformanceBenchmarkService {
                 }
 
             } catch (Exception e) {
-                log.warn("迭代 {} 失败: {}", i, e.getMessage());
+                log.warn(I18N.get("log.benchmark.iteration_failed", i, e.getMessage()));
             }
 
             // 避免过快
@@ -91,14 +92,14 @@ public class PerformanceBenchmarkService {
         result.setAvgDuration((long) stats.getAverage());
         result.setTargetDuration(300L); // HOPE 目标 <300ms
 
-        log.info("HOPE 查询性能测试完成:");
-        log.info("  - 迭代次数: {}", iterations);
-        log.info("  - 成功次数: {}", successCount);
-        log.info("  - 找到答案: {}", foundCount);
-        log.info("  - 最小耗时: {}ms", stats.getMin());
-        log.info("  - 最大耗时: {}ms", stats.getMax());
-        log.info("  - 平均耗时: {}ms", (long) stats.getAverage());
-        log.info("  - 目标达成率: {}%", calculateTargetAchievement(durations, 300L));
+        log.info(I18N.get("log.benchmark.hope_query_complete"));
+        log.info(I18N.get("log.benchmark.iterations", iterations));
+        log.info(I18N.get("log.benchmark.success_count", successCount));
+        log.info(I18N.get("log.benchmark.found_count", foundCount));
+        log.info(I18N.get("log.benchmark.min_time", stats.getMin()));
+        log.info(I18N.get("log.benchmark.max_time", stats.getMax()));
+        log.info(I18N.get("log.benchmark.avg_time", (long) stats.getAverage()));
+        log.info(I18N.get("log.benchmark.target_achievement", calculateTargetAchievement(durations, 300L)));
 
         return result;
     }
@@ -111,7 +112,7 @@ public class PerformanceBenchmarkService {
             return BenchmarkResult.error("Hybrid streaming service not available");
         }
 
-        log.info("开始 LLM 初始化性能测试: {} 次迭代", iterations);
+        log.info(I18N.get("log.benchmark.llm_init_start", iterations));
         List<Long> durations = new ArrayList<>();
         int successCount = 0;
 
@@ -127,7 +128,7 @@ public class PerformanceBenchmarkService {
                 successCount++;
 
             } catch (Exception e) {
-                log.warn("迭代 {} 失败: {}", i, e.getMessage());
+                log.warn(I18N.get("log.benchmark.iteration_failed", i, e.getMessage()));
             }
 
             // 避免过快
@@ -151,13 +152,13 @@ public class PerformanceBenchmarkService {
         result.setAvgDuration((long) stats.getAverage());
         result.setTargetDuration(1000L); // LLM TTFB 目标 <1s
 
-        log.info("LLM 初始化性能测试完成:");
-        log.info("  - 迭代次数: {}", iterations);
-        log.info("  - 成功次数: {}", successCount);
-        log.info("  - 最小耗时: {}ms", stats.getMin());
-        log.info("  - 最大耗时: {}ms", stats.getMax());
-        log.info("  - 平均耗时: {}ms", (long) stats.getAverage());
-        log.info("  - 目标达成率: {}%", calculateTargetAchievement(durations, 1000L));
+        log.info(I18N.get("log.benchmark.llm_init_complete"));
+        log.info(I18N.get("log.benchmark.iterations", iterations));
+        log.info(I18N.get("log.benchmark.success_count", successCount));
+        log.info(I18N.get("log.benchmark.min_time", stats.getMin()));
+        log.info(I18N.get("log.benchmark.max_time", stats.getMax()));
+        log.info(I18N.get("log.benchmark.avg_time", (long) stats.getAverage()));
+        log.info(I18N.get("log.benchmark.target_achievement", calculateTargetAchievement(durations, 1000L)));
 
         return result;
     }
@@ -166,7 +167,7 @@ public class PerformanceBenchmarkService {
      * 端到端性能测试
      */
     public BenchmarkResult benchmarkEndToEnd(String question, int iterations) {
-        log.info("开始端到端性能测试: {} 次迭代", iterations);
+        log.info(I18N.get("log.benchmark.end_to_end_start", iterations));
         List<Long> hopeDurations = new ArrayList<>();
         List<Long> llmDurations = new ArrayList<>();
         List<Long> totalDurations = new ArrayList<>();
@@ -197,7 +198,7 @@ public class PerformanceBenchmarkService {
                 successCount++;
 
             } catch (Exception e) {
-                log.warn("迭代 {} 失败: {}", i, e.getMessage());
+                log.warn(I18N.get("log.benchmark.iteration_failed", i, e.getMessage()));
             }
 
             try {
@@ -222,12 +223,12 @@ public class PerformanceBenchmarkService {
             result.setAvgDuration((long) totalStats.getAverage());
             result.setTargetDuration(1300L); // HOPE(300ms) + LLM(1000ms)
 
-            log.info("端到端性能测试完成:");
-            log.info("  - 迭代次数: {}", iterations);
-            log.info("  - 成功次数: {}", successCount);
-            log.info("  - HOPE 平均: {}ms", hopeDurations.stream().mapToLong(Long::longValue).average().orElse(0));
-            log.info("  - LLM 平均: {}ms", llmDurations.stream().mapToLong(Long::longValue).average().orElse(0));
-            log.info("  - 总耗时平均: {}ms", (long) totalStats.getAverage());
+            log.info(I18N.get("log.benchmark.end_to_end_complete"));
+            log.info(I18N.get("log.benchmark.iterations", iterations));
+            log.info(I18N.get("log.benchmark.success_count", successCount));
+            log.info(I18N.get("log.benchmark.hope_avg", hopeDurations.stream().mapToLong(Long::longValue).average().orElse(0)));
+            log.info(I18N.get("log.benchmark.llm_avg", llmDurations.stream().mapToLong(Long::longValue).average().orElse(0)));
+            log.info(I18N.get("log.benchmark.total_avg", (long) totalStats.getAverage()));
         }
 
         return result;
