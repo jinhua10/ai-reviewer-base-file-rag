@@ -65,38 +65,56 @@ public class KnowledgeQAProperties {
      */
     private CacheConfig cache = new CacheConfig();
 
+    /**
+     * 知识库配置 (Knowledge Base Configuration)
+     */
     @Data
     public static class KnowledgeBaseConfig {
         /**
-         * 知识库存储路径
+         * 知识库存储路径 (Knowledge base storage path)
+         * 存储知识库数据的文件路径
+         * (File path for storing knowledge base data)
          */
         private String storagePath = "./data/knowledge-base";
 
         /**
-         * 文档源路径（支持文件夹或单个文件）
+         * 文档源路径（支持文件夹或单个文件）(Document source path (supports folder or single file))
+         * 文档来源的路径，可以是文件夹或单个文件
+         * (Path of document source, can be a folder or a single file)
          */
         private String sourcePath = "./data/documents";
 
         /**
-         * 启动时是否重建知识库
+         * 启动时是否重建知识库 (Whether to rebuild knowledge base on startup)
+         * 控制系统启动时是否重建知识库
+         * (Controls whether to rebuild knowledge base on system startup)
          */
         private boolean rebuildOnStartup = false;
 
         /**
-         * 是否启用缓存
+         * 是否启用缓存 (Whether to enable cache)
+         * 控制是否启用知识库缓存功能
+         * (Controls whether to enable knowledge base caching)
          */
         private boolean enableCache = true;
     }
 
+    /**
+     * 向量检索配置 (Vector Search Configuration)
+     */
     @Data
     public static class VectorSearchConfig {
         /**
-         * 是否启用向量检索
+         * 是否启用向量检索 (Whether to enable vector search)
+         * 控制是否启用向量检索功能
+         * (Controls whether to enable vector search functionality)
          */
         private boolean enabled = true;
 
         /**
-         * 模型配置
+         * 模型配置 (Model configuration)
+         * 向量检索模型的配置参数
+         * (Configuration parameters for vector search model)
          */
         private ModelConfig model = new ModelConfig();
 
