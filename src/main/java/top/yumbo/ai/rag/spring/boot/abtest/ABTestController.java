@@ -30,7 +30,9 @@ public class ABTestController {
     }
 
     /**
-     * 创建 A/B 测试实验
+     * 创建 A/B 测试实验 (Create A/B test experiment)
+     * 创建一个新的A/B测试实验，包含两个变体进行比较
+     * (Creates a new A/B test experiment with two variants for comparison)
      *
      * POST /api/abtest/experiment
      */
@@ -58,7 +60,9 @@ public class ABTestController {
     }
 
     /**
-     * 为用户分配变体
+     * 为用户分配变体 (Assign variant to user)
+     * 为指定用户分配实验中的一个变体
+     * (Assigns a variant from the experiment to a specified user)
      *
      * POST /api/abtest/assign
      */
@@ -238,12 +242,41 @@ public class ABTestController {
     }
 
     // ==================== 请求 DTO ====================
+    // (Request DTOs)
 
+    /**
+     * 创建实验请求 (Create experiment request)
+     * 用于创建A/B测试实验的请求参数
+     * (Request parameters for creating A/B test experiment)
+     */
     @lombok.Data
     public static class CreateExperimentRequest {
+        /**
+         * 实验ID (Experiment ID)
+         * 唯一标识实验的ID
+         * (Unique identifier for the experiment)
+         */
         private String experimentId;
+        
+        /**
+         * 实验问题 (Experiment question)
+         * 实验要解决的问题或测试的目标
+         * (Question or goal to be tested in the experiment)
+         */
         private String question;
+        
+        /**
+         * 变体A (Variant A)
+         * 实验的第一个变体
+         * (First variant of the experiment)
+         */
         private ABTestService.Variant variantA;
+        
+        /**
+         * 变体B (Variant B)
+         * 实验的第二个变体
+         * (Second variant of the experiment)
+         */
         private ABTestService.Variant variantB;
     }
 

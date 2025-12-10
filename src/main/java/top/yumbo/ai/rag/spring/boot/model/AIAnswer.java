@@ -7,6 +7,12 @@ import java.util.List;
 
 /**
  * AI答案封装类 / AI Answer Wrapper Class
+ * 
+ * 封装AI生成的答案及其相关信息，包括源文档、响应时间等
+ * (Wraps AI-generated answers and their related information, including source documents, response time, etc.)
+ * 
+ * @author AI Reviewer Team
+ * @since 2.0.0
  */
 public class AIAnswer {
     private final String answer;

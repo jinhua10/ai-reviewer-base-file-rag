@@ -3,6 +3,7 @@ package top.yumbo.ai.rag.spring.boot.abtest;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -55,8 +56,7 @@ public class ABTestService {
 
         experiments.put(experimentId, experiment);
 
-        log.info("A/B 测试实验已创建: experimentId={}, question={}",
-            experimentId, question);
+        log.info(I18N.get("abtest.log.experiment_created", experimentId, question));
 
         return experiment;
     }
@@ -79,7 +79,7 @@ public class ABTestService {
         String groupKey = experimentId + ":" + userId;
         UserGroup existingGroup = userGroups.get(groupKey);
         if (existingGroup != null) {
-            log.debug("用户已在组: userId={}, group={}", userId, existingGroup.getGroupName());
+            log.debug(I18N.get("abtest.log.user_in_group", userId, existingGroup.getGroupName()));
             return existingGroup.getGroupName().equals("A") ?
                 experiment.getVariantA() : experiment.getVariantB();
         }

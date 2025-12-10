@@ -119,42 +119,51 @@ public class KnowledgeQAProperties {
         private ModelConfig model = new ModelConfig();
 
         /**
-         * 向量索引存储路径
+         * 向量索引存储路径 (Vector index storage path)
+         * 存储向量索引的目录路径
+         * (Directory path for storing vector index)
          */
         private String indexPath = "./data/vector-index";
 
         /**
-         * 检索相似度阈值 (0.0-1.0)
+         * 检索相似度阈值 (Search similarity threshold) (0.0-1.0)
+         * 用于判断文档相关性的最小相似度阈值
+         * (Minimum similarity threshold for determining document relevance)
          */
         private float similarityThreshold = 0.5f;
 
         /**
-         * Lucene 检索返回的候选文档数量
+         * Lucene 检索返回的候选文档数量 (Number of candidate documents returned by Lucene search)
          * 用于第一步粗筛，通常设置为 hybridTopK 的 2-3 倍
+         * (Used for initial filtering, typically set to 2-3 times hybridTopK)
          */
         private int luceneTopK = 40;
 
         /**
-         * 向量检索返回的候选文档数量
+         * 向量检索返回的候选文档数量 (Number of candidate documents returned by vector search)
          * 用于语义精排，通常设置为 hybridTopK 的 2-3 倍
+         * (Used for semantic re-ranking, typically set to 2-3 times hybridTopK)
          */
         private int vectorTopK = 40;
 
         /**
-         * 混合检索最终返回的文档数量（去重后）
+         * 混合检索最终返回的文档数量（去重后）(Final number of documents returned by hybrid search (after deduplication))
          * 这些文档会按评分排序，用于后续的分批引用
+         * (These documents are sorted by score and used for subsequent batch referencing)
          */
         private int hybridTopK = 20;
 
         /**
-         * 每次问答引用的文档数量
+         * 每次问答引用的文档数量 (Number of documents referenced per Q&A)
          * 用户可以通过 next 接口获取剩余文档
+         * (Users can get remaining documents through the next interface)
          */
         private int documentsPerQuery = 5;
 
         /**
-         * 日志中显示的最大文档数量（调试用）
-         * (Maximum number of documents to display in logs for debugging)
+         * 日志中显示的最大文档数量（调试用）(Maximum number of documents to display in logs for debugging)
+         * 调试时日志中显示的文档数量限制
+         * (Limit on number of documents displayed in logs during debugging)
          */
         private int logDisplayLimit = 10;
 

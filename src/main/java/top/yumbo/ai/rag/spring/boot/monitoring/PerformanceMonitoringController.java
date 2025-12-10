@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import top.yumbo.ai.rag.i18n.I18N;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +50,7 @@ public class PerformanceMonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("获取性能仪表盘失败", e);
+            log.error(I18N.get("monitoring.log.dashboard_error"), e);
             return ResponseEntity.ok(createErrorResponse(e.getMessage()));
         }
     }
@@ -72,7 +73,7 @@ public class PerformanceMonitoringController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            log.error("获取 HOPE 指标失败", e);
+            log.error(I18N.get("monitoring.log.hope_metrics_error"), e);
             return ResponseEntity.ok(createErrorResponse(e.getMessage()));
         }
     }
