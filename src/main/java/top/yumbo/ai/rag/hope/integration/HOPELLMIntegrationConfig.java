@@ -28,28 +28,34 @@ public class HOPELLMIntegrationConfig {
 
     private final HOPEKnowledgeManager hopeManager;
     private final HOPEMonitorService hopeMonitor;
+    private final HOPELLMIntegrationProperties properties;
 
     private HOPEEnhancedLLMClient.HOPELLMConfig defaultConfig;
 
     @Autowired
     public HOPELLMIntegrationConfig(HOPEKnowledgeManager hopeManager,
-                                     @Autowired(required = false) HOPEMonitorService hopeMonitor) {
+                                     @Autowired(required = false) HOPEMonitorService hopeMonitor,
+                                     HOPELLMIntegrationProperties properties) {
         this.hopeManager = hopeManager;
         this.hopeMonitor = hopeMonitor;
+        this.properties = properties;
     }
 
     @PostConstruct
     public void init() {
         // 1. 创建默认配置 (Create default configuration)
         defaultConfig = new HOPEEnhancedLLMClient.HOPELLMConfig();
-        // 2. 启用自动学习 (Enable auto learning)
-        defaultConfig.setAutoLearnEnabled(true);
-        // 3. 设置自动学习默认评分 (Set default rating for auto learning)
-        defaultConfig.setAutoLearnRating(3);
-        // 4. 设置手动反馈学习最小评分 (Set minimum rating for manual feedback learning)
-        defaultConfig.setMinRatingForLearning(4);
-        // 5. 记录初始化成功日志 (Log successful initialization)
-        log.info(I18N.get("hope.llm.integration_enabled", "HOPELLMIntegrationConfig"));
+
+        // 2. 从 application.yml 读取配置 (Read configuration from application.yml)
+        defaultConfig.setHopeQueryEnabled(properties.isQueryBeforeLlm());
+        defaultConfig.setAutoLearnEnabled(properties.isAutoLearnEnabled());
+        defaultConfig.setAutoLearnRating(properties.getAutoLearnRating());
+        defaultConfig.setReferenceEnhanceEnabled(properties.isReferenceEnhanceEnabled());
+        defaultConfig.setMinRatingForLearning(properties.getMinRatingForLearning());
+
+        // 3. 记录初始化成功日志 (Log successful initialization)
+        log.info(I18N.get("hope.llm.integration_enabled") + " - autoLearn: {}, rating: {}",
+                properties.isAutoLearnEnabled(), properties.getAutoLearnRating());
     }
 
     /**

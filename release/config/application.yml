@@ -264,6 +264,70 @@ knowledge:
         
         # 请提供你的回答：
 
+    # ============================================================
+    # HOPE 三层记忆架构配置 (HOPE Three-Layer Memory Architecture)
+    # ============================================================
+    # HOPE (Hierarchical Optimized Persistent Engine) 是一个分层知识缓存系统
+    # 模仿人类记忆机制，通过三层架构实现快速响应和持续学习
+    hope:
+      # 是否启用 HOPE 架构
+      enabled: true
+
+      # 低频层配置 (Permanent Layer - 永久技能知识)
+      permanent:
+        # 存储路径
+        storage-path: ./data/hope/permanent
+        # 最小置信度（用于直接回答）
+        min-confidence: 0.9
+        # 技能模板匹配相似度阈值
+        template-similarity-threshold: 0.85
+        # 最大存储条目数
+        max-entries: 1000
+
+      # 中频层配置 (Ordinary Layer - 近期高分问答)
+      ordinary:
+        # 存储路径
+        storage-path: ./data/hope/ordinary
+        # 最大保存天数
+        retention-days: 30
+        # 相似度阈值（≥0.95 直接使用）
+        high-similarity-threshold: 0.95
+        # 相似度阈值（≥0.7 作为参考）
+        reference-similarity-threshold: 0.7
+        # 最小评分（用于保存到中频层）
+        min-rating: 4
+        # 最大存储条目数
+        max-entries: 5000
+        # 晋升到低频层的最小使用次数
+        promote-min-uses: 10
+        # 晋升到低频层的最小评分
+        promote-min-rating: 4.5
+
+      # 高频层配置 (High-frequency Layer - 实时会话上下文)
+      high-frequency:
+        # 会话超时时间（分钟）
+        session-timeout-minutes: 30
+        # 每个会话最大上下文条数
+        max-context-per-session: 20
+        # 是否自动清理过期会话
+        auto-cleanup: true
+        # 清理间隔（分钟）
+        cleanup-interval-minutes: 10
+
+      # LLM 集成配置 (LLM Integration Config)
+      llm-integration:
+        # 是否在 LLM 调用前查询 HOPE
+        query-before-llm: true
+        # 是否启用自动学习（每次 LLM 调用后自动学习）
+        auto-learn-enabled: true
+        # 自动学习的默认评分（1-5）
+        # 3 分表示一般质量，会进入高频层但不会进入中频层
+        auto-learn-rating: 3
+        # 是否启用参考增强（将相似问答作为上下文）
+        reference-enhance-enabled: true
+        # 手动反馈学习的最小评分（只有 ≥ 此评分才会学习）
+        min-rating-for-learning: 4
+
     # 文档处理配置
     document:
       # 支持的文件格式
