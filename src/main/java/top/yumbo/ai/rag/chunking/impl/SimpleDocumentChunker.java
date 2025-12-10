@@ -33,7 +33,7 @@ public class SimpleDocumentChunker implements DocumentChunker {
             return List.of();
         }
 
-        // 防止处理超大文档导致内存溢出（从配置读取）
+        // 防止处理超大文档导致内存溢出（从配置读取）(Prevent OOM when processing large documents - read from config)
         int maxContentLength = config.getMaxContentLength();
         if (content.length() > maxContentLength) {
             log.warn(I18N.get("log.chunk.content_truncate", content.length(), maxContentLength));
@@ -46,13 +46,13 @@ public class SimpleDocumentChunker implements DocumentChunker {
         int position = 0;
         int index = 0;
 
-        // 限制最大块数，防止内存溢出（从配置读取）
+        // 限制最大块数，防止内存溢出（从配置读取）(Limit max chunks to prevent OOM - read from config)
         int maxChunks = config.getMaxChunks();
 
         while (position < content.length() && index < maxChunks) {
             int end = Math.min(position + chunkSize, content.length());
 
-            // 如果配置了在句子边界切分，尝试调整结束位置
+            // 如果配置了在句子边界切分，尝试调整结束位置 (If sentence boundary splitting is configured, try to adjust end position)
             if (config.isSplitOnSentence() && end < content.length()) {
                 end = adjustToSentenceBoundary(content, end);
             }
@@ -71,7 +71,7 @@ public class SimpleDocumentChunker implements DocumentChunker {
                 index++;
             }
 
-            // 移动位置，考虑重叠
+            // 移动位置，考虑重叠 (Move position, considering overlap)
             position = end - overlap;
             if (position <= 0 || position >= content.length()) {
                 break;
@@ -82,7 +82,7 @@ public class SimpleDocumentChunker implements DocumentChunker {
             log.warn(I18N.get("log.chunk.max_chunks_reached", maxChunks));
         }
 
-        // 更新总块数
+        // 更新总块数 (Update total chunk count)
         int totalChunks = chunks.size();
         chunks.forEach(chunk -> chunk.setTotalChunks(totalChunks));
 
@@ -95,10 +95,10 @@ public class SimpleDocumentChunker implements DocumentChunker {
      * 调整到句子边界 (Adjust to sentence boundary)
      */
     private int adjustToSentenceBoundary(String text, int position) {
-        int searchRange = Math.min(100, position / 10); // 搜索范围：10%或100字符
+        int searchRange = Math.min(100, position / 10); // 搜索范围：10%或100字符 (Search range: 10% or 100 characters)
         int searchStart = Math.max(0, position - searchRange);
 
-        // 向前搜索句子结束符
+        // 向前搜索句子结束符 (Search backwards for sentence ending)
         for (int i = position - 1; i >= searchStart; i--) {
             char c = text.charAt(i);
             if (isSentenceEnding(c)) {

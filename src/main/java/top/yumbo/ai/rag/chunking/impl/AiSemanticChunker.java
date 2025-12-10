@@ -44,7 +44,7 @@ public class AiSemanticChunker implements DocumentChunker {
             return List.of();
         }
 
-        // 如果内容不长，不需要AI切分
+        // 如果内容不长，不需要AI切分 (If content is not long, no need for AI chunking)
         if (content.length() <= config.getChunkSize()) {
             return List.of(DocumentChunk.builder()
                     .content(content)
@@ -59,13 +59,13 @@ public class AiSemanticChunker implements DocumentChunker {
             log.info(I18N.get("log.chunk.ai_start", content.length()));
             long startTime = System.currentTimeMillis();
 
-            // 构建 Prompt
+            // 构建 Prompt (Build prompt)
             String prompt = buildChunkingPrompt(content, query);
 
-            // 调用 LLM
+            // 调用 LLM (Call LLM)
             String response = llmClient.generate(prompt);
 
-            // 解析响应
+            // 解析响应 (Parse response)
             List<DocumentChunk> chunks = parseChunkingResponse(response, content);
 
             long duration = System.currentTimeMillis() - startTime;
@@ -75,7 +75,7 @@ public class AiSemanticChunker implements DocumentChunker {
 
         } catch (Exception e) {
             log.error(I18N.get("log.chunk.ai_failed"), e);
-            // 失败时降级到智能关键词切分
+            // 失败时降级到智能关键词切分 (Fallback to smart keyword chunking on failure)
             return new SmartKeywordChunker(config).chunk(content, query);
         }
     }
@@ -87,12 +87,12 @@ public class AiSemanticChunker implements DocumentChunker {
         String promptTemplate = config.getAiChunking().getPrompt();
         int chunkSize = config.getChunkSize();
 
-        // 替换占位符
+        // 替换占位符 (Replace placeholders)
         String prompt = promptTemplate
                 .replace("{chunk_size}", String.valueOf(chunkSize))
                 .replace("{content}", truncateIfNeeded(content));
 
-        // 如果有查询上下文，添加到 Prompt 中
+        // 如果有查询上下文，添加到 Prompt 中 (If there is query context, add to prompt)
         if (query != null && !query.isEmpty()) {
             prompt = "用户问题：" + query + "\n\n" + prompt;
         }
@@ -119,11 +119,11 @@ public class AiSemanticChunker implements DocumentChunker {
      */
     private List<DocumentChunk> parseChunkingResponse(String response, String originalContent) {
         try {
-            // 尝试从响应中提取 JSON
-            String jsonContent = extractJson(response);
+        // 尝试从响应中提取 JSON (Try to extract JSON from response)
+        String jsonContent = extractJson(response);
 
-            // 解析 JSON 数组
-            JsonNode root = objectMapper.readTree(jsonContent);
+        // 解析 JSON 数组 (Parse JSON array)
+        JsonNode root = objectMapper.readTree(jsonContent);
 
             if (!root.isArray()) {
                 throw new IllegalArgumentException(I18N.get("error.chunk.expected_json_array", root.getNodeType()));
@@ -144,7 +144,7 @@ public class AiSemanticChunker implements DocumentChunker {
                         : null;
 
                 if (!content.isEmpty()) {
-                    // 在原文中查找位置
+                    // 在原文中查找位置 (Find position in original text)
                     int startPos = originalContent.indexOf(content.substring(0, Math.min(100, content.length())));
                     int endPos = startPos + content.length();
 
@@ -176,12 +176,12 @@ public class AiSemanticChunker implements DocumentChunker {
      * 从响应中提取 JSON (Extract JSON from response)
      */
     private String extractJson(String response) {
-        // 尝试找到 JSON 数组的开始和结束
+        // 尝试找到 JSON 数组的开始和结束 (Try to find start and end of JSON array)
         int start = response.indexOf('[');
         int end = response.lastIndexOf(']');
 
         if (start == -1 || end == -1 || start >= end) {
-            // 如果没有找到，尝试 JSON 对象格式
+            // 如果没有找到，尝试 JSON 对象格式 (If not found, try JSON object format)
             start = response.indexOf('{');
             end = response.lastIndexOf('}');
 

@@ -41,24 +41,24 @@ public class SmartKeywordChunker implements DocumentChunker {
             return List.of();
         }
 
-        // 提取关键词
+        // 提取关键词 (Extract keywords)
         List<String> keywords = extractKeywords(query);
 
-        // 如果没有关键词或内容不长，使用简单切分
+        // 如果没有关键词或内容不长，使用简单切分 (If no keywords or content is short, use simple chunking)
         if (keywords.isEmpty() || content.length() <= config.getChunkSize()) {
             return new SimpleDocumentChunker(config).chunk(content, query);
         }
 
-        // 找到所有关键词位置
+        // 找到所有关键词位置 (Find all keyword positions)
         List<KeywordPosition> positions = findKeywordPositions(content, keywords);
 
         if (positions.isEmpty()) {
-            // 没有找到关键词，使用简单切分
+            // 没有找到关键词，使用简单切分 (No keywords found, use simple chunking)
             log.debug(I18N.get("log.chunk.no_keywords_fallback"));
             return new SimpleDocumentChunker(config).chunk(content, query);
         }
 
-        // 基于关键词位置生成切分块
+        // 基于关键词位置生成切分块 (Generate chunks based on keyword positions)
         List<DocumentChunk> chunks = generateChunksAroundKeywords(content, positions);
 
         log.debug(I18N.get("log.chunk.smart_summary", content.length(), chunks.size(), keywords.size()));
@@ -76,28 +76,28 @@ public class SmartKeywordChunker implements DocumentChunker {
 
         List<String> keywords = new ArrayList<>();
 
-        // 中文分词：按字符提取（简单但有效）
-        // 提取 2-4 个字的词组
+        // 中文分词：按字符提取（简单但有效）(Chinese word segmentation: extract by characters (simple but effective))
+        // 提取 2-4 个字的词组 (Extract 2-4 character phrases)
         String trimmed = query.trim();
         for (int len = 4; len >= 2; len--) {
             for (int i = 0; i <= trimmed.length() - len; i++) {
                 String word = trimmed.substring(i, i + len);
-                // 过滤停用词和标点
+                // 过滤停用词和标点 (Filter stop words and punctuation)
                 if (!STOP_WORDS.contains(word) && !word.matches(".*[\\p{Punct}\\s]+.*")) {
                     keywords.add(word);
                 }
             }
         }
 
-        // 英文分词
+        // 英文分词 (English word segmentation)
         Arrays.stream(query.toLowerCase().split("[\\s\\p{Punct}]+"))
                 .filter(word -> !STOP_WORDS.contains(word) && word.length() > 2)
                 .forEach(keywords::add);
 
-        // 去重并限制数量
+        // 去重并限制数量 (Deduplicate and limit count)
         List<String> result = keywords.stream()
                 .distinct()
-                .limit(20) // 最多 20 个关键词
+                .limit(20) // 最多 20 个关键词 (Max 20 keywords)
                 .collect(Collectors.toList());
 
         if (!result.isEmpty()) {
@@ -122,7 +122,7 @@ public class SmartKeywordChunker implements DocumentChunker {
             }
         }
 
-        // 按位置排序
+        // 按位置排序 (Sort by position)
         positions.sort(Comparator.comparingInt(p -> p.position));
 
         return positions;
@@ -139,31 +139,31 @@ public class SmartKeywordChunker implements DocumentChunker {
         Set<Integer> coveredRanges = new HashSet<>();
         int index = 0;
 
-        // 为每个关键词位置生成一个块
+        // 为每个关键词位置生成一个块 (Generate a chunk for each keyword position)
         for (KeywordPosition kp : positions) {
             int center = kp.position;
 
-            // 如果这个位置已经被覆盖，跳过
+            // 如果这个位置已经被覆盖，跳过 (Skip if this position is already covered)
             if (coveredRanges.contains(center / 100)) {
                 continue;
             }
 
-            // 计算块的起始和结束位置（以关键词为中心）
+            // 计算块的起始和结束位置（以关键词为中心）(Calculate chunk start and end positions (centered on keyword))
             int start = Math.max(0, center - chunkSize / 2);
             int end = Math.min(content.length(), start + chunkSize);
 
-            // 如果end到达末尾，调整start
+            // 如果end到达末尾，调整start (If end reaches the end, adjust start)
             if (end == content.length() && content.length() > chunkSize) {
                 start = Math.max(0, content.length() - chunkSize);
             }
 
-            // 调整到句子边界
+            // 调整到句子边界 (Adjust to sentence boundaries)
             if (config.isSplitOnSentence()) {
                 start = adjustToSentenceStart(content, start);
                 end = adjustToSentenceEnd(content, end);
             }
 
-            // 提取内容
+            // 提取内容 (Extract content)
             String chunkContent = content.substring(start, end).trim();
 
             if (!chunkContent.isEmpty()) {
@@ -176,7 +176,7 @@ public class SmartKeywordChunker implements DocumentChunker {
                         .metadata("keyword:" + kp.keyword)
                         .build());
 
-                // 标记已覆盖的范围（以100字符为单位）
+                // 标记已覆盖的范围（以100字符为单位）(Mark covered range (in units of 100 characters))
                 for (int i = start; i < end; i += 100) {
                     coveredRanges.add(i / 100);
                 }
@@ -185,13 +185,13 @@ public class SmartKeywordChunker implements DocumentChunker {
             }
         }
 
-        // 如果切分后覆盖不全，补充剩余部分
+        // 如果切分后覆盖不全，补充剩余部分 (If coverage is insufficient after chunking, add remaining parts)
         if (chunks.isEmpty() || getTotalCoverage(chunks) < content.length() * 0.5) {
             log.debug(I18N.get("log.chunk.coverage_low"));
             chunks.addAll(addSequentialChunks(content, chunks, chunkSize, overlap));
         }
 
-        // 按位置排序并更新索引
+        // 按位置排序并更新索引 (Sort by position and update indices)
         chunks.sort(Comparator.comparingInt(DocumentChunk::getStartPosition));
         for (int i = 0; i < chunks.size(); i++) {
             chunks.get(i).setIndex(i);
@@ -209,19 +209,19 @@ public class SmartKeywordChunker implements DocumentChunker {
         List<DocumentChunk> additionalChunks = new ArrayList<>();
         Set<Integer> coveredRanges = new HashSet<>();
 
-        // 标记已覆盖的范围
+        // 标记已覆盖的范围 (Mark covered ranges)
         for (DocumentChunk chunk : existingChunks) {
             for (int i = chunk.getStartPosition(); i < chunk.getEndPosition(); i += 100) {
                 coveredRanges.add(i / 100);
             }
         }
 
-        // 补充未覆盖的部分
+        // 补充未覆盖的部分 (Add uncovered parts)
         int position = 0;
         int index = existingChunks.size();
 
         while (position < content.length()) {
-            // 检查这个位置是否已被覆盖
+            // 检查这个位置是否已被覆盖 (Check if this position is already covered)
             if (!coveredRanges.contains(position / 100)) {
                 int end = Math.min(position + chunkSize, content.length());
 

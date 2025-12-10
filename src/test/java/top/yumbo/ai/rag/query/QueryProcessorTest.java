@@ -16,7 +16,10 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * 查询处理器测试
+ * 查询处理器测试 (Query Processor Test)
+ * 
+ * 测试查询处理器的各种功能，包括基本查询、分页、排序等
+ * (Tests various functionalities of the query processor, including basic queries, pagination, sorting, etc.)
  *
  * @author AI Reviewer Team
  * @since 2025-11-22
@@ -27,12 +30,17 @@ class QueryProcessorTest {
     private QueryProcessor queryProcessor;
     private Path tempDir;
 
+    /**
+     * 测试设置 (Test setup)
+     * 在每个测试方法执行前初始化测试环境
+     * (Initializes test environment before each test method execution)
+     */
     @BeforeEach
     void setUp() throws Exception {
-        // 创建临时目录
+        // 1. 创建临时目录 (Create temporary directory)
         tempDir = Files.createTempDirectory("query-test-");
 
-        // 创建配置
+        // 2. 创建配置 (Create configuration)
         RAGConfiguration config = RAGConfiguration.builder()
                 .storage(RAGConfiguration.StorageConfig.builder()
                         .basePath(tempDir.toString())
@@ -45,29 +53,34 @@ class QueryProcessorTest {
                         .build())
                 .build();
 
-        // 初始化RAG
+        // 3. 初始化RAG (Initialize RAG)
         rag = LocalFileRAG.builder()
                 .configuration(config)
                 .build();
 
-        // 创建查询处理器
+        // 4. 创建查询处理器 (Create query processor)
         queryProcessor = new AdvancedQueryProcessor(
                 rag.getIndexEngine(),
                 rag.getCacheEngine()
         );
 
-        // 索引测试数据
+        // 5. 索引测试数据 (Index test data)
         indexTestDocuments();
     }
 
+    /**
+     * 测试清理 (Test cleanup)
+     * 在每个测试方法执行后清理测试环境
+     * (Cleans up test environment after each test method execution)
+     */
     @AfterEach
     void tearDown() {
-        // 清理查询处理器
+        // 1. 清理查询处理器 (Clean up query processor)
         if (queryProcessor != null) {
             queryProcessor = null;
         }
 
-        // 关闭 RAG
+        // 2. 关闭 RAG (Close RAG)
         if (rag != null) {
             try {
                 rag.close();
@@ -78,7 +91,7 @@ class QueryProcessorTest {
             }
         }
 
-        // 清理临时目录
+        // 3. 清理临时目录 (Clean up temporary directory)
         if (tempDir != null && Files.exists(tempDir)) {
             try {
                 Files.walk(tempDir)
@@ -97,7 +110,7 @@ class QueryProcessorTest {
             }
         }
 
-        // 建议 GC 运行（仅建议，不强制）
+        // 4. 建议 GC 运行（仅建议，不强制）(Suggest GC run (suggestion only, not mandatory))
         System.gc();
     }
 
