@@ -90,3 +90,51 @@ hope:
     definition_added: "已为会话添加定义: {0}"
     session_cleared: "会话已清除: {0}"
 
+  # 集成层消息 (Integration layer messages)
+  llm:
+    integration_enabled: "HOPE LLM 集成组件已启用: {0}"
+  
+  # 高频层消息 (High-frequency layer messages)
+  high_frequency:
+    disabled: "HOPE 高频层已禁用"
+    init_success: "HOPE 高频层初始化成功，最大会话数: {0}, 超时时间: {1} 分钟"
+    session_created: "创建新会话: {0}"
+    context_updated: "会话 {0} 上下文已更新，当前轮数: {1}"
+    definition_added: "检测到临时定义: {0}"
+    session_cleared: "会话 {0} 已清除"
+    auto_definition: "自动提取临时定义: {0}"
+  
+  # 中频层消息 (Ordinary layer messages)
+  ordinary:
+    disabled: "HOPE 中频层已禁用"
+    init_success: "HOPE 中频层初始化成功，加载 {0} 条记录"
+    init_failed: "HOPE 中频层初始化失败"
+    loaded: "HOPE 中频层加载了 {0} 条记录"
+    load_failed: "HOPE 中频层数据加载失败"
+    direct_hit: "直接命中: {0}, 相似度: {1}"
+    reference_hit: "参考命中: {0}, 相似度: {1}"
+    saved: "HOPE 中频层保存记录: {0}, 评分: {1}"
+    updated: "HOPE 中频层更新记录: {0}"
+    cleaned: "HOPE 中频层清理了 {0} 条过期记录"
+    persist_failed: "HOPE 中频层数据持久化失败"
+  
+  # 低频层消息 (Permanent layer messages)
+  permanent:
+    disabled: "HOPE 低频层已禁用"
+    init_success: "HOPE 低频层初始化成功，技能模板: {0}, 确定性知识: {1}"
+    init_failed: "HOPE 低频层初始化失败"
+    skills_loaded: "HOPE 低频层加载了 {0} 个技能模板"
+    facts_loaded: "HOPE 低频层加载了 {0} 条确定性知识"
+    skill_saved: "HOPE 低频层保存技能模板: {0} ({1})"
+    factual_saved: "HOPE 低频层保存确定性知识: {0}"
+    factual_hit: "确定性知识命中: {0}"
+    skill_hit: "技能模板命中: {0}"
+    factual_disabled: "确定性知识已禁用: {0}"
+    persist_failed: "HOPE 低频层数据持久化失败"
+    load_failed: "HOPE 低频层数据加载失败"
+  
+  # 学习相关消息 (Learning related messages)
+  learn:
+    recorded: "HOPE 学习记录已保存，评分: {0}"
+    promoted: "HOPE 中频层知识晋升到低频层: {0}"
+

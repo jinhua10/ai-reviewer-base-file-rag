@@ -90,3 +90,51 @@ hope:
     definition_added: "Definition added for session: {0}"
     session_cleared: "Session cleared: {0}"
 
+  # Integration layer messages
+  llm:
+    integration_enabled: "HOPE LLM integration component enabled: {0}"
+  
+  # High-frequency layer messages
+  high_frequency:
+    disabled: "HOPE high-frequency layer disabled"
+    init_success: "HOPE high-frequency layer initialized successfully, max sessions: {0}, timeout: {1} minutes"
+    session_created: "New session created: {0}"
+    context_updated: "Session {0} context updated, current turns: {1}"
+    definition_added: "Detected temporary definition: {0}"
+    session_cleared: "Session {0} cleared"
+    auto_definition: "Auto-extracted temporary definition: {0}"
+  
+  # Ordinary layer messages
+  ordinary:
+    disabled: "HOPE ordinary layer disabled"
+    init_success: "HOPE ordinary layer initialized successfully, loaded {0} records"
+    init_failed: "HOPE ordinary layer initialization failed"
+    loaded: "HOPE ordinary layer loaded {0} records"
+    load_failed: "HOPE ordinary layer data loading failed"
+    direct_hit: "Direct hit: {0}, similarity: {1}"
+    reference_hit: "Reference hit: {0}, similarity: {1}"
+    saved: "HOPE ordinary layer saved record: {0}, rating: {1}"
+    updated: "HOPE ordinary layer updated record: {0}"
+    cleaned: "HOPE ordinary layer cleaned {0} expired records"
+    persist_failed: "HOPE ordinary layer data persistence failed"
+  
+  # Permanent layer messages
+  permanent:
+    disabled: "HOPE permanent layer disabled"
+    init_success: "HOPE permanent layer initialized successfully, skill templates: {0}, factual knowledge: {1}"
+    init_failed: "HOPE permanent layer initialization failed"
+    skills_loaded: "HOPE permanent layer loaded {0} skill templates"
+    facts_loaded: "HOPE permanent layer loaded {0} factual knowledge"
+    skill_saved: "HOPE permanent layer saved skill template: {0} ({1})"
+    factual_saved: "HOPE permanent layer saved factual knowledge: {0}"
+    factual_hit: "Factual knowledge hit: {0}"
+    skill_hit: "Skill template hit: {0}"
+    factual_disabled: "Factual knowledge disabled: {0}"
+    persist_failed: "HOPE permanent layer data persistence failed"
+    load_failed: "HOPE permanent layer data loading failed"
+  
+  # Learning related messages
+  learn:
+    recorded: "HOPE learning record saved, rating: {0}"
+    promoted: "HOPE ordinary layer knowledge promoted to permanent layer: {0}"
+

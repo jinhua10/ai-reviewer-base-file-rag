@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * - 极少更新，高置信度
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 @Service
@@ -55,31 +55,34 @@ public class PermanentLayerService {
 
     @PostConstruct
     public void init() {
+        // 1. 检查HOPE是否启用 (Check if HOPE is enabled)
         if (!config.isEnabled()) {
             log.info(I18N.get("hope.permanent.disabled"));
             return;
         }
 
         try {
-            // 确保存储目录存在
+            // 2. 确保存储目录存在 (Ensure storage directory exists)
             Path storagePath = Paths.get(config.getPermanent().getStoragePath());
             if (!Files.exists(storagePath)) {
                 Files.createDirectories(storagePath);
             }
 
-            // 加载已保存的数据
+            // 3. 加载已保存的数据 (Load saved data)
             loadData();
 
-            // 初始化内置技能模板
+            // 4. 初始化内置技能模板 (Initialize built-in skill templates)
             initBuiltinSkillTemplates();
 
-            // 初始化内置确定性知识
+            // 5. 初始化内置确定性知识 (Initialize built-in factual knowledge)
             initBuiltinFactualKnowledge();
 
+            // 6. 记录初始化成功日志 (Log successful initialization)
             log.info(I18N.get("hope.permanent.init_success",
                 skillTemplates.size(), factualKnowledge.size()));
 
         } catch (IOException e) {
+            // 7. 记录初始化失败日志 (Log initialization failure)
             log.error(I18N.get("hope.permanent.init_failed"), e);
         }
     }

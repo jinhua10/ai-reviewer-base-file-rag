@@ -22,7 +22,7 @@ import java.util.List;
  * (Query HOPE three layers before each LLM call, auto-learn after call)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 public class HOPEEnhancedLLMClient implements LLMClient {
@@ -46,9 +46,13 @@ public class HOPEEnhancedLLMClient implements LLMClient {
                                   HOPEKnowledgeManager hopeManager,
                                   HOPEMonitorService hopeMonitor,
                                   HOPELLMConfig config) {
+        // 1. 设置底层LLM客户端 (Set underlying LLM client)
         this.delegate = delegate;
+        // 2. 设置HOPE知识管理器 (Set HOPE knowledge manager)
         this.hopeManager = hopeManager;
+        // 3. 设置监控服务 (Set monitoring service)
         this.hopeMonitor = hopeMonitor;
+        // 4. 设置配置，使用默认配置如果为空 (Set configuration, use default if null)
         this.config = config != null ? config : new HOPELLMConfig();
     }
 
@@ -77,9 +81,13 @@ public class HOPEEnhancedLLMClient implements LLMClient {
      * 手动触发学习（当用户给出反馈时调用）
      */
     public void learnFromFeedback(String question, String answer, int rating) {
+        // 1. 检查HOPE管理器是否可用 (Check if HOPE manager is available)
         if (hopeManager != null && hopeManager.isEnabled() && rating >= config.getMinRatingForLearning()) {
+            // 2. 获取当前会话ID (Get current session ID)
             String sessionId = currentSessionId.get();
+            // 3. 记录学习信息 (Record learning information)
             hopeManager.learn(question, answer, rating, sessionId);
+            // 4. 记录调试日志 (Log debug information)
             log.debug(I18N.get("hope.learn.recorded", rating));
         }
     }

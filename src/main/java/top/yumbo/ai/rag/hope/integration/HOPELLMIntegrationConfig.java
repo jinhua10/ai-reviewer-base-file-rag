@@ -19,7 +19,7 @@ import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
  * (Provides factory method for HOPE enhanced LLM client)
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 @Component
@@ -40,11 +40,15 @@ public class HOPELLMIntegrationConfig {
 
     @PostConstruct
     public void init() {
+        // 1. 创建默认配置 (Create default configuration)
         defaultConfig = new HOPEEnhancedLLMClient.HOPELLMConfig();
+        // 2. 启用自动学习 (Enable auto learning)
         defaultConfig.setAutoLearnEnabled(true);
+        // 3. 设置自动学习默认评分 (Set default rating for auto learning)
         defaultConfig.setAutoLearnRating(3);
+        // 4. 设置手动反馈学习最小评分 (Set minimum rating for manual feedback learning)
         defaultConfig.setMinRatingForLearning(4);
-
+        // 5. 记录初始化成功日志 (Log successful initialization)
         log.info(I18N.get("hope.llm.integration_enabled", "HOPELLMIntegrationConfig"));
     }
 
@@ -55,15 +59,17 @@ public class HOPELLMIntegrationConfig {
      * @return HOPE 增强的 LLM 客户端
      */
     public LLMClient wrapWithHOPE(LLMClient originalClient) {
+        // 1. 检查原始客户端是否为空 (Check if original client is null)
         if (originalClient == null) {
             return null;
         }
 
-        // 如果已经是 HOPEEnhancedLLMClient，直接返回
+        // 2. 如果已经是 HOPEEnhancedLLMClient，直接返回 (If already HOPEEnhancedLLMClient, return directly)
         if (originalClient instanceof HOPEEnhancedLLMClient) {
             return originalClient;
         }
 
+        // 3. 创建并返回 HOPE 增强客户端 (Create and return HOPE enhanced client)
         return new HOPEEnhancedLLMClient(originalClient, hopeManager, hopeMonitor, defaultConfig);
     }
 

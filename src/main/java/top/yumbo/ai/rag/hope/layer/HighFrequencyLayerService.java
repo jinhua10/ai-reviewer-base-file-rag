@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
  * - 自动过期清理
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 @Service
@@ -51,21 +51,24 @@ public class HighFrequencyLayerService {
 
     @PostConstruct
     public void init() {
+        // 1. 检查HOPE是否启用 (Check if HOPE is enabled)
         if (!config.isEnabled()) {
             log.info(I18N.get("hope.high_frequency.disabled"));
             return;
         }
 
-        // 初始化 Caffeine 缓存
+        // 2. 获取缓存配置参数 (Get cache configuration parameters)
         int maxSessions = config.getHighFrequency().getMaxSessions();
         int timeoutMinutes = config.getHighFrequency().getSessionTimeoutMinutes();
 
+        // 3. 初始化 Caffeine 缓存 (Initialize Caffeine cache)
         sessionCache = Caffeine.newBuilder()
             .maximumSize(maxSessions)
             .expireAfterAccess(timeoutMinutes, TimeUnit.MINUTES)
             .recordStats()
             .build();
 
+        // 4. 记录初始化成功日志 (Log successful initialization)
         log.info(I18N.get("hope.high_frequency.init_success", maxSessions, timeoutMinutes));
     }
 

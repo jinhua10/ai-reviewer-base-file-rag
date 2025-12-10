@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * - 支持知识晋升到低频层
  *
  * @author AI Reviewer Team
- * @since 2025-12-07
+ * @since 2.0.0
  */
 @Slf4j
 @Service
@@ -55,24 +55,27 @@ public class OrdinaryLayerService {
 
     @PostConstruct
     public void init() {
+        // 1. 检查HOPE是否启用 (Check if HOPE is enabled)
         if (!config.isEnabled()) {
             log.info(I18N.get("hope.ordinary.disabled"));
             return;
         }
 
         try {
-            // 确保存储目录存在
+            // 2. 确保存储目录存在 (Ensure storage directory exists)
             Path storagePath = Paths.get(config.getOrdinary().getStoragePath());
             if (!Files.exists(storagePath)) {
                 Files.createDirectories(storagePath);
             }
 
-            // 加载已保存的数据
+            // 3. 加载已保存的数据 (Load saved data)
             loadData();
 
+            // 4. 记录初始化成功日志 (Log successful initialization)
             log.info(I18N.get("hope.ordinary.init_success", recentQAs.size()));
 
         } catch (IOException e) {
+            // 5. 记录初始化失败日志 (Log initialization failure)
             log.error(I18N.get("hope.ordinary.init_failed"), e);
         }
     }
