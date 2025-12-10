@@ -131,7 +131,7 @@
     position: fixed;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 9999; /* 低于引导页面(10000)，确保引导页面显示时被遮罩 (Below welcome guide) */
+    z-index: 1000; /* 低于引导页面(10000)，确保引导页面显示时被遮罩 (Below welcome guide) */
     transition: right 0.3s ease;
 }
 
