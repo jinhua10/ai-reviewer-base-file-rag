@@ -1,0 +1,63 @@
+# ============================================================
+# Search Strategy Framework
+# ============================================================
+strategy:
+  search:
+    hybrid:
+      name: "Hybrid Search Strategy"
+      description: "Combines Lucene keyword search and vector semantic search, suitable for most scenarios"
+    keyword:
+      name: "Keyword Search Strategy"
+      description: "Uses only Lucene keyword search, suitable for precise matching scenarios"
+    vector:
+      name: "Vector Search Strategy"
+      description: "Uses only vector semantic search, suitable for semantic similarity scenarios"
+  dispatcher:
+    log:
+      init_start: "📦 Initializing strategy dispatcher..."
+      strategy_registered: "  ✅ Registered strategy: {0} - {1}"
+      init_complete: "✅ Strategy dispatcher initialization completed with {0} strategies"
+      no_suitable_strategy: "No suitable strategy found"
+      selected_strategies: "🎯 Selected strategies: {0}"
+      executing_single: "Executing single strategy: {0}"
+      executing_combined: "Executing combined strategies: {0}"
+      merging_results: "Merging analysis results..."
+      evaluate_failed: "Failed to evaluate strategy {0}: {1}"
+  abstract:
+    log:
+      analysis_start: "🚀 Starting analysis, strategy: {0}, document count: {1}"
+      analysis_complete: "✅ Analysis completed, strategy: {0}, duration: {1}ms"
+      analysis_failed: "❌ Analysis failed, strategy: {0}"
+      llm_call_failed: "LLM call failed"
+  parallel_summary:
+    log:
+      generating_summaries: "Generating document summaries in parallel..."
+      summary_progress: "Completed {0}/{1} document summaries"
+      generating_report: "Generating comprehensive analysis report..."
+      summary_failed: "Failed to generate document summary: {0}"
+      parallel_failed: "Parallel summary generation failed"
+    error:
+      no_documents: "No document content to analyze"
+      summary_failed: "Summary generation failed"
+      document_empty: "Document content is empty"
+  structured_compare:
+    log:
+      preparing_content: "Preparing document content..."
+      executing_comparison: "Executing comparative analysis..."
+      extracting_results: "Extracting comparison results..."
+    error:
+      min_documents: "Comparative analysis requires at least 2 documents"
+  entity_relation:
+    log:
+      extracting_entities: "Extracting document entities..."
+      analyzing_relations: "Analyzing entity relationships..."
+      building_graph: "Building relationship graph..."
+    error:
+      min_documents: "Relational analysis requires at least 2 documents"
+  question_driven:
+    log:
+      retrieving_content: "Retrieving relevant content..."
+      generating_answer: "Generating answer..."
+      organizing_results: "Organizing results..."
+    error:
+      no_documents: "No documents to analyze"

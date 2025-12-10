@@ -1,0 +1,14 @@
+# ============================================================
+# WordDocumentParser
+# ============================================================
+word_parser:
+  log:
+    parse_file: "📝 Parsing Word file: {0}"
+    parse_chapter: "  Parsing chapter {0}: {1} ({2} characters)"
+    parse_complete: "✅ Word file parsing completed: {0} fragments"
+    parse_failed: "Failed to parse Word file: {0}"
+  error:
+    file_not_found: "File not found: {0}"
+  title:
+    continued: "continued..."
+    default_content: "Document content"

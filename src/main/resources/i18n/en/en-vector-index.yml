@@ -1,0 +1,22 @@
+vector_index:
+  log:
+    init: "✅ Simplified vector index engine initialized"
+    index_path: "   - Index path: {0}"
+    dimension: "   - Vector dimension: {0}"
+    current_count: "   - Current vector count: {0}"
+    search_method: "   - Search method: Linear scan (suitable for <100K entries)"
+    add_vector: "Adding vector: docId={0}, dim={1}"
+    batch_add: "Batch adding {0} vectors"
+    index_empty: "Index is empty, returning empty results"
+    search_complete: "Vector search completed: scanned={0}, filtered={1}, found={2}, time={3}ms"
+    delete_vector: "Deleting vector: docId={0}"
+    save_start: "Starting to save vector index..."
+    save_complete: "✅ Vector index saved: {0} vectors, file size: {1} KB"
+    load_start: "Starting to load vector index..."
+    load_complete: "✅ Vector index loaded: {0} vectors"
+    clear_complete: "✅ Vector index cleared"
+  error:
+    dimension_mismatch: "Vector dimension mismatch: expected {0}, actual {1}"
+    query_dimension_mismatch: "Query vector dimension mismatch: expected {0}, actual {1}"
+    vector_dimension_mismatch: "Vector dimension mismatch"
+    index_dimension_mismatch: "Vector dimension mismatch: index={0}, expected={1}"

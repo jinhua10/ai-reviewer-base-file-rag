@@ -1,0 +1,15 @@
+# ============================================================
+# StageOutputManagerImpl
+# ============================================================
+stage_output:
+  log:
+    generate_output: "📊 Generating stage output ({0}%)"
+    output_complete: "✅ Stage output generation completed: {0}"
+    manager_cleared: "🧹 Stage output manager cleared"
+    generate_failed: "Failed to generate stage summary, using simple summary: {0}"
+    stage_checkpoint: "📍 Stage checkpoint: {0}%"
+    stage_summary_saved: "💾 Stage summary saved: Stage {0}"
+    final_summary_saved: "📋 Final summary saved"
+  title:
+    stage_summary: "Stage Summary ({0}%)"
+    final_summary: "Final Summary"

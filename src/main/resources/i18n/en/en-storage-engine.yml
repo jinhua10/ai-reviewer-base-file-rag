@@ -1,0 +1,16 @@
+storage_engine:
+  log:
+    initialized: "File system storage engine initialized, base path: {0}"
+    failed_init_dirs: "Failed to initialize storage directories"
+    document_with_same_content: "Found document with same content, ID: {0}"
+    document_stored: "Document stored, ID: {0}"
+    failed_store: "Failed to store document"
+    failed_store_batch: "Failed to store documents in batch, ID: {0}"
+    document_file_not_found: "Document file not found: {0}"
+    failed_retrieve: "Failed to retrieve document, ID: {0}"
+    document_deleted: "Document deleted, ID: {0}"
+    failed_delete: "Failed to delete document, ID: {0}"
+  error:
+    failed_init_storage_dirs: "Failed to initialize storage directories"
+    failed_store_document: "Failed to store document"
+    failed_retrieve_document: "Failed to retrieve document, ID: {0}"

@@ -1,0 +1,123 @@
+# Vision LLM Strategy Messages
+vision_llm:
+  log:
+    api_format_detected: "Detected {0} API format"
+    api_format_default: "Using default OpenAI Chat Completions API format"
+    processing_image: "Processing image with Vision LLM: {0}"
+    processing_image_file: "Processing image file with Vision LLM: {0}"
+    content_extracted: "Vision LLM extracted content [{0}]: {1} characters"
+    processing_failed: "Vision LLM processing failed: {0}"
+    sending_request: "Sending Vision API request: {0} (format: {1})"
+    sending_request_batch: "Sending batch Vision API request: {0} (format: {1})"
+    received_response: "Received Vision API response, duration: {0}ms"
+    token_usage: "Token usage - Prompt: {0}, Completion: {1}, Total: {2}"
+    ollama_complete_chat: "Ollama processing completed (/api/chat format)"
+    ollama_complete_generate: "Ollama processing completed (/api/generate format)"
+    service_available: "✅ Vision LLM is available"
+    api_format: "   - API format: {0}"
+    model: "   - Model: {0}"
+    endpoint: "   - Endpoint: {0}"
+    service_unavailable: "⚠️  Vision LLM service is unavailable: {0}"
+    check_service: "💡 Tip: Please check if the service is running properly"
+    unavailable_no_apikey: "⚠️  Vision LLM is unavailable: API Key not configured"
+    hint_set_apikey: "💡 Tip: Set vision-llm.api-key in the configuration file"
+    service_response_error: "Service response error: HTTP {0}"
+    unsupported_format: "⚠️  Skipping unsupported image format: {0} (.{1}), Vision API only supports jpg/png/gif/webp/bmp"
+  error:
+    api_error: "Vision API error: HTTP {0}"
+    api_error_with_body: "Vision API error: HTTP {0}, Body: {1}"
+    no_response_body: "No response body"
+    parse_openai_failed: "Failed to parse OpenAI API response: {0}"
+    parse_ollama_failed: "Failed to parse Ollama API response: {0}"
+    unavailable: "[Image: {0} - Vision LLM unavailable]"
+    processing_failed: "[Image: {0} - Vision LLM processing failed: {1}]"
+    unsupported_format: "[Image: {0} - Unsupported format .{1}, Vision API only supports jpg/png/gif/webp/bmp]"
+  prompt:
+    # Concise prompt: extract key information, avoid redundancy
+    extract_text_concise: |
+      Please analyze this image and extract **key information**, requiring conciseness without omitting important content:
+
+      1. **Image Theme**: Summarize the core content and purpose of the image in one sentence
+
+      2. **Core Text**: Extract all important text content
+         - Titles, main labels, key annotations
+         - Important data/values/parameters
+         - Core conclusions or key points
+
+      3. **Key Structural Information** (based on image type, only retain core content):
+         【Architecture/System Diagram】:
+         - All component/module names
+         - Connection relationships and data flow between components
+         - Tech stack, protocols (if any)
+
+         【Flowchart】: Key steps and branching logic
+
+         【Chart/Statistics】: Core data points, trend conclusions
+
+         【Table】: Headers and key data
+
+         【Others】: Main content elements
+
+      **Output Requirements**:
+      - Concise and to the point, without redundant descriptions or subjective evaluations
+      - But must retain all key information, without omitting important content
+      - For complex images like architecture diagrams, completely preserve component and relationship information
+
+    # Detailed prompt: full analysis
+    extract_text: |
+      Please comprehensively analyze this image and output according to the following structure:
+      
+      1. **Image Overview**: Summarize the main content, type, and purpose of the image in 1-2 sentences
+      
+      2. **Text Content**: Completely extract all text in the image
+         - Titles, labels, annotations
+         - Component names, module names
+         - Descriptive text, legends
+         - Maintain hierarchical and positional relationships of text
+      
+      3. **Structured Information** (detailed description based on image type):
+      
+         【Architecture/System Diagram】:
+         - List all components/modules/nodes and their names
+         - Explain connection relationships between components (who connects to whom, connection direction)
+         - Describe data flow or information flow direction
+         - Explain hierarchical relationships of components (frontend, backend, database, etc.)
+         - Label tech stack, protocols, ports, etc.
+      
+         【Flowchart】:
+         - List all process steps in order
+         - Explain conditional branches and judgment logic
+         - Label start and end points
+      
+         【Charts/Statistics】:
+         - Chart type (bar/line/pie chart, etc.)
+         - Axis meaning and units
+         - Specific data points and values
+         - Data trends and key findings
+      
+         【Tables】:
+         - Header information
+         - Extract data by rows and columns completely
+         - Maintain table structure relationships
+      
+         【Screenshots/Interface】:
+         - Interface type and function
+         - Main functional modules
+         - Menu, buttons and other interactive elements
+      
+         【Other Images】:
+         - Describe main content and composition
+         - Key visual elements
+      
+      4. **Key Information Extraction**:
+         - Core technical points
+         - Important data or parameters
+         - Key conclusions or points
+         - Information that needs special attention
+      
+      Output Requirements:
+      - Information must be complete, accurate, and structured
+      - For architecture diagrams, must detail connection relationships between components
+      - Technical terms, numbers, formulas must be accurately identified
+      - Use clear hierarchical structure to organize content
+      - Do not add subjective evaluations, only state objective information
