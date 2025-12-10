@@ -150,6 +150,11 @@ function App() {
         };
     }, []);
 
+    // 重新打开引导页面 (Reopen welcome guide)
+    const handleReopenGuide = () => {
+        setShowWelcomeGuide(true);
+    };
+
     // 处理分隔线拖拽
     useEffect(() => {
         if (!isDragging) return;
@@ -208,6 +213,13 @@ function App() {
                     <div className="app-container">
                         <div className="language-toggle">
                             <button onClick={toggleLanguage}>{t('langToggle')}</button>
+                            <button
+                                onClick={handleReopenGuide}
+                                className="welcome-guide-button"
+                                title={t('welcomeReopenTooltip') || '重新查看系统引导'}
+                            >
+                                {t('welcomeReopenButton') || '📖 帮助'}
+                            </button>
                         </div>
 
                         <header className="header">

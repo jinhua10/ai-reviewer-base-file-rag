@@ -24,12 +24,15 @@ body {
     margin: 0 auto;
 }
 
-/* 语言切换按钮 */
+/* 语言切换和帮助按钮区域 (Language toggle and help button area) */
 .language-toggle {
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 10003; /* 高于所有弹窗和悬浮按钮，确保始终可见 */
+    z-index: 10003; /* 高于所有弹窗和悬浮按钮，确保始终可见 (Higher than all popups and floating buttons) */
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
 .language-toggle button {
@@ -41,11 +44,24 @@ body {
     font-size: 14px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     transition: all 0.3s;
+    white-space: nowrap;
 }
 
 .language-toggle button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* 帮助按钮特殊样式 (Help button special style) */
+.language-toggle .welcome-guide-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 500;
+}
+
+.language-toggle .welcome-guide-button:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3e91 100%);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 /* 头部 */

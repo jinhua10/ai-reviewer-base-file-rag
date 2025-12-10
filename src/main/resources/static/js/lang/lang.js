@@ -814,8 +814,10 @@ const translations = {
         welcomeFeatureList2: '💬 提问，体验 HOPE 快速响应',
         welcomeFeatureList3: '🎨 查看 HOPE 仪表盘，监控系统学习',
         welcomeFeatureList4: '📊 使用多文档分析，融合知识',
-        welcomeGuideReopen: '您可以随时在设置中重新打开此引导。',
+        welcomeGuideReopen: '您可以随时点击右上角的帮助按钮重新打开此引导。',
         welcomeStartButton: '开始探索',
+        welcomeReopenButton: '📖 帮助',
+        welcomeReopenTooltip: '重新查看系统引导',
         hopeStrategyReference: '参考增强',
         hopeStrategyRAG: 'RAG检索',
         hopeLoadError: '加载 HOPE 仪表盘失败',
@@ -1658,8 +1660,10 @@ const translations = {
         welcomeFeatureList2: '💬 Ask questions, experience HOPE fast response',
         welcomeFeatureList3: '🎨 View HOPE dashboard, monitor system learning',
         welcomeFeatureList4: '📊 Use multi-document analysis, fuse knowledge',
-        welcomeGuideReopen: 'You can reopen this guide anytime in settings.',
+        welcomeGuideReopen: 'You can reopen this guide anytime by clicking the help button in the top right corner.',
         welcomeStartButton: 'Start Exploring',
+        welcomeReopenButton: '📖 Help',
+        welcomeReopenTooltip: 'Reopen System Guide',
 
         // Console Logs
         logAppMounted: '📡 App mounted, checking health...',
