@@ -1,0 +1,67 @@
+# Index Module Internationalization - English
+# 索引模块国际化 - 英文
+
+# RoleVectorIndex
+index:
+  role:
+    created: "Role index created, role: {0}, path: {1}"
+    already_loaded: "Role index already loaded, role: {0}"
+    loading: "Loading role index, role: {0}"
+    loaded: "Role index loaded successfully, role: {0}, documents: {1}, time: {2}ms"
+    load_failed: "Failed to load role index, role: {0}, reason: {1}"
+    not_loaded: "Role index not loaded, role: {0}"
+    unloading: "Unloading role index, role: {0}"
+    unloaded: "Role index unloaded successfully, role: {0}"
+    unload_failed: "Failed to unload role index, role: {0}, reason: {1}"
+    document_added: "Document added to role index, role: {0}, document: {1}"
+    add_failed: "Failed to add document, role: {0}, document: {1}, reason: {2}"
+    batch_adding: "Batch adding documents to role index, role: {0}, count: {1}"
+    batch_added: "Batch add complete, role: {0}, success: {1}/{2}, time: {3}ms"
+    searched: "Search complete, role: {0}, results: {1}/{2}"
+    search_failed: "Search failed, role: {0}, reason: {1}"
+    document_deleted: "Document deleted from role index, role: {0}, document: {1}"
+    delete_failed: "Failed to delete document, role: {0}, document: {1}, reason: {2}"
+    saved: "Role index saved, role: {0}"
+    save_failed: "Failed to save role index, role: {0}, reason: {1}"
+    cleared: "Role index cleared, role: {0}"
+    clear_failed: "Failed to clear role index, role: {0}, reason: {1}"
+  # IndexBuilder
+  builder:
+    documents:
+      empty: "Build failed: document list is empty"
+    start: "Starting index build, documents: {0}"
+    complete: "Index build complete, success: {0}/{1}, time: {2}ms"
+    failed: "Index build failed: {0}"
+    role_failed: "Role index build failed, role: {0}, reason: {1}"
+    role_empty: "Role documents empty, role: {0}"
+    role_start: "Starting role index build, role: {0}, documents: {1}"
+    role_complete: "Role index build complete, role: {0}, success: {1}/{2}, time: {3}ms"
+    role_error: "Role index build error, role: {0}, reason: {1}"
+    doc_failed: "Document indexing failed, document: {0}, reason: {1}"
+    incremental:
+      start: "Starting incremental index update, documents: {0}"
+    rebuild:
+      start: "Starting rebuild of all indices"
+    role_cleared: "Role index cleared, role: {0}"
+    clear_failed: "Failed to clear index, role: {0}, reason: {1}"
+    create_dir_failed: "Failed to create directory, path: {0}, reason: {1}"
+    unload:
+      all: "Starting to unload all indices"
+      complete: "All indices unloaded"
+    unload_failed: "Failed to unload index, role: {0}, reason: {1}"
+# DocumentClassifier
+classifier:
+  document:
+    null: "Classification failed: document is null"
+  documents:
+    empty: "Classification failed: document list is empty"
+  classifying: "Classifying document: {0}"
+  classified: "Document classified, document: {0}, roles: {1}, confidence: {2}"
+  error: "Document classification failed, document: {0}, reason: {1}"
+  batch:
+    start: "Starting batch classification, count: {0}"
+    complete: "Batch classification complete, documents: {0}, time: {1}ms"
+  grouped: "Documents grouped by role, documents: {0}, roles: {1}"
+
+
+

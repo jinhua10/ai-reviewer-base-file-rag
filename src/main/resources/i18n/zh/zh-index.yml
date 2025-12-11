@@ -1,0 +1,67 @@
+# 索引模块国际化 - 中文
+# Index Module Internationalization - Chinese
+
+# RoleVectorIndex 角色向量索引
+index:
+  role:
+    created: "角色索引已创建，角色: {0}，路径: {1}"
+    already_loaded: "角色索引已加载，角色: {0}"
+    loading: "正在加载角色索引，角色: {0}"
+    loaded: "角色索引加载成功，角色: {0}，文档数: {1}，耗时: {2}ms"
+    load_failed: "角色索引加载失败，角色: {0}，原因: {1}"
+    not_loaded: "角色索引未加载，角色: {0}"
+    unloading: "正在卸载角色索引，角色: {0}"
+    unloaded: "角色索引卸载成功，角色: {0}"
+    unload_failed: "角色索引卸载失败，角色: {0}，原因: {1}"
+    document_added: "文档已添加到角色索引，角色: {0}，文档: {1}"
+    add_failed: "文档添加失败，角色: {0}，文档: {1}，原因: {2}"
+    batch_adding: "正在批量添加文档到角色索引，角色: {0}，数量: {1}"
+    batch_added: "批量添加文档完成，角色: {0}，成功: {1}/{2}，耗时: {3}ms"
+    searched: "搜索完成，角色: {0}，结果数: {1}/{2}"
+    search_failed: "搜索失败，角色: {0}，原因: {1}"
+    document_deleted: "文档已从角色索引删除，角色: {0}，文档: {1}"
+    delete_failed: "文档删除失败，角色: {0}，文档: {1}，原因: {2}"
+    saved: "角色索引已保存，角色: {0}"
+    save_failed: "角色索引保存失败，角色: {0}，原因: {1}"
+    cleared: "角色索引已清空，角色: {0}"
+    clear_failed: "角色索引清空失败，角色: {0}，原因: {1}"
+  # IndexBuilder 索引构建器
+  builder:
+    documents:
+      empty: "构建失败：文档列表为空"
+    start: "开始构建索引，文档数: {0}"
+    complete: "索引构建完成，成功: {0}/{1}，耗时: {2}ms"
+    failed: "索引构建失败: {0}"
+    role_failed: "角色索引构建失败，角色: {0}，原因: {1}"
+    role_empty: "角色文档为空，角色: {0}"
+    role_start: "开始构建角色索引，角色: {0}，文档数: {1}"
+    role_complete: "角色索引构建完成，角色: {0}，成功: {1}/{2}，耗时: {3}ms"
+    role_error: "角色索引构建错误，角色: {0}，原因: {1}"
+    doc_failed: "文档索引失败，文档: {0}，原因: {1}"
+    incremental:
+      start: "开始增量更新索引，文档数: {0}"
+    rebuild:
+      start: "开始重建所有索引"
+    role_cleared: "角色索引已清空，角色: {0}"
+    clear_failed: "清空索引失败，角色: {0}，原因: {1}"
+    create_dir_failed: "创建目录失败，路径: {0}，原因: {1}"
+    unload:
+      all: "开始卸载所有索引"
+      complete: "所有索引卸载完成"
+    unload_failed: "索引卸载失败，角色: {0}，原因: {1}"
+# DocumentClassifier 文档分类器
+classifier:
+  document:
+    null: "分类失败：文档为空"
+  documents:
+    empty: "分类失败：文档列表为空"
+  classifying: "正在分类文档: {0}"
+  classified: "文档分类完成，文档: {0}，角色: {1}，置信度: {2}"
+  error: "文档分类失败，文档: {0}，原因: {1}"
+  batch:
+    start: "开始批量分类文档，数量: {0}"
+    complete: "批量分类完成，文档数: {0}，耗时: {1}ms"
+  grouped: "文档已按角色分组，文档数: {0}，角色数: {1}"
+
+
+

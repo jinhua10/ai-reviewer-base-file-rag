@@ -180,7 +180,14 @@ public final class I18N {
         }
         String safePrefix = prefix == null ? "" : prefix;
         for (Map.Entry<?, ?> entry : map.entrySet()) {
-            String key = safePrefix.isEmpty() ? entry.getKey().toString() : safePrefix + "." + entry.getKey().toString();
+            // 检查键是否为null (Check if key is null)
+            Object entryKey = entry.getKey();
+            if (entryKey == null) {
+                log.warn("Found null key in YAML map, skipping entry");
+                continue;
+            }
+
+            String key = safePrefix.isEmpty() ? entryKey.toString() : safePrefix + "." + entryKey.toString();
             Object value = entry.getValue();
 
             if (value instanceof Map) {
