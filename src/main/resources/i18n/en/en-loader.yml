@@ -1,0 +1,50 @@
+# Loader Module Internationalization - English
+# 加载器模块国际化 - 英文
+
+# LRUCache
+loader:
+  cache:
+    created: "LRU cache created, maximum capacity: {0}"
+    hit: "Cache hit, key: {0}, hit rate: {1,number,#.##%}"
+    miss: "Cache miss, key: {0}, hit rate: {1,number,#.##%}"
+    put: "Cache entry added, key: {0}, size: {1}/{2}"
+    evicted: "Cache entry evicted, key: {0}, size: {1}/{2}"
+    removed: "Cache entry removed, key: {0}, remaining: {1}"
+    cleared: "Cache cleared, total removed: {0} items"
+
+  # LoadingStats
+  stats:
+    load_recorded: "Load record saved, role: {0}, time: {1}ms"
+    load_failed: "Load failure recorded, role: {0}, error: {1}"
+    cache_hit: "Cache hit recorded, role: {0}, hit rate: {1,number,#.##%}"
+    reset: "Statistics reset"
+
+  # PreloadStrategy
+  preload:
+    strategy_created: "Preload strategy created, max preload count: {0}"
+    no_roles: "No roles available for preloading"
+    no_enabled_roles: "No enabled roles"
+    deciding: "Deciding preload strategy, candidate roles: {0}"
+    decided: "Preload decision completed, will preload {0} roles: {1}"
+    score_calculated: "Role score calculated, role: {0}, score: {1,number,#.##}"
+    usage_recorded: "Role usage recorded, role: {0}"
+    stats_reset: "Preload statistics reset"
+
+  # KnowledgeBaseLoader
+  kb:
+    initializing: "Initializing knowledge base loader..."
+    initialized: "Knowledge base loader initialized, cache size: {0}"
+    destroying: "Destroying knowledge base loader..."
+    destroyed: "Knowledge base loader destroyed"
+    cache_hit: "Index cache hit, role: {0}"
+    loading: "Loading role index, role: {0}"
+    loaded: "Role index loaded successfully, role: {0}, time: {1}ms"
+    load_failed: "Role index loading failed, role: {0}, reason: {1}"
+    preload_success: "Async preload succeeded, role: {0}"
+    preload_failed: "Async preload failed, role: {0}, reason: {1}"
+    unloaded: "Role index unloaded, role: {0}"
+    unload_failed: "Role index unloading failed, role: {0}, reason: {1}"
+    preloading: "Starting index preloading..."
+    preload_scheduled: "Scheduled async preload for {0} roles"
+    refreshing_preload: "Refreshing preload strategy..."
+

@@ -1,0 +1,50 @@
+# 加载器模块国际化 - 中文
+# Loader Module Internationalization - Chinese
+
+# LRUCache LRU缓存
+loader:
+  cache:
+    created: "LRU缓存已创建，最大容量: {0}"
+    hit: "缓存命中，键: {0}，命中率: {1,number,#.##%}"
+    miss: "缓存未命中，键: {0}，命中率: {1,number,#.##%}"
+    put: "缓存已添加，键: {0}，大小: {1}/{2}"
+    evicted: "缓存项已淘汰，键: {0}，大小: {1}/{2}"
+    removed: "缓存项已移除，键: {0}，剩余: {1}"
+    cleared: "缓存已清空，共清除: {0}项"
+
+  # LoadingStats 加载统计
+  stats:
+    load_recorded: "加载记录已保存，角色: {0}，耗时: {1}ms"
+    load_failed: "加载失败已记录，角色: {0}，错误: {1}"
+    cache_hit: "缓存命中已记录，角色: {0}，命中率: {1,number,#.##%}"
+    reset: "统计信息已重置"
+
+  # PreloadStrategy 预加载策略
+  preload:
+    strategy_created: "预加载策略已创建，最大预加载数: {0}"
+    no_roles: "没有可用的角色用于预加载"
+    no_enabled_roles: "没有启用的角色"
+    deciding: "正在决定预加载策略，候选角色数: {0}"
+    decided: "预加载决策完成，将预加载{0}个角色: {1}"
+    score_calculated: "角色评分已计算，角色: {0}，得分: {1,number,#.##}"
+    usage_recorded: "角色使用已记录，角色: {0}"
+    stats_reset: "预加载统计已重置"
+
+  # KnowledgeBaseLoader 知识库加载器
+  kb:
+    initializing: "正在初始化知识库加载器..."
+    initialized: "知识库加载器初始化完成，缓存大小: {0}"
+    destroying: "正在销毁知识库加载器..."
+    destroyed: "知识库加载器已销毁"
+    cache_hit: "索引缓存命中，角色: {0}"
+    loading: "正在加载角色索引，角色: {0}"
+    loaded: "角色索引加载成功，角色: {0}，耗时: {1}ms"
+    load_failed: "角色索引加载失败，角色: {0}，原因: {1}"
+    preload_success: "异步预加载成功，角色: {0}"
+    preload_failed: "异步预加载失败，角色: {0}，原因: {1}"
+    unloaded: "角色索引已卸载，角色: {0}"
+    unload_failed: "角色索引卸载失败，角色: {0}，原因: {1}"
+    preloading: "开始预加载索引..."
+    preload_scheduled: "已安排{0}个角色的异步预加载"
+    refreshing_preload: "正在刷新预加载策略..."
+

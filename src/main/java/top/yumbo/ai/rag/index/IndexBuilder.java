@@ -225,26 +225,47 @@ public class IndexBuilder {
     }
 
     /**
+     * 获取索引 (Get index)
+     *
+     * @param roleId 角色ID (Role ID)
+     * @return 索引 (Index)
+     */
+    public RoleVectorIndex getIndex(String roleId) {
+        return indexCache.get(roleId);
+    }
+
+    /**
      * 获取或创建角色索引 (Get or create role index)
      *
      * @param role 角色 (Role)
      * @return 角色索引 (Role index)
+     * @throws IOException 如果创建失败 (If creation fails)
      */
-    public RoleVectorIndex getOrCreateIndex(Role role) {
-        return indexCache.computeIfAbsent(role.getId(), k -> {
-            String indexPath = buildIndexPath(role);
-            return new RoleVectorIndex(role, indexPath);
-        });
-    }
+    public RoleVectorIndex getOrCreateIndex(Role role) throws IOException {
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null");
+        }
 
-    /**
-     * 获取角色索引 (Get role index)
-     *
-     * @param roleId 角色ID (Role ID)
-     * @return 角色索引，如果不存在返回null (Role index, null if not exists)
-     */
-    public RoleVectorIndex getIndex(String roleId) {
-        return indexCache.get(roleId);
+        return indexCache.computeIfAbsent(role.getId(), k -> {
+            try {
+                // 构建索引路径 (Build index path)
+                Path indexDir = Paths.get(indexBasePath);
+                if (!Files.exists(indexDir)) {
+                    Files.createDirectories(indexDir);
+                }
+
+                String indexPath = indexDir.resolve("role_" + role.getId() + ".index").toString();
+
+                // 创建索引 (Create index)
+                RoleVectorIndex index = new RoleVectorIndex(role, indexPath);
+                log.info(I18N.get("index.builder.index_created", role.getId(), indexPath));
+                return index;
+
+            } catch (IOException e) {
+                log.error(I18N.get("index.builder.create_failed", role.getId(), e.getMessage()), e);
+                throw new RuntimeException("Failed to create index for role: " + role.getId(), e);
+            }
+        });
     }
 
     /**
@@ -372,4 +393,3 @@ public class IndexBuilder {
         }
     }
 }
-

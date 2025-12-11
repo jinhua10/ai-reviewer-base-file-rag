@@ -49,6 +49,8 @@ index:
       all: "Starting to unload all indices"
       complete: "All indices unloaded"
     unload_failed: "Failed to unload index, role: {0}, reason: {1}"
+    index_created: "Role index created, role: {0}, path: {1}"
+    create_failed: "Failed to create role index, role: {0}, reason: {1}"
 # DocumentClassifier
 classifier:
   document:

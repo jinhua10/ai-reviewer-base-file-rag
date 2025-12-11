@@ -49,6 +49,8 @@ index:
       all: "开始卸载所有索引"
       complete: "所有索引卸载完成"
     unload_failed: "索引卸载失败，角色: {0}，原因: {1}"
+    index_created: "角色索引已创建，角色: {0}，路径: {1}"
+    create_failed: "创建角色索引失败，角色: {0}，原因: {1}"
 # DocumentClassifier 文档分类器
 classifier:
   document:
