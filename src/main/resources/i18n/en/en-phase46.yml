@@ -1,0 +1,44 @@
+# Phase 4.6 Module - English
+
+# Resource Scheduler
+scheduler:
+  initialized: "Resource scheduler initialized"
+  started: "Scheduler started"
+  stopped: "Scheduler stopped"
+  mode_changed: "Resource mode changed: {} → {}"
+  cpu_limit_reached: "CPU limit reached: {} > {}"
+  task_submitted: "Task submitted: name={}, priority={}"
+  task_executing: "Executing task: {}"
+  task_completed: "Task completed: {}"
+  task_failed: "Task failed: {}, error={}"
+
+# AI Service Registry
+ai:
+  service:
+    registry:
+      initialized: "AI service registry initialized"
+    builtin:
+      registered: "Built-in services registered: {} services"
+    registered: "Service registered: name={}, id={}"
+    unregistered: "Service unregistered: {}"
+    not_found: "Service not found: {}"
+    disabled: "Service disabled: {}"
+    invoking: "Invoking service: {}"
+    invoked: "Service invoked: {}, duration={}ms"
+    invoke_failed: "Service invocation failed: {}, error={}"
+
+# Wish List
+wishlist:
+  initialized: "Wish list manager initialized"
+  submitted: "Wish submitted: title={}, userId={}"
+  submit_failed: "Wish submission failed: {}"
+  not_found: "Wish not found: {}"
+  already_voted: "User {} already voted for wish {}"
+  voted: "Vote successful: userId={}, wishId={}, total votes={}"
+  vote_failed: "Vote failed: {}"
+  vote_cancelled: "Vote cancelled: userId={}, wishId={}"
+  entered_plan: "Wish entered development plan: title={}, votes={}"
+  dev_started: "Started developing wish: {}"
+  implemented: "Wish implemented: {}"
+  notifying_voters: "Notifying voters: {} users"
+

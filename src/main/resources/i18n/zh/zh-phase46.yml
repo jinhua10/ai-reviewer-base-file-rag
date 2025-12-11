@@ -1,0 +1,44 @@
+# Phase 4.6 模块 - 中文
+
+# 资源调度器
+scheduler:
+  initialized: "资源调度器已初始化"
+  started: "调度器已启动"
+  stopped: "调度器已停止"
+  mode_changed: "资源模式切换: {} → {}"
+  cpu_limit_reached: "CPU使用率达到限制: {} > {}"
+  task_submitted: "任务已提交: name={}, priority={}"
+  task_executing: "正在执行任务: {}"
+  task_completed: "任务执行完成: {}"
+  task_failed: "任务执行失败: {}, 错误={}"
+
+# AI服务注册中心
+ai:
+  service:
+    registry:
+      initialized: "AI服务注册中心已初始化"
+    builtin:
+      registered: "内置服务已注册: {}个"
+    registered: "服务已注册: name={}, id={}"
+    unregistered: "服务已注销: {}"
+    not_found: "服务未找到: {}"
+    disabled: "服务已禁用: {}"
+    invoking: "正在调用服务: {}"
+    invoked: "服务调用完成: {}, 耗时={}ms"
+    invoke_failed: "服务调用失败: {}, 错误={}"
+
+# 愿望单
+wishlist:
+  initialized: "愿望单管理器已初始化"
+  submitted: "愿望已提交: title={}, userId={}"
+  submit_failed: "愿望提交失败: {}"
+  not_found: "愿望未找到: {}"
+  already_voted: "用户{}已为愿望{}投票"
+  voted: "投票成功: userId={}, wishId={}, 总票数={}"
+  vote_failed: "投票失败: {}"
+  vote_cancelled: "投票已取消: userId={}, wishId={}"
+  entered_plan: "愿望进入开发计划: title={}, 票数={}"
+  dev_started: "开始开发愿望: {}"
+  implemented: "愿望已实现: {}"
+  notifying_voters: "正在通知投票用户: {}人"
+
