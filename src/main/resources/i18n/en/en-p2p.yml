@@ -1,0 +1,51 @@
+# P2P Collaboration Module - English
+
+p2p:
+  # Connection Code
+  code:
+    generated: "Connection code generated: code={}, userId={}"
+    generate_failed: "Connection code generation failed: userId={}, error={}"
+    not_found: "Connection code not found: {}"
+    already_used: "Connection code already used: {}"
+    expired: "Connection code expired: {}"
+    used: "Connection code used: code={}, userId={}"
+    revoked: "Connection code revoked: {}"
+    cleaned_up: "Connection code cleaned up: {}"
+    batch_cleaned: "Batch cleanup completed: {} expired codes"
+
+  # Encryption
+  encryption:
+    initialized: "Encryption handler initialized"
+    init_failed: "Encryption handler initialization failed: {}"
+    session_key_generated: "Session key generated"
+    rsa_key_generated: "RSA key pair generated"
+    encrypted: "Data encrypted: plaintext={} bytes, ciphertext={} bytes"
+    encrypt_failed: "Encryption failed: {}"
+    decrypted: "Data decrypted: ciphertext={} bytes, plaintext={} bytes"
+    decrypt_failed: "Decryption failed: {}"
+    session_key_encrypted: "Session key encrypted"
+    session_key_decrypted: "Session key decrypted"
+    key_exchange_failed: "Key exchange failed: {}"
+    signed: "Data signed: {} bytes"
+    sign_failed: "Signing failed: {}"
+    verified: "Signature verification result: {}"
+    verify_failed: "Signature verification failed: {}"
+
+  # Collaboration Manager
+  manager:
+    initialized: "P2P collaboration manager initialized: userId={}"
+    code_generated: "Connection code generated: {}"
+    connecting: "Establishing P2P connection: code={}"
+    connected: "P2P connection established: peerId={}"
+    connect_failed: "P2P connection failed: {}"
+    disconnected: "P2P connection disconnected: peerId={}"
+    peer_not_connected: "Peer not connected: peerId={}"
+    knowledge_sent: "Knowledge sent: peerId={}, size={} bytes"
+    send_failed: "Knowledge send failed: peerId={}, error={}"
+    knowledge_received: "Knowledge received: peerId={}, size={} bytes"
+    receive_failed: "Knowledge receive failed: peerId={}, error={}"
+    verification_requested: "Verification requested: knowledgeId={}, peerId={}"
+    request_failed: "Verification request failed: peerId={}, error={}"
+    feedback_submitted: "Feedback submitted: knowledgeId={}, score={}"
+    feedback_failed: "Feedback submission failed: knowledgeId={}, error={}"
+
