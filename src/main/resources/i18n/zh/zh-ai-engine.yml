@@ -5,21 +5,21 @@ ai:
     # 管理器
     manager:
       initialized: "AI 引擎管理器已初始化"
-
+    
     # 注册
     registered: "引擎已注册: {} ({})"
     not_registered: "引擎未注册"
     not_found: "引擎未找到: {}"
-
+    
     # 选择与切换
     selected: "已选择引擎: {}"
     switched: "引擎已切换: {} → {}"
     fallback: "当前引擎 {} 不可用，自动降级到备用引擎"
-
+    
     # 健康检查
     health_check_failed: "健康检查失败"
     health_check_error: "引擎 {} 健康检查异常: {}"
-
+    
     # 本地 Ollama
     local:
       connecting: "正在连接本地 Ollama 服务..."
@@ -28,14 +28,14 @@ ai:
       model_loading: "正在加载模型: {}"
       model_loaded: "模型已加载: {}"
       generating: "正在生成回答..."
-
+      
     # 在线 Ollama
     remote:
       connecting: "正在连接在线 Ollama 服务器: {}"
       connected: "已连接到在线 Ollama: {}"
       connection_failed: "连接在线 Ollama 失败: {}"
       load_balancing: "负载均衡: 选择服务器 {}"
-
+      
     # 在线 API
     api:
       connecting: "正在连接在线 API: {}"
@@ -43,4 +43,3 @@ ai:
       connection_failed: "连接在线 API 失败: {}"
       rate_limit: "API 速率限制，等待 {} 秒"
       cost_tracking: "API 调用成本: {} 元"
-
