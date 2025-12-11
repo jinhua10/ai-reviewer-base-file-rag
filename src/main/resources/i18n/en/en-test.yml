@@ -1,0 +1,19 @@
+# Integration Test Module - English
+
+test:
+  manager:
+    initialized: "Integration test manager initialized"
+    running_functional: "Running functional tests..."
+    functional_completed: "Functional tests completed: {} tests, success rate={}%"
+    running_performance: "Running performance tests..."
+    performance_completed: "Performance tests completed"
+    running_stress: "Running stress tests..."
+    stress_completed: "Stress tests completed"
+    testing_concurrent: "Testing concurrent users: {}"
+    concurrent_completed: "Concurrent test completed: {}/{}"
+    throughput_completed: "Throughput test completed: {} QPS"
+    testing_long_running: "Testing long running..."
+    report_generated: "Test report generated"
+    test_failed: "Test failed: {}, error={}"
+    shutdown: "Test manager shutdown"
+

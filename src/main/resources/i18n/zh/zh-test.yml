@@ -1,0 +1,21 @@
+# 集成测试模块 - 中文
+
+test:
+  manager:
+    initialized: "集成测试管理器已初始化"
+    running_functional: "正在执行功能测试..."
+    functional_completed: "功能测试完成: {}个测试, 成功率={
+
+}%"
+    running_performance: "正在执行性能测试..."
+    performance_completed: "性能测试完成"
+    running_stress: "正在执行压力测试..."
+    stress_completed: "压力测试完成"
+    testing_concurrent: "正在测试并发用户: {}人"
+    concurrent_completed: "并发测试完成: {}/{}"
+    throughput_completed: "吞吐量测试完成: {} QPS"
+    testing_long_running: "正在测试长时间运行..."
+    report_generated: "测试报告已生成"
+    test_failed: "测试失败: {}, 错误={}"
+    shutdown: "测试管理器已关闭"
+
