@@ -1,6 +1,7 @@
-# Feedback Module - Chinese Messages (反馈模块 - 中文消息)
-# Generated: 2025-12-10
+# 反馈模块国际化 - 中文
+# Feedback Module Internationalization - Chinese
 
+# FeedbackCollector 反馈收集器
 feedback:
   api:
     emoji:
@@ -35,6 +36,31 @@ feedback:
     success:
       feedback_received: "反馈已收到，感谢您的宝贵意见！"
       thank_you: "感谢您的评分！"
+  collect:
+    explicit: "收集显式反馈，会话: {0}，用户: {1}，值: {2}"
+    success: "反馈收集成功，ID: {0}，耗时: {1}ms"
+
+  behavior:
+    invalid_signal: "无效的行为信号"
+    recorded: "行为信号已记录，类型: {0}，会话: {1}，总数: {2}"
+    no_signals: "会话无行为信号，会话: {0}"
+    insufficient_signals: "会话行为信号不足，会话: {0}，数量: {1}"
+    analyzing: "正在分析行为信号，会话: {0}，信号数: {1}"
+    signal_processed: "信号处理，类型: {0}，值: {1}，权重: {2}"
+    low_confidence: "置信度不足，会话: {0}，置信度: {1,number,#.##}"
+    inferred: "隐式反馈已推断，会话: {0}，值: {1,number,#.##}，置信度: {2,number,#.##}"
+
+  implicit:
+    trying: "尝试推断隐式反馈，会话: {0}，信号数: {1}"
+    inferred: "隐式反馈已生成，ID: {0}，会话: {1}，值: {2,number,#.##}"
+
+  session:
+    no_signals: "会话无信号记录，会话: {0}"
+    ending: "结束会话并推断反馈，会话: {0}，信号数: {1}"
+    ended: "会话已结束，反馈ID: {0}，会话: {1}"
+
+  marked:
+    processed: "反馈已标记为已处理，ID: {0}"
 
 # 日志消息 (Log Messages)
 log:
@@ -96,4 +122,3 @@ log:
     load_failed: "加载问答记录失败：文件={0}"
     records_dir: "问答记录存储目录：{0}"
     records_dir_failed: "创建问答记录目录失败：{0}"
-

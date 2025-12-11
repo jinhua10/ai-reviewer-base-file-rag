@@ -1,6 +1,7 @@
-# Feedback Module - English Messages
-# Generated: 2025-12-10
+# Feedback Module Internationalization - English
+# 反馈模块国际化 - 英文
 
+# FeedbackCollector
 feedback:
   api:
     emoji:
@@ -35,6 +36,33 @@ feedback:
     success:
       feedback_received: "Feedback received, thank you for your valuable opinion!"
       thank_you: "Thank you for your rating!"
+  collect:
+    explicit: "Collecting explicit feedback, session: {0}, user: {1}, value: {2}"
+    success: "Feedback collected successfully, ID: {0}, time: {1}ms"
+
+  behavior:
+    invalid_signal: "Invalid behavior signal"
+    recorded: "Behavior signal recorded, type: {0}, session: {1}, total: {2}"
+    no_signals: "No behavior signals for session: {0}"
+    insufficient_signals: "Insufficient behavior signals for session: {0}, count: {1}"
+    analyzing: "Analyzing behavior signals, session: {0}, count: {1}"
+    signal_processed: "Signal processed, type: {0}, value: {1}, weight: {2}"
+    low_confidence: "Low confidence, session: {0}, confidence: {1,number,#.##}"
+    inferred: "Implicit feedback inferred, session: {0}, value: {1,number,#.##}, confidence: {2,number,#.##}"
+
+  implicit:
+    trying: "Trying to infer implicit feedback, session: {0}, signals: {1}"
+    inferred: "Implicit feedback generated, ID: {0}, session: {1}, value: {2,number,#.##}"
+
+  session:
+    no_signals: "No signals for session: {0}"
+    ending: "Ending session and inferring feedback, session: {0}, signals: {1}"
+    ended: "Session ended, feedback ID: {0}, session: {1}"
+
+  marked:
+    processed: "Feedback marked as processed, ID: {0}"
+
+  cleared: "All feedback cleared"
 
 # Log Messages
 log:
