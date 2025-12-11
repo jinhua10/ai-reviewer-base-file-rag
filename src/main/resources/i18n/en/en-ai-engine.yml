@@ -1,0 +1,46 @@
+# AI Engine Module - English
+
+ai:
+  engine:
+    # Manager
+    manager:
+      initialized: "AI Engine Manager initialized"
+
+    # Registration
+    registered: "Engine registered: {} ({})"
+    not_registered: "Engine not registered"
+    not_found: "Engine not found: {}"
+
+    # Selection & Switching
+    selected: "Engine selected: {}"
+    switched: "Engine switched: {} → {}"
+    fallback: "Current engine {} unavailable, auto fallback to backup"
+
+    # Health Check
+    health_check_failed: "Health check failed"
+    health_check_error: "Engine {} health check error: {}"
+
+    # Local Ollama
+    local:
+      connecting: "Connecting to local Ollama service..."
+      connected: "Connected to local Ollama: {}"
+      connection_failed: "Failed to connect local Ollama: {}"
+      model_loading: "Loading model: {}"
+      model_loaded: "Model loaded: {}"
+      generating: "Generating response..."
+
+    # Remote Ollama
+    remote:
+      connecting: "Connecting to remote Ollama server: {}"
+      connected: "Connected to remote Ollama: {}"
+      connection_failed: "Failed to connect remote Ollama: {}"
+      load_balancing: "Load balancing: selected server {}"
+
+    # Online API
+    api:
+      connecting: "Connecting to online API: {}"
+      connected: "Connected to online API: {}"
+      connection_failed: "Failed to connect online API: {}"
+      rate_limit: "API rate limit, waiting {} seconds"
+      cost_tracking: "API call cost: {} CNY"
+
