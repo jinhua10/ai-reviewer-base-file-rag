@@ -1,0 +1,100 @@
+# Behavior Signal Analysis Module - English
+
+# ========== Signal Collection ==========
+behavior:
+  collect:
+    click: "Collect click signal: user={}, answer={}, target={}"
+    time: "Collect time signal: user={}, answer={}, readDuration={}s, expected={}s"
+    return: "Collect return visit signal: user={}, answer={}"
+    interaction: "Collect interaction signal: user={}, answer={}, type={}"
+    navigation: "Collect navigation signal: user={}, answer={}, type={}"
+    unknown_target: "Unknown click target: {}"
+    unknown_interaction: "Unknown interaction type: {}"
+    unknown_navigation: "Unknown navigation type: {}"
+    stored: "Signal event stored: eventId={}, answerId={}"
+    cleared: "All events cleared for answer: answerId={}"
+
+  # ========== Signal Weight ==========
+  weight:
+    initialized: "Signal weight configuration initialized"
+    calculated: "Calculate signal weight: type={}, baseWeight={}, finalWeight={}"
+    normalized: "Weights normalized: count={}, targetRange=[{}, {}]"
+    custom_defined: "Custom weight defined: type={}, weight={}"
+    context_defined: "Context adjustment defined: key={}, adjustment={}"
+
+  # ========== Attitude Inference ==========
+  infer:
+    start: "Start inferring attitude: signalCount={}"
+    no_signals: "No signals available for inference"
+    signal_weight: "Signal weight: type={}, weight={}"
+    complete: "Attitude inference complete: level={}, score={}, confidence={}"
+    batch_start: "Start batch inference: answerCount={}"
+    batch_complete: "Batch inference complete: resultCount={}"
+    no_signals_explanation: "Not enough behavior signals for inference"
+
+    explanation:
+      summary: "Inference result: {} (score={:.2f}, confidence={:.2f})"
+      key_signals: "Key signals:"
+      confidence: "Based on {} signals, confidence is {:.2f}"
+
+  # ========== Signal Aggregation ==========
+  aggregate:
+    user:
+      start: "Start aggregating by user: signalCount={}"
+      complete: "User aggregation complete: userCount={}"
+
+    concept:
+      start: "Start aggregating by concept: signalCount={}"
+      complete: "Concept aggregation complete: conceptCount={}"
+
+    role:
+      start: "Start aggregating by role: signalCount={}"
+      complete: "Role aggregation complete: roleCount={}"
+
+    report:
+      start: "Start generating report: signalCount={}"
+      complete: "Report generation complete"
+
+    finding:
+      most_common: "Most common signal type: {}"
+      highly_positive: "Overall feedback is very positive (positive signals >70%)"
+      highly_negative: "Overall feedback is rather negative (positive signals <30%)"
+
+    suggestion:
+      low_satisfaction: "Overall satisfaction is low, suggest checking answer quality"
+      too_many_closes: "Too many users close immediately, may indicate irrelevant or low-quality answers"
+
+# ========== Signal Type Names ==========
+signal:
+  operation:
+    copy_answer: "Copy Answer"
+    expand_detail: "Expand Detail"
+    click_reference: "Click Reference"
+    scroll_down: "Scroll Down"
+    close_immediately: "Close Immediately"
+
+  time:
+    read_short: "Short Read Time"
+    read_normal: "Normal Read Time"
+    read_long: "Long Read Time"
+    return_visit: "Return Visit"
+
+  interaction:
+    ask_followup: "Ask Follow-up"
+    share_answer: "Share Answer"
+    report_error: "Report Error"
+    edit_answer: "Edit Answer"
+
+  navigation:
+    search_again: "Search Again"
+    view_alternative: "View Alternative"
+
+# ========== Attitude Levels ==========
+attitude:
+  level:
+    very_satisfied: "Very Satisfied"
+    satisfied: "Satisfied"
+    neutral: "Neutral"
+    dissatisfied: "Dissatisfied"
+    very_dissatisfied: "Very Dissatisfied"
+

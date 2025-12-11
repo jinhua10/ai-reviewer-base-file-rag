@@ -1,0 +1,100 @@
+# 行为信号分析模块 - 中文 (Behavior Signal Analysis Module - Chinese)
+
+# ========== 信号采集 (Signal Collection) ==========
+behavior:
+  collect:
+    click: "采集点击信号: 用户={}, 答案={}, 目标={}"
+    time: "采集时间信号: 用户={}, 答案={}, 阅读时长={}秒, 预期={}秒"
+    return: "采集返回访问信号: 用户={}, 答案={}"
+    interaction: "采集交互信号: 用户={}, 答案={}, 类型={}"
+    navigation: "采集导航信号: 用户={}, 答案={}, 类型={}"
+    unknown_target: "未知的点击目标: {}"
+    unknown_interaction: "未知的交互类型: {}"
+    unknown_navigation: "未知的导航类型: {}"
+    stored: "信号事件已存储: eventId={}, answerId={}"
+    cleared: "已清除答案的所有事件: answerId={}"
+
+  # ========== 信号权重 (Signal Weight) ==========
+  weight:
+    initialized: "信号权重配置已初始化"
+    calculated: "计算信号权重: 类型={}, 基础权重={}, 最终权重={}"
+    normalized: "权重已归一化: 数量={}, 目标范围=[{}, {}]"
+    custom_defined: "自定义权重已设置: 类型={}, 权重={}"
+    context_defined: "上下文调整已设置: 键={}, 调整={}"
+
+  # ========== 态度推断 (Attitude Inference) ==========
+  infer:
+    start: "开始推断态度: 信号数量={}"
+    no_signals: "没有信号可用于推断"
+    signal_weight: "信号权重: 类型={}, 权重={}"
+    complete: "态度推断完成: 等级={}, 评分={}, 置信度={}"
+    batch_start: "开始批量推断: 答案数量={}"
+    batch_complete: "批量推断完成: 结果数量={}"
+    no_signals_explanation: "没有足够的行为信号进行推断"
+
+    explanation:
+      summary: "推断结果: {} (评分={:.2f}, 置信度={:.2f})"
+      key_signals: "关键信号:"
+      confidence: "基于 {} 个信号，置信度为 {:.2f}"
+
+  # ========== 信号聚合 (Signal Aggregation) ==========
+  aggregate:
+    user:
+      start: "开始按用户聚合: 信号数量={}"
+      complete: "按用户聚合完成: 用户数量={}"
+
+    concept:
+      start: "开始按概念聚合: 信号数量={}"
+      complete: "按概念聚合完成: 概念数量={}"
+
+    role:
+      start: "开始按角色聚合: 信号数量={}"
+      complete: "按角色聚合完成: 角色数量={}"
+
+    report:
+      start: "开始生成报告: 信号数量={}"
+      complete: "报告生成完成"
+
+    finding:
+      most_common: "最常见的信号类型: {}"
+      highly_positive: "整体反馈非常正面 (正面信号>70%)"
+      highly_negative: "整体反馈较为负面 (正面信号<30%)"
+
+    suggestion:
+      low_satisfaction: "整体满意度偏低，建议检查答案质量"
+      too_many_closes: "过多用户立即关闭，可能是答案不相关或质量问题"
+
+# ========== 信号类型名称 (Signal Type Names) ==========
+signal:
+  operation:
+    copy_answer: "复制答案"
+    expand_detail: "展开详情"
+    click_reference: "点击参考"
+    scroll_down: "快速下滑"
+    close_immediately: "立即关闭"
+
+  time:
+    read_short: "阅读时间短"
+    read_normal: "正常阅读"
+    read_long: "深度阅读"
+    return_visit: "返回查看"
+
+  interaction:
+    ask_followup: "追问"
+    share_answer: "分享答案"
+    report_error: "报告错误"
+    edit_answer: "编辑答案"
+
+  navigation:
+    search_again: "再次搜索"
+    view_alternative: "查看其他答案"
+
+# ========== 态度等级 (Attitude Levels) ==========
+attitude:
+  level:
+    very_satisfied: "非常满意"
+    satisfied: "满意"
+    neutral: "中性"
+    dissatisfied: "不满意"
+    very_dissatisfied: "非常不满意"
+

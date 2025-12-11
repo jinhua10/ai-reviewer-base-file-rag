@@ -1,0 +1,21 @@
+# A/B测试模块 - 中文
+
+abtest:
+  assign:
+    cache_hit: "缓存命中: 用户={}, 变体={}"
+    assigned: "用户分配: 用户={}, 变体={}"
+    stratified: "分层完成: 角色数量={}"
+
+# 游戏化模块 - 中文
+
+gamification:
+  points:
+    rules_initialized: "积分规则已初始化: 规则数量={}"
+    earned: "用户={} 获得 {} 积分 ({}), 总积分={}"
+    deducted: "用户={} 扣除 {} 积分 ({}), 总积分={}"
+
+  achievement:
+    initialized: "成就系统已初始化: 成就数量={}"
+    not_found: "成就未找到: {}"
+    unlocked: "用户={} 解锁成就: {} (+{}积分)"
+

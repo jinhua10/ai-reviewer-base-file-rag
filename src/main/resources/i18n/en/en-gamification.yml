@@ -1,0 +1,21 @@
+# A/B Test Module - English
+
+abtest:
+  assign:
+    cache_hit: "Cache hit: user={}, variant={}"
+    assigned: "User assigned: user={}, variant={}"
+    stratified: "Stratification complete: roleCount={}"
+
+# Gamification Module - English
+
+gamification:
+  points:
+    rules_initialized: "Point rules initialized: ruleCount={}"
+    earned: "User={} earned {} points ({}), total={}"
+    deducted: "User={} deducted {} points ({}), total={}"
+
+  achievement:
+    initialized: "Achievement system initialized: achievementCount={}"
+    not_found: "Achievement not found: {}"
+    unlocked: "User={} unlocked achievement: {} (+{} points)"
+
