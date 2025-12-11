@@ -479,25 +479,6 @@
                 <configuration>
                     <encoding>UTF-8</encoding>
                 </configuration>
-                <executions>
-                    <!-- 编译时：包含所有资源（包括 simpleExcel），用于开发测试 -->
-                    <execution>
-                        <id>default-resources</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                        <configuration>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <filtering>false</filtering>
-                                    <!-- 编译时不排除任何文件，保留 simpleExcel 用于开发 -->
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
 
             <!-- Maven 测试插件 - 使用可配置的控制台编码 -->
