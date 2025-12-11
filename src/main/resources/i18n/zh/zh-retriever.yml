@@ -1,0 +1,24 @@
+# 检索器模块国际化 - 中文
+# Retriever Module Internationalization - Chinese
+
+# ResultFusion 结果融合
+retriever:
+  fusion:
+    empty_input: "融合失败：输入结果为空"
+    start: "开始融合{0}个角色的检索结果，目标Top K: {1}"
+    multi_role_bonus: "文档多角色共识加成，文档: {0}，角色数: {1}，加成: {2,number,#.##}"
+    complete: "结果融合完成，返回{0}个文档（来自{1}个唯一文档），耗时: {2}ms"
+
+  # MultiRoleRetriever 多角色检索器
+  multi:
+    start: "开始多角色检索，问题: {0}，Top K: {1}"
+    start_with_vector: "开始多角色检索（带向量），问题: {0}，Top K: {1}"
+    no_roles: "未检测到合适角色，问题: {0}"
+    roles_selected: "已选择角色进行检索: {0}"
+    complete: "多角色检索完成，返回{0}个结果，耗时: {1}ms"
+    failed: "多角色检索失败，问题: {0}，原因: {1}"
+    role_search_complete: "角色检索完成，角色: {0}，结果数: {1}，耗时: {2}ms"
+    role_search_failed: "角色检索失败，角色: {0}，原因: {1}"
+    fallback_default: "降级到默认角色检索"
+    default_failed: "默认角色检索失败，原因: {0}"
+

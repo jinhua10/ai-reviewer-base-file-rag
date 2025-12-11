@@ -1,0 +1,24 @@
+# Retriever Module Internationalization - English
+# 检索器模块国际化 - 英文
+
+# ResultFusion
+retriever:
+  fusion:
+    empty_input: "Fusion failed: input results are empty"
+    start: "Starting fusion of {0} role search results, target Top K: {1}"
+    multi_role_bonus: "Multi-role consensus bonus for document: {0}, roles: {1}, bonus: {2,number,#.##}"
+    complete: "Result fusion completed, returning {0} documents (from {1} unique documents), time: {2}ms"
+
+  # MultiRoleRetriever
+  multi:
+    start: "Starting multi-role retrieval, question: {0}, Top K: {1}"
+    start_with_vector: "Starting multi-role retrieval with vector, question: {0}, Top K: {1}"
+    no_roles: "No suitable roles detected, question: {0}"
+    roles_selected: "Selected roles for retrieval: {0}"
+    complete: "Multi-role retrieval completed, returning {0} results, time: {1}ms"
+    failed: "Multi-role retrieval failed, question: {0}, reason: {1}"
+    role_search_complete: "Role search completed, role: {0}, results: {1}, time: {2}ms"
+    role_search_failed: "Role search failed, role: {0}, reason: {1}"
+    fallback_default: "Falling back to default role retrieval"
+    default_failed: "Default role retrieval failed, reason: {0}"
+
