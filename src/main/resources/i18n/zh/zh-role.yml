@@ -3,6 +3,33 @@
 # 文件: src/main/resources/i18n/zh/zh-role.yml
 
 role:
+  # 提取器
+  extractor:
+    initialized: "角色知识提取器已初始化"
+    features_loaded: "角色特征已加载: {}个角色"
+    extracting: "正在提取角色知识: userId={}, 数据量={}"
+    extracted: "角色知识提取完成: {}条"
+    extract_failed: "角色知识提取失败: {}"
+    batch_extracting: "正在批量提取: {}个用户"
+    batch_extracted: "批量提取完成: {}条角色知识"
+
+  # 聚合器
+  aggregator:
+    initialized: "角色知识聚合器已初始化"
+    aggregating: "正在聚合角色知识: {}条"
+    aggregated: "聚合完成: {} → {}条"
+    aggregate_failed: "聚合失败: {}"
+    aggregating_by_role: "正在按角色聚合: {}个角色"
+    role_aggregated: "角色聚合完成: roleId={}, {} → {}条"
+
+  # 缺口分析
+  gap:
+    initialized: "知识缺口分析器已初始化"
+    domains_loaded: "预期领域已加载: {}个角色"
+    analyzing: "正在分析知识缺口: roleId={}, 知识量={}"
+    analyzed: "缺口分析完成: roleId={}, 覆盖{}/{}"
+    analyze_failed: "缺口分析失败: {}"
+    batch_analyzing: "正在批量分析: {}个角色"
   config:
     disabled: "🔕 角色系统已禁用"
     loaded: "✅ 角色配置加载完成，共加载 {0} 个角色"

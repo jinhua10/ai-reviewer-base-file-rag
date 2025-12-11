@@ -3,6 +3,33 @@
 # File: src/main/resources/i18n/en/en-role.yml
 
 role:
+  # Extractor
+  extractor:
+    initialized: "Role knowledge extractor initialized"
+    features_loaded: "Role features loaded: {} roles"
+    extracting: "Extracting role knowledge: userId={}, data size={}"
+    extracted: "Role knowledge extraction completed: {} items"
+    extract_failed: "Role knowledge extraction failed: {}"
+    batch_extracting: "Batch extracting: {} users"
+    batch_extracted: "Batch extraction completed: {} role knowledge items"
+
+  # Aggregator
+  aggregator:
+    initialized: "Role knowledge aggregator initialized"
+    aggregating: "Aggregating role knowledge: {} items"
+    aggregated: "Aggregation completed: {} → {} items"
+    aggregate_failed: "Aggregation failed: {}"
+    aggregating_by_role: "Aggregating by role: {} roles"
+    role_aggregated: "Role aggregation completed: roleId={}, {} → {} items"
+
+  # Gap Analyzer
+  gap:
+    initialized: "Knowledge gap analyzer initialized"
+    domains_loaded: "Expected domains loaded: {} roles"
+    analyzing: "Analyzing knowledge gaps: roleId={}, knowledge count={}"
+    analyzed: "Gap analysis completed: roleId={}, covered {}/{}"
+    analyze_failed: "Gap analysis failed: {}"
+    batch_analyzing: "Batch analyzing: {} roles"
   config:
     disabled: "🔕 Role system is disabled"
     loaded: "✅ Role configuration loaded, {0} roles in total"
