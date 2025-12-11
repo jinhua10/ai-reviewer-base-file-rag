@@ -42,3 +42,20 @@ wishlist:
   implemented: "愿望已实现: {}"
   notifying_voters: "正在通知投票用户: {}人"
 
+# 数据收集器
+data:
+  collector:
+    initialized: "业务数据收集器已初始化"
+    consent_granted: "用户授权成功: userId={}, dataType={}"
+    consent_failed: "授权失败: {}"
+    consent_revoked: "授权已撤销: userId={}, dataType={}"
+    no_consent: "用户未授权: userId={}, dataType={}"
+    collected: "数据已收集: type={}, id={}"
+    collect_failed: "数据收集失败: {}"
+  extractor:
+    initialized: "概念提取器已初始化"
+    extracting: "正在提取概念..."
+    extracted: "概念提取完成: {}个"
+    extract_failed: "概念提取失败: {}"
+    batch_extracted: "批量提取完成: {}个文本"
+

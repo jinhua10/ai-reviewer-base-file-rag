@@ -42,3 +42,20 @@ wishlist:
   implemented: "Wish implemented: {}"
   notifying_voters: "Notifying voters: {} users"
 
+# Data Collector
+data:
+  collector:
+    initialized: "Business data collector initialized"
+    consent_granted: "User consent granted: userId={}, dataType={}"
+    consent_failed: "Consent failed: {}"
+    consent_revoked: "Consent revoked: userId={}, dataType={}"
+    no_consent: "User not consented: userId={}, dataType={}"
+    collected: "Data collected: type={}, id={}"
+    collect_failed: "Data collection failed: {}"
+  extractor:
+    initialized: "Concept extractor initialized"
+    extracting: "Extracting concepts..."
+    extracted: "Concept extraction completed: {} concepts"
+    extract_failed: "Concept extraction failed: {}"
+    batch_extracted: "Batch extraction completed: {} texts"
+
