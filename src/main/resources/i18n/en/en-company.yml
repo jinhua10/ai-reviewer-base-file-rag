@@ -1,0 +1,41 @@
+# Company Server Integration Module - English
+
+company:
+  # Client
+  client:
+    initialized: "Company KB client initialized: userId={}"
+    contributing: "Contributing knowledge to company: {} items"
+    contributed: "Knowledge contribution completed: accepted {}/{}"
+    contribute_failed: "Knowledge contribution failed: {}"
+    quality_filtered: "Quality filtering completed: {}/{}"
+    duplication_checked: "Duplication check completed"
+    downloading: "Downloading knowledge from company: roleId={}"
+    downloaded: "Knowledge download completed: {} items"
+    download_failed: "Knowledge download failed: {}"
+    searching: "Searching company KB: query={}, roleId={}"
+    search_completed: "Search completed: {} results"
+    search_failed: "Search failed: {}"
+    syncing: "Syncing knowledge: roleId={}"
+    synced: "Sync completed: {} new items"
+    sync_failed: "Sync failed: {}"
+    sync_time_updated: "Sync time updated: roleId={}, time={}"
+    checking_connection: "Checking server connection..."
+    connection_ok: "Server connection OK"
+    connection_failed: "Server connection failed: {}"
+
+  # Contribution Workflow
+  workflow:
+    initialized: "Contribution workflow initialized: userId={}"
+    added_to_queue: "Knowledge added to queue: id={}, queue size={}"
+    not_eligible: "Knowledge not eligible for contribution: id={}"
+    batch_added: "Batch add completed: {}/{}, queue size={}"
+    queue_empty: "Pending queue is empty"
+    submitting: "Submitting pending knowledge: {} items"
+    submitted: "Knowledge submission completed: accepted {}/{}"
+    submit_failed: "Knowledge submission failed: {}"
+    submitting_single: "Submitting single knowledge: id={}"
+    recorded: "Contribution record saved: recordId={}"
+    auto_contributing: "Triggered auto contribution: queue size={}"
+    auto_contribute_error: "Auto contribution error: {}"
+    auto_contribution_started: "Auto contribution started: threshold={}"
+

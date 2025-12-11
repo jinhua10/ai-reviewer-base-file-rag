@@ -1,0 +1,41 @@
+# 公司服务器集成模块 - 中文
+
+company:
+  # 客户端
+  client:
+    initialized: "公司知识库客户端已初始化: userId={}"
+    contributing: "正在贡献知识到公司: {}条"
+    contributed: "知识贡献完成: 接受{}/{}"
+    contribute_failed: "知识贡献失败: {}"
+    quality_filtered: "质量筛选完成: {}/{}"
+    duplication_checked: "重复检测完成"
+    downloading: "正在从公司下载知识: roleId={}"
+    downloaded: "知识下载完成: {}条"
+    download_failed: "知识下载失败: {}"
+    searching: "正在搜索公司知识库: query={}, roleId={}"
+    search_completed: "搜索完成: {}个结果"
+    search_failed: "搜索失败: {}"
+    syncing: "正在同步知识: roleId={}"
+    synced: "同步完成: {}条新知识"
+    sync_failed: "同步失败: {}"
+    sync_time_updated: "同步时间已更新: roleId={}, time={}"
+    checking_connection: "正在检查服务器连接..."
+    connection_ok: "服务器连接正常"
+    connection_failed: "服务器连接失败: {}"
+
+  # 贡献工作流
+  workflow:
+    initialized: "贡献工作流已初始化: userId={}"
+    added_to_queue: "知识已添加到队列: id={}, 队列大小={}"
+    not_eligible: "知识不符合贡献标准: id={}"
+    batch_added: "批量添加完成: {}/{}, 队列大小={}"
+    queue_empty: "待贡献队列为空"
+    submitting: "正在提交待贡献知识: {}条"
+    submitted: "知识提交完成: 接受{}/{}"
+    submit_failed: "知识提交失败: {}"
+    submitting_single: "正在提交单个知识: id={}"
+    recorded: "贡献记录已保存: recordId={}"
+    auto_contributing: "触发自动贡献: 队列大小={}"
+    auto_contribute_error: "自动贡献错误: {}"
+    auto_contribution_started: "自动贡献已启动: 阈值={}"
+
