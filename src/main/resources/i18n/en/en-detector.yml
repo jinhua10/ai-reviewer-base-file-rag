@@ -1,0 +1,67 @@
+# Role Detector Internationalization - English
+# 角色检测器国际化 - 英文
+
+# RoleDetector Main Detector
+detector:
+  question:
+    empty: "Detection failed: Question is empty"
+  roles:
+    empty: "Detection failed: No enabled roles"
+  detecting: "Detecting role for question: {0}"
+  detected: "Role detection complete, selected role: {0}, confidence: {1}"
+
+  # Keyword Matching
+  keyword:
+    matching: "Performing keyword matching for question: {0}"
+    matched: "Keyword matching complete, role: {0}, match score: {1}"
+    no-match: "No roles matched by keywords"
+
+  # AI Analysis
+  ai:
+    analyzing: "Analyzing role using AI for question: {0}"
+    analyzed: "AI analysis complete, role: {0}, confidence: {1}"
+    failed: "AI analysis failed: {0}"
+
+  # User Preference
+  preference:
+    no-history: "User {0} has no preference history"
+    predicted: "Predicted role based on preference, user: {0}, role: {1}"
+    recorded: "Recorded user choice, user: {0}, role: {1}"
+
+# KeywordMatcher
+keyword:
+  matcher:
+    start: "Starting keyword matching for question: {0}"
+    complete: "Keyword matching complete, matched roles: {0}"
+    matched: "Keyword match successful, role: {0}, keywords: {1}"
+    no-keywords: "Role {0} has no configured keywords"
+
+# AIRoleAnalyzer
+ai:
+  analyzer:
+    start: "Starting AI role analysis for question: {0}"
+    complete: "AI role analysis complete, analyzed roles: {0}"
+    parsing: "Parsing AI response..."
+    parse-failed: "Failed to parse AI response: {0}"
+    timeout: "AI analysis timeout"
+    error: "AI analysis error: {0}"
+
+# UserPreferenceTracker
+preference:
+  tracker:
+    recording: "Recording user choice, user: {0}, role: {1}"
+    recorded: "User choice recorded"
+    predicting: "Predicting user preference, user: {0}"
+    predicted: "Prediction complete, recommended role: {0}, confidence: {1}"
+    no-history: "User {0} has no history"
+
+# RoleDetectionResult
+result:
+  summary: "Detection result: role={0}, confidence={1}, methods={2}"
+  default: "Using default role: {0}"
+
+# RoleMatchResult
+match:
+  success: "Match successful: role={0}, score={1}, method={2}"
+  reason: "Match reason: {0}"
+

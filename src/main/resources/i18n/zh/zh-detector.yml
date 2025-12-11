@@ -1,0 +1,67 @@
+# 角色检测器国际化 - 中文
+# Role Detector Internationalization - Chinese
+
+# RoleDetector 主检测器
+detector:
+  question:
+    empty: "检测失败：问题为空"
+  roles:
+    empty: "检测失败：没有启用的角色"
+  detecting: "正在检测角色，问题: {0}"
+  detected: "角色检测完成，选中角色: {0}，置信度: {1}"
+
+  # 关键词匹配
+  keyword:
+    matching: "正在进行关键词匹配，问题: {0}"
+    matched: "关键词匹配完成，角色: {0}，匹配度: {1}"
+    no-match: "关键词未匹配到任何角色"
+
+  # AI 分析
+  ai:
+    analyzing: "正在使用 AI 分析角色，问题: {0}"
+    analyzed: "AI 分析完成，角色: {0}，置信度: {1}"
+    failed: "AI 分析失败: {0}"
+
+  # 用户偏好
+  preference:
+    no-history: "用户 {0} 没有历史偏好记录"
+    predicted: "基于历史偏好预测角色，用户: {0}，角色: {1}"
+    recorded: "记录用户选择，用户: {0}，角色: {1}"
+
+# KeywordMatcher 关键词匹配器
+keyword:
+  matcher:
+    start: "开始关键词匹配，问题: {0}"
+    complete: "关键词匹配完成，匹配角色数: {0}"
+    matched: "关键词匹配成功，角色: {0}，匹配关键词: {1}"
+    no-keywords: "角色 {0} 没有配置关键词"
+
+# AIRoleAnalyzer AI 分析器
+ai:
+  analyzer:
+    start: "开始 AI 角色分析，问题: {0}"
+    complete: "AI 角色分析完成，分析角色数: {0}"
+    parsing: "正在解析 AI 响应..."
+    parse-failed: "解析 AI 响应失败: {0}"
+    timeout: "AI 分析超时"
+    error: "AI 分析错误: {0}"
+
+# UserPreferenceTracker 用户偏好追踪器
+preference:
+  tracker:
+    recording: "记录用户选择，用户: {0}，角色: {1}"
+    recorded: "用户选择已记录"
+    predicting: "预测用户偏好，用户: {0}"
+    predicted: "预测完成，推荐角色: {0}，置信度: {1}"
+    no-history: "用户 {0} 没有历史记录"
+
+# RoleDetectionResult 检测结果
+result:
+  summary: "检测结果: 角色={0}, 置信度={1}, 方法={2}"
+  default: "使用默认角色: {0}"
+
+# RoleMatchResult 匹配结果
+match:
+  success: "匹配成功: 角色={0}, 分数={1}, 方法={2}"
+  reason: "匹配原因: {0}"
+
