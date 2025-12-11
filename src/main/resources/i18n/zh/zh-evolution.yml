@@ -1,0 +1,18 @@
+# 演化模块国际化 - 中文
+# Evolution Module Internationalization - Chinese
+
+# ConceptUpdater 概念更新器
+evolution:
+  version:
+    creating: "正在创建新版本，概念: {0}"
+    created: "版本已创建，ID: {0}，版本号: {1}"
+    published: "版本已发布，ID: {0}，审批者: {1}"
+    deprecated: "版本已废弃，ID: {0}"
+
+  rollback:
+    version_not_found: "版本未找到，ID: {0}"
+    start: "开始回滚，概念: {0}，目标版本: {1}"
+    success: "回滚成功，概念: {0}，版本: {1}"
+
+  cleared: "所有版本数据已清空"
+

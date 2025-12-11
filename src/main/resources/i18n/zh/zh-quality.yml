@@ -1,0 +1,17 @@
+# 质量模块国际化 - 中文
+# Quality Module Internationalization - Chinese
+
+# QualityMonitor 质量监控器
+quality:
+  monitor:
+    start: "开始质量监控，概念: {0}"
+    complete: "质量监控完成，概念: {0}，健康度: {1,number,#.##}，耗时: {2}ms"
+
+  usage:
+    recorded: "使用已记录，概念: {0}，总次数: {1}"
+
+  dashboard:
+    generated: "仪表盘数据已生成，总概念数: {0}，平均健康度: {1,number,#.##}"
+
+  cleared: "所有质量数据已清空"
+

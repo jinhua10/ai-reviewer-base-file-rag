@@ -1,0 +1,18 @@
+# Evolution Module Internationalization - English
+# 演化模块国际化 - 英文
+
+# ConceptUpdater
+evolution:
+  version:
+    creating: "Creating new version, concept: {0}"
+    created: "Version created, ID: {0}, version: {1}"
+    published: "Version published, ID: {0}, approver: {1}"
+    deprecated: "Version deprecated, ID: {0}"
+
+  rollback:
+    version_not_found: "Version not found, ID: {0}"
+    start: "Starting rollback, concept: {0}, target version: {1}"
+    success: "Rollback successful, concept: {0}, version: {1}"
+
+  cleared: "All version data cleared"
+

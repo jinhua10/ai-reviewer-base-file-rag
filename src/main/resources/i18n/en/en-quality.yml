@@ -1,0 +1,17 @@
+# Quality Module Internationalization - English
+# 质量模块国际化 - 英文
+
+# QualityMonitor
+quality:
+  monitor:
+    start: "Starting quality monitoring, concept: {0}"
+    complete: "Quality monitoring complete, concept: {0}, health: {1,number,#.##}, time: {2}ms"
+
+  usage:
+    recorded: "Usage recorded, concept: {0}, total: {1}"
+
+  dashboard:
+    generated: "Dashboard data generated, total concepts: {0}, average health: {1,number,#.##}"
+
+  cleared: "All quality data cleared"
+

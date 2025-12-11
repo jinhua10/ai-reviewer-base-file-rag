@@ -1,5 +1,49 @@
-# 错误相关消息 (Error related messages)
+# 中文错误消息 (Chinese Error Messages)
+# 文件: src/main/resources/i18n/zh-error.yml
+
 error:
+  # 通用错误 (Common Errors)
+  internal: "❌ 内部错误: {0}"
+  not-found: "❌ 未找到: {0}"
+  invalid-param: "❌ 无效参数: {0}"
+  unauthorized: "❌ 未授权"
+  forbidden: "❌ 禁止访问"
+
+  # 数据库错误 (Database Errors)
+  db:
+    connection-failed: "❌ 数据库连接失败: {0}"
+    query-failed: "❌ 查询失败: {0}"
+    save-failed: "❌ 保存失败: {0}"
+    delete-failed: "❌ 删除失败: {0}"
+
+  # 文件错误 (File Errors)
+  file:
+    not-found: "❌ 文件未找到: {0}"
+    read-failed: "❌ 文件读取失败: {0}"
+    write-failed: "❌ 文件写入失败: {0}"
+    too-large: "❌ 文件过大: {0}, 最大允许: {1}"
+    invalid-format: "❌ 不支持的文件格式: {0}"
+    directory_not_exists: "目录不存在：{0}"
+    empty: "文件内容为空：{0}"
+    index_failed: "文件索引建立失败：{0}"
+    not_a_directory: "非目录：{0}"
+    not_a_file: "非文件：{0}"
+    not_exists: "文件不存在：{0}"
+  # LLM 错误 (LLM Errors)
+  llm:
+    api-failed: "❌ LLM API 调用失败: {0}"
+    timeout: "⏱️ LLM 调用超时"
+    rate-limit: "⚠️ API 调用频率限制"
+    invalid-response: "❌ LLM 响应格式错误"
+
+  # 向量索引错误 (Vector Index Errors)
+  index:
+    not-found: "❌ 索引未找到: {0}"
+    build-failed: "❌ 索引构建失败: {0}"
+    search-failed: "❌ 检索失败: {0}"
+    load-failed: "❌ 索引加载失败: {0}"
+
+
   auth:
     invalid_credentials: "凭据无效"
     permission_denied: "权限拒绝：{0}"
@@ -10,10 +54,3 @@ error:
     no_valid_json: "响应中未找到有效 JSON"
   docs:
     create_failed: "创建文档失败：{0}"
-  file:
-    directory_not_exists: "目录不存在：{0}"
-    empty: "文件内容为空：{0}"
-    index_failed: "文件索引建立失败：{0}"
-    not_a_directory: "非目录：{0}"
-    not_a_file: "非文件：{0}"
-    not_exists: "文件不存在：{0}"
