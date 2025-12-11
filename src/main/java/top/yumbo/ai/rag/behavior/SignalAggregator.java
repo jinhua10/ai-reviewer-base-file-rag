@@ -449,9 +449,11 @@ public class SignalAggregator {
 
     // ========== 内部类：聚合结果 (Inner Classes: Aggregation Results) ==========
 
+    /**
+     * 用户聚合结果 (User Aggregation Result)
+     */
     @Data
     public static class UserAggregation {
-        // Getters and Setters (省略 for brevity)
         private String userId;
         private AttitudeScore averageAttitude;
         private Map<SignalType, Long> signalTypeDistribution;
@@ -466,6 +468,9 @@ public class SignalAggregator {
 
     }
 
+    /**
+     * 概念聚合结果 (Concept Aggregation Result)
+     */
     @Data
     public static class ConceptAggregation {
         private String answerId;
@@ -480,9 +485,11 @@ public class SignalAggregator {
             this.answerId = answerId;
         }
 
-
     }
 
+    /**
+     * 角色聚合结果 (Role Aggregation Result)
+     */
     @Data
     public static class RoleAggregation {
         private String role;
@@ -498,6 +505,9 @@ public class SignalAggregator {
 
     }
 
+    /**
+     * 聚合报告 (Aggregation Report)
+     */
     @Data
     public static class AggregationReport {
         private double overallSatisfaction;
