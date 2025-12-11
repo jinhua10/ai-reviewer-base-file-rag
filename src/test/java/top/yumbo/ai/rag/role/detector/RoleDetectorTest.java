@@ -2,7 +2,9 @@ package top.yumbo.ai.rag.role.detector;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import top.yumbo.ai.rag.role.Role;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -141,10 +143,18 @@ public class RoleDetectorTest {
     @Test
     public void testRoleDetectionResult_CreateDefault() {
         // Given: 默认角色
-        top.yumbo.ai.rag.role.Role defaultRole = new top.yumbo.ai.rag.role.Role(
-                "general", "通用", "通用角色", null, java.util.Collections.emptyList(),
-                java.util.Collections.emptyMap(), true, 0
-        );
+        Role defaultRole = Role.builder()
+                .id("general")
+                .name("通用")
+                .description("通用角色")
+                .keywords(Collections.emptySet())
+                .weight(1.0)
+                .enabled(true)
+                .prompt(null)
+                .tags(Collections.emptyList())
+                .indexPath(null)
+                .priority(0)
+                .build();
 
         // When: 创建默认结果
         RoleDetectionResult result = RoleDetectionResult.createDefault(defaultRole);
