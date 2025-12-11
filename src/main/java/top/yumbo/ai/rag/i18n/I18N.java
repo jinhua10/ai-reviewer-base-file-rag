@@ -183,7 +183,12 @@ public final class I18N {
             // 检查键是否为null (Check if key is null)
             Object entryKey = entry.getKey();
             if (entryKey == null) {
-                log.warn("Found null key in YAML map, skipping entry");
+                // 提供更详细的诊断信息 (Provide more detailed diagnostic information)
+                Object value = entry.getValue();
+                log.warn("Found null key in YAML map at prefix '{}', value type: {}, value: {}",
+                        safePrefix.isEmpty() ? "<root>" : safePrefix,
+                        value == null ? "null" : value.getClass().getSimpleName(),
+                        value == null ? "null" : (value.toString().length() > 100 ? value.toString().substring(0, 100) + "..." : value.toString()));
                 continue;
             }
 
