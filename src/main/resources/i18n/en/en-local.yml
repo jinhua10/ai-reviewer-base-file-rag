@@ -1,0 +1,56 @@
+# Local Module - English
+
+local:
+  # Knowledge Base Manager
+  kb:
+    initialized: "Local KB initialized: user={}, path={}"
+    init_failed: "Local KB initialization failed: user={}, error={}"
+    subdir_created: "Subdirectory created: {}"
+    knowledge_saved: "Knowledge saved: id={}, role={}"
+    save_failed: "Knowledge save failed: id={}, error={}"
+    querying: "Querying local knowledge: query={}, role={}"
+    query_failed: "Query failed: query={}, error={}"
+    knowledge_deleted: "Knowledge deleted: id={}"
+    delete_failed: "Knowledge deletion failed: id={}, error={}"
+    stats_failed: "Statistics retrieval failed: user={}, error={}"
+
+  # Storage Engine
+  storage:
+    initialized: "Local storage engine initialized"
+    saved: "File saved: {}"
+    save_failed: "File save failed: {}, error={}"
+    loaded: "File loaded: {}"
+    load_failed: "File load failed: {}, error={}"
+    file_not_found: "File not found: {}"
+    deleted: "File deleted: {}"
+    delete_failed: "File deletion failed: {}, error={}"
+    copied: "File copied: {} → {}"
+    copy_failed: "File copy failed: {} → {}, error={}"
+    moved: "File moved: {} → {}"
+    move_failed: "File move failed: {} → {}, error={}"
+    batch_saved: "Batch save completed: {}/{} files"
+    batch_save_failed: "Batch save failed: error={}"
+
+  # Vector Index
+  vector:
+    added: "Vector added: documentId={}"
+    add_failed: "Vector add failed: documentId={}, error={}"
+    batch_added: "Batch add completed: {}/{} vectors"
+    searching: "Searching: topK={}, role={}"
+    search_failed: "Search failed: error={}"
+    dimension_mismatch: "Vector dimension mismatch: {} vs {}"
+    deleted: "Vector deleted: {}"
+    cleared: "Index cleared"
+
+# Offline Mode
+offline:
+  monitor_started: "Network monitor started: interval={}s"
+  network_restored: "Network restored, switched to online mode"
+  network_lost: "Network connection lost, switched to offline mode"
+  network_check: "Network check: target={}, status={}"
+  network_check_failed: "Network check failed: {}"
+  mode_enabled: "Offline mode enabled"
+  mode_disabled: "Offline mode disabled"
+  degradation_applied: "Degradation policy applied (offline mode)"
+  monitor_stopped: "Network monitor stopped"
+

@@ -1,0 +1,56 @@
+# 本地模块 - 中文
+
+local:
+  # 知识库管理器
+  kb:
+    initialized: "本地知识库已初始化: 用户={}, 路径={}"
+    init_failed: "本地知识库初始化失败: 用户={}, 错误={}"
+    subdir_created: "子目录已创建: {}"
+    knowledge_saved: "知识已保存: id={}, 角色={}"
+    save_failed: "知识保存失败: id={}, 错误={}"
+    querying: "正在查询本地知识: query={}, 角色={}"
+    query_failed: "查询失败: query={}, 错误={}"
+    knowledge_deleted: "知识已删除: id={}"
+    delete_failed: "知识删除失败: id={}, 错误={}"
+    stats_failed: "统计信息获取失败: 用户={}, 错误={}"
+
+  # 存储引擎
+  storage:
+    initialized: "本地存储引擎已初始化"
+    saved: "文件已保存: {}"
+    save_failed: "文件保存失败: {}, 错误={}"
+    loaded: "文件已加载: {}"
+    load_failed: "文件加载失败: {}, 错误={}"
+    file_not_found: "文件不存在: {}"
+    deleted: "文件已删除: {}"
+    delete_failed: "文件删除失败: {}, 错误={}"
+    copied: "文件已复制: {} → {}"
+    copy_failed: "文件复制失败: {} → {}, 错误={}"
+    moved: "文件已移动: {} → {}"
+    move_failed: "文件移动失败: {} → {}, 错误={}"
+    batch_saved: "批量保存完成: {}/{} 个文件"
+    batch_save_failed: "批量保存失败: 错误={}"
+
+  # 向量索引
+  vector:
+    added: "向量已添加: documentId={}"
+    add_failed: "向量添加失败: documentId={}, 错误={}"
+    batch_added: "批量添加完成: {}/{} 个向量"
+    searching: "正在搜索: topK={}, 角色={}"
+    search_failed: "搜索失败: 错误={}"
+    dimension_mismatch: "向量维度不匹配: {} vs {}"
+    deleted: "向量已删除: {}"
+    cleared: "索引已清空"
+
+# 离线模式
+offline:
+  monitor_started: "网络监控已启动: 检测间隔={}秒"
+  network_restored: "网络已恢复，切换到在线模式"
+  network_lost: "网络连接丢失，切换到离线模式"
+  network_check: "网络检测: 目标={}, 状态={}"
+  network_check_failed: "网络检测失败: {}"
+  mode_enabled: "离线模式已启用"
+  mode_disabled: "离线模式已禁用"
+  degradation_applied: "降级策略已应用（离线模式）"
+  monitor_stopped: "网络监控已停止"
+
