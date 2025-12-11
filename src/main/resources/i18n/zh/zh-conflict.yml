@@ -1,0 +1,28 @@
+# 冲突检测模块国际化 - 中文
+# Conflict Detection Module Internationalization - Chinese
+
+# SimilarityCalculator 相似度计算器
+conflict:
+  similarity:
+    null_vector: "向量为空，无法计算相似度"
+    vector_length_mismatch: "向量长度不匹配，向量1长度: {0}，向量2长度: {1}"
+    semantic_calculated: "语义相似度已计算: {0,number,#.##}"
+    keyword_calculated: "关键词相似度已计算: {0,number,#.##}，交集: {1}，并集: {2}"
+    structure_calculated: "结构相似度已计算: {0,number,#.##}"
+    combined: "综合相似度: {0,number,#.##}，语义: {1,number,#.##}，关键词: {2,number,#.##}，结构: {3,number,#.##}"
+
+  # ConflictDetector 冲突检测器
+  detect:
+    start: "开始检测冲突，文档1: {0}，文档2: {1}"
+    not_similar: "相似度不足，未检测到冲突，相似度: {0,number,#.##}"
+    score_too_low: "冲突分数过低，分数: {0,number,#.##}"
+    found: "检测到冲突，ID: {0}，类型: {1}，耗时: {2}ms"
+    failed: "冲突检测失败，文档1: {0}，文档2: {1}，原因: {2}"
+
+  scan:
+    start: "开始批量扫描冲突，文档数: {0}"
+    complete: "扫描完成，发现{0}个冲突，共检查{1}个文档"
+
+  resolved: "冲突已解决，ID: {0}"
+  cleared: "所有冲突已清空"
+

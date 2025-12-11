@@ -1,0 +1,19 @@
+# Voting Module Internationalization - English
+# 投票模块国际化 - 英文
+
+# VotingArbiter
+voting:
+  session:
+    create: "Creating voting session, conflict ID: {0}"
+    created: "Voting session created, ID: {0}, candidates: {1}"
+
+  vote:
+    casting: "Casting vote, voter: {0}, candidate: {1}, score: {2}"
+    casted: "Vote submitted, ID: {0}, session total votes: {1}"
+
+  decision:
+    making: "Making decision, session: {0}, votes: {1}"
+    made: "Decision made, winner: {0}, confidence: {1,number,#.##}, consensus: {2,number,#.##}"
+
+  cleared: "All voting sessions cleared"
+

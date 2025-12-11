@@ -1,0 +1,19 @@
+# 投票模块国际化 - 中文
+# Voting Module Internationalization - Chinese
+
+# VotingArbiter 投票仲裁器
+voting:
+  session:
+    create: "创建投票会话，冲突ID: {0}"
+    created: "投票会话已创建，ID: {0}，候选数: {1}"
+
+  vote:
+    casting: "投票中，投票者: {0}，候选: {1}，分数: {2}"
+    casted: "投票已提交，ID: {0}，会话总投票数: {1}"
+
+  decision:
+    making: "正在做出决策，会话: {0}，投票数: {1}"
+    made: "决策已完成，获胜者: {0}，置信度: {1,number,#.##}，共识度: {2,number,#.##}"
+
+  cleared: "所有投票会话已清空"
+

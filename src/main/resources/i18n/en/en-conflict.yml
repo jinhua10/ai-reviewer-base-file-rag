@@ -1,0 +1,28 @@
+# Conflict Detection Module Internationalization - English
+# 冲突检测模块国际化 - 英文
+
+# SimilarityCalculator
+conflict:
+  similarity:
+    null_vector: "Vector is null, cannot calculate similarity"
+    vector_length_mismatch: "Vector length mismatch, vector1 length: {0}, vector2 length: {1}"
+    semantic_calculated: "Semantic similarity calculated: {0,number,#.##}"
+    keyword_calculated: "Keyword similarity calculated: {0,number,#.##}, intersection: {1}, union: {2}"
+    structure_calculated: "Structure similarity calculated: {0,number,#.##}"
+    combined: "Combined similarity: {0,number,#.##}, semantic: {1,number,#.##}, keyword: {2,number,#.##}, structure: {3,number,#.##}"
+
+  # ConflictDetector
+  detect:
+    start: "Starting conflict detection, doc1: {0}, doc2: {1}"
+    not_similar: "Similarity too low, no conflict detected, similarity: {0,number,#.##}"
+    score_too_low: "Conflict score too low, score: {0,number,#.##}"
+    found: "Conflict detected, ID: {0}, type: {1}, time: {2}ms"
+    failed: "Conflict detection failed, doc1: {0}, doc2: {1}, reason: {2}"
+
+  scan:
+    start: "Starting batch conflict scan, documents: {0}"
+    complete: "Scan complete, found {0} conflicts, checked {1} documents"
+
+  resolved: "Conflict resolved, ID: {0}"
+  cleared: "All conflicts cleared"
+
