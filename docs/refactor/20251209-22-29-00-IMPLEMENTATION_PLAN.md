@@ -14,10 +14,10 @@
 
 ### 当前进度
 ```yaml
-当前阶段: Phase 4.5 & 4.6 规划完成，待决策实施顺序
-完成度: Phase 4 = 100%, Phase 4.5 & 4.6 = 规划完成
-最后更新: 2025-12-11 23:35:00
-下一步: 决策 → Phase 4.5 或 4.6 或直接 Phase 5
+当前阶段: Phase 4.5 & 4.6 & 5.5 规划完成，待决策实施顺序
+完成度: Phase 4 = 100%, Phase 4.5 & 4.6 & 5.5 = 规划完成
+最后更新: 2025-12-12 00:00:00
+下一步: 决策 → 实施顺序（等待用户指令）
 
 状态:
   - [x] Phase 0: 文档规范建立 (100%) ✅
@@ -53,6 +53,12 @@
     - [ ] 4.6.4 AI 服务扩展框架 (0%)
     - [ ] 4.6.5 愿望单系统 (0%)
   - [ ] Phase 5: 集成测试 (0%)
+  - [ ] Phase 5.5: 软件升级机制 (0%) 🆕
+    - [ ] 5.5.1 版本管理系统 (0%)
+    - [ ] 5.5.2 增量更新引擎 (0%)
+    - [ ] 5.5.3 热更新机制 (0%)
+    - [ ] 5.5.4 更新服务器 (0%)
+    - [ ] 5.5.5 用户体验优化 (0%)
   - [ ] Phase 6: 优化与发布 (0%)
 ```
 
@@ -104,6 +110,56 @@
 ---
 
 ## 📝 进度更新日志 (Progress Log)
+
+### 2025-12-12 00:00:00 - Phase 4.6 & 5.5 关键更新 🔄💡
+- 🔄 **Phase 4.6.1 重大更新** - 多方案 AI 引擎支持
+  - 💡 **核心问题**: 办公电脑性能参差不齐
+  - ✅ **解决方案**: 支持多种 AI 引擎方案灵活切换
+  - 🎯 **支持的方案**:
+    1. 本地 Ollama 服务（有显卡/好CPU）
+    2. 在线 Ollama 服务（公司内网服务器）
+    3. 在线 API 服务（GPT/Claude/Gemini，托底）
+    4. 自动模式（智能选择，推荐）
+  - 🔧 **核心组件**:
+    - AIEngineManager - 引擎管理器（注册、健康检查、自动选择）
+    - AIEngine 接口 - 统一抽象（health/generate/stream）
+    - LocalOllamaEngine - 本地引擎
+    - RemoteOllamaEngine - 在线 Ollama
+    - OnlineAPIEngine - 在线 API
+  - 📊 **降级策略**:
+    - 优先级: 本地 Ollama > 在线 Ollama > 在线 API
+    - 自动切换: 当前方案不可用时自动降级
+    - 健康检查: 30秒缓存，自动刷新
+  - 🎯 **验证标准**:
+    - 多方案切换成功率: 100%
+    - 自动降级响应: < 2秒
+    - 健康检查准确率: > 99%
+- 🆕 **Phase 5.5 新增** - 软件升级机制
+  - 💡 **用户需求**: 软件需要持续升级，不能影响工作
+  - ✅ **解决方案**: 增量更新 + 热更新 + 灰度发布
+  - 🎯 **核心功能**:
+    1. 版本管理（MAJOR.MINOR.PATCH）
+    2. 增量更新（节省 80% 带宽）
+    3. 热更新（配置、资源立即生效）
+    4. 灰度发布（10% → 50% → 100%）
+    5. 一键回滚（失败自动恢复）
+  - 📊 **更新策略**:
+    - PATCH: 自动更新（安全修复）
+    - MINOR: 提示更新（功能更新）
+    - MAJOR: 通知更新（重大更新）
+  - 🔧 **技术选型**:
+    - 差分算法: bsdiff/bspatch
+    - 通信协议: HTTPS
+    - 存储方案: OSS/S3/自建
+  - 🎯 **预期效果**:
+    - 差分包大小: < 30%
+    - 更新时间: < 5分钟
+    - 回滚时间: < 1分钟
+    - 用户满意度: > 90%
+- 📋 **待决策**: 实施顺序
+  - 建议优先: Phase 4.6.1（多方案 AI 引擎）
+  - 然后: Phase 5 集成测试
+  - 最后: Phase 5.5（软件升级，作为长期功能）
 
 ### 2025-12-11 23:35:00 - Phase 4.6 规划完成 🆕🤖
 - 🆕 **新增 Phase 4.6 - 本地优先 AI 服务与愿望单系统**
@@ -1816,29 +1872,150 @@ Qwen2.5-7B    GPT-5
 
 ### 任务清单
 
-#### 4.6.1 智能路由与本地模型集成 (3-4天)
+#### 4.6.1 智能路由与多方案 AI 引擎 (3-4天) ⭐重要更新
+
 ```yaml
-任务:
-  - [ ] AI 模型智能路由器
-  - [ ] 本地模型引擎（Qwen2.5-7B）
-  - [ ] 云端模型引擎（GPT-5 API）
-  - [ ] 混合模式实现
+核心理念:
+  办公电脑性能参差不齐，需要支持多种部署方案灵活切换
+  
+支持的方案:
+  方案1 - 本地 Ollama 服务:
+    适用: 有独立显卡或性能较好的 CPU
+    优势: 零成本，快速响应，数据隐私
+    部署: 本机运行 Ollama + Qwen2.5-7B
+    
+  方案2 - 在线 Ollama 服务:
+    适用: 公司内网有 Ollama 服务器
+    优势: 性能统一，集中管理，零成本
+    部署: 连接公司 Ollama 服务器
+    
+  方案3 - 在线 API 服务:
+    适用: 所有电脑（托底方案）
+    优势: 零部署，性能最强，准确率高
+    部署: GPT-5 / Claude 3.5 / Gemini Pro
+    
+  方案4 - 自动模式（推荐）:
+    策略: 自动检测并选择最佳方案
+    优先级: 本地 Ollama > 在线 Ollama > 在线 API
+    降级: 当前方案不可用时自动切换
+
+任务清单:
+  - [ ] AIEngineManager - AI 引擎管理器
+    功能:
+      - 注册多种引擎实现
+      - 健康检查与状态监控
+      - 自动选择最佳引擎
+      - 手动切换引擎
+      - 降级策略
+    
+  - [ ] AIEngine 接口 - 统一的引擎抽象
+    方法:
+      - healthCheck(): 健康检查
+      - generate(): 生成回答
+      - generateStream(): 流式生成
+      - getModelInfo(): 获取模型信息
+      - estimatePerformance(): 性能评估
+    
+  - [ ] LocalOllamaEngine - 本地 Ollama 引擎
+    实现:
+      - 连接本地 Ollama 服务 (localhost:11434)
+      - 性能检测（CPU/GPU/内存）
+      - 模型自动下载和管理
+      - 错误处理和重试
+    
+  - [ ] RemoteOllamaEngine - 在线 Ollama 引擎
+    实现:
+      - 连接公司 Ollama 服务器
+      - 负载均衡（多台服务器）
+      - 网络异常处理
+      - 连接池管理
+    
+  - [ ] OnlineAPIEngine - 在线 API 引擎
+    实现:
+      - GPT-5 / Claude / Gemini 统一适配
+      - API 密钥管理
+      - 速率限制和重试
+      - 成本跟踪
 
 技术选型:
-  - 本地模型: Qwen2.5-7B-Instruct (推荐)
-  - 推理框架: llama.cpp (CPU) / vLLM (GPU)
-  - 部署工具: Ollama
+  本地模型:
+    - Qwen2.5-7B-Instruct (推荐，中文友好)
+    - Llama3-8B-Instruct (英文强)
+    - Phi-3-mini-4k (轻量级)
+  
+  推理框架:
+    - Ollama (推荐，易用性最佳)
+    - llama.cpp (CPU 推理)
+    - vLLM (GPU 推理，性能最强)
+  
+  在线 API:
+    - OpenAI GPT-5 (最强)
+    - Anthropic Claude 3.5 (长文本)
+    - Google Gemini Pro (多模态)
 
-文件:
-  - AIModelRouter.java (~300行)
-  - LocalModelEngine.java (~350行)
-  - CloudModelEngine.java (~250行)
-  - HybridExecutor.java (~280行)
+文件清单:
+  核心:
+    - AIEngineManager.java (~400行) - 引擎管理器
+    - AIEngine.java (~150行) - 引擎接口
+  
+  实现:
+    - LocalOllamaEngine.java (~350行) - 本地 Ollama
+    - RemoteOllamaEngine.java (~300行) - 在线 Ollama  
+    - OnlineAPIEngine.java (~400行) - 在线 API
+  
+  工具:
+    - EngineHealthChecker.java (~200行) - 健康检查器
+    - PerformanceEstimator.java (~150行) - 性能评估器
 
-验证:
-  - 路由准确率: > 90%
-  - 本地响应: < 2秒
-  - 成本降低: 70%+
+配置文件:
+  - application.yml 新增配置:
+    ```yaml
+    ai:
+      engine:
+        # 引擎选择模式 (auto/local_ollama/remote_ollama/online_api)
+        mode: auto
+        
+        # 本地 Ollama 配置
+        local-ollama:
+          enabled: true
+          host: localhost
+          port: 11434
+          model: qwen2.5:7b
+          
+        # 在线 Ollama 配置  
+        remote-ollama:
+          enabled: false
+          servers:
+            - host: ollama-server-1.company.com
+              port: 11434
+            - host: ollama-server-2.company.com
+              port: 11434
+          model: qwen2.5:7b
+          
+        # 在线 API 配置
+        online-api:
+          enabled: true
+          provider: openai  # openai/claude/gemini
+          api-key: ${OPENAI_API_KEY}
+          model: gpt-4o
+          
+        # 降级策略
+        fallback:
+          enabled: true
+          order:
+            - local_ollama
+            - remote_ollama
+            - online_api
+    ```
+
+验证标准:
+  - [ ] 多方案切换成功率: 100%
+  - [ ] 自动降级响应时间: < 2秒
+  - [ ] 本地 Ollama 响应: < 3秒
+  - [ ] 在线 Ollama 响应: < 2秒
+  - [ ] 在线 API 响应: < 5秒
+  - [ ] 健康检查准确率: > 99%
+  - [ ] 性能评估误差: < 20%
 ```
 
 #### 4.6.2 资源调度系统 (2-3天)
@@ -2028,6 +2205,380 @@ Qwen2.5-7B    GPT-5
 验证:
   - 系统不崩溃
   - 优雅降级
+```
+
+---
+
+## 📦 Phase 5.5: 软件升级机制 (1周) 🆕
+
+### 目标
+实现自动化的软件升级系统，支持增量更新和热更新
+
+### 背景与需求
+```yaml
+用户需求:
+  - 办公电脑配置参差不齐
+  - 需要支持多种 AI 引擎方案
+  - 软件需要持续升级和优化
+  - 升级过程不能影响日常工作
+
+解决方案:
+  - 自动检测新版本
+  - 增量下载（节省 80% 带宽）
+  - 热更新（配置、资源立即生效）
+  - 灰度发布（先测试后全量）
+  - 一键回滚（失败自动恢复）
+```
+
+### 任务清单
+
+#### 5.5.1 版本管理系统 (2天)
+```yaml
+任务:
+  - [ ] 版本检测器（VersionDetector）
+  - [ ] 版本比较器（VersionComparator）
+  - [ ] 更新策略管理（UpdateStrategy）
+  - [ ] 回滚机制（RollbackHandler）
+
+功能设计:
+  版本号规范:
+    格式: MAJOR.MINOR.PATCH (例如: 2.1.3)
+    - MAJOR: 重大更新，可能不兼容
+    - MINOR: 功能更新，向后兼容
+    - PATCH: 问题修复，完全兼容
+  
+  检测策略:
+    - 启动时检测（每次启动）
+    - 定期检测（每天一次）
+    - 手动检测（用户触发）
+  
+  更新策略:
+    - 自动更新: PATCH 级别（安全修复，静默更新）
+    - 提示更新: MINOR 级别（功能更新，建议更新）
+    - 通知更新: MAJOR 级别（重大更新，强烈建议）
+
+文件:
+  - VersionManager.java (~250行)
+  - VersionDetector.java (~200行)
+  - UpdateStrategy.java (~180行)
+  - RollbackHandler.java (~220行)
+
+验证:
+  - 版本检测准确率: 100%
+  - 检测响应时间: < 2秒
+  - 回滚成功率: 100%
+```
+
+#### 5.5.2 增量更新引擎 (2天)
+```yaml
+任务:
+  - [ ] 差分包生成器（DiffPatcher）
+  - [ ] 差分包下载器（DownloadManager）
+  - [ ] 增量更新应用器（IncrementalUpdater）
+  - [ ] 完整性校验（IntegrityChecker）
+
+功能设计:
+  差分算法:
+    - 使用 bsdiff/bspatch 算法
+    - 只下载变化的部分
+    - 节省带宽 80%+
+    
+    示例:
+      原始文件: 100MB
+      新版文件: 105MB
+      差分包: 仅 5-10MB
+  
+  下载管理:
+    - 断点续传（网络中断继续下载）
+    - 多线程下载（提速 3-5倍）
+    - 下载进度显示（实时反馈）
+    - 网络异常重试（最多 3 次）
+  
+  完整性校验:
+    - MD5/SHA256 校验（防损坏）
+    - 数字签名验证（防篡改）
+    - 校验失败自动重下载
+
+文件:
+  - DiffPatcher.java (~300行)
+  - IncrementalUpdater.java (~350行)
+  - DownloadManager.java (~280行)
+  - IntegrityChecker.java (~200行)
+
+验证:
+  - 差分包大小: < 原包的 30%
+  - 下载速度: > 1MB/s
+  - 校验准确率: 100%
+  - 断点续传成功率: > 99%
+```
+
+#### 5.5.3 热更新机制 (2天)
+```yaml
+任务:
+  - [ ] 类加载器管理（ClassLoaderManager）
+  - [ ] 配置热重载（ConfigReloader）
+  - [ ] 资源热替换（ResourceReloader）
+  - [ ] 状态保持（StatePreserver）
+
+功能设计:
+  可热更新内容:
+    立即生效（无需重启）:
+      - ✅ 配置文件（application.yml）
+      - ✅ 国际化资源（i18n/*.yml）
+      - ✅ 静态资源（CSS/JS/图片）
+      - ✅ 提示词模板（prompts/*.txt）
+    
+    重启后生效:
+      - ⚠️ 业务逻辑类（.class 文件）
+      - ⚠️ 依赖库版本（.jar 文件）
+      - ⚠️ JVM 参数（需要重启）
+  
+  热更新流程:
+    1. 下载更新包到临时目录
+    2. 备份当前版本（支持回滚）
+    3. 应用更新（解压到目标位置）
+    4. 重载资源（配置、国际化等）
+    5. 验证更新（健康检查）
+    6. 成功 → 完成，失败 → 自动回滚
+  
+  状态保持:
+    - 用户登录状态（不丢失）
+    - 正在进行的任务（继续执行）
+    - 缓存数据（保持有效）
+
+文件:
+  - HotReloader.java (~280行)
+  - ClassLoaderManager.java (~250行)
+  - StatePreserver.java (~200行)
+  - BackupManager.java (~220行)
+
+验证:
+  - 配置热重载: < 1秒
+  - 资源热替换: < 2秒
+  - 热更新成功率: > 95%
+  - 状态保持准确率: 100%
+```
+
+#### 5.5.4 更新服务器 (1天)
+```yaml
+任务:
+  - [ ] 版本发布服务（UpdateServer）
+  - [ ] 更新包托管（PackageStorage）
+  - [ ] 灰度发布控制（GrayscaleController）
+  - [ ] 统计分析（UpdateAnalytics）
+
+功能设计:
+  版本发布流程:
+    1. 开发完成 → 测试通过
+    2. 生成差分包 → 数字签名
+    3. 上传到服务器 → 发布配置
+    4. 灰度发布（10% → 50% → 100%）
+    5. 监控数据 → 全量发布
+  
+  灰度发布策略:
+    按百分比:
+      - 10%: 内部测试用户
+      - 50%: 活跃用户
+      - 100%: 全部用户
+    
+    按角色:
+      - 第一批: IT 部门（技术人员）
+      - 第二批: 试点部门
+      - 第三批: 全公司
+    
+    紧急回滚:
+      - 发现严重问题 → 一键回滚
+      - 自动降级到上一版本
+      - 通知已升级用户
+  
+  统计分析:
+    - 更新成功率（目标 > 99%）
+    - 更新失败原因分析
+    - 版本分布情况
+    - 用户反馈收集
+
+文件:
+  - UpdateServer.java (~300行)
+  - GrayscaleController.java (~250行)
+  - PackageStorage.java (~200行)
+  - UpdateAnalytics.java (~220行)
+
+API 接口:
+  - GET /api/update/check
+    功能: 检查更新
+    返回: {version, url, changeLog, forced}
+  
+  - GET /api/update/download/{version}
+    功能: 下载更新包
+    返回: 二进制文件流
+  
+  - POST /api/update/report
+    功能: 上报更新结果
+    参数: {version, success, error}
+
+验证:
+  - API 响应时间: < 500ms
+  - 灰度发布准确率: 100%
+  - 统计数据准确率: > 99%
+```
+
+#### 5.5.5 用户体验优化 (1天)
+```yaml
+任务:
+  - [ ] 更新 UI 设计（UpdateUI）
+  - [ ] 更新进度显示（ProgressBar）
+  - [ ] 更新日志展示（ChangeLog）
+  - [ ] 用户反馈收集（FeedbackForm）
+
+UI 设计:
+  更新通知:
+    非打扰式:
+      - 位置: 右下角气泡通知
+      - 时机: 空闲时弹出
+      - 操作: 可关闭、可稍后提醒
+    
+    重要更新:
+      - 位置: 全屏弹窗
+      - 时机: 启动时显示
+      - 操作: 必须选择（更新/稍后）
+  
+  进度展示:
+    下载阶段:
+      - 进度条（0-100%）
+      - 下载速度（MB/s）
+      - 预计剩余时间
+      - 暂停/取消按钮
+    
+    安装阶段:
+      - 安装进度（解压、备份、应用）
+      - 当前步骤说明
+      - 不可取消
+  
+  更新日志:
+    格式: Markdown
+    内容:
+      - ## 新功能
+        - ✨ 新增 AI 服务扩展框架
+        - ✨ 支持多种 AI 引擎方案
+      
+      - ## 改进
+        - 🚀 响应速度提升 30%
+        - 💰 成本降低 70%
+      
+      - ## 修复
+        - 🐛 修复概念单元构建精准性
+        - 🐛 修复本地资源占用过高
+
+文件:
+  前端:
+    - UpdateUI.jsx (~350行)
+    - ProgressBar.jsx (~150行)
+    - ChangeLog.jsx (~200行)
+    - FeedbackForm.jsx (~180行)
+  
+  样式:
+    - update-ui.css (~180行)
+
+验证:
+  - UI 响应时间: < 500ms
+  - 进度更新频率: 实时
+  - 用户满意度: > 90%
+```
+
+### 技术选型
+```yaml
+更新框架:
+  跨平台方案（推荐）:
+    - Electron Auto Updater（如果是 Electron 应用）
+    - 自研方案（最灵活）
+  
+  平台特定:
+    - Sparkle (macOS)
+    - Squirrel (Windows)
+
+差分算法:
+  - bsdiff/bspatch（推荐，成熟稳定）
+  - xdelta3（速度快）
+  - rsync 算法（网络传输优化）
+
+通信协议:
+  - HTTPS（安全传输）
+  - WebSocket（实时通知）
+  - gRPC（高性能，可选）
+
+存储方案:
+  - 阿里云 OSS（国内快）
+  - AWS S3（国际化）
+  - 自建文件服务器（内网）
+```
+
+### 配置文件
+```yaml
+# application.yml 新增配置
+update:
+  # 是否启用自动更新
+  enabled: true
+  
+  # 更新服务器地址
+  server-url: https://update.company.com
+  
+  # 检测策略
+  check-on-startup: true
+  check-interval: 86400  # 每天检测一次（秒）
+  
+  # 更新策略
+  auto-update-patch: true     # 自动更新 PATCH
+  prompt-update-minor: true   # 提示更新 MINOR
+  notify-update-major: true   # 通知更新 MAJOR
+  
+  # 下载配置
+  download:
+    threads: 4               # 多线程下载
+    timeout: 300             # 超时时间（秒）
+    retry-times: 3           # 重试次数
+    temp-dir: ./temp/update  # 临时目录
+  
+  # 备份配置
+  backup:
+    enabled: true
+    keep-versions: 3         # 保留最近 3 个版本
+    backup-dir: ./backup     # 备份目录
+  
+  # 灰度发布
+  grayscale:
+    enabled: false           # 普通用户不参与灰度
+    user-percentage: 0       # 灰度百分比
+```
+
+### 验证标准
+```yaml
+功能验证:
+  - [ ] 版本检测准确率: 100%
+  - [ ] 增量更新成功率: > 99%
+  - [ ] 热更新成功率: > 95%
+  - [ ] 回滚成功率: 100%
+  - [ ] 灰度发布准确率: 100%
+
+性能验证:
+  - [ ] 差分包大小: < 原包的 30%
+  - [ ] 下载速度: > 1MB/s
+  - [ ] 更新时间: < 5分钟
+  - [ ] 回滚时间: < 1分钟
+  - [ ] UI 响应时间: < 500ms
+
+用户体验:
+  - [ ] 更新过程流畅度: > 4.5/5.0
+  - [ ] 用户满意度: > 90%
+  - [ ] 更新失败投诉率: < 1%
+```
+
+**Phase 5.5 里程碑**:
+- ✅ 软件升级系统上线
+- ✅ 增量更新节省带宽 80%
+- ✅ 热更新提升体验
+- ✅ 灰度发布降低风险
+- ✅ 一键回滚保证稳定性
+- 🎯 **核心价值**: 持续迭代，不断优化，用户零感知升级！
 ```
 
 **Phase 5 里程碑**:
