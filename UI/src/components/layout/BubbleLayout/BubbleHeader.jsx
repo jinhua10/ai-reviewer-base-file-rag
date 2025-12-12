@@ -15,7 +15,7 @@ import {
 } from '@ant-design/icons';
 import { Badge, Dropdown, Avatar } from 'antd';
 import { useLanguage } from '../../../contexts/LanguageContext';
-import { useUIThemeEngine } from '../../../contexts/UIThemeEngineContext';
+import { useUIThemeEngine, UI_THEMES } from '../../../contexts/UIThemeEngineContext';
 
 /**
  * 梦幻气泡头部组件
@@ -25,60 +25,43 @@ function BubbleHeader({ scrollProgress }) {
   const { currentUITheme, switchUITheme } = useUIThemeEngine();
   const [searchFocused, setSearchFocused] = useState(false);
 
-  // 语言选项
+  // 语言选项 / Language options - Labels in their own languages (no i18n needed)
   const languageItems = [
     {
       key: 'zh',
-      label: '简体中文',
+      label: '简体中文',  // Chinese label should be in Chinese
       onClick: () => changeLanguage('zh')
     },
     {
       key: 'en',
-      label: 'English',
+      label: 'English',  // English label should be in English
       onClick: () => changeLanguage('en')
     }
   ];
 
-  // 主题选项
-  const themeItems = [
-    {
-      key: 'bubble',
-      label: '梦幻气泡',
-      onClick: () => switchUITheme('bubble')
-    },
-    {
-      key: 'modern',
-      label: '现代简约',
-      onClick: () => switchUITheme('modern')
-    },
-    {
-      key: 'anime',
-      label: '动漫风格',
-      onClick: () => switchUITheme('anime')
-    },
-    {
-      key: 'cyberpunk',
-      label: '赛博朋克',
-      onClick: () => switchUITheme('cyberpunk')
-    }
-  ];
+  // 主题选项 / Theme options - Using theme names from UI_THEMES
+  const themeItems = Object.entries(UI_THEMES).map(([key, theme]) => ({
+    key: key,
+    label: theme.name[currentLanguage] || theme.name.zh,
+    onClick: () => switchUITheme(key)
+  }));
 
-  // 用户菜单
+  // 用户菜单 / User menu - Using i18n
   const userMenuItems = [
     {
       key: 'profile',
-      label: '个人资料'
+      label: t('user.menu.profile')
     },
     {
       key: 'settings',
-      label: '账户设置'
+      label: t('user.menu.accountSettings')
     },
     {
       type: 'divider'
     },
     {
       key: 'logout',
-      label: '退出登录',
+      label: t('user.menu.logout'),
       danger: true
     }
   ];
@@ -116,7 +99,7 @@ function BubbleHeader({ scrollProgress }) {
               <input
                 type="text"
                 className="search-input"
-                placeholder="搜索任何内容..."
+                placeholder={t('common.search') + '...'}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
               />
@@ -152,13 +135,13 @@ function BubbleHeader({ scrollProgress }) {
             </div>
           </Dropdown>
 
-          {/* 主题切换气泡 - 突出显示 */}
+          {/* 主题切换气泡 - 突出显示 / Theme switch bubble - highlighted */}
           <Dropdown menu={{ items: themeItems }} placement="bottomRight" trigger={['click']}>
             <div className="action-orb theme-orb theme-switch-highlight">
               <div className="orb-button">
                 <div className="orb-glass"></div>
                 <SkinOutlined className="orb-icon" />
-                <span className="orb-label">主题</span>
+                <span className="orb-label">{t('theme.colorTheme')}</span>
               </div>
               <div className="theme-indicator-pulse"></div>
             </div>

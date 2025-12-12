@@ -24,48 +24,48 @@ import {
 import { useLanguage } from '../../../contexts/LanguageContext';
 
 /**
- * 导航配置
+ * 导航配置 (Navigation configuration)
  */
 const getNavigationItems = (t) => [
   {
     key: 'qa',
     icon: MessageOutlined,
-    label: '智能问答',
+    label: t('nav.qa'),
     color: '#667eea',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
   },
   {
     key: 'home',
     icon: HomeOutlined,
-    label: '首页',
+    label: t('nav.home'),
     color: '#f093fb',
     gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
   },
   {
     key: 'documents',
     icon: FileTextOutlined,
-    label: '文档管理',
+    label: t('nav.documents'),
     color: '#4facfe',
     gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
   },
   {
     key: 'collaboration',
     icon: TeamOutlined,
-    label: '协作空间',
+    label: t('nav.collaboration'),
     color: '#43e97b',
     gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
   },
   {
     key: 'analytics',
     icon: BarChartOutlined,
-    label: '数据分析',
+    label: t('nav.analytics'),
     color: '#fa709a',
     gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
   },
   {
     key: 'settings',
     icon: SettingOutlined,
-    label: '系统设置',
+    label: t('nav.settings'),
     color: '#30cfd0',
     gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
   }

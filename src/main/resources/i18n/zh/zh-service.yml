@@ -49,11 +49,35 @@ service:
     ppt_error: "❌ PPT 生成请求出错"
     model_request: "🔄 收到模型切换请求: {0}"
     model_error: "❌ 模型切换请求出错"
+    model_current_request: "🔍 收到获取当前模型请求"
+    model_current_error: "❌ 获取当前模型出错"
+    model_available_request: "📋 收到获取可用模型列表请求"
+    model_available_error: "❌ 获取可用模型列表出错"
+
+model:
+  switch:
+    start: "🔄 开始切换模型: {0}"
+    success: "✅ 模型切换成功: {0}"
+    complete: "✅ 模型切换完成: {0}"
+    failed: "❌ 模型切换失败: {0}"
+    unknown_type: "❌ 未知的模型类型: {0}"
+    custom_required: "❌ 自定义模型需要提供 endpoint 和 model"
+    recreating: "🔄 重新创建 LLM 客户端..."
+    config_updated: "✅ 配置已更新: endpoint={0}, model={1}"
 
 ppt:
   generate:
     start: "🎨 开始生成 PPT: {0}"
     success: "✅ PPT 生成成功: {0}"
+    complete: "✅ PPT 生成完成: fileName={0}, size={1}"
     failed: "❌ PPT 生成失败: {0}"
     topic_required: "❌ 主题不能为空"
+  outline:
+    generating: "📝 正在生成大纲: topic={0}"
+    llm_success: "✅ LLM 大纲生成成功，共 {0} 页"
+    llm_failed: "⚠️ LLM 大纲生成失败，使用默认大纲: {0}"
+    default: "ℹ️ 使用默认大纲生成"
+  file:
+    creating: "📄 正在创建 PPT 文件，共 {0} 页"
+    created: "✅ PPT 文件创建成功: {0}"
 

@@ -39,6 +39,8 @@ export default {
     loadMore: '加载更多',
     switchToDark: '切换到暗色模式',
     switchToLight: '切换到浅色模式',
+    documentation: '文档',
+    about: '关于',
   },
 
   // ============================================================================
@@ -120,7 +122,8 @@ export default {
     documents: '文档管理',
     roles: '角色管理',
     feedback: '反馈与演化',
-    collaboration: '协作网络',
+    collaboration: '协作空间',
+    analytics: '数据分析',
     wish: '愿望单',
     aiService: 'AI 服务',
     profile: '个人中心',
@@ -171,6 +174,32 @@ export default {
   qa: {
     title: '智能问答',
     emptyMessage: '开始提问，开启智能对话之旅',
+
+    // Shell 页面 (Shell Page)
+    shell: {
+      loading: '加载中...',
+      loadingData: '正在获取系统数据...',
+      loadFailed: '加载失败',
+      heroTitle: '智能问答',
+      heroSubtitle: 'AI驱动的智能对话系统',
+      systemOnline: '✅ 系统在线',
+      systemOffline: '⚠️',
+      
+      // 统计卡片 (Stats Cards)
+      stats: {
+        knowledgeBase: '知识库文档',
+        knowledgeBaseDesc: '已索引文档数量',
+        documentsCount: '篇',
+        indexed: '已索引',
+        indexedDesc: '可用于问答的文档',
+        indexProgress: '索引进度',
+        indexProgressDesc: '知识库构建进度',
+        systemStatus: '系统状态',
+        systemStatusDesc: '当前运行状态',
+        needsIndexing: '需要索引',
+        running: '运行正常',
+      },
+    },
 
     // 输入框 (Input)
     input: {
@@ -389,6 +418,14 @@ export default {
       success: '成功',
       failed: '失败',
       pending: '等待中',
+    },
+
+    // Shell页面专用 / Shell page specific
+    shell: {
+      lastSyncLabel: '最后同步',
+      lastSyncDefault: '刚刚',
+      syncStatusLabel: '同步状态',
+      syncStatusDefault: '正常',
     },
 
     loadFailed: '加载失败',
@@ -729,6 +766,17 @@ export default {
       requests: '请求数',
       errors: '错误数',
     },
+  },
+
+  // ============================================================================
+  // 用户 (User)
+  // ============================================================================
+  user: {
+    menu: {
+      profile: '个人资料',
+      accountSettings: '账户设置',
+      logout: '退出登录',
+    }
   },
 
   // ============================================================================

@@ -54,14 +54,14 @@ function Footer() {
             href="/docs"
             className="app-footer__link"
           >
-            {language === 'zh' ? '文档' : 'Documentation'}
+            {t('common.documentation')}
           </a>
           <span className="app-footer__divider">|</span>
           <a
             href="/about"
             className="app-footer__link"
           >
-            {language === 'zh' ? '关于' : 'About'}
+            {t('common.about')}
           </a>
         </div>
       </div>

@@ -124,6 +124,17 @@
   font-weight: 400;
 }
 
+.hero-stats {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  padding: 4px 12px;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  display: inline-block;
+}
+
 /* ==================== Content Grid ==================== */
 .home-features-grid,
 .qa-content-grid,
@@ -224,6 +235,18 @@
   font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
+}
+
+.card-stat {
+  display: block;
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--bubble-primary);
+  background: linear-gradient(135deg, #667eea 0%, #f093fb 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 /* ==================== 响应式 ==================== */

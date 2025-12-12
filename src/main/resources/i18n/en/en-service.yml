@@ -49,11 +49,35 @@ service:
     ppt_error: "❌ PPT generation request error"
     model_request: "🔄 Received model switch request: {0}"
     model_error: "❌ Model switch request error"
+    model_current_request: "🔍 Received get current model request"
+    model_current_error: "❌ Get current model error"
+    model_available_request: "📋 Received get available models request"
+    model_available_error: "❌ Get available models error"
+
+model:
+  switch:
+    start: "🔄 Starting to switch model: {0}"
+    success: "✅ Model switched successfully: {0}"
+    complete: "✅ Model switch completed: {0}"
+    failed: "❌ Model switch failed: {0}"
+    unknown_type: "❌ Unknown model type: {0}"
+    custom_required: "❌ Custom model requires endpoint and model"
+    recreating: "🔄 Recreating LLM client..."
+    config_updated: "✅ Configuration updated: endpoint={0}, model={1}"
 
 ppt:
   generate:
     start: "🎨 Starting to generate PPT: {0}"
     success: "✅ PPT generated successfully: {0}"
+    complete: "✅ PPT generation completed: fileName={0}, size={1}"
     failed: "❌ Failed to generate PPT: {0}"
     topic_required: "❌ Topic cannot be empty"
+  outline:
+    generating: "📝 Generating outline: topic={0}"
+    llm_success: "✅ LLM outline generated successfully, {0} slides"
+    llm_failed: "⚠️ LLM outline generation failed, using default: {0}"
+    default: "ℹ️ Using default outline"
+  file:
+    creating: "📄 Creating PPT file with {0} slides"
+    created: "✅ PPT file created successfully: {0}"
 

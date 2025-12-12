@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.model.service.dto.*;
 import top.yumbo.ai.rag.service.ai.AIServiceManager;
+import top.yumbo.ai.rag.service.ai.ModelSwitchService;
 import top.yumbo.ai.rag.service.ai.PPTGeneratorService;
 
 import java.util.HashMap;
@@ -29,10 +30,14 @@ public class ServiceController {
 
     private final AIServiceManager serviceManager;
     private final PPTGeneratorService pptGeneratorService;
+    private final ModelSwitchService modelSwitchService;
 
-    public ServiceController(AIServiceManager serviceManager, PPTGeneratorService pptGeneratorService) {
+    public ServiceController(AIServiceManager serviceManager,
+                           PPTGeneratorService pptGeneratorService,
+                           ModelSwitchService modelSwitchService) {
         this.serviceManager = serviceManager;
         this.pptGeneratorService = pptGeneratorService;
+        this.modelSwitchService = modelSwitchService;
     }
 
     /**
@@ -185,7 +190,11 @@ public class ServiceController {
      * 切换模型 (Switch model)
      *
      * POST /api/services/model/switch
-     * Body: { "modelType": "local" }  // or "online"
+     * Body: {
+     *   "modelType": "local",  // or "online-openai", "online-deepseek", "custom"
+     *   "customEndpoint": "...",  // 可选，自定义模型时需要
+     *   "customModel": "..."      // 可选，自定义模型时需要
+     * }
      *
      * @param request 模型切换请求 (Model switch request)
      * @return 切换结果 (Switch result)
@@ -197,15 +206,55 @@ public class ServiceController {
         log.info(I18N.get("service.api.model_request"), modelType);
 
         try {
-            // TODO: 实现实际的模型切换逻辑
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", I18N.get("service.model.switched", modelType));
-            result.put("currentModel", modelType);
+            String customEndpoint = request.get("customEndpoint");
+            String customModel = request.get("customModel");
+
+            ModelSwitchService.SwitchResult result = modelSwitchService.switchModel(
+                modelType, customEndpoint, customModel);
 
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error(I18N.get("service.api.model_error"), e);
+            return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取当前模型配置 (Get current model configuration)
+     *
+     * GET /api/services/model/current
+     *
+     * @return 当前模型配置 (Current model configuration)
+     */
+    @GetMapping("/model/current")
+    public ResponseEntity<?> getCurrentModel() {
+        log.info(I18N.get("service.api.model_current_request"));
+
+        try {
+            ModelSwitchService.ModelConfig config = modelSwitchService.getCurrentConfig();
+            return ResponseEntity.ok(config);
+        } catch (Exception e) {
+            log.error(I18N.get("service.api.model_current_error"), e);
+            return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取可用模型列表 (Get available models)
+     *
+     * GET /api/services/model/available
+     *
+     * @return 可用模型列表 (Available models list)
+     */
+    @GetMapping("/model/available")
+    public ResponseEntity<?> getAvailableModels() {
+        log.info(I18N.get("service.api.model_available_request"));
+
+        try {
+            List<ModelSwitchService.ModelConfig> models = modelSwitchService.getAvailableModels();
+            return ResponseEntity.ok(models);
+        } catch (Exception e) {
+            log.error(I18N.get("service.api.model_available_error"), e);
             return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
         }
     }

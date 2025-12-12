@@ -163,9 +163,8 @@ public class WishController {
         log.info(I18N.get("wish.comment.get_request"), id);
 
         try {
-            // TODO: 实现获取评论列表
-            // 暂时返回空列表
-            return ResponseEntity.ok(List.of());
+            List<CommentDTO> comments = wishService.getComments(id);
+            return ResponseEntity.ok(comments);
         } catch (Exception e) {
             log.error(I18N.get("wish.comment.get_error", id), e);
             return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
@@ -206,24 +205,25 @@ public class WishController {
     /**
      * 点赞评论 (Like comment)
      *
-     * POST /api/comments/{commentId}/like
+     * POST /api/wishes/comments/{commentId}/like
      * Body: {
-     *   "userId": 123
+     *   "userId": "user123"
      * }
      *
      * @param commentId 评论 ID (Comment ID)
+     * @param request 请求体 (Request body)
      * @return 操作结果 (Operation result)
      */
     @PostMapping("/comments/{commentId}/like")
-    public ResponseEntity<?> likeComment(@PathVariable String commentId) {
+    public ResponseEntity<?> likeComment(
+            @PathVariable String commentId,
+            @RequestBody Map<String, String> request) {
 
         log.info(I18N.get("wish.comment.like_request"), commentId);
 
         try {
-            // TODO: 实现点赞评论
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", I18N.get("wish.comment.like_success"));
+            String userId = request.getOrDefault("userId", "anonymous");
+            Map<String, Object> result = wishService.likeComment(commentId, userId);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error(I18N.get("wish.comment.like_error", commentId), e);

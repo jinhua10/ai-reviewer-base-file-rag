@@ -39,6 +39,8 @@ export default {
     loadMore: 'Load More',
     switchToDark: 'Switch to Dark Mode',
     switchToLight: 'Switch to Light Mode',
+    documentation: 'Documentation',
+    about: 'About',
   },
 
   // ============================================================================
@@ -121,6 +123,7 @@ export default {
     roles: 'Roles',
     feedback: 'Feedback',
     collaboration: 'Collaboration',
+    analytics: 'Analytics',
     wish: 'Wish List',
     aiService: 'AI Services',
     profile: 'Profile',
@@ -171,6 +174,32 @@ export default {
   qa: {
     title: 'Intelligent Q&A',
     emptyMessage: 'Start asking questions to begin your intelligent conversation',
+
+    // Shell Page
+    shell: {
+      loading: 'Loading...',
+      loadingData: 'Fetching system data...',
+      loadFailed: 'Load Failed',
+      heroTitle: 'Intelligent Q&A',
+      heroSubtitle: 'AI-Powered Intelligent Dialogue System',
+      systemOnline: '✅ System Online',
+      systemOffline: '⚠️',
+      
+      // Stats Cards
+      stats: {
+        knowledgeBase: 'Knowledge Base',
+        knowledgeBaseDesc: 'Indexed document count',
+        documentsCount: 'docs',
+        indexed: 'Indexed',
+        indexedDesc: 'Available for Q&A',
+        indexProgress: 'Index Progress',
+        indexProgressDesc: 'Knowledge base building progress',
+        systemStatus: 'System Status',
+        systemStatusDesc: 'Current running status',
+        needsIndexing: 'Needs Indexing',
+        running: 'Running Normal',
+      },
+    },
 
     // Input
     input: {
@@ -389,6 +418,14 @@ export default {
       success: 'Success',
       failed: 'Failed',
       pending: 'Pending',
+    },
+
+    // Shell page specific
+    shell: {
+      lastSyncLabel: 'Last Sync',
+      lastSyncDefault: 'Just now',
+      syncStatusLabel: 'Sync Status',
+      syncStatusDefault: 'Normal',
     },
 
     loadFailed: 'Failed to load',
@@ -711,6 +748,17 @@ export default {
       requests: 'Requests',
       errors: 'Errors',
     },
+  },
+
+  // ============================================================================
+  // User
+  // ============================================================================
+  user: {
+    menu: {
+      profile: 'Profile',
+      accountSettings: 'Account Settings',
+      logout: 'Logout',
+    }
   },
 
   // ============================================================================

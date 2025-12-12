@@ -16,48 +16,51 @@ import { useState, useEffect } from 'react';
 /**
  * QA页面数据适配器
  * 所有主题的QA Shell都使用这个Hook获取数据
+ * 
+ * 后端接口：
+ * - GET  /api/qa/statistics - 获取统计信息
+ * - GET  /api/qa/health - 健康检查
+ * - POST /api/qa/ask - 提问接口
  */
 export function useQAPageData() {
   const [data, setData] = useState({
     stats: {
-      totalQuestions: 0,
-      averageResponseTime: 0,
-      satisfactionRate: 0,
-      activeUsers: 0
+      documentCount: 0,           // 文档总数
+      indexedDocumentCount: 0,    // 已索引文档数
+      unindexedCount: 0,          // 未索引文档数
+      indexProgress: 0,           // 索引进度
+      needsIndexing: false        // 是否需要索引
     },
+    systemStatus: 'unknown',      // 系统状态
     recentQuestions: [],
     loading: true,
     error: null
   });
 
   useEffect(() => {
-    // TODO: 后端联调时，替换为真实的API调用
-    // TODO: When integrating backend, replace with real API calls
-    
-    // 模拟API调用
     const fetchData = async () => {
       try {
-        // const response = await fetch('/api/qa/stats');
-        // const result = await response.json();
-        
-        // 模拟数据
-        setTimeout(() => {
-          setData({
-            stats: {
-              totalQuestions: 1234,
-              averageResponseTime: 2.5,
-              satisfactionRate: 95,
-              activeUsers: 456
-            },
-            recentQuestions: [
-              { id: 1, question: '如何使用AI审查?', status: 'answered' },
-              { id: 2, question: '系统支持哪些文件格式?', status: 'pending' }
-            ],
-            loading: false,
-            error: null
-          });
-        }, 500);
+        // 并行获取统计信息和健康状态
+        const [statsResponse, healthResponse] = await Promise.all([
+          apiCall('/qa/statistics'),
+          apiCall('/qa/health')
+        ]);
+
+        setData({
+          stats: {
+            documentCount: statsResponse.documentCount || 0,
+            indexedDocumentCount: statsResponse.indexedDocumentCount || 0,
+            unindexedCount: statsResponse.unindexedCount || 0,
+            indexProgress: statsResponse.indexProgress || 0,
+            needsIndexing: statsResponse.needsIndexing || false
+          },
+          systemStatus: healthResponse.status || 'unknown',
+          recentQuestions: [], // 可以后续添加最近问题列表接口
+          loading: false,
+          error: null
+        });
       } catch (error) {
+        console.error('Failed to fetch QA page data:', error);
         setData(prev => ({ ...prev, loading: false, error: error.message }));
       }
     };
@@ -254,15 +257,16 @@ export function useSettingsPageData() {
 
 /**
  * 通用的API调用函数
- * 后端联调时统一配置baseURL、headers等
+ * 已配置后端API基础URL
  */
 export async function apiCall(endpoint, options = {}) {
-  // TODO: 配置统一的API基础URL
+  // 后端API基础URL（Spring Boot默认端口8080）
   const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
   
   const defaultOptions = {
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       // 添加认证token等
       // 'Authorization': `Bearer ${getToken()}`
     },
@@ -270,17 +274,69 @@ export async function apiCall(endpoint, options = {}) {
   };
 
   try {
-    const response = await fetch(`${baseURL}${endpoint}`, defaultOptions);
+    const url = `${baseURL}${endpoint}`;
+    console.log(`API Call: ${options.method || 'GET'} ${url}`);
+    
+    const response = await fetch(url, defaultOptions);
     
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`API Error ${response.status}: ${errorText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log(`API Response:`, result);
+    
+    return result;
   } catch (error) {
     console.error('API call failed:', error);
     throw error;
   }
+}
+
+/**
+ * POST请求封装
+ */
+export async function apiPost(endpoint, data) {
+  return apiCall(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+/**
+ * 提问接口
+ * POST /api/qa/ask
+ */
+export async function askQuestion(question, hopeSessionId = null) {
+  return apiPost('/qa/ask', {
+    question,
+    hopeSessionId
+  });
+}
+
+/**
+ * 搜索文档接口
+ * GET /api/qa/search?query=xxx&limit=10
+ */
+export async function searchDocuments(query, limit = 10) {
+  return apiCall(`/qa/search?query=${encodeURIComponent(query)}&limit=${limit}`);
+}
+
+/**
+ * 触发知识库重建
+ * POST /api/qa/rebuild
+ */
+export async function rebuildKnowledgeBase() {
+  return apiPost('/qa/rebuild', {});
+}
+
+/**
+ * 触发增量索引
+ * POST /api/qa/incremental-index
+ */
+export async function incrementalIndex() {
+  return apiPost('/qa/incremental-index', {});
 }
 
 /**

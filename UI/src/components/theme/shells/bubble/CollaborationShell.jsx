@@ -386,15 +386,15 @@ function BubbleCollaborationShell() {
                 <div className="sync-card" style={{ borderImage: currentOrb?.gradient + ' 1' }}>
                   <div className="card-glass-overlay"></div>
                   <div className="sync-card-content">
-                    <span className="sync-card-label">最后同步</span>
-                    <span className="sync-card-value">{state.syncStatus.lastSync || '刚刚'}</span>
+                    <span className="sync-card-label">{t('collaboration.shell.lastSyncLabel')}</span>
+                    <span className="sync-card-value">{state.syncStatus.lastSync || t('collaboration.shell.lastSyncDefault')}</span>
                   </div>
                 </div>
                 <div className="sync-card" style={{ borderImage: currentOrb?.gradient + ' 1' }}>
                   <div className="card-glass-overlay"></div>
                   <div className="sync-card-content">
-                    <span className="sync-card-label">同步状态</span>
-                    <span className="sync-card-value">{state.syncStatus.status || '正常'}</span>
+                    <span className="sync-card-label">{t('collaboration.shell.syncStatusLabel')}</span>
+                    <span className="sync-card-value">{state.syncStatus.status || t('collaboration.shell.syncStatusDefault')}</span>
                   </div>
                 </div>
               </div>
