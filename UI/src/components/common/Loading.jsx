@@ -80,13 +80,14 @@ function Loading({
   }
 
   // 简单加载 (Simple loading)
+  // 注意：tip 只能在 nest 或 fullscreen 模式下使用
   return (
     <div className="app-loading">
       <Spin
         indicator={loadingIcon}
-        tip={defaultTip}
         size={size}
       />
+      {defaultTip && <div className="app-loading__tip">{defaultTip}</div>}
     </div>
   )
 }
