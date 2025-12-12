@@ -86,6 +86,20 @@ function AppContent() {
   // 判断AI面板是否停靠
   const isDocked = aiPanelConfig.dockPosition !== DOCK_POSITIONS.NONE
   const dockPosition = aiPanelConfig.dockPosition
+  
+  console.log('🏠 App.jsx render - isDocked:', isDocked, 'dockPosition:', dockPosition, 'config:', aiPanelConfig)
+
+  // 如果localStorage中有停靠状态但当前是浮动模式，重置配置
+  React.useEffect(() => {
+    if (!isDocked && aiPanelConfig.dockPosition && aiPanelConfig.dockPosition !== DOCK_POSITIONS.NONE) {
+      const resetConfig = {
+        ...aiPanelConfig,
+        dockPosition: DOCK_POSITIONS.NONE,
+      }
+      setAIPanelConfig(resetConfig)
+      localStorage.setItem('floating_ai_panel_config', JSON.stringify(resetConfig))
+    }
+  }, [])
 
   // 处理分隔线拖拽调整大小
   const handleSplitterResize = React.useCallback((position) => {
@@ -247,7 +261,7 @@ function AppContent() {
               {renderContent()}
             </ThemeRenderingEngine>
 
-            {/* 全局浮动AI分析按钮和面板 */}
+            {/* 浮动AI分析按钮和面板 */}
             <FloatingAIButton />
             <FloatingAIPanel />
           </>

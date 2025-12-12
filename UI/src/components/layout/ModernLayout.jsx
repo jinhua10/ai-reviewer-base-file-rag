@@ -26,6 +26,7 @@ import {
   GlobalOutlined,
   BgColorsOutlined,
   AppstoreOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -175,6 +176,21 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
           </div>
 
           <div className="modern-layout__header-right">
+            {/* 清除缓存按钮 / Clear cache button */}
+            <Button
+              type="text"
+              icon={<ClearOutlined />}
+              onClick={() => {
+                if (window.confirm('确定要清除所有本地缓存吗？\n\n这将清除：\n- 浯动窗口配置\n- 主题设置\n- 其他缓存数据\n\n页面将自动刷新。')) {
+                  localStorage.clear()
+                  sessionStorage.clear()
+                  console.log('🧹 All cache cleared')
+                  window.location.reload()
+                }
+              }}
+              title="清除缓存"
+            />
+            
             {/* UI主题切换器 / UI theme switcher */}
             <Button
               type="text"

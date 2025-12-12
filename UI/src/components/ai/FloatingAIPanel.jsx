@@ -19,14 +19,12 @@ import {
   SyncOutlined,
   ExpandOutlined,
   CompressOutlined,
-  BorderOutlined,
-  ColumnWidthOutlined,
-  ColumnHeightOutlined,
 } from '@ant-design/icons'
 import { useQA } from '../../contexts/QAContext'
 import { useLanguage } from '../../contexts/LanguageContext'
 import MarkdownRenderer from '../qa/MarkdownRenderer'
 import DockDropZone from './DockDropZone'
+import { DockLeftIcon, DockRightIcon, DockTopIcon, DockBottomIcon } from './DockIcons'
 import '../../assets/css/ai/floating-ai-panel.css'
 
 const { TextArea } = Input
@@ -46,7 +44,7 @@ const DOCK_THRESHOLD = 50
 
 // 默认窗口配置
 const DEFAULT_CONFIG = {
-  x: window.innerWidth - 500,
+  x: Math.max(50, window.innerWidth - 500), // 确保至少距离左边50px
   y: 100,
   width: 450,
   height: 600,
@@ -61,20 +59,25 @@ const loadPanelConfig = () => {
     const saved = localStorage.getItem('floating_ai_panel_config')
     if (saved) {
       const config = JSON.parse(saved)
-      // 验证位置是否在屏幕内
-      if (config.x < 0) config.x = 0
-      if (config.y < 0) config.y = 0
-      if (config.x + config.width > window.innerWidth) {
-        config.x = window.innerWidth - config.width
-      }
-      if (config.y + config.height > window.innerHeight) {
-        config.y = window.innerHeight - config.height
-      }
+      
+      // 确保有必要的属性
+      if (!config.width || config.width < 300) config.width = 450
+      if (!config.height || config.height < 400) config.height = 600
+      
+      // 验证位置是否在屏幕内（确保窗口右边和底边完全可见）
+      const maxX = window.innerWidth - config.width - 10 // 右边留10px边距
+      const maxY = window.innerHeight - 100 // 底部至少露出100px
+      
+      config.x = Math.max(10, Math.min(config.x, maxX))
+      config.y = Math.max(10, Math.min(config.y, maxY))
+      
+      console.log('📍 Loaded panel config:', config, '(screen:', window.innerWidth, 'x', window.innerHeight, ')')
       return config
     }
   } catch (e) {
     console.error('Failed to load panel config:', e)
   }
+  console.log('📍 Using default config:', DEFAULT_CONFIG)
   return DEFAULT_CONFIG
 }
 
@@ -147,6 +150,50 @@ function FloatingAIPanel() {
   const panelRef = useRef(null)
   const headerRef = useRef(null)
   const rafRef = useRef(null) // requestAnimationFrame引用，优化性能
+
+  // 调试日志
+  console.log('🎨 FloatingAIPanel render:', {
+    showFloatingAI,
+    isDocked,
+    dockPosition: config.dockPosition,
+    config: { x: config.x, y: config.y, width: config.width, height: config.height }
+  })
+
+  // 监听localStorage变化，当重置位置时重新加载配置
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'floating_ai_panel_config' || e.key === null) {
+        const newConfig = loadPanelConfig()
+        setConfig(newConfig)
+        console.log('🔄 Panel config reloaded from storage:', newConfig)
+      }
+    }
+    
+    // 监听storage事件（跨标签页）
+    window.addEventListener('storage', handleStorageChange)
+    
+    // 使用定时器轮询（同窗口内的变化）
+    const pollInterval = setInterval(() => {
+      try {
+        const saved = localStorage.getItem('floating_ai_panel_config')
+        if (saved) {
+          const savedConfig = JSON.parse(saved)
+          // 只在配置真正变化时更新
+          if (JSON.stringify(savedConfig) !== JSON.stringify(config)) {
+            setConfig(savedConfig)
+            console.log('🔄 Panel config updated:', savedConfig)
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    }, 500)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(pollInterval)
+    }
+  }, [config])
 
   /**
    * 保存配置
@@ -496,9 +543,14 @@ function FloatingAIPanel() {
     }
   }
 
-  if (!showFloatingAI) {
+  // 停靠模式：始终显示（由App.jsx控制渲染）
+  // 浮动模式：根据showFloatingAI控制
+  if (!isDocked && !showFloatingAI) {
+    console.log('❌ FloatingAIPanel hidden: isDocked=', isDocked, 'showFloatingAI=', showFloatingAI)
     return null
   }
+  
+  console.log('✅ FloatingAIPanel rendering with style:', { isDocked, x: config.x, y: config.y })
 
   // 停靠模式样式
   const dockedClassName = isDocked ? `floating-ai-panel--docked docked-${config.dockPosition}` : ''
@@ -510,6 +562,8 @@ function FloatingAIPanel() {
         height: minimized ? '48px' : `${config.height}px`,
         willChange: dragging || resizing ? 'transform, width, height' : 'auto',
       }
+  
+  console.log('🎯 Panel style applied:', panelStyle)
 
   return (
     <div
@@ -547,7 +601,7 @@ function FloatingAIPanel() {
             <Button
               type="text"
               size="small"
-              icon={<BorderOutlined style={{ transform: 'scaleX(-1)' }} />}
+              icon={<DockLeftIcon />}
               onClick={snapToLeft}
             />
           </Tooltip>
@@ -555,7 +609,7 @@ function FloatingAIPanel() {
             <Button
               type="text"
               size="small"
-              icon={<BorderOutlined />}
+              icon={<DockRightIcon />}
               onClick={snapToRight}
             />
           </Tooltip>
@@ -563,7 +617,7 @@ function FloatingAIPanel() {
             <Button
               type="text"
               size="small"
-              icon={<ColumnHeightOutlined style={{ transform: 'rotate(90deg)' }} />}
+              icon={<DockTopIcon />}
               onClick={snapToTop}
             />
           </Tooltip>
@@ -571,7 +625,7 @@ function FloatingAIPanel() {
             <Button
               type="text"
               size="small"
-              icon={<ColumnHeightOutlined style={{ transform: 'rotate(-90deg)' }} />}
+              icon={<DockBottomIcon />}
               onClick={snapToBottom}
             />
           </Tooltip>

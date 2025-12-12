@@ -25,15 +25,17 @@ import '../../assets/css/ai/floating-ai-button.css'
 // 重置到默认位置的辅助函数
 const resetPanelPosition = () => {
   const DEFAULT_CONFIG = {
-    x: window.innerWidth - 500,
+    x: Math.max(50, window.innerWidth - 500),
     y: 100,
     width: 450,
     height: 600,
-    isMaximized: false,
-    lastNormalConfig: null,
+    dockPosition: 'none',
+    dockSize: 450,
+    lastFloatingConfig: null,
   }
   localStorage.setItem('floating_ai_panel_config', JSON.stringify(DEFAULT_CONFIG))
-  window.location.reload() // 刷新以应用新配置
+  console.log('🔄 Panel position reset to:', DEFAULT_CONFIG)
+  // 不刷新页面，让组件自动重新加载
 }
 
 /**
@@ -45,7 +47,9 @@ function FloatingAIButton() {
   const [dropdownVisible, setDropdownVisible] = useState(false)
 
   const togglePanel = () => {
+    console.log('🔘 FloatingAIButton clicked, current showFloatingAI:', showFloatingAI)
     setShowFloatingAI(!showFloatingAI)
+    console.log('🔘 FloatingAIButton toggled to:', !showFloatingAI)
   }
 
   const docCount = aiAnalysisDocs.length
