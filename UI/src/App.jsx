@@ -16,6 +16,7 @@ import { QAPanel } from './components/qa'
 import { DocumentList } from './components/document'
 import { RoleList } from './components/role'
 import { FeedbackPanel } from './components/feedback'
+import { CollaborationPanel } from './components/collaboration'
 import './assets/css/header.css'
 import './assets/css/error-boundary.css'
 

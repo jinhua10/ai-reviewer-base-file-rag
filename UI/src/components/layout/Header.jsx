@@ -64,6 +64,16 @@ function Header({
       icon: <TeamOutlined />,
       label: t('nav.roles'),
     },
+    {
+      key: 'feedback',
+      icon: <LikeOutlined />,
+      label: t('nav.feedback'),
+    },
+    {
+      key: 'collaboration',
+      icon: <ShareAltOutlined />,
+      label: t('nav.collaboration'),
+    },
   ]
 
   return (
