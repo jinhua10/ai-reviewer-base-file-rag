@@ -29,8 +29,9 @@ function RoleList() {
     setLoading(true)
     try {
       const response = await roleApi.getList()
-      if (response?.data) {
-        setRoles(response.data.list || response.data || [])
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setRoles(response.list || response || [])
       }
     } catch (error) {
       console.error('Failed to load roles:', error)

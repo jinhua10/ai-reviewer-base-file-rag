@@ -24,8 +24,9 @@ function ConnectionManager(props) {
     setLoading(true)
     try {
       const response = await collaborationApi.generateCode()
-      if (response?.data?.code) {
-        setGeneratedCode(response.data.code)
+      if (response?.code) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setGeneratedCode(response.code)
         message.success(t('collaboration.codeGenerated'))
       }
     } catch (error) {

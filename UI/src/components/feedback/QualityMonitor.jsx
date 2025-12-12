@@ -30,8 +30,9 @@ function QualityMonitor() {
     setLoading(true)
     try {
       const response = await feedbackApi.getQualityMonitor()
-      if (response?.data) {
-        setData(response.data)
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setData(response)
       }
     } catch (error) {
       console.error('Failed to load quality data:', error)

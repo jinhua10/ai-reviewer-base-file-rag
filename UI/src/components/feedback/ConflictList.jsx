@@ -29,8 +29,9 @@ function ConflictList() {
       const response = await feedbackApi.getConflicts({
         status: filterStatus !== 'all' ? filterStatus : undefined,
       })
-      if (response?.data) {
-        setConflicts(response.data.list || response.data || [])
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setConflicts(response.list || response || [])
       }
     } catch (error) {
       console.error('Failed to load conflicts:', error)

@@ -33,13 +33,14 @@ function ConversationHistory(props) {
         keyword: search,
       })
 
-      if (response?.data) {
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
         if (pageNum === 1) {
-          setHistory(response.data.list || [])
+          setHistory(response.list || [])
         } else {
-          setHistory(prev => [...prev, ...(response.data.list || [])])
+          setHistory(prev => [...prev, ...(response.list || [])])
         }
-        setHasMore(response.data.hasMore || false)
+        setHasMore(response.hasMore || false)
       }
     } catch (error) {
       console.error('Failed to load history:', error)

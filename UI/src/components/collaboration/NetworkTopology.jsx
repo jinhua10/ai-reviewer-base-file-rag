@@ -24,8 +24,9 @@ function NetworkTopology() {
     setLoading(true)
     try {
       const response = await collaborationApi.getTopology()
-      if (response?.data) {
-        setTopology(response.data)
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setTopology(response)
       }
     } catch (error) {
       console.error('Failed to load topology:', error)

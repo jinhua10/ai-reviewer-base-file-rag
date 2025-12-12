@@ -77,10 +77,11 @@ function DocumentList() {
     try {
       const response = await documentApi.getList(searchParams)
       console.log('API Response:', response) // 调试日志 (Debug log)
-      if (response?.data) {
+      if (response) {
+        // axios 拦截器已返回 response.data，直接使用 (Axios interceptor returns response.data directly)
         // 后端返回 documents 字段 (Backend returns documents field)
-        // DocumentInfo: { fileName, fileSize, fileType, uploadTime, indexed }
-        const documentsList = response.data.documents || []
+        // ListResponse: { success, documents: DocumentInfo[], total, page, pageSize, totalPages }
+        const documentsList = response.documents || []
         console.log('Documents:', documentsList) // 调试日志 (Debug log)
         
         // 映射后端字段到前端期望的字段 (Map backend fields to frontend expected fields)
@@ -92,7 +93,7 @@ function DocumentList() {
         }))
         
         setDocuments(mappedDocuments)
-        setTotal(response.data.total || 0)
+        setTotal(response.total || 0)
       }
     } catch (error) {
       console.error('Failed to load documents:', error)

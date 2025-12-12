@@ -25,8 +25,9 @@ function EvolutionTimeline() {
     setLoading(true)
     try {
       const response = await feedbackApi.getEvolutionHistory()
-      if (response?.data) {
-        setTimeline(response.data || [])
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setTimeline(response || [])
       }
     } catch (error) {
       console.error('Failed to load timeline:', error)

@@ -24,8 +24,9 @@ function ExchangeHistory() {
     setLoading(true)
     try {
       const response = await collaborationApi.getExchangeHistory()
-      if (response?.data) {
-        setHistory(response.data || [])
+      if (response) {
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        setHistory(response || [])
       }
     } catch (error) {
       console.error('Failed to load history:', error)

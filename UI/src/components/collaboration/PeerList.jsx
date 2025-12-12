@@ -25,8 +25,12 @@ function PeerList() {
     setLoading(true)
     try {
       const response = await collaborationApi.getPeers()
-      if (response?.data) {
-        setPeers(response.data.list || response.data || [])
+      console.log('Peers API Response:', response) // 调试日志 (Debug log)
+      if (response) {
+        // 后端 PeersResponse 返回 peers 字段 (Backend PeersResponse returns peers field)
+        // PeersResponse: { success: boolean, peers: PeerInfo[], total: number }
+        const peersList = response.peers || response.data?.peers || response.data || []
+        setPeers(peersList)
       }
     } catch (error) {
       console.error('Failed to load peers:', error)
