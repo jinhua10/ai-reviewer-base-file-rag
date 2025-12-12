@@ -289,7 +289,7 @@ export default {
     // Input
     input: {
       placeholder: 'Enter your question...',
-      hint: 'Ctrl+Enter to send',
+      hint: 'Ctrl+Enter to send | ↑↓ History',
       send: 'Send',
       characters: 'characters',
     },

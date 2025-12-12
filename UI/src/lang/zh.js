@@ -284,7 +284,7 @@ export default {
     // 输入框 (Input)
     input: {
       placeholder: '请输入您的问题...',
-      hint: 'Ctrl+Enter 发送',
+      hint: 'Ctrl+Enter 发送 | ↑↓ 查看历史',
       send: '发送',
       characters: '字符',
     },

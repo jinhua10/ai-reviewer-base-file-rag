@@ -1363,8 +1363,8 @@ public class KnowledgeQAService {
     }
 
     /**
-     * 构建带上下文的 Prompt（供流式输出使用）
-     * (Build prompt with context for streaming)
+     * 构建带上下文的 Prompt（供流式输出使用，支持图片）
+     * (Build prompt with context for streaming, with image support)
      * 
      * @param question 问题
      * @param context 上下文
@@ -1378,16 +1378,56 @@ public class KnowledgeQAService {
                 .distinct()
                 .collect(Collectors.toList());
 
-            // 简化版 Prompt（不包含图片，流式场景通常不需要）
-            // (Simplified prompt without images, streaming usually doesn't need them)
+            // 收集图片信息（与非流式保持一致）
+            // (Collect image info, consistent with non-streaming)
+            List<ImageInfo> allImages = new ArrayList<>();
+            StringBuilder imageContext = new StringBuilder();
+
+            for (Document doc : documents) {
+                try {
+                    List<ImageInfo> docImages = imageStorageService.listImages(doc.getTitle());
+
+                    if (!docImages.isEmpty()) {
+                        allImages.addAll(docImages);
+
+                        int maxImagesPerDoc = properties.getImageProcessing().getMaxImagesPerDoc();
+                        int displayCount = Math.min(docImages.size(), maxImagesPerDoc);
+
+                        imageContext.append("\n---\n");
+                        imageContext.append("📎 ").append(I18N.get("knowledge_qa_service.doc_images_header", doc.getTitle(), displayCount));
+                        imageContext.append("\n");
+
+                        for (int i = 0; i < displayCount; i++) {
+                            ImageInfo img = docImages.get(i);
+                            imageContext.append(String.format("![%s](%s)\n", 
+                                img.getDescription() != null ? img.getDescription() : "Image " + (i + 1),
+                                img.getUrl()));
+                        }
+
+                        if (docImages.size() > displayCount) {
+                            imageContext.append(I18N.get("knowledge_qa_service.more_images_notice", 
+                                docImages.size() - displayCount));
+                            imageContext.append("\n");
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to load images for doc {} in streaming: {}", doc.getTitle(), e.getMessage());
+                }
+            }
+
+            boolean hasImages = !allImages.isEmpty();
+            String imageContextStr = imageContext.toString();
+
+            log.info("Streaming prompt with {} images from {} documents", allImages.size(), documents.size());
+
             return buildEnhancedPrompt(
                 question,
                 context,
-                "",  // 无图片上下文
-                false,  // 无图片
+                imageContextStr,
+                hasImages,
                 usedDocTitles,
-                false,  // 无更多文档
-                0  // 剩余文档数为 0
+                false,  // 流式不支持分页
+                0
             );
 
         } catch (Exception e) {
