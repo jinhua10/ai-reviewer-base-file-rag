@@ -85,8 +85,13 @@ public class ImageInfo {
 
     /**
      * 获取访问 URL（Get access URL）
+     *
+     * 注意：filename 应该只是纯文件名（如 "image_0001.png"），不应包含路径
+     * (Note: filename should be just the pure filename like "image_0001.png", not including path)
      */
     public String getUrl() {
+        // 简单直接的 URL 生成，不做任何修补
+        // (Simple and direct URL generation, no patches)
         return String.format("/api/images/%s/%s", documentId, filename);
     }
 

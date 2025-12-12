@@ -13,12 +13,12 @@ import MarkdownRenderer from './MarkdownRenderer'
 import '../../assets/css/qa/streaming-answer.css'
 
 function StreamingAnswer(props) {
-  const { content } = props
+  const { content, streaming = true } = props
 
   return (
     <div className="streaming-answer">
-      <MarkdownRenderer content={content} />
-      <span className="streaming-answer__cursor">|</span>
+      <MarkdownRenderer content={content} isStreaming={streaming} />
+      {streaming && <span className="streaming-answer__cursor">|</span>}
     </div>
   )
 }

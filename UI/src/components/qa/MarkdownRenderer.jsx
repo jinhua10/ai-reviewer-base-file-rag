@@ -4,6 +4,9 @@
  * 支持完整的 Markdown 语法：标题、列表、表格、代码块、引用、图片等
  * (Supports full Markdown syntax: headings, lists, tables, code blocks, quotes, images, etc.)
  *
+ * 流式渲染优化：自动检测未完成的Markdown结构，避免渲染错误
+ * (Streaming optimization: Auto-detect incomplete Markdown structures to avoid rendering errors)
+ *
  * @author AI Reviewer Team
  * @since 2025-12-12
  */
@@ -15,8 +18,85 @@ import rehypeRaw from 'rehype-raw'
 import CodeBlock from './CodeBlock'
 import '../../assets/css/qa/markdown-renderer.css'
 
+/**
+ * 检测内容中是否有未完成的Markdown结构
+ * Detects incomplete Markdown structures in content
+ */
+const hasIncompleteStructure = (content) => {
+  if (!content) return false;
+  
+  // 检测未闭合的代码块
+  const codeBlockMatches = content.match(/```/g);
+  if (codeBlockMatches && codeBlockMatches.length % 2 !== 0) {
+    return true;
+  }
+  
+  // 检测不完整的表格（以|开头但行数少于2）
+  const lines = content.split('\n');
+  const tableLines = lines.filter(line => line.trim().startsWith('|'));
+  if (tableLines.length === 1) {
+    return true; // 只有一行表格，可能不完整
+  }
+  
+  // 检测表格分隔符是否完整
+  const hasTableHeader = tableLines.some(line => /^\|[\s-:|]+\|$/.test(line.trim()));
+  if (tableLines.length > 0 && !hasTableHeader && lines[lines.length - 1].trim().startsWith('|')) {
+    return true; // 表格开始了但没有分隔符
+  }
+  
+  return false;
+};
+
+/**
+ * 处理流式内容，确保Markdown结构完整
+ * Process streaming content to ensure complete Markdown structures
+ */
+const sanitizeStreamingContent = (content) => {
+  if (!content) return '';
+  
+  let sanitized = content;
+  
+  // 处理未闭合的代码块：临时闭合
+  const codeBlockMatches = sanitized.match(/```/g);
+  if (codeBlockMatches && codeBlockMatches.length % 2 !== 0) {
+    sanitized += '\n```';
+  }
+  
+  // 处理不完整的表格：如果最后一行是表格行但没有完整结构，暂时移除
+  const lines = sanitized.split('\n');
+  const lastNonEmptyIndex = lines.findLastIndex(line => line.trim() !== '');
+  if (lastNonEmptyIndex >= 0) {
+    const lastLine = lines[lastNonEmptyIndex];
+    if (lastLine.trim().startsWith('|')) {
+      // 检查是否是完整的表格
+      const tableLines = [];
+      for (let i = lastNonEmptyIndex; i >= 0 && lines[i].trim().startsWith('|'); i--) {
+        tableLines.unshift(lines[i]);
+      }
+      
+      // 如果没有分隔符行，说明表格不完整
+      const hasTableDivider = tableLines.some(line => /^\|[\s-:|]+\|$/.test(line.trim()));
+      if (!hasTableDivider && tableLines.length < 2) {
+        // 移除不完整的表格行
+        lines.splice(lastNonEmptyIndex, 1);
+        sanitized = lines.join('\n');
+      }
+    }
+  }
+  
+  return sanitized;
+};
+
 function MarkdownRenderer(props) {
-  const { content } = props
+  const { content, isStreaming } = props
+  
+  // 如果是流式输出，清理不完整的Markdown结构
+  const processedContent = useMemo(() => {
+    if (isStreaming) {
+      return sanitizeStreamingContent(content);
+    }
+    return content || '';
+  }, [content, isStreaming])
 
   // 自定义组件渲染
   const components = useMemo(() => ({
@@ -35,14 +115,28 @@ function MarkdownRenderer(props) {
       )
     },
 
-    // 图片 - 添加样式和懒加载
+    // 图片 - 添加样式和懒加载，完全信赖后端返回的路径
     img({ node, src, alt, ...props }) {
+      // 只记录日志，不做任何路径修改
+      if (src) {
+        console.log('🖼️ Image src from backend:', src);
+      }
+      
       return (
         <img
           src={src}
           alt={alt || ''}
           className="markdown-renderer__image"
           loading="lazy"
+          onError={(e) => {
+            console.error('❌ Image failed to load:', src);
+            console.error('Error event:', e);
+            // 显示占位符而不是隐藏
+            e.target.alt = alt || '图片加载失败 (Image load failed)';
+          }}
+          onLoad={(e) => {
+            console.log('✅ Image loaded successfully:', src);
+          }}
           {...props}
         />
       )
@@ -136,7 +230,7 @@ function MarkdownRenderer(props) {
         rehypePlugins={[rehypeRaw]}  // 支持原始 HTML
         components={components}
       >
-        {content || ''}
+        {processedContent}
       </ReactMarkdown>
     </div>
   )

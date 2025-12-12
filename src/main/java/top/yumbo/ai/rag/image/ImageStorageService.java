@@ -55,15 +55,26 @@ public class ImageStorageService {
      * @return 图片存储信息（Image storage information）
      */
     public ImageInfo saveImage(String documentId, byte[] imageData, String originalFilename) throws IOException {
-        // 生成唯一文件名
-        String extension = getFileExtension(originalFilename);
-        String imageId = UUID.randomUUID().toString();
-        String filename = String.format("%s_%s.%s", sanitizeFilename(documentId), imageId, extension);
-
+        // 准备文档图片目录 (Prepare document image directory)
         Path docImageDir = Paths.get(storageBasePath, IMAGE_DIR, sanitizeFilename(documentId));
         if (!Files.exists(docImageDir)) {
             Files.createDirectories(docImageDir);
         }
+
+        // 获取扩展名 (Get file extension)
+        String extension = getFileExtension(originalFilename);
+
+        // 计算下一个顺序编号（从现有图片数量+1开始）
+        // (Calculate next sequence number, starting from existing image count + 1)
+        int nextIndex = getNextImageIndex(docImageDir);
+
+        // 生成简洁的文件名：image_001.jpg, image_002.png, etc.
+        // (Generate concise filename: image_001.jpg, image_002.png, etc.)
+        String filename = String.format("image_%04d.%s", nextIndex, extension);
+
+        // 使用 UUID 作为 imageId（用于内部跟踪）
+        // (Use UUID as imageId for internal tracking)
+        String imageId = UUID.randomUUID().toString();
 
         Path imagePath = docImageDir.resolve(filename);
         Files.write(imagePath, imageData);
@@ -79,6 +90,28 @@ public class ImageStorageService {
                 .fileSize(imageData.length)
                 .format(extension)
                 .build();
+    }
+
+    /**
+     * 获取下一个图片序号 (Get next image index)
+     *
+     * 扫描目录中现有的图片文件，返回下一个可用序号
+     * (Scan existing image files in directory and return next available index)
+     */
+    private int getNextImageIndex(Path docImageDir) throws IOException {
+        if (!Files.exists(docImageDir)) {
+            return 1;
+        }
+
+        // 计算目录中现有图片文件的数量 (Count existing image files in directory)
+        try (var stream = Files.list(docImageDir)) {
+            long existingCount = stream
+                    .filter(Files::isRegularFile)
+                    .filter(p -> isSupportedImageFormat(p.getFileName().toString()))
+                    .count();
+
+            return (int) existingCount + 1;
+        }
     }
 
     /**
@@ -123,8 +156,11 @@ public class ImageStorageService {
                     String filename = imagePath.getFileName().toString();
                     long fileSize = Files.size(imagePath);
 
+                    // 使用sanitized的documentId来确保路径正确
+                    String sanitizedDocId = sanitizeFilename(documentId);
+                    
                     ImageInfo info = ImageInfo.builder()
-                            .documentId(documentId)
+                            .documentId(sanitizedDocId)
                             .filename(filename)
                             .filePath(imagePath.toString())
                             .fileSize(fileSize)
@@ -244,14 +280,23 @@ public class ImageStorageService {
      * 清理文件名（Sanitize filename）
      */
     private String sanitizeFilename(String filename) {
-        if (filename == null) {
+        if (filename == null || filename.trim().isEmpty()) {
             return "unknown";
         }
 
-        return filename
+        String sanitized = filename
                 .replaceAll("[\\\\/:*?\"<>|]", "_")
                 .replaceAll("\\s+", "_")
                 .replaceAll("_+", "_")
                 .trim();
+        
+        // 移除重复的扩展名
+        sanitized = sanitized.replaceAll("\\.(pp)+\\.pptx", ".pptx");
+        sanitized = sanitized.replaceAll("\\.(pptx)+", ".pptx");
+        sanitized = sanitized.replaceAll("\\.(txt)+", ".txt");
+        sanitized = sanitized.replaceAll("\\.(png)+", ".png");
+        sanitized = sanitized.replaceAll("\\.(jpg)+", ".jpg");
+        
+        return sanitized;
     }
 }

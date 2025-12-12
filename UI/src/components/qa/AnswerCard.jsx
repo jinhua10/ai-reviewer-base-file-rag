@@ -71,9 +71,9 @@ function AnswerCard(props) {
               <span className="answer-card__thinking-text">Thinking...</span>
             </div>
           ) : answer.streaming ? (
-            <StreamingAnswer content={answer.content} />
+            <StreamingAnswer content={answer.content} streaming={answer.streaming} />
           ) : (
-            <MarkdownRenderer content={answer.content} />
+            <MarkdownRenderer content={answer.content} isStreaming={false} />
           )}
           
           {answer.stopped && !answer.streaming && (
