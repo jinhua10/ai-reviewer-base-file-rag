@@ -9,8 +9,8 @@
  */
 
 import React, { useEffect } from 'react';
-import { useLanguage } from '../../contexts/LanguageContext';
-import { useCollaborationBinding } from '../../adapters/CollaborationAdapter';
+import { useLanguage } from '../../../../contexts/LanguageContext';
+import { useCollaborationBinding } from '../../../../adapters/CollaborationAdapter';
 import './bubble-collaboration.css';
 
 /**
@@ -175,4 +175,3 @@ function BubbleCollaborationShell() {
 }
 
 export default BubbleCollaborationShell;
-

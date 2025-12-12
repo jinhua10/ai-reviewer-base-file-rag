@@ -41,7 +41,7 @@ export const UI_THEMES = {
     },
     // 页面UI壳子映射 / Page UI shell mapping
     shellMapping: {
-      collaboration: () => import('../themes/modern/CollaborationShell'),
+      collaboration: () => import('../components/theme/shells/modern/CollaborationShell'),
       // 其他页面可以继续添加 / Other pages can be added
     },
     status: 'active',
@@ -69,7 +69,7 @@ export const UI_THEMES = {
     },
     // 页面UI壳子映射 / Page UI shell mapping
     shellMapping: {
-      collaboration: () => import('../themes/bubble/CollaborationShell'),
+      collaboration: () => import('../components/theme/shells/bubble/CollaborationShell'),
       // 其他页面可以继续添加 / Other pages can be added
     },
     // 状态改为active / Status changed to active

@@ -1,0 +1,32 @@
+# English Collaboration Module Messages
+# File: src/main/resources/i18n/en/en-collaboration.yml
+
+collaboration:
+  api:
+    code_generated: "✅ Connection code generated: {0}"
+    code_generate_failed: "❌ Failed to generate connection code"
+    connected: "✅ Successfully connected to peer: {0}"
+    connect_failed: "❌ Connection failed"
+    peers_fetched: "📋 Peers fetched successfully, total: {0}"
+    peers_fetch_failed: "❌ Failed to fetch peers"
+    disconnected: "🔌 Successfully disconnected peer: {0}"
+    disconnect_failed: "❌ Failed to disconnect"
+    knowledge_sent: "📤 Knowledge sent successfully to peer: {0}"
+    exchange_failed: "❌ Knowledge exchange failed"
+    history_fetched: "📜 Exchange history fetched successfully, total: {0} records"
+    history_fetch_failed: "❌ Failed to fetch exchange history"
+    topology_fetched: "🕸️ Network topology fetched successfully"
+    topology_fetch_failed: "❌ Failed to fetch network topology"
+    sync_status_fetched: "🔄 Sync status fetched successfully"
+    sync_status_fetch_failed: "❌ Failed to fetch sync status"
+
+p2p:
+  manager:
+    initialized: "🚀 P2P Collaboration Manager initialized: userId={0}"
+    code_generated: "🔑 Connection code generated: {0}"
+    connecting: "🔗 Establishing connection: code={0}"
+    connect_failed: "❌ Connection failed: {0}"
+    connected: "✅ Connection established: peerId={0}"
+    disconnected: "🔌 Connection disconnected: peerId={0}"
+    peer_not_connected: "⚠️ Peer not connected: {0}"
+

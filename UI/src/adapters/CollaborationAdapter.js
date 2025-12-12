@@ -10,6 +10,7 @@
 
 import { useState, useCallback } from 'react';
 import { usePageBinding } from '../engine/ThemeRenderEngine';
+import collaborationApi from '../api/modules/collaboration';
 
 /**
  * 协作面板初始状态 / Collaboration panel initial state
@@ -41,10 +42,10 @@ export function useCollaborationActions(updateState) {
   const loadPeers = useCallback(async () => {
     updateState({ loading: true });
     try {
-      // TODO: 调用API加载数据 / Call API to load data
-      const peers = await fetchPeers();
-      updateState({ peers, loading: false });
+      const response = await collaborationApi.getPeers();
+      updateState({ peers: response.peers || [], loading: false });
     } catch (error) {
+      console.error('Failed to load peers:', error);
       updateState({ error: error.message, loading: false });
     }
   }, [updateState]);
@@ -55,10 +56,10 @@ export function useCollaborationActions(updateState) {
   const loadExchanges = useCallback(async () => {
     updateState({ loading: true });
     try {
-      // TODO: 调用API加载数据 / Call API to load data
-      const exchanges = await fetchExchanges();
-      updateState({ exchanges, loading: false });
+      const response = await collaborationApi.getExchangeHistory();
+      updateState({ exchanges: response.history || [], loading: false });
     } catch (error) {
+      console.error('Failed to load exchanges:', error);
       updateState({ error: error.message, loading: false });
     }
   }, [updateState]);
@@ -69,10 +70,10 @@ export function useCollaborationActions(updateState) {
   const loadTopology = useCallback(async () => {
     updateState({ loading: true });
     try {
-      // TODO: 调用API加载数据 / Call API to load data
-      const topology = await fetchTopology();
-      updateState({ topology, loading: false });
+      const response = await collaborationApi.getTopology();
+      updateState({ topology: response.topology || {}, loading: false });
     } catch (error) {
+      console.error('Failed to load topology:', error);
       updateState({ error: error.message, loading: false });
     }
   }, [updateState]);
@@ -83,13 +84,90 @@ export function useCollaborationActions(updateState) {
   const loadSyncStatus = useCallback(async () => {
     updateState({ loading: true });
     try {
-      // TODO: 调用API加载数据 / Call API to load data
-      const syncStatus = await fetchSyncStatus();
-      updateState({ syncStatus, loading: false });
+      const response = await collaborationApi.getSyncStatus();
+      updateState({ syncStatus: response.syncStatus || {}, loading: false });
     } catch (error) {
+      console.error('Failed to load sync status:', error);
       updateState({ error: error.message, loading: false });
     }
   }, [updateState]);
+
+  /**
+   * 生成连接码 / Generate connection code
+   */
+  const generateCode = useCallback(async () => {
+    updateState({ loading: true });
+    try {
+      const response = await collaborationApi.generateCode();
+      updateState({ loading: false });
+      return response.code;
+    } catch (error) {
+      console.error('Failed to generate code:', error);
+      updateState({ error: error.message, loading: false });
+      throw error;
+    }
+  }, [updateState]);
+
+  /**
+   * 使用连接码建立连接 / Connect using code
+   */
+  const connectWithCode = useCallback(async (code) => {
+    updateState({ loading: true });
+    try {
+      const response = await collaborationApi.connect(code);
+
+      if (response.success) {
+        // 连接成功后重新加载节点列表 / Reload peers after successful connection
+        await loadPeers();
+      }
+
+      updateState({ loading: false });
+      return response;
+    } catch (error) {
+      console.error('Failed to connect:', error);
+      updateState({ error: error.message, loading: false });
+      throw error;
+    }
+  }, [updateState, loadPeers]);
+
+  /**
+   * 断开连接 / Disconnect from peer
+   */
+  const disconnectPeer = useCallback(async (peerId) => {
+    updateState({ loading: true });
+    try {
+      await collaborationApi.disconnect(peerId);
+
+      // 断开后重新加载节点列表 / Reload peers after disconnection
+      await loadPeers();
+
+      updateState({ loading: false });
+    } catch (error) {
+      console.error('Failed to disconnect:', error);
+      updateState({ error: error.message, loading: false });
+      throw error;
+    }
+  }, [updateState, loadPeers]);
+
+  /**
+   * 知识交换 / Exchange knowledge
+   */
+  const exchangeKnowledge = useCallback(async (peerId, knowledge) => {
+    updateState({ loading: true });
+    try {
+      const response = await collaborationApi.exchange({ peerId, knowledge });
+
+      // 交换后重新加载交换历史 / Reload exchanges after exchange
+      await loadExchanges();
+
+      updateState({ loading: false });
+      return response;
+    } catch (error) {
+      console.error('Failed to exchange knowledge:', error);
+      updateState({ error: error.message, loading: false });
+      throw error;
+    }
+  }, [updateState, loadExchanges]);
 
   return {
     switchTab,
@@ -97,6 +175,10 @@ export function useCollaborationActions(updateState) {
     loadExchanges,
     loadTopology,
     loadSyncStatus,
+    generateCode,
+    connectWithCode,
+    disconnectPeer,
+    exchangeKnowledge,
   };
 }
 
@@ -127,59 +209,7 @@ export function useCollaborationBinding() {
   };
 }
 
-// ========== Mock API函数 / Mock API functions ==========
-// TODO: 替换为真实的API调用 / Replace with real API calls
-
-async function fetchPeers() {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, name: 'Node A', status: 'online' },
-        { id: 2, name: 'Node B', status: 'online' },
-        { id: 3, name: 'Node C', status: 'offline' },
-      ]);
-    }, 500);
-  });
-}
-
-async function fetchExchanges() {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve([
-        { id: 1, from: 'Node A', to: 'Node B', time: '2025-12-12 10:00' },
-        { id: 2, from: 'Node B', to: 'Node C', time: '2025-12-12 10:05' },
-      ]);
-    }, 500);
-  });
-}
-
-async function fetchTopology() {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        nodes: [
-          { id: 'A', label: 'Node A' },
-          { id: 'B', label: 'Node B' },
-          { id: 'C', label: 'Node C' },
-        ],
-        edges: [
-          { from: 'A', to: 'B' },
-          { from: 'B', to: 'C' },
-        ],
-      });
-    }, 500);
-  });
-}
-
-async function fetchSyncStatus() {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        lastSync: '2025-12-12 10:10',
-        status: 'synced',
-        pending: 0,
-      });
-    }, 500);
-  });
-}
+// ========== 真实 API 已集成 / Real API integrated ==========
+// 所有 API 调用通过 collaborationApi 模块进行
+// All API calls are made through the collaborationApi module
 

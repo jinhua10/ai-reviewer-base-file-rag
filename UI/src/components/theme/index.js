@@ -7,4 +7,8 @@
 
 export { default as UIThemeSwitcher } from './UIThemeSwitcher';
 export { default as ThemeRenderingEngine } from './ThemeRenderingEngine';
+export { default as ThemeEngineErrorBoundary } from './ThemeEngineErrorBoundary';
+
+// 主题壳子导出 / Theme Shells Export
+export * from './shells';
 
