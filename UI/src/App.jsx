@@ -9,9 +9,10 @@
  */
 
 import React, { useState } from 'react'
+import { ConfigProvider, theme as antdTheme } from 'antd'
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
-import { ThemeProvider } from './contexts/ThemeContext'
-import { Header } from './components/layout'
+import { ThemeProvider, useTheme } from './contexts/ThemeContext'
+import { ModernLayout } from './components/layout'
 import { ErrorBoundary } from './components/common'
 import { QAPanel } from './components/qa'
 import { DocumentList } from './components/document'
@@ -22,25 +23,26 @@ import { WishList } from './components/wish'
 import { ServiceMarket } from './components/service'
 import { UserProfile } from './components/profile'
 import { AdminPanel } from './components/admin'
-import './assets/css/header.css'
+import './assets/css/main.css'
 import './assets/css/error-boundary.css'
 
 /**
- * 应用内容组件 (App Content Component)
- * 使用语言上下文 (Uses language context)
+ * 应用内容组件 / App Content Component
+ * 使用语言和主题上下文 / Uses language and theme context
  */
 function AppContent() {
   const { t } = useLanguage()
+  const { theme: currentTheme, themeName } = useTheme()
   const [activeMenu, setActiveMenu] = useState('qa')
 
-  // 菜单点击处理 (Menu click handler)
+  // 菜单点击处理 / Menu click handler
   const handleMenuClick = (key) => {
     setActiveMenu(key)
     console.log('Navigate to:', key)
   }
 
   /**
-   * 渲染页面内容 (Render page content)
+   * 渲染页面内容 / Render page content
    */
   const renderContent = () => {
     switch (activeMenu) {
@@ -67,22 +69,30 @@ function AppContent() {
     }
   }
 
-  return (
-    <ErrorBoundary>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-        {/* 导航栏 */}
-        <Header
-          activeKey={activeMenu}
-          onMenuClick={handleMenuClick}
-          showLanguageToggle={true}
-        />
+  // 配置Ant Design主题 / Configure Ant Design theme
+  const antdThemeConfig = {
+    algorithm: themeName === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
+    token: {
+      colorPrimary: currentTheme.primary,
+      colorBgContainer: currentTheme.surface,
+      colorBgElevated: currentTheme.surface,
+      colorText: currentTheme.text,
+      colorTextSecondary: currentTheme.textSecondary,
+      colorBorder: currentTheme.border,
+    },
+  }
 
-        {/* 主内容 */}
-        <div style={{ flex: 1, overflow: 'hidden' }}>
+  return (
+    <ConfigProvider theme={antdThemeConfig}>
+      <ErrorBoundary>
+        <ModernLayout
+          activeKey={activeMenu}
+          onMenuChange={handleMenuClick}
+        >
           {renderContent()}
-        </div>
-      </div>
-    </ErrorBoundary>
+        </ModernLayout>
+      </ErrorBoundary>
+    </ConfigProvider>
   )
 }
 

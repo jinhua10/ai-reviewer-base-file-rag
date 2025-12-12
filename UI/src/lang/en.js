@@ -42,6 +42,28 @@ export default {
   },
 
   // ============================================================================
+  // Theme Customizer
+  // ============================================================================
+  theme: {
+    customizer: {
+      title: 'Theme Customizer',
+      primary: 'Primary Color',
+      background: 'Background Color',
+      surface: 'Surface Color',
+      text: 'Primary Text Color',
+      textSecondary: 'Secondary Text Color',
+      border: 'Border Color',
+      apply: 'Apply',
+      reset: 'Reset',
+      applySuccess: 'Theme applied successfully',
+      resetSuccess: 'Reset to default theme',
+      previewText: 'This is primary text',
+      previewSecondary: 'This is secondary text',
+      previewButton: 'Primary Button',
+    },
+  },
+
+  // ============================================================================
   // Navigation
   // ============================================================================
   nav: {

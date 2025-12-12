@@ -1,0 +1,221 @@
+/**
+ * 现代化应用布局组件 / Modern App Layout Component
+ *
+ * 提供侧边栏导航和主内容区的现代化布局
+ * Provides modern layout with sidebar navigation and main content area
+ *
+ * @author AI Reviewer Team
+ * @since 2025-12-12
+ */
+
+import React, { useState } from 'react';
+import { Layout, Menu, Button, Drawer, Dropdown } from 'antd';
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  MessageOutlined,
+  FileOutlined,
+  TeamOutlined,
+  LikeOutlined,
+  ShareAltOutlined,
+  StarOutlined,
+  RocketOutlined,
+  UserOutlined,
+  SettingOutlined,
+  BulbOutlined,
+  GlobalOutlined,
+  BgColorsOutlined,
+} from '@ant-design/icons';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import ThemeCustomizer from './ThemeCustomizer';
+import './modern-layout.css';
+
+const { Header, Sider, Content } = Layout;
+
+/**
+ * 现代化布局组件 / Modern Layout Component
+ */
+function ModernLayout({ children, activeKey, onMenuChange }) {
+  const { t, language, toggleLanguage } = useLanguage();
+  const { themeName, setTheme, presetThemes } = useTheme();
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [customizerOpen, setCustomizerOpen] = useState(false);
+
+  // 菜单项配置 / Menu items configuration
+  const menuItems = [
+    {
+      key: 'qa',
+      icon: <MessageOutlined />,
+      label: t('nav.qa'),
+    },
+    {
+      key: 'documents',
+      icon: <FileOutlined />,
+      label: t('nav.documents'),
+    },
+    {
+      key: 'roles',
+      icon: <TeamOutlined />,
+      label: t('nav.roles'),
+    },
+    {
+      key: 'feedback',
+      icon: <LikeOutlined />,
+      label: t('nav.feedback'),
+    },
+    {
+      key: 'collaboration',
+      icon: <ShareAltOutlined />,
+      label: t('nav.collaboration'),
+    },
+    {
+      key: 'wish',
+      icon: <StarOutlined />,
+      label: t('nav.wish'),
+    },
+    {
+      key: 'aiService',
+      icon: <RocketOutlined />,
+      label: t('nav.aiService'),
+    },
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: t('nav.profile'),
+    },
+    {
+      key: 'admin',
+      icon: <SettingOutlined />,
+      label: t('nav.admin'),
+    },
+  ];
+
+  // 主题切换菜单 / Theme switch menu
+  const themeMenuItems = Object.keys(presetThemes).map(key => ({
+    key,
+    label: (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div
+          style={{
+            width: 16,
+            height: 16,
+            borderRadius: 4,
+            background: presetThemes[key].primary,
+          }}
+        />
+        {presetThemes[key].name}
+      </div>
+    ),
+    onClick: () => setTheme(key),
+  }));
+
+  return (
+    <Layout className="modern-layout">
+      {/* 侧边栏 / Sidebar */}
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        breakpoint="lg"
+        collapsedWidth={80}
+        width={240}
+        className="modern-layout__sider"
+        style={{
+          background: 'var(--theme-surface)',
+          borderRight: '1px solid var(--theme-border)',
+        }}
+      >
+        {/* Logo区域 / Logo area */}
+        <div className="modern-layout__logo">
+          <span className="modern-layout__logo-icon">🤖</span>
+          {!collapsed && (
+            <span className="modern-layout__logo-text">AI Reviewer</span>
+          )}
+        </div>
+
+        {/* 菜单 / Menu */}
+        <Menu
+          mode="inline"
+          selectedKeys={[activeKey]}
+          items={menuItems}
+          onClick={({ key }) => onMenuChange(key)}
+          className="modern-layout__menu"
+          style={{
+            background: 'var(--theme-surface)',
+            color: 'var(--theme-text)',
+            borderRight: 'none',
+          }}
+        />
+      </Sider>
+
+      <Layout className="modern-layout__main">
+        {/* 顶部导航栏 / Top navigation bar */}
+        <Header
+          className="modern-layout__header"
+          style={{
+            background: 'var(--theme-surface)',
+            borderBottom: '1px solid var(--theme-border)',
+            color: 'var(--theme-text)',
+          }}
+        >
+          <div className="modern-layout__header-left">
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              className="modern-layout__trigger"
+            />
+          </div>
+
+          <div className="modern-layout__header-right">
+            {/* 主题选择器 / Theme selector */}
+            <Dropdown
+              menu={{ items: themeMenuItems }}
+              placement="bottomRight"
+            >
+              <Button type="text" icon={<BgColorsOutlined />} />
+            </Dropdown>
+
+            {/* 主题定制器 / Theme customizer */}
+            <Button
+              type="text"
+              icon={<BulbOutlined />}
+              onClick={() => setCustomizerOpen(true)}
+            />
+
+            {/* 语言切换 / Language toggle */}
+            <Button
+              type="text"
+              icon={<GlobalOutlined />}
+              onClick={toggleLanguage}
+            >
+              {language === 'zh' ? 'EN' : '中文'}
+            </Button>
+          </div>
+        </Header>
+
+        {/* 主内容区 / Main content area */}
+        <Content
+          className="modern-layout__content"
+          style={{
+            background: 'var(--theme-background)',
+            color: 'var(--theme-text)',
+          }}
+        >
+          {children}
+        </Content>
+      </Layout>
+
+      {/* 主题定制器抽屉 / Theme customizer drawer */}
+      <ThemeCustomizer
+        open={customizerOpen}
+        onClose={() => setCustomizerOpen(false)}
+      />
+    </Layout>
+  );
+}
+
+export default ModernLayout;
+

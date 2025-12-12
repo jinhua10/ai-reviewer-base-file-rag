@@ -154,22 +154,26 @@
    全局样式 (Global Styles)
    ============================================================================ */
 body {
-  background: var(--primary-gradient);
-  background-attachment: fixed;
+  background: var(--theme-background, var(--bg-primary));
+  color: var(--theme-text, var(--text-primary));
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
-  padding: var(--spacing-lg);
+  padding: 0;
+  min-height: 100vh;
 }
 
 /* ============================================================================
    应用容器 (App Container)
    ============================================================================ */
 .app-container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  min-height: 100vh;
   position: relative;
+  background: var(--theme-background, var(--bg-primary));
+  color: var(--theme-text, var(--text-primary));
 }
 
 /* 语言切换按钮 (Language Toggle) */
