@@ -15,7 +15,9 @@ import {
   MessageOutlined,
   FileOutlined,
   TeamOutlined,
-  GlobalOutlined
+  GlobalOutlined,
+  LikeOutlined,
+  ShareAltOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '@contexts/LanguageContext'
 import PropTypes from 'prop-types'

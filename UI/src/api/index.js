@@ -10,12 +10,16 @@
 
 import axios from 'axios'
 import { Toast } from '@components/common'
+import { mockRequest, ENABLE_MOCK } from './mock'
 
 // API 基础路径 (API base URL)
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api'
 
 // 请求超时时间（毫秒）(Request timeout in milliseconds)
 const TIMEOUT = 30000
+
+// 是否启用自动降级到 Mock（后端不可用时）
+const AUTO_FALLBACK_TO_MOCK = true
 
 /**
  * 创建 Axios 实例 (Create Axios instance)
@@ -69,15 +73,29 @@ axiosInstance.interceptors.response.use(
     // 返回数据 (Return data)
     return response.data
   },
-  (error) => {
+  async (error) => {
     // 处理错误响应 (Handle error response)
     console.error('❌ Response error:', error)
+
+    // 如果后端不可用且启用了自动降级，尝试使用 Mock 数据
+    if (AUTO_FALLBACK_TO_MOCK && (!error.response || error.code === 'ERR_NETWORK')) {
+      console.warn('⚠️ Backend unavailable, falling back to mock data')
+      const mockResponse = await mockRequest(
+        error.config.url,
+        error.config.method?.toUpperCase(),
+        error.config.data
+      )
+      if (mockResponse) {
+        console.log('✅ Using mock data:', error.config.url)
+        return mockResponse
+      }
+    }
 
     // 获取错误信息 (Get error message)
     const message = getErrorMessage(error)
 
     // 显示错误提示 (Show error toast)
-    Toast.error(message)
+    // Toast.error(message) // 暂时注释，避免在使用 Mock 数据时显示错误
 
     // 特殊错误处理 (Special error handling)
     if (error.response) {
