@@ -168,6 +168,54 @@ export default {
     noDocuments: '暂无文档',
     noSearchResults: '未找到匹配的文档',
     loadFailed: '加载失败',
+    uploading: '上传中...',
+    selectFiles: '选择文件',
+    uploadProgress: '上传进度',
+    
+    // 搜索相关 / Search related
+    simpleSearch: '简单搜索',
+    advancedSearch: '高级搜索',
+    search: '搜索',
+    keyword: '关键词',
+    fileType: '文件类型',
+    fileSize: '文件大小',
+    minSize: '最小',
+    maxSize: '最大',
+    indexStatus: '索引状态',
+    dateRange: '日期范围',
+    sortBy: '排序',
+    applyFilters: '应用筛选',
+    resetFilters: '重置筛选',
+    refresh: '刷新',
+    refreshing: '刷新中...',
+    loading: '加载中...',
+    indexed: '已索引',
+    prevPage: '上一页',
+    nextPage: '下一页',
+    page: '第',
+    
+    searchMode: {
+      contains: '包含',
+      exact: '精确匹配',
+      regex: '正则表达式',
+    },
+    
+    indexStatus: {
+      all: '全部',
+      indexed: '已索引',
+      unindexed: '未索引',
+    },
+    
+    sortBy: {
+      date: '日期',
+      name: '名称',
+      size: '大小',
+    },
+    
+    sortOrder: {
+      asc: '升序',
+      desc: '降序',
+    },
 
     // Shell页面专用 / Shell page specific
     shell: {

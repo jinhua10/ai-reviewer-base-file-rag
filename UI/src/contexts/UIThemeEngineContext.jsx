@@ -71,7 +71,7 @@ export const UI_THEMES = {
     shellMapping: {
       qa: () => import('../components/theme/shells/bubble/QAShell'),
       home: () => import('../components/theme/shells/bubble/HomeShell'),
-      documents: () => import('../components/theme/shells/bubble/DocumentsShell'),
+      documents: () => import('../components/theme/shells/bubble/DocumentManagement'),
       collaboration: () => import('../components/theme/shells/bubble/CollaborationShell'),
       analytics: () => import('../components/theme/shells/bubble/AnalyticsShell'),
       settings: () => import('../components/theme/shells/bubble/SettingsShell'),

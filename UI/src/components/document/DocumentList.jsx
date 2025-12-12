@@ -1,8 +1,21 @@
 /**
- * 文档列表组件 (Document List Component)
- *
- * 展示文档列表，支持搜索、上传、删除等操作
- * (Displays document list with search, upload, delete operations)
+ * 文档列表组件 / Document List Component
+ * 
+ * 提供文档管理的完整功能，包括：
+ * - 文档列表展示（带分页）
+ * - 文档搜索功能
+ * - 文档上传功能
+ * - 文档删除操作
+ * - 文档下载功能
+ * - 文档详情查看
+ * 
+ * Provides complete document management features including:
+ * - Document list display (with pagination)
+ * - Document search functionality
+ * - Document upload functionality
+ * - Document deletion operations
+ * - Document download functionality
+ * - Document detail viewing
  *
  * @author AI Reviewer Team
  * @since 2025-12-12
@@ -21,30 +34,64 @@ import documentApi from '../../api/modules/document'
 import '../../assets/css/document/document-list.css'
 
 function DocumentList() {
+  // ============================================================================
+  // Hooks / 钩子
+  // ============================================================================
   const { t } = useLanguage()
 
-  // 状态管理
-  const [documents, setDocuments] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [uploadVisible, setUploadVisible] = useState(false)
-  const [detailVisible, setDetailVisible] = useState(false)
-  const [selectedDocument, setSelectedDocument] = useState(null)
+  // ============================================================================
+  // State / 状态管理
+  // ============================================================================
+  
+  // 文档列表状态 (Document list state)
+  const [documents, setDocuments] = useState([]) // 文档数组 (Documents array)
+  const [loading, setLoading] = useState(false) // 加载状态 (Loading state)
+  const [total, setTotal] = useState(0) // 文档总数 (Total documents count)
+  
+  // UI 状态 (UI state)
+  const [uploadVisible, setUploadVisible] = useState(false) // 上传对话框可见性 (Upload dialog visibility)
+  const [detailVisible, setDetailVisible] = useState(false) // 详情对话框可见性 (Detail dialog visibility)
+  const [selectedDocument, setSelectedDocument] = useState(null) // 选中的文档 (Selected document)
+  
+  // 搜索参数 (Search parameters)
   const [searchParams, setSearchParams] = useState({
-    keyword: '',
-    page: 1,
-    pageSize: 20,
+    keyword: '', // 搜索关键词 (Search keyword)
+    page: 1, // 当前页码 (Current page number)
+    pageSize: 20, // 每页数量 (Items per page)
   })
-  const [total, setTotal] = useState(0)
 
+  // ============================================================================
+  // API Functions / API 函数
+  // ============================================================================
+  
   /**
-   * 加载文档列表
+   * 加载文档列表 (Load documents list)
+   * 
+   * 根据当前搜索参数从后端获取文档列表
+   * Fetch documents list from backend based on current search parameters
+   * 
+   * @returns {Promise<void>}
    */
   const loadDocuments = useCallback(async () => {
     setLoading(true)
     try {
       const response = await documentApi.getList(searchParams)
+      console.log('API Response:', response) // 调试日志 (Debug log)
       if (response?.data) {
-        setDocuments(response.data.list || [])
+        // 后端返回 documents 字段 (Backend returns documents field)
+        // DocumentInfo: { fileName, fileSize, fileType, uploadTime, indexed }
+        const documentsList = response.data.documents || []
+        console.log('Documents:', documentsList) // 调试日志 (Debug log)
+        
+        // 映射后端字段到前端期望的字段 (Map backend fields to frontend expected fields)
+        const mappedDocuments = documentsList.map(doc => ({
+          ...doc,
+          name: doc.fileName, // 后端返回 fileName (Backend returns fileName)
+          size: doc.fileSize, // 后端返回 fileSize (Backend returns fileSize)
+          id: doc.fileName, // 使用 fileName 作为 id (Use fileName as id)
+        }))
+        
+        setDocuments(mappedDocuments)
         setTotal(response.data.total || 0)
       }
     } catch (error) {
@@ -56,14 +103,23 @@ function DocumentList() {
   }, [searchParams, t])
 
   /**
-   * 初始加载
+   * 初始化 - 加载文档列表 (Initialize - load documents list)
    */
   useEffect(() => {
     loadDocuments()
   }, [loadDocuments])
 
+  // ============================================================================
+  // Event Handlers / 事件处理函数
+  // ============================================================================
+  
   /**
-   * 处理搜索
+   * 处理搜索事件 (Handle search event)
+   * 
+   * 更新搜索关键词并重置到第一页
+   * Update search keyword and reset to first page
+   * 
+   * @param {string} keyword - 搜索关键词 (Search keyword)
    */
   const handleSearch = useCallback((keyword) => {
     setSearchParams(prev => ({
@@ -74,14 +130,22 @@ function DocumentList() {
   }, [])
 
   /**
-   * 处理刷新
+   * 处理刷新事件 (Handle refresh event)
+   * 
+   * 重新加载文档列表
+   * Reload documents list
    */
   const handleRefresh = useCallback(() => {
     loadDocuments()
   }, [loadDocuments])
 
   /**
-   * 处理上传成功
+   * 处理上传成功事件 (Handle upload success event)
+   * 
+   * 关闭上传对话框，显示成功消息，并刷新文档列表
+   * Close upload dialog, show success message, and refresh documents list
+   * 
+   * @returns {Promise<void>}
    */
   const handleUploadSuccess = useCallback(() => {
     setUploadVisible(false)
@@ -90,7 +154,12 @@ function DocumentList() {
   }, [loadDocuments, t])
 
   /**
-   * 处理查看详情
+   * 处理查看详情事件 (Handle view detail event)
+   * 
+   * 打开文档详情对话框
+   * Open document detail dialog
+   * 
+   * @param {Object} doc - 文档对象 (Document object)
    */
   const handleViewDetail = useCallback((doc) => {
     setSelectedDocument(doc)
@@ -98,7 +167,14 @@ function DocumentList() {
   }, [])
 
   /**
-   * 处理删除
+   * 处理文档删除事件 (Handle document deletion event)
+   * 
+   * 显示确认对话框，确认后删除文档并刷新列表
+   * Show confirmation dialog, delete document after confirmation and refresh list
+   * 
+   * @param {Object} doc - 要删除的文档对象 (Document object to delete)
+   * @param {string} doc.id - 文档ID (Document ID)
+   * @param {string} doc.name - 文档名称 (Document name)
    */
   const handleDelete = useCallback((doc) => {
     Modal.confirm({
@@ -109,7 +185,8 @@ function DocumentList() {
       okType: 'danger',
       onOk: async () => {
         try {
-          await documentApi.delete(doc.id)
+          // 后端删除接口使用 fileName 作为路径参数 (Backend delete API uses fileName as path parameter)
+          await documentApi.delete(doc.fileName || doc.name)
           message.success(t('document.deleteSuccess'))
           loadDocuments()
         } catch (error) {
@@ -121,11 +198,20 @@ function DocumentList() {
   }, [loadDocuments, t])
 
   /**
-   * 处理下载
+   * 处理文档下载事件 (Handle document download event)
+   * 
+   * 从后端下载文档并触发浏览器下载
+   * Download document from backend and trigger browser download
+   * 
+   * @param {Object} doc - 要下载的文档对象 (Document object to download)
+   * @param {string} doc.id - 文档ID (Document ID)
+   * @param {string} doc.name - 文档名称 (Document name)
+   * @returns {Promise<void>}
    */
   const handleDownload = useCallback(async (doc) => {
     try {
-      const blob = await documentApi.download(doc.id)
+      // 后端下载接口使用 fileName 作为路径参数 (Backend download API uses fileName as path parameter)
+      const blob = await documentApi.download(doc.fileName || doc.name)
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url

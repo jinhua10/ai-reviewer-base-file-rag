@@ -203,6 +203,54 @@ export default {
     noDocuments: 'No documents yet',
     noSearchResults: 'No matching documents found',
     loadFailed: 'Failed to load',
+    uploading: 'Uploading...',
+    selectFiles: 'Select Files',
+    uploadProgress: 'Upload Progress',
+    
+    // Search related
+    simpleSearch: 'Simple Search',
+    advancedSearch: 'Advanced Search',
+    search: 'Search',
+    keyword: 'Keyword',
+    fileType: 'File Type',
+    fileSize: 'File Size',
+    minSize: 'Min',
+    maxSize: 'Max',
+    indexStatus: 'Index Status',
+    dateRange: 'Date Range',
+    sortBy: 'Sort By',
+    applyFilters: 'Apply Filters',
+    resetFilters: 'Reset Filters',
+    refresh: 'Refresh',
+    refreshing: 'Refreshing...',
+    loading: 'Loading...',
+    indexed: 'Indexed',
+    prevPage: 'Previous',
+    nextPage: 'Next',
+    page: 'Page',
+    
+    searchMode: {
+      contains: 'Contains',
+      exact: 'Exact Match',
+      regex: 'Regular Expression',
+    },
+    
+    indexStatus: {
+      all: 'All',
+      indexed: 'Indexed',
+      unindexed: 'Unindexed',
+    },
+    
+    sortBy: {
+      date: 'Date',
+      name: 'Name',
+      size: 'Size',
+    },
+    
+    sortOrder: {
+      asc: 'Ascending',
+      desc: 'Descending',
+    },
   },
 
   // ============================================================================
