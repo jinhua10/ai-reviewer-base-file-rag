@@ -35,68 +35,74 @@ const qaApi = {
 
   /**
    * 流式问答 (Streaming Q&A)
+   * 
+   * 注意：后端 /qa/ask 接口返回完整答案，前端模拟流式显示效果
+   * Note: Backend /qa/ask returns complete answer, frontend simulates streaming effect
+   * 
    * @param {Object} params - 问题参数
    * @param {string} params.question - 问题内容
    * @param {Function} onChunk - 数据块回调
-   * @returns {Promise} 返回一个包含sessionId和sseUrl的对象
+   * @returns {Promise} 返回sessionId等信息
    */
   async askStreaming(params, onChunk) {
     try {
-      // 步骤1: 发起流式请求，获取sessionId和sseUrl
-      // Step 1: Initiate streaming request, get sessionId and sseUrl
-      const response = await request.post('/qa/stream', {
+      // 调用后端 /ask 接口获取完整答案 (Call backend /ask API to get complete answer)
+      const response = await request.post('/qa/ask', {
         question: params.question,
-        userId: 'web-user-' + Date.now()
+        hopeSessionId: params.hopeSessionId || null
       })
 
-      const { sessionId, sseUrl, hopeAnswer } = response.data || response
+      // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+      const { 
+        answer, 
+        sessionId, 
+        sources, 
+        hopeSource, 
+        directAnswer,
+        strategyUsed,
+        hopeConfidence 
+      } = response
 
-      // 如果HOPE能直接回答，立即返回
-      // If HOPE can answer directly, return immediately
-      if (hopeAnswer && hopeAnswer.canDirectAnswer) {
-        if (onChunk) {
-          onChunk({
-            content: hopeAnswer.answer,
-            done: true,
-            source: 'HOPE',
-            confidence: hopeAnswer.confidence
-          })
-        }
-        return { sessionId, closed: true }
+      if (!onChunk) {
+        return { sessionId, answer, sources }
       }
 
-      // 步骤2: 使用SSE接收流式数据
-      // Step 2: Use SSE to receive streaming data
-      const fullUrl = sseUrl.startsWith('http') ? sseUrl : window.location.origin + sseUrl
-      const eventSource = new EventSource(fullUrl)
+      // 模拟流式输出：逐字显示答案 (Simulate streaming: display answer character by character)
+      const text = answer || ''
+      const chunkSize = 3 // 每次显示3个字符 (Display 3 characters at a time)
+      const delay = 30 // 每次延迟30ms (Delay 30ms each time)
 
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          if (onChunk) {
-            onChunk(data)
-          }
-          // 如果收到完成标记，关闭连接
-          // If done signal received, close connection
-          if (data.done || data.type === 'done') {
-            eventSource.close()
-          }
-        } catch (error) {
-          console.error('❌ Failed to parse SSE data:', error)
+      for (let i = 0; i < text.length; i += chunkSize) {
+        const chunk = text.slice(i, i + chunkSize)
+        onChunk({
+          content: chunk,
+          done: false,
+          source: hopeSource || strategyUsed,
+          confidence: hopeConfidence
+        })
+        
+        // 延迟以产生流式效果 (Delay to create streaming effect)
+        if (i + chunkSize < text.length) {
+          await new Promise(resolve => setTimeout(resolve, delay))
         }
       }
 
-      eventSource.onerror = (error) => {
-        console.error('❌ SSE connection error:', error)
-        eventSource.close()
-        if (onChunk) {
-          onChunk({ error: true, message: 'Connection lost' })
-        }
-      }
+      // 发送完成信号和来源信息 (Send completion signal and source information)
+      onChunk({
+        content: '',
+        done: true,
+        sources: sources || [],
+        sessionId,
+        hopeSource,
+        directAnswer,
+        strategyUsed,
+        confidence: hopeConfidence
+      })
 
-      return { sessionId, eventSource }
+      return { sessionId, answer, sources }
+
     } catch (error) {
-      console.error('❌ Failed to start streaming:', error)
+      console.error('❌ Failed to ask question:', error)
       throw error
     }
   },

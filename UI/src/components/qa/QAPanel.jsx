@@ -117,8 +117,9 @@ function QAPanel() {
       // 获取相似问题 / Get similar questions
       try {
         const similarData = await qaApi.getSimilarQuestions(question)
-        if (similarData?.data) {
-          setSimilarQuestions(similarData.data)
+        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
+        if (similarData) {
+          setSimilarQuestions(similarData)
         }
       } catch (err) {
         console.warn('⚠️ Failed to get similar questions:', err)
