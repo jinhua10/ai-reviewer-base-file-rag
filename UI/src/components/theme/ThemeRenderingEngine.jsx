@@ -58,16 +58,67 @@ function ThemeRenderingEngine({ children, activeKey, onMenuChange }) {
     );
   }
 
+  // 检查当前主题是否有对应页面的Shell / Check if current theme has shell for current page
+  const shellMapping = currentThemeConfig?.shellMapping;
+  const hasShellForPage = shellMapping && shellMapping[activeKey];
+
   // 渲染对应主题的布局 / Render layout for corresponding theme
   return (
     <Suspense fallback={<ThemeLoadingFallback />}>
       <div className={`theme-container theme-container--${currentUITheme}`} data-ui-theme={currentUITheme}>
         <LayoutComponent activeKey={activeKey} onMenuChange={onMenuChange} themeConfig={currentThemeConfig}>
-          {children}
+          {/* 如果主题有Shell，则使用Shell渲染；否则使用原有的children */}
+          {/* If theme has Shell, use Shell rendering; otherwise use original children */}
+          {hasShellForPage ? <ThemeShellRenderer activeKey={activeKey} /> : children}
         </LayoutComponent>
       </div>
     </Suspense>
   );
+}
+
+/**
+ * 主题Shell渲染器 / Theme Shell Renderer
+ * 动态加载并渲染对应页面的Shell组件
+ */
+function ThemeShellRenderer({ activeKey }) {
+  const { currentThemeConfig } = useUIThemeEngine();
+  const [ShellComponent, setShellComponent] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function loadShell() {
+      setLoading(true);
+      try {
+        const shellMapping = currentThemeConfig?.shellMapping;
+        if (shellMapping && shellMapping[activeKey]) {
+          const shellModule = await shellMapping[activeKey]();
+          setShellComponent(() => shellModule.default);
+        }
+      } catch (error) {
+        console.error(`Failed to load shell for ${activeKey}:`, error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadShell();
+  }, [activeKey, currentThemeConfig]);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
+        <Spin size="large" tip="加载页面中... / Loading page...">
+          <div style={{ padding: 50 }} />
+        </Spin>
+      </div>
+    );
+  }
+
+  if (!ShellComponent) {
+    return null;
+  }
+
+  return <ShellComponent />;
 }
 
 /**

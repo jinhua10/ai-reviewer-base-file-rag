@@ -38,7 +38,6 @@ public class WishService {
 
     // 文档类型标识 (Document type identifier)
     private static final String DOC_TYPE_WISH = "wish";
-    private static final String WISH_COLLECTION = "wishes";
 
     public WishService(SimpleRAGService ragService) {
         this.ragService = ragService;
@@ -81,7 +80,7 @@ public class WishService {
             doc.setMetadata(metadata);
 
             // 索引到文档管理系统 (Index to document management system)
-            ragService.indexDocument(doc);
+            ragService.getRag().index(doc);
 
             log.info(I18N.get("wish.submit.success"), wish.getId());
             return toDTO(wish);
@@ -128,7 +127,7 @@ public class WishService {
             wishes = filterWishes(wishes, status, category);
 
             // 排序 (Sort)
-            wishes = sortWishes(wishes, sortBy);
+            sortWishes(wishes, sortBy);
 
             // 分页 (Pagination)
             int total = wishes.size();
@@ -170,13 +169,16 @@ public class WishService {
 
         try {
             // 从文档管理系统获取 (Get from document management system)
-            Document doc = ragService.getDocumentById(id);
+            Document doc = ragService.getDocument(id);
             if (doc == null) {
                 throw new RuntimeException(I18N.get("wish.not_found", id));
             }
 
             // 转换为 Wish 对象 (Convert to Wish object)
             Wish wish = documentToWish(doc);
+            if (wish == null) {
+                throw new RuntimeException(I18N.get("wish.not_found", id));
+            }
 
             // 转换为详情 DTO (Convert to detail DTO)
             WishDetailDTO detailDTO = toDetailDTO(wish);
@@ -207,22 +209,30 @@ public class WishService {
 
         try {
             // 获取愿望文档 (Get wish document)
-            Document doc = ragService.getDocumentById(wishId);
+            Document doc = ragService.getDocument(wishId);
             if (doc == null) {
                 throw new RuntimeException(I18N.get("wish.not_found", wishId));
             }
 
             Wish wish = documentToWish(doc);
+            if (wish == null) {
+                throw new RuntimeException(I18N.get("wish.not_found", wishId));
+            }
             String userId = request.getUserId() != null ? request.getUserId().toString() : "anonymous";
 
             // 检查是否已投票 (Check if already voted)
-            String existingVote = wish.getVotes().get(userId);
+            Map<String, String> votes = wish.getVotes();
+            if (votes == null) {
+                votes = new HashMap<>();
+                wish.setVotes(votes);
+            }
+            String existingVote = votes.get(userId);
 
             VoteResultDTO result = new VoteResultDTO();
 
             if (request.getVoteType().equals(existingVote)) {
                 // 取消投票 (Cancel vote)
-                wish.getVotes().remove(userId);
+                votes.remove(userId);
                 if ("up".equals(existingVote)) {
                     wish.setUpVotes(wish.getUpVotes() - 1);
                 } else {
@@ -241,7 +251,7 @@ public class WishService {
                     }
                 }
 
-                wish.getVotes().put(userId, request.getVoteType());
+                votes.put(userId, request.getVoteType());
                 if ("up".equals(request.getVoteType())) {
                     wish.setUpVotes(wish.getUpVotes() + 1);
                 } else {
@@ -287,12 +297,15 @@ public class WishService {
 
         try {
             // 获取愿望文档 (Get wish document)
-            Document doc = ragService.getDocumentById(wishId);
+            Document doc = ragService.getDocument(wishId);
             if (doc == null) {
                 throw new RuntimeException(I18N.get("wish.not_found", wishId));
             }
 
             Wish wish = documentToWish(doc);
+            if (wish == null) {
+                throw new RuntimeException(I18N.get("wish.not_found", wishId));
+            }
 
             // 创建评论 (Create comment)
             WishComment comment = new WishComment();
@@ -392,7 +405,7 @@ public class WishService {
     /**
      * 排序愿望 (Sort wishes)
      */
-    private List<Wish> sortWishes(List<Wish> wishes, String sortBy) {
+    private void sortWishes(List<Wish> wishes, String sortBy) {
         if ("voteCount".equals(sortBy)) {
             wishes.sort((w1, w2) -> w2.getVoteCount().compareTo(w1.getVoteCount()));
         } else if ("createdAt".equals(sortBy)) {
@@ -401,7 +414,6 @@ public class WishService {
             // 默认按创建时间倒序 (Default: sort by created time descending)
             wishes.sort((w1, w2) -> w2.getCreatedAt().compareTo(w1.getCreatedAt()));
         }
-        return wishes;
     }
 
     /**
@@ -428,7 +440,7 @@ public class WishService {
         doc.setContent(wishJson);
         doc.setMetadata(wish.toMetadata());
 
-        ragService.indexDocument(doc); // 重新索引 (Re-index)
+        ragService.getRag().index(doc); // 重新索引 (Re-index)
     }
 
     /**
