@@ -15,6 +15,7 @@ import { ErrorBoundary } from './components/common'
 import { QAPanel } from './components/qa'
 import { DocumentList } from './components/document'
 import { RoleList } from './components/role'
+import { FeedbackPanel } from './components/feedback'
 import './assets/css/header.css'
 import './assets/css/error-boundary.css'
 
@@ -44,7 +45,7 @@ function AppContent() {
       case 'roles':
         return <RoleList />
       case 'feedback':
-        return <div style={{ padding: '24px' }}>{t('nav.feedback')} - 开发中...</div>
+        return <FeedbackPanel />
       case 'collaboration':
         return <div style={{ padding: '24px' }}>{t('nav.collaboration')} - 开发中...</div>
       default:

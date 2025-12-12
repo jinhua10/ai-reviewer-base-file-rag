@@ -191,14 +191,53 @@ export default {
     conflictList: 'Conflict List',
     voting: 'Voting',
     evolution: 'Evolution History',
-    quality: 'Quality Monitor',
+    quality: 'Quality Monitoring',
+
+    // Status
+    all: 'All',
+    pending: 'Pending',
+    resolved: 'Resolved',
+
+    // Conflicts
     conceptA: 'Concept A',
     conceptB: 'Concept B',
+    conceptConflict: 'Concept Conflict',
     vote: 'Vote',
-    voteA: 'Choose A',
-    voteB: 'Choose B',
+    voteA: 'Vote A',
+    voteB: 'Vote B',
     voteSuccess: 'Vote successful',
-    timeline: 'Timeline',
+    whichBetter: 'Which one is better?',
+    context: 'Context',
+
+    // Status labels
+    status: {
+      pending: 'Pending',
+      voting: 'Voting',
+      resolved: 'Resolved',
+    },
+
+    // Timeline
+    timeline: {
+      created: 'Created',
+      updated: 'Updated',
+      resolved: 'Resolved',
+    },
+    before: 'Before',
+    after: 'After',
+
+    // Quality Monitor
+    concept: 'Concept',
+    conflicts: 'Conflicts',
+    totalConflicts: 'Total Conflicts',
+    resolvedConflicts: 'Resolved',
+    pendingConflicts: 'Pending',
+    avgQuality: 'Avg Quality',
+    conceptQuality: 'Concept Quality',
+
+    // Empty states
+    noConflicts: 'No conflicts yet',
+    noEvolution: 'No evolution history',
+    loadFailed: 'Failed to load',
   },
 
   // ============================================================================

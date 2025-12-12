@@ -192,13 +192,52 @@ export default {
     voting: '投票',
     evolution: '演化历史',
     quality: '质量监控',
+
+    // 状态
+    all: '全部',
+    pending: '待处理',
+    resolved: '已解决',
+
+    // 冲突
     conceptA: '概念 A',
     conceptB: '概念 B',
+    conceptConflict: '概念冲突',
     vote: '投票',
     voteA: '选择 A',
     voteB: '选择 B',
     voteSuccess: '投票成功',
-    timeline: '时间线',
+    whichBetter: '您认为哪个更好？',
+    context: '上下文',
+
+    // 状态标签
+    status: {
+      pending: '待处理',
+      voting: '投票中',
+      resolved: '已解决',
+    },
+
+    // 时间线
+    timeline: {
+      created: '创建',
+      updated: '更新',
+      resolved: '解决',
+    },
+    before: '修改前',
+    after: '修改后',
+
+    // 质量监控
+    concept: '概念',
+    conflicts: '冲突数',
+    totalConflicts: '总冲突数',
+    resolvedConflicts: '已解决',
+    pendingConflicts: '待处理',
+    avgQuality: '平均质量',
+    conceptQuality: '概念质量',
+
+    // 空状态
+    noConflicts: '暂无冲突',
+    noEvolution: '暂无演化历史',
+    loadFailed: '加载失败',
   },
 
   // ============================================================================
