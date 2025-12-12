@@ -79,6 +79,17 @@
     transition: none;
 }
 
+/* 拖放高亮（面板级别） */
+.floating-ai-panel--drag-over {
+    box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.4), 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+    border: 2px solid #1890ff !important;
+}
+
+.floating-ai-panel--minimized.floating-ai-panel--drag-over {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
 /* 调整大小手柄 */
 .floating-ai-panel__resize-handle {
     position: absolute;

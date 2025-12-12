@@ -172,11 +172,16 @@ function FloatingAIPanel() {
                 const document = JSON.parse(jsonData)
                 console.log('📥 Dropped document to AI panel:', document)
                 addDocToAIAnalysis(document)
+                
+                // 确保面板可见（但不展开最小化状态）
+                if (!showFloatingAI) {
+                    setShowFloatingAI(true)
+                }
             }
         } catch (error) {
             console.error('Failed to parse dropped document:', error)
         }
-    }, [addDocToAIAnalysis])
+    }, [addDocToAIAnalysis, showFloatingAI, setShowFloatingAI])
     const [resizeDirection, setResizeDirection] = useState(null)
     const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 })
 
@@ -633,8 +638,11 @@ function FloatingAIPanel() {
     return (
         <div
             ref={panelRef}
-            className={`floating-ai-panel ${dockedClassName} ${maximizedClassName} ${minimized ? 'floating-ai-panel--minimized' : ''} ${dragging || resizing ? 'floating-ai-panel--dragging' : ''}`}
+            className={`floating-ai-panel ${dockedClassName} ${maximizedClassName} ${minimized ? 'floating-ai-panel--minimized' : ''} ${dragging || resizing ? 'floating-ai-panel--dragging' : ''} ${dragOver ? 'floating-ai-panel--drag-over' : ''}`}
             style={panelStyle}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
         >
             {/* 调整大小手柄 */}
             {!minimized && !config.isMaximized && (
