@@ -41,6 +41,27 @@ spring:
       # 文件写入磁盘的阈值（0 表示始终写入磁盘）
       file-size-threshold: 0
 
+# 主题管理配置 / Theme Management Configuration
+theme:
+  # 主题上传路径 / Theme upload path
+  # 注意：这个路径会在编译后自动部署到target/classes/static/themes/
+  # Note: This path will be automatically deployed to target/classes/static/themes/ after compilation
+  upload-path: src/main/resources/static/themes/
+  # 最大文件大小（字节）/ Maximum file size (bytes)
+  # 10MB = 10 * 1024 * 1024 bytes
+  max-file-size: 10485760
+  # 允许的文件类型 / Allowed file types
+  allowed-types:
+    - application/json
+    - text/css
+    - text/javascript
+    - application/javascript
+    - image/png
+    - image/jpeg
+    - image/jpg
+    - image/gif
+    - image/svg+xml
+
 # 知识库问答系统配置
 knowledge:
   qa:

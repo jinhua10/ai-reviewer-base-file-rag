@@ -1,0 +1,88 @@
+# 主题管理服务国际化消息 - 中文
+# Theme Management Service I18n Messages - Chinese
+# 文件: src/main/resources/i18n/zh/zh-theme.yml
+
+theme:
+  # 主题上传 / Theme upload
+  upload:
+    success: "✅ 主题上传成功: themeId={0}"
+    failed: "❌ 主题上传失败: {0}"
+    invalid-id: "❌ 主题ID是必需的"
+    directory-exists: "⚠️ 主题目录已存在，将被覆盖: {0}"
+    directory-created: "✅ 创建主题目录成功: {0}"
+    config-saved: "✅ 保存主题配置成功: {0}"
+    file-type-not-allowed: "⚠️ 文件类型不允许: {0}"
+    file-size-exceeded: "⚠️ 文件大小超过限制: {0} 字节"
+    file-saved: "✅ 保存文件成功: {0}"
+    parsing-config: "📦 正在解析主题配置..."
+    creating-directory: "📁 正在创建主题目录..."
+    saving-files: "💾 正在保存主题文件..."
+
+  # 主题列表 / Theme list
+  list:
+    fetching: "📋 正在获取主题列表"
+    directory-not-exist: "📁 主题目录不存在，正在创建: {0}"
+    found-theme: "📋 找到主题: {0}"
+    returned: "✅ 返回 {0} 个主题"
+    read-failed: "❌ 读取主题配置失败: {0}"
+
+  # 主题详情 / Theme details
+  detail:
+    fetching: "🔍 正在获取主题详情: {0}"
+    not-found: "⚠️ 主题未找到: {0}"
+    retrieved: "✅ 获取主题成功: {0}"
+
+  # 主题删除 / Theme delete
+  delete:
+    deleting: "🗑️ 正在删除主题: {0}"
+    not-found: "⚠️ 主题未找到: {0}"
+    success: "✅ 主题删除成功: {0}"
+    failed: "❌ 主题删除失败: {0}"
+    file-delete-failed: "❌ 删除文件失败: {0}"
+
+  # 主题同步 / Theme sync
+  sync:
+    syncing: "🔄 正在同步主题: {0}"
+    success: "✅ 主题同步成功: {0}"
+    failed: "❌ 主题同步失败: {0}"
+
+  # 控制器消息 / Controller messages
+  controller:
+    upload-received: "📤 收到主题上传请求"
+    uploading-files: "📦 正在上传 {0} 个文件"
+    upload-success: "✅ 主题上传成功: {0}"
+    upload-failed: "❌ 主题上传失败: {0}"
+    list-fetching: "📋 正在获取主题列表"
+    list-returned: "✅ 返回 {0} 个主题"
+    detail-fetching: "🔍 正在获取主题详情: {0}"
+    detail-found: "✅ 找到主题: {0}"
+    detail-not-found: "⚠️ 主题未找到: {0}"
+    deleting: "🗑️ 正在删除主题: {0}"
+    delete-success: "✅ 主题删除成功: {0}"
+    delete-failed: "❌ 删除主题失败: {0}"
+    syncing: "🔄 正在同步主题: {0}"
+    sync-success: "✅ 主题同步成功: {0}"
+    sync-failed: "❌ 同步主题失败: {0}"
+
+  # 错误消息 / Error messages
+  error:
+    not-found: "主题未找到"
+    invalid-config: "无效的主题配置"
+    io-error: "IO错误: {0}"
+    parse-error: "解析错误: {0}"
+
+  # 健康检查 / Health check
+  health:
+    healthy: "健康"
+    service: "主题管理服务"
+
+  # 响应消息 / Response messages
+  response:
+    upload-success: "主题上传成功"
+    upload-failed: "主题上传失败"
+    delete-success: "主题删除成功"
+    delete-failed: "主题删除失败"
+    sync-success: "主题同步成功"
+    sync-failed: "主题同步失败"
+    theme-not-found: "主题未找到"
+

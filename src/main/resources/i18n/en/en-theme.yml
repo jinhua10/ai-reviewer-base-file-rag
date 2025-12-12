@@ -1,0 +1,88 @@
+# Theme Management Service I18n Messages - English
+# 主题管理服务国际化消息 - 英文
+# File: src/main/resources/i18n/en/en-theme.yml
+
+theme:
+  # Theme upload / 主题上传
+  upload:
+    success: "✅ Theme uploaded successfully: themeId={0}"
+    failed: "❌ Theme upload failed: {0}"
+    invalid-id: "❌ Theme ID is required"
+    directory-exists: "⚠️ Theme directory already exists, will overwrite: {0}"
+    directory-created: "✅ Theme directory created successfully: {0}"
+    config-saved: "✅ Theme configuration saved successfully: {0}"
+    file-type-not-allowed: "⚠️ File type not allowed: {0}"
+    file-size-exceeded: "⚠️ File size exceeded limit: {0} bytes"
+    file-saved: "✅ File saved successfully: {0}"
+    parsing-config: "📦 Parsing theme configuration..."
+    creating-directory: "📁 Creating theme directory..."
+    saving-files: "💾 Saving theme files..."
+
+  # Theme list / 主题列表
+  list:
+    fetching: "📋 Fetching theme list"
+    directory-not-exist: "📁 Theme directory does not exist, creating: {0}"
+    found-theme: "📋 Found theme: {0}"
+    returned: "✅ Returned {0} themes"
+    read-failed: "❌ Failed to read theme configuration: {0}"
+
+  # Theme details / 主题详情
+  detail:
+    fetching: "🔍 Fetching theme details: {0}"
+    not-found: "⚠️ Theme not found: {0}"
+    retrieved: "✅ Theme retrieved successfully: {0}"
+
+  # Theme delete / 主题删除
+  delete:
+    deleting: "🗑️ Deleting theme: {0}"
+    not-found: "⚠️ Theme not found: {0}"
+    success: "✅ Theme deleted successfully: {0}"
+    failed: "❌ Failed to delete theme: {0}"
+    file-delete-failed: "❌ Failed to delete file: {0}"
+
+  # Theme sync / 主题同步
+  sync:
+    syncing: "🔄 Syncing theme: {0}"
+    success: "✅ Theme synced successfully: {0}"
+    failed: "❌ Failed to sync theme: {0}"
+
+  # Controller messages / 控制器消息
+  controller:
+    upload-received: "📤 Received theme upload request"
+    uploading-files: "📦 Uploading {0} files"
+    upload-success: "✅ Theme uploaded successfully: {0}"
+    upload-failed: "❌ Theme upload failed: {0}"
+    list-fetching: "📋 Fetching theme list"
+    list-returned: "✅ Returned {0} themes"
+    detail-fetching: "🔍 Fetching theme details: {0}"
+    detail-found: "✅ Theme found: {0}"
+    detail-not-found: "⚠️ Theme not found: {0}"
+    deleting: "🗑️ Deleting theme: {0}"
+    delete-success: "✅ Theme deleted successfully: {0}"
+    delete-failed: "❌ Failed to delete theme: {0}"
+    syncing: "🔄 Syncing theme: {0}"
+    sync-success: "✅ Theme synced successfully: {0}"
+    sync-failed: "❌ Failed to sync theme: {0}"
+
+  # Error messages / 错误消息
+  error:
+    not-found: "Theme not found"
+    invalid-config: "Invalid theme configuration"
+    io-error: "IO error: {0}"
+    parse-error: "Parse error: {0}"
+
+  # Health check / 健康检查
+  health:
+    healthy: "Healthy"
+    service: "Theme Management Service"
+
+  # Response messages / 响应消息
+  response:
+    upload-success: "Theme uploaded successfully"
+    upload-failed: "Theme upload failed"
+    delete-success: "Theme deleted successfully"
+    delete-failed: "Failed to delete theme"
+    sync-success: "Theme synced successfully"
+    sync-failed: "Failed to sync theme"
+    theme-not-found: "Theme not found"
+
