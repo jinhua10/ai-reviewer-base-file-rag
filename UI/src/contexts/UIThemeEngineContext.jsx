@@ -69,8 +69,12 @@ export const UI_THEMES = {
     },
     // 页面UI壳子映射 / Page UI shell mapping
     shellMapping: {
+      qa: () => import('../components/theme/shells/bubble/QAShell'),
+      home: () => import('../components/theme/shells/bubble/HomeShell'),
+      documents: () => import('../components/theme/shells/bubble/DocumentsShell'),
       collaboration: () => import('../components/theme/shells/bubble/CollaborationShell'),
-      // 其他页面可以继续添加 / Other pages can be added
+      analytics: () => import('../components/theme/shells/bubble/AnalyticsShell'),
+      settings: () => import('../components/theme/shells/bubble/SettingsShell'),
     },
     // 状态改为active / Status changed to active
     status: 'active',

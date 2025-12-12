@@ -14,7 +14,7 @@ import { useUIThemeEngine } from '../../contexts/UIThemeEngineContext';
 
 // 懒加载不同主题的布局组件 / Lazy load layout components for different themes
 const ModernLayout = lazy(() => import('../layout/ModernLayout'));
-// const BubbleLayout = lazy(() => import('../layout/BubbleLayout')); // 未来实现 / Future implementation
+const BubbleLayout = lazy(() => import('../layout/BubbleLayout')); // 梦幻气泡主题布局 / Dreamy Bubble Theme Layout
 // const AnimeLayout = lazy(() => import('../layout/AnimeLayout')); // 未来实现 / Future implementation
 // const CyberpunkLayout = lazy(() => import('../layout/CyberpunkLayout')); // 未来实现 / Future implementation
 
@@ -25,8 +25,8 @@ const ModernLayout = lazy(() => import('../layout/ModernLayout'));
  */
 const THEME_LAYOUT_MAP = {
   modern: ModernLayout,
+  bubble: BubbleLayout, // 梦幻气泡主题 / Dreamy Bubble Theme
   // 未来实现的主题 / Future theme implementations
-  bubble: null, // BubbleLayout
   anime: null, // AnimeLayout
   cyberpunk: null, // CyberpunkLayout
 };

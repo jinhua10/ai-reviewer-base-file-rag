@@ -1,0 +1,54 @@
+# English Wish Messages
+# File: src/main/resources/i18n/en/en-wish.yml
+
+wish:
+  submit:
+    start: "🚀 Starting to submit wish: {0}"
+    request: "📝 Received wish submit request: {0}"
+    success: "✅ Wish submitted successfully: {0}"
+    failed: "❌ Failed to submit wish: {0}"
+    error: "❌ Error submitting wish"
+
+  list:
+    loading: "📋 Loading wish list: status={0}, category={1}"
+    request: "📋 Received wish list request: status={0}, category={1}, sortBy={2}"
+    success: "✅ Wish list loaded successfully, total {0}"
+    failed: "❌ Failed to load wish list: {0}"
+    error: "❌ Error loading wish list"
+
+  detail:
+    loading: "🔍 Loading wish detail: {0}"
+    request: "🔍 Received wish detail request: {0}"
+    success: "✅ Wish detail loaded successfully: {0}"
+    failed: "❌ Failed to load wish detail: id={0}, error={1}"
+    error: "❌ Error loading wish detail: {0}"
+
+  vote:
+    start: "👍 Starting to vote: wishId={0}, voteType={1}"
+    request: "👍 Received vote request: wishId={0}, voteType={1}"
+    success: "✅ Voted successfully: {0}"
+    cancelled: "ℹ️ Vote cancelled"
+    failed: "❌ Failed to vote: wishId={0}, error={1}"
+    error: "❌ Error voting: {0}"
+
+  comment:
+    add_start: "💬 Starting to add comment: wishId={0}"
+    add_request: "💬 Received add comment request: {0}"
+    add_success: "✅ Comment added successfully: {0}"
+    add_failed: "❌ Failed to add comment: wishId={0}, error={1}"
+    add_error: "❌ Error adding comment: {0}"
+    get_request: "💬 Received get comments request: {0}"
+    get_error: "❌ Error getting comments: {0}"
+    like_request: "👍 Received like comment request: {0}"
+    like_success: "✅ Comment liked successfully"
+    like_error: "❌ Error liking comment: {0}"
+
+  ranking:
+    loading: "🏆 Loading wish ranking: limit={0}"
+    request: "🏆 Received ranking request: limit={0}"
+    success: "✅ Ranking loaded successfully, total {0}"
+    failed: "❌ Failed to load ranking: {0}"
+    error: "❌ Error loading ranking"
+
+  not_found: "❌ Wish not found: {0}"
+
