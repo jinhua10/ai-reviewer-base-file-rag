@@ -15,6 +15,7 @@ import QuestionInput from './QuestionInput'
 import SimilarQuestions from './SimilarQuestions'
 import ConversationHistory from './ConversationHistory'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { useQA } from '../../contexts/QAContext'
 import qaApi from '../../api/modules/qa'
 import '../../assets/css/qa/qa-panel.css'
 
@@ -26,13 +27,18 @@ const { Content, Sider } = Layout
  */
 function QAPanel() {
   const { t } = useLanguage()
+  const {
+    messages,
+    setMessages,
+    similarQuestions,
+    setSimilarQuestions,
+    currentQuestion,
+    setCurrentQuestion,
+  } = useQA()
 
-  // 状态管理
-  const [messages, setMessages] = useState([]) // 消息列表
+  // 本地状态（不需要跨Tab保持）
   const [loading, setLoading] = useState(false) // 加载状态
-  const [similarQuestions, setSimilarQuestions] = useState([]) // 相似问题
   const [historyVisible, setHistoryVisible] = useState(false) // 历史记录可见性
-  const [currentQuestion, setCurrentQuestion] = useState('') // 当前问题
   const [currentEventSource, setCurrentEventSource] = useState(null) // 当前 EventSource 连接
   
   // 从 localStorage 读取流式模式偏好（默认为 true）
@@ -360,23 +366,24 @@ function QAPanel() {
   }
 
   return (
-    <Layout className="qa-panel">
-      {/* 左侧：对话历史（可折叠） */}
-      {historyVisible && (
-        <Sider
-          width={280}
-          className="qa-panel__history-sider"
-          theme="light"
-        >
-          <ConversationHistory
-            onClose={() => setHistoryVisible(false)}
-            onSelectQuestion={handleSubmitQuestion}
-          />
-        </Sider>
-      )}
+    <>
+      <Layout className="qa-panel">
+        {/* 左侧：对话历史（可折叠） */}
+        {historyVisible && (
+          <Sider
+            width={280}
+            className="qa-panel__history-sider"
+            theme="light"
+          >
+            <ConversationHistory
+              onClose={() => setHistoryVisible(false)}
+              onSelectQuestion={handleSubmitQuestion}
+            />
+          </Sider>
+        )}
 
-      {/* 中间：主聊天区域 */}
-      <Content className="qa-panel__main">
+        {/* 中间：主聊天区域 */}
+        <Content className="qa-panel__main">
         <div className="qa-panel__container">
           {/* 聊天框 */}
           <ChatBox
@@ -401,19 +408,20 @@ function QAPanel() {
         </div>
       </Content>
 
-      {/* 右侧：相似问题推荐 */}
-      <Sider
-        width={300}
-        className="qa-panel__similar-sider"
-        theme="light"
-      >
-        <SimilarQuestions
-          questions={similarQuestions}
-          currentQuestion={currentQuestion}
-          onQuestionClick={handleSimilarQuestionClick}
-        />
-      </Sider>
-    </Layout>
+        {/* 右侧：相似问题推荐 */}
+        <Sider
+          width={300}
+          className="qa-panel__similar-sider"
+          theme="light"
+        >
+          <SimilarQuestions
+            questions={similarQuestions}
+            currentQuestion={currentQuestion}
+            onQuestionClick={handleSimilarQuestionClick}
+          />
+        </Sider>
+      </Layout>
+    </>
   )
 }
 

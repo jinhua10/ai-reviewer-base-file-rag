@@ -19,6 +19,7 @@ import {
   KnowledgeProvider,
   FeedbackProvider,
   WishProvider,
+  QAProvider,
 } from './index'
 
 /**
@@ -43,7 +44,9 @@ function GlobalProvider({ children }) {
             <KnowledgeProvider>
               <FeedbackProvider>
                 <WishProvider>
-                  {children}
+                  <QAProvider>
+                    {children}
+                  </QAProvider>
                 </WishProvider>
               </FeedbackProvider>
             </KnowledgeProvider>

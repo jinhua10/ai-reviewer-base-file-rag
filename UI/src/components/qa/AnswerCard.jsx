@@ -13,6 +13,8 @@ import { Button, Space, Tooltip } from 'antd'
 import { LikeOutlined, DislikeOutlined, CopyOutlined, LikeFilled, DislikeFilled } from '@ant-design/icons'
 import StreamingAnswer from './StreamingAnswer'
 import MarkdownRenderer from './MarkdownRenderer'
+import DocumentReferences from './DocumentReferences'
+import SessionInfoDisplay from './SessionInfoDisplay'
 import { useLanguage } from '../../contexts/LanguageContext'
 import '../../assets/css/qa/answer-card.css'
 
@@ -80,6 +82,19 @@ function AnswerCard(props) {
             </div>
           )}
         </div>
+
+        {/* 会话信息（分页文档） */}
+        {!answer.streaming && answer.sessionId && (
+          <SessionInfoDisplay sessionId={answer.sessionId} />
+        )}
+
+        {/* 引用文档列表 */}
+        {!answer.streaming && answer.sources && answer.sources.length > 0 && (
+          <DocumentReferences
+            sources={answer.sources}
+            chunks={answer.chunks}
+          />
+        )}
 
         {!answer.streaming && (
           <div className="answer-card__footer">

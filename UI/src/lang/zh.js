@@ -341,6 +341,15 @@ export default {
       enable: '启用知识库（RAG 检索）',
       disable: '禁用知识库（直接 AI 回答）',
     },
+
+    // 文档引用 (Document References)
+    references: {
+      title: '引用文档',
+      addToAnalysis: '加入AI分析',
+      alreadyInAnalysis: '已在分析中',
+      download: '下载文档',
+      addAllToAnalysis: '全部加入分析',
+    },
   },
 
   // ============================================================================

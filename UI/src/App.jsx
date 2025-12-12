@@ -13,9 +13,11 @@ import { ConfigProvider, theme as antdTheme } from 'antd'
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { UIThemeEngineProvider } from './contexts/UIThemeEngineContext'
+import { QAProvider } from './contexts/QAContext'
 import { ThemeRenderingEngine } from './components/theme'
 import { ErrorBoundary } from './components/common'
 import ThemeEngineErrorBoundary from './components/theme/ThemeEngineErrorBoundary'
+import { FloatingAIButton, FloatingAIPanel } from './components/ai'
 import { QAPanel } from './components/qa'
 import { DocumentList } from './components/document'
 import { RoleList } from './components/role'
@@ -93,6 +95,10 @@ function AppContent() {
         >
           {renderContent()}
         </ThemeRenderingEngine>
+
+        {/* 全局浮动AI分析按钮和面板 */}
+        <FloatingAIButton />
+        <FloatingAIPanel />
       </ErrorBoundary>
     </ConfigProvider>
   )
@@ -101,7 +107,7 @@ function AppContent() {
 /**
  * 主应用组件 / Main App Component
  * 包装所有Context Provider / Wraps all Context Providers
- * 顺序：Theme → ErrorBoundary → UIThemeEngine → Language → App Content
+ * 顺序：Theme → ErrorBoundary → UIThemeEngine → Language → QA → App Content
  */
 function App() {
   return (
@@ -109,7 +115,9 @@ function App() {
       <ThemeEngineErrorBoundary>
         <UIThemeEngineProvider>
           <LanguageProvider>
-            <AppContent />
+            <QAProvider>
+              <AppContent />
+            </QAProvider>
           </LanguageProvider>
         </UIThemeEngineProvider>
       </ThemeEngineErrorBoundary>
