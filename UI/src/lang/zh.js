@@ -246,14 +246,80 @@ export default {
   collaboration: {
     title: '协作网络',
     peers: '协作伙伴',
+    exchange: '知识交换',
+    topology: '网络拓扑',
+    sync: '同步监控',
+
+    // 伙伴管理
     addPeer: '添加伙伴',
+    noPeers: '暂无协作伙伴',
+    disconnect: '断开连接',
+    disconnectSuccess: '断开成功',
+    disconnectFailed: '断开失败',
+    syncSuccess: '同步成功',
+    syncFailed: '同步失败',
+
+    // 连接管理
     connectionCode: '连接码',
     generateCode: '生成连接码',
     enterCode: '输入连接码',
     connect: '连接',
-    exchange: '知识交换',
-    contribution: '贡献统计',
-    networkGraph: '网络拓扑',
+    connectSuccess: '连接成功',
+    connectFailed: '连接失败',
+    codeGenerated: '连接码已生成',
+    generateFailed: '生成失败',
+    codeCopied: '已复制连接码',
+    copyCode: '复制连接码',
+    codePlaceholder: '请输入连接码',
+    generateHint: '生成一个连接码，分享给其他伙伴',
+    enterHint: '输入其他伙伴的连接码进行连接',
+
+    // 状态
+    status: {
+      online: '在线',
+      offline: '离线',
+      syncing: '同步中',
+    },
+
+    // 统计
+    sharedDocs: '共享文档',
+    lastSync: '最后同步',
+    totalPeers: '伙伴总数',
+    totalConnections: '连接数',
+    me: '我',
+
+    // 交换历史
+    time: '时间',
+    type: '类型',
+    peer: '伙伴',
+    content: '内容',
+    noHistory: '暂无交换历史',
+    exchangeType: {
+      send: '发送',
+      receive: '接收',
+      sync: '同步',
+    },
+    exchangeStatus: {
+      success: '成功',
+      failed: '失败',
+    },
+
+    // 网络拓扑
+    noTopology: '暂无网络拓扑',
+
+    // 同步监控
+    totalSyncs: '总同步次数',
+    successSyncs: '成功次数',
+    failedSyncs: '失败次数',
+    syncRate: '成功率',
+    recentActivity: '最近活动',
+    syncStatus: {
+      success: '成功',
+      failed: '失败',
+      pending: '等待中',
+    },
+
+    loadFailed: '加载失败',
   },
 
   // ============================================================================

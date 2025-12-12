@@ -246,14 +246,80 @@ export default {
   collaboration: {
     title: 'Collaboration Network',
     peers: 'Peers',
+    exchange: 'Knowledge Exchange',
+    topology: 'Network Topology',
+    sync: 'Sync Monitor',
+
+    // Peer Management
     addPeer: 'Add Peer',
+    noPeers: 'No peers yet',
+    disconnect: 'Disconnect',
+    disconnectSuccess: 'Disconnected successfully',
+    disconnectFailed: 'Failed to disconnect',
+    syncSuccess: 'Synced successfully',
+    syncFailed: 'Failed to sync',
+
+    // Connection Management
     connectionCode: 'Connection Code',
     generateCode: 'Generate Code',
     enterCode: 'Enter Code',
     connect: 'Connect',
-    exchange: 'Knowledge Exchange',
-    contribution: 'Contribution',
-    networkGraph: 'Network Graph',
+    connectSuccess: 'Connected successfully',
+    connectFailed: 'Failed to connect',
+    codeGenerated: 'Code generated',
+    generateFailed: 'Failed to generate',
+    codeCopied: 'Code copied',
+    copyCode: 'Copy Code',
+    codePlaceholder: 'Enter connection code',
+    generateHint: 'Generate a connection code to share with other peers',
+    enterHint: 'Enter a connection code from another peer',
+
+    // Status
+    status: {
+      online: 'Online',
+      offline: 'Offline',
+      syncing: 'Syncing',
+    },
+
+    // Statistics
+    sharedDocs: 'Shared Docs',
+    lastSync: 'Last Sync',
+    totalPeers: 'Total Peers',
+    totalConnections: 'Connections',
+    me: 'Me',
+
+    // Exchange History
+    time: 'Time',
+    type: 'Type',
+    peer: 'Peer',
+    content: 'Content',
+    noHistory: 'No exchange history',
+    exchangeType: {
+      send: 'Send',
+      receive: 'Receive',
+      sync: 'Sync',
+    },
+    exchangeStatus: {
+      success: 'Success',
+      failed: 'Failed',
+    },
+
+    // Network Topology
+    noTopology: 'No topology data',
+
+    // Sync Monitor
+    totalSyncs: 'Total Syncs',
+    successSyncs: 'Success',
+    failedSyncs: 'Failed',
+    syncRate: 'Success Rate',
+    recentActivity: 'Recent Activity',
+    syncStatus: {
+      success: 'Success',
+      failed: 'Failed',
+      pending: 'Pending',
+    },
+
+    loadFailed: 'Failed to load',
   },
 
   // ============================================================================

@@ -56,6 +56,34 @@ const collaborationApi = {
   getNetworkGraph() {
     return request.get('/collaboration/network-graph')
   },
+
+  /**
+   * 同步数据 (Sync data with peer)
+   */
+  syncWith(peerId) {
+    return request.post(`/collaboration/peers/${peerId}/sync`)
+  },
+
+  /**
+   * 获取交换历史 (Get exchange history)
+   */
+  getExchangeHistory() {
+    return request.get('/collaboration/exchange-history')
+  },
+
+  /**
+   * 获取网络拓扑 (Get topology)
+   */
+  getTopology() {
+    return request.get('/collaboration/topology')
+  },
+
+  /**
+   * 获取同步状态 (Get sync status)
+   */
+  getSyncStatus() {
+    return request.get('/collaboration/sync-status')
+  },
 }
 
 export default collaborationApi

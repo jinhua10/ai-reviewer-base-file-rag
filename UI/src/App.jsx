@@ -47,7 +47,7 @@ function AppContent() {
       case 'feedback':
         return <FeedbackPanel />
       case 'collaboration':
-        return <div style={{ padding: '24px' }}>{t('nav.collaboration')} - 开发中...</div>
+        return <CollaborationPanel />
       default:
         return <QAPanel />
     }
