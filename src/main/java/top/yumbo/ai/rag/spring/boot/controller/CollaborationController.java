@@ -6,7 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.p2p.P2PCollaborationManager;
-import top.yumbo.ai.rag.p2p.PeerConnection;
+import top.yumbo.ai.rag.p2p.P2PCollaborationManager.PeerConnection;
+import top.yumbo.ai.rag.p2p.P2PCollaborationManager.ConnectionStatus;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -122,12 +123,12 @@ public class CollaborationController {
             String userId = "user-current";
             P2PCollaborationManager manager = getOrCreateManager(userId);
 
-            List<PeerInfo> peers = manager.getConnectedPeers().values().stream()
-                .map(conn -> new PeerInfo(
-                    conn.getPeerId(),
-                    "Peer-" + conn.getPeerId().substring(0, 8),
-                    conn.getStatus().toString().toLowerCase(),
-                    conn.getConnectTime()
+            List<PeerInfo> peers = manager.getConnectedPeers().stream()
+                .map(peerInfo -> new PeerInfo(
+                    peerInfo.getPeerId(),
+                    "Peer-" + peerInfo.getPeerId().substring(0, Math.min(8, peerInfo.getPeerId().length())),
+                    peerInfo.getStatus().toString().toLowerCase(),
+                    peerInfo.getConnectTime()
                 ))
                 .collect(Collectors.toList());
 

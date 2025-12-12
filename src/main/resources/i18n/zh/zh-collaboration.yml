@@ -1,32 +1,40 @@
-# 中文协作模块消息
+# 中文协作消息
 # 文件: src/main/resources/i18n/zh/zh-collaboration.yml
 
 collaboration:
   api:
     code_generated: "✅ 连接码生成成功: {0}"
     code_generate_failed: "❌ 连接码生成失败"
-    connected: "✅ 成功连接到节点: {0}"
+    connected: "✅ 已连接到伙伴: {0}"
     connect_failed: "❌ 连接失败"
-    peers_fetched: "📋 获取节点列表成功, 共 {0} 个节点"
-    peers_fetch_failed: "❌ 获取节点列表失败"
-    disconnected: "🔌 成功断开节点: {0}"
+    disconnected: "✅ 已断开连接: {0}"
     disconnect_failed: "❌ 断开连接失败"
-    knowledge_sent: "📤 知识发送成功到节点: {0}"
+    peers_fetched: "✅ 获取伙伴列表成功，共 {0} 个"
+    peers_fetch_failed: "❌ 获取伙伴列表失败"
+    knowledge_sent: "✅ 知识发送成功: {0}"
     exchange_failed: "❌ 知识交换失败"
-    history_fetched: "📜 获取交换历史成功, 共 {0} 条记录"
+    history_fetched: "✅ 获取交换历史成功，共 {0} 条"
     history_fetch_failed: "❌ 获取交换历史失败"
-    topology_fetched: "🕸️ 获取网络拓扑成功"
+    topology_fetched: "✅ 获取网络拓扑成功"
     topology_fetch_failed: "❌ 获取网络拓扑失败"
-    sync_status_fetched: "🔄 获取同步状态成功"
+    sync_status_fetched: "✅ 获取同步状态成功"
     sync_status_fetch_failed: "❌ 获取同步状态失败"
 
 p2p:
   manager:
-    initialized: "🚀 P2P协作管理器初始化完成: userId={0}"
-    code_generated: "🔑 连接码已生成: {0}"
-    connecting: "🔗 正在建立连接: code={0}"
+    initialized: "🚀 P2P 管理器初始化: userId={0}"
+    code_generated: "🔑 连接码生成: {0}"
+    connecting: "🔗 正在连接: code={0}"
+    connected: "✅ 连接成功: peerId={0}"
     connect_failed: "❌ 连接失败: {0}"
-    connected: "✅ 连接建立成功: peerId={0}"
-    disconnected: "🔌 连接已断开: peerId={0}"
-    peer_not_connected: "⚠️ 节点未连接: {0}"
+    disconnected: "🔌 断开连接: peerId={0}"
+    peer_not_connected: "⚠️ 伙伴未连接: {0}"
+    knowledge_sent: "📤 知识发送: peerId={0}, size={1}"
+    send_failed: "❌ 发送失败: peerId={0}, error={1}"
+    knowledge_received: "📥 知识接收: peerId={0}, size={1}"
+    receive_failed: "❌ 接收失败: peerId={0}, error={1}"
+    verification_requested: "🔍 验证请求: knowledgeId={0}, peerId={1}"
+    request_failed: "❌ 请求失败: peerId={0}, error={1}"
+    feedback_submitted: "✅ 反馈提交: knowledgeId={0}, score={1}"
+    feedback_failed: "❌ 反馈失败: knowledgeId={0}, error={1}"
 
