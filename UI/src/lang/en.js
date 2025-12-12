@@ -36,6 +36,7 @@ export default {
     more: 'More',
     collapse: 'Collapse',
     expand: 'Expand',
+    loadMore: 'Load More',
   },
 
   // ============================================================================
@@ -87,18 +88,47 @@ export default {
   // ============================================================================
   qa: {
     title: 'Intelligent Q&A',
-    placeholder: 'Enter your question...',
-    ask: 'Ask',
-    thinking: 'Thinking...',
-    answer: 'Answer',
-    sources: 'Sources',
-    relatedQuestions: 'Related Questions',
-    feedback: 'Was this answer helpful?',
-    helpful: 'Helpful',
-    notHelpful: 'Not Helpful',
-    feedbackSuccess: 'Thank you for your feedback',
-    history: 'Chat History',
-    newChat: 'New Chat',
+    emptyMessage: 'Start asking questions to begin your intelligent conversation',
+
+    // Input
+    input: {
+      placeholder: 'Enter your question...',
+      hint: 'Ctrl+Enter to send',
+      send: 'Send',
+      characters: 'characters',
+    },
+
+    // Similar Questions
+    similarQuestions: {
+      title: 'Similar Questions',
+      noResults: 'No similar questions',
+      askFirst: 'Similar questions will appear after you ask',
+    },
+
+    // History
+    history: {
+      title: 'Chat History',
+      searchPlaceholder: 'Search history...',
+      noResults: 'No history records',
+      today: 'Today',
+      yesterday: 'Yesterday',
+      daysAgo: 'days ago',
+    },
+
+    // Feedback
+    feedback: {
+      like: 'Like',
+      dislike: 'Dislike',
+      copy: 'Copy',
+      copied: 'Copied',
+    },
+
+    // Error
+    error: {
+      failed: 'Sorry, failed to get answer. Please try again later',
+      network: 'Network connection failed',
+      timeout: 'Request timeout',
+    },
     clearHistory: 'Clear History',
     copyAnswer: 'Copy Answer',
     copySuccess: 'Copied successfully',

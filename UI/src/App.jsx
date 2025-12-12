@@ -9,15 +9,11 @@
  */
 
 import React, { useState } from 'react'
-import { Button, Space, Tag } from 'antd'
-import { CheckCircleOutlined } from '@ant-design/icons'
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
-import { Layout, Header, Footer } from './components/layout'
-import { ErrorBoundary, Loading } from './components/common'
-import './assets/css/layout.css'
+import { Header } from './components/layout'
+import { ErrorBoundary } from './components/common'
+import { QAPanel } from './components/qa'
 import './assets/css/header.css'
-import './assets/css/footer.css'
-import './assets/css/loading.css'
 import './assets/css/error-boundary.css'
 
 /**
@@ -25,8 +21,8 @@ import './assets/css/error-boundary.css'
  * 使用语言上下文 (Uses language context)
  */
 function AppContent() {
-  const { t, language } = useLanguage()
-  const [activeMenu, setActiveMenu] = useState('home')
+  const { t } = useLanguage()
+  const [activeMenu, setActiveMenu] = useState('qa')
 
   // 菜单点击处理 (Menu click handler)
   const handleMenuClick = (key) => {
@@ -34,72 +30,41 @@ function AppContent() {
     console.log('Navigate to:', key)
   }
 
+  /**
+   * 渲染页面内容 (Render page content)
+   */
+  const renderContent = () => {
+    switch (activeMenu) {
+      case 'qa':
+        return <QAPanel />
+      case 'documents':
+        return <div style={{ padding: '24px' }}>{t('document.title')} - 开发中...</div>
+      case 'roles':
+        return <div style={{ padding: '24px' }}>{t('nav.roles')} - 开发中...</div>
+      case 'feedback':
+        return <div style={{ padding: '24px' }}>{t('nav.feedback')} - 开发中...</div>
+      case 'collaboration':
+        return <div style={{ padding: '24px' }}>{t('nav.collaboration')} - 开发中...</div>
+      default:
+        return <QAPanel />
+    }
+  }
+
   return (
     <ErrorBoundary>
-      <Layout
-        header={
-          <Header
-            activeKey={activeMenu}
-            onMenuClick={handleMenuClick}
-            showLanguageToggle={true}
-          />
-        }
-        footer={<Footer />}
-      >
-        {/* 主内容 (Main content) */}
-        <div className="welcome-message">
-          <h2>
-            <CheckCircleOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
-            {language === 'zh' ? '✅ Phase 7.2 组件开发中' : '✅ Phase 7.2 Components Development'}
-          </h2>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+        {/* 导航栏 */}
+        <Header
+          activeKey={activeMenu}
+          onMenuClick={handleMenuClick}
+          showLanguageToggle={true}
+        />
 
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            {/* 已完成功能 (Completed features) */}
-            <div className="feature-list">
-              <h3>{language === 'zh' ? '✅ 已完成组件' : '✅ Completed Components'}</h3>
-              <ul>
-                <li>
-                  <Tag color="success">Layout</Tag>
-                  {language === 'zh' ? '布局容器组件' : 'Layout container component'}
-                </li>
-                <li>
-                  <Tag color="success">Header</Tag>
-                  {language === 'zh' ? '导航栏组件（含语言切换）' : 'Navigation bar with language toggle'}
-                </li>
-                <li>
-                  <Tag color="success">Footer</Tag>
-                  {language === 'zh' ? '页脚组件' : 'Footer component'}
-                </li>
-                <li>
-                  <Tag color="success">Loading</Tag>
-                  {language === 'zh' ? '加载动画组件' : 'Loading animation component'}
-                </li>
-                <li>
-                  <Tag color="success">ErrorBoundary</Tag>
-                  {language === 'zh' ? '错误边界组件' : 'Error boundary component'}
-                </li>
-              </ul>
-            </div>
-
-            {/* 测试区域 (Test area) */}
-            <div className="test-area">
-              <h3>{language === 'zh' ? '🧪 组件测试' : '🧪 Component Testing'}</h3>
-              <Space wrap>
-                <Button type="primary">{t('common.confirm')}</Button>
-                <Button>{t('common.cancel')}</Button>
-                <Button type="dashed">{t('common.search')}</Button>
-                <Button danger>{t('common.delete')}</Button>
-              </Space>
-            </div>
-
-            {/* Loading 测试 (Loading test) */}
-            <div className="loading-demo">
-              <h3>{language === 'zh' ? '📦 Loading 组件演示' : '📦 Loading Component Demo'}</h3>
-              <Loading spinning={true} tip={t('common.loading')} />
-            </div>
-          </Space>
+        {/* 主内容 */}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          {renderContent()}
         </div>
-      </Layout>
+      </div>
     </ErrorBoundary>
   )
 }

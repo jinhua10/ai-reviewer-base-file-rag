@@ -36,6 +36,7 @@ export default {
     more: '更多',
     collapse: '收起',
     expand: '展开',
+    loadMore: '加载更多',
   },
 
   // ============================================================================
@@ -87,18 +88,47 @@ export default {
   // ============================================================================
   qa: {
     title: '智能问答',
-    placeholder: '请输入您的问题...',
-    ask: '提问',
-    thinking: '思考中...',
-    answer: '回答',
-    sources: '参考来源',
-    relatedQuestions: '相关问题',
-    feedback: '这个回答有帮助吗？',
-    helpful: '有帮助',
-    notHelpful: '没帮助',
-    feedbackSuccess: '感谢您的反馈',
-    history: '历史对话',
-    newChat: '新对话',
+    emptyMessage: '开始提问，开启智能对话之旅',
+
+    // 输入框 (Input)
+    input: {
+      placeholder: '请输入您的问题...',
+      hint: 'Ctrl+Enter 发送',
+      send: '发送',
+      characters: '字符',
+    },
+
+    // 相似问题 (Similar Questions)
+    similarQuestions: {
+      title: '相似问题',
+      noResults: '暂无相似问题',
+      askFirst: '提问后将显示相似问题',
+    },
+
+    // 历史记录 (History)
+    history: {
+      title: '对话历史',
+      searchPlaceholder: '搜索历史记录...',
+      noResults: '暂无历史记录',
+      today: '今天',
+      yesterday: '昨天',
+      daysAgo: '天前',
+    },
+
+    // 反馈 (Feedback)
+    feedback: {
+      like: '点赞',
+      dislike: '点踩',
+      copy: '复制',
+      copied: '已复制',
+    },
+
+    // 错误 (Error)
+    error: {
+      failed: '抱歉，回答失败了，请稍后重试',
+      network: '网络连接失败',
+      timeout: '请求超时',
+    },
     clearHistory: '清除历史',
     copyAnswer: '复制回答',
     copySuccess: '复制成功',

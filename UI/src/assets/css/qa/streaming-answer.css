@@ -1,0 +1,40 @@
+/**
+ * 流式答案样式 (Streaming Answer Styles)
+ *
+ * @author AI Reviewer Team
+ * @since 2025-12-12
+ */
+
+/* ============================================================================
+   流式答案容器 (Streaming Answer Container)
+   ============================================================================ */
+.streaming-answer {
+  position: relative;
+}
+
+.streaming-answer__text {
+  display: inline;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ============================================================================
+   光标动画 (Cursor Animation)
+   ============================================================================ */
+.streaming-answer__cursor {
+  display: inline-block;
+  width: 2px;
+  margin-left: 2px;
+  background: #667eea;
+  animation: cursorBlink 1s infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
