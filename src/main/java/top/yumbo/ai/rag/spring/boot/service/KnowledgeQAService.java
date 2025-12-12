@@ -555,11 +555,9 @@ public class KnowledgeQAService {
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
 
-                            // 提供完整的 Markdown 链接，AI 可直接引用
-                            // (Provide complete Markdown link that AI can directly reference)
-                            imageContext.append("[图").append(i + 1).append("] ");
-                            imageContext.append(imgDesc).append("\n");
-                            imageContext.append("  📷 `![").append(imgDesc).append("](").append(img.getUrl()).append(")`\n");
+                            // 生成纯 Markdown 格式，让前端直接渲染图片
+                            // (Generate pure Markdown format for direct rendering)
+                            imageContext.append("![").append(imgDesc).append("](").append(img.getUrl()).append(")\n");
                         }
 
                         if (docImages.size() > maxImagesPerDoc) {
@@ -844,20 +842,19 @@ public class KnowledgeQAService {
                         imageContext.append("📎 ").append(I18N.get("knowledge_qa_service.doc_images_header", doc.getTitle(), displayCount));
                         imageContext.append("\n");
 
-                        // 提供可直接复制的 Markdown 链接 (Provide ready-to-use Markdown links)
+                        // 生成纯 Markdown 格式，让前端直接渲染图片
+                        // (Generate pure Markdown format for direct rendering)
                         for (int i = 0; i < displayCount; i++) {
                             ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
                                 ? img.getDescription()
                                 : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
 
-                            imageContext.append("[图").append(i + 1).append("] ");
-                            imageContext.append(imgDesc).append("\n");
-                            imageContext.append("  📷 `![").append(imgDesc).append("](").append(img.getUrl()).append(")`\n");
+                            imageContext.append("![").append(imgDesc).append("](").append(img.getUrl()).append(")\n");
                         }
 
                         if (docImages.size() > maxImagesPerDoc) {
-                            imageContext.append("  ⋯ ").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - maxImagesPerDoc)).append("\n");
+                            imageContext.append("\n").append(I18N.get("knowledge_qa_service.more_images", docImages.size() - maxImagesPerDoc)).append("\n");
                         }
                     }
                 } catch (Exception e) {
