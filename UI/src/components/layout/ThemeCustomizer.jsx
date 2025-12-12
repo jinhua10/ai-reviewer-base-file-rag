@@ -68,7 +68,8 @@ function ThemeCustomizer({ open, onClose }) {
       placement="right"
       onClose={onClose}
       open={open}
-      width={360}
+      size="default"
+      styles={{ body: { width: 360 } }}
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* 主色调 / Primary color */}

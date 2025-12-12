@@ -23,8 +23,6 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useUIThemeEngine } from '../../contexts/UIThemeEngineContext';
 import './ui-theme-switcher.css';
 
-const { TabPane } = Tabs;
-
 /**
  * UI主题切换器 / UI Theme Switcher
  */
@@ -212,6 +210,122 @@ function UIThemeSwitcher({ open, onClose }) {
     );
   };
 
+  // 构建 Tabs items / Build Tabs items
+  const tabItems = [
+    {
+      key: 'builtin',
+      label: (
+        <span>
+          <AppstoreOutlined />
+          {t('uiTheme.switcher.builtinThemes') || '内置主题'} ({builtinThemes.length})
+        </span>
+      ),
+      children: (
+        <Row gutter={[16, 16]}>
+          {builtinThemes.map(theme => (
+            <Col xs={24} sm={12} md={8} key={theme.id}>
+              {renderThemeCard(theme)}
+            </Col>
+          ))}
+        </Row>
+      ),
+    },
+    {
+      key: 'custom',
+      label: (
+        <span>
+          <DownloadOutlined />
+          {t('uiTheme.switcher.customThemes') || '自定义主题'} ({customThemes.length})
+        </span>
+      ),
+      children: customThemes.length > 0 ? (
+        <Row gutter={[16, 16]}>
+          {customThemes.map(theme => (
+            <Col xs={24} sm={12} md={8} key={theme.id}>
+              {renderThemeCard(theme)}
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <div className="ui-theme-switcher__empty">
+          <AppstoreOutlined style={{ fontSize: 64, color: '#ccc' }} />
+          <p>{t('uiTheme.switcher.noCustomThemes') || '暂无自定义主题'}</p>
+          <p>{t('uiTheme.switcher.importTip') || '点击下方按钮导入主题'}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'management',
+      label: (
+        <span>
+          <UploadOutlined />
+          {t('uiTheme.switcher.management') || '主题管理'}
+        </span>
+      ),
+      children: (
+        <div className="ui-theme-switcher__management">
+          <Card title={t('uiTheme.switcher.importExport') || '导入/导出主题'}>
+            <div className="ui-theme-switcher__actions">
+              <div className="ui-theme-switcher__upload-section">
+                <div className="ui-theme-switcher__upload-option">
+                  <input
+                    type="checkbox"
+                    id="uploadToServer"
+                    checked={uploadToServer}
+                    onChange={(e) => setUploadToServer(e.target.checked)}
+                  />
+                  <label htmlFor="uploadToServer">
+                    {t('uiTheme.switcher.uploadToServer') || '上传到服务器（推荐）'}
+                  </label>
+                  <span className="ui-theme-switcher__upload-tip">
+                    {t('uiTheme.switcher.serverPersistTip') || '主题将被持久化到服务器静态资源目录'}
+                  </span>
+                </div>
+
+                <Upload
+                  accept=".json"
+                  beforeUpload={handleImport}
+                  showUploadList={false}
+                  disabled={uploadingTheme}
+                >
+                  <Button
+                    icon={<UploadOutlined />}
+                    size="large"
+                    loading={uploadingTheme}
+                  >
+                    {uploadingTheme
+                      ? t('uiTheme.switcher.uploading') || '上传中...'
+                      : t('uiTheme.switcher.importTheme') || '导入主题'}
+                  </Button>
+                </Upload>
+              </div>
+
+              <div className="ui-theme-switcher__info">
+                <h4>{t('uiTheme.switcher.howToUse') || '如何使用'}</h4>
+                <ol>
+                  <li>{t('uiTheme.switcher.step1') || '从主题市场或AI生成获取主题文件'}</li>
+                  <li>{t('uiTheme.switcher.step2') || '勾选"上传到服务器"（推荐）'}</li>
+                  <li>{t('uiTheme.switcher.step3') || '点击"导入主题"按钮选择JSON文件'}</li>
+                  <li>{t('uiTheme.switcher.step4') || '导入成功后在"自定义主题"标签页应用'}</li>
+                  <li>{t('uiTheme.switcher.step5') || '上传到服务器的主题会永久保存'}</li>
+                </ol>
+              </div>
+            </div>
+          </Card>
+
+          <Card title={t('uiTheme.switcher.aiGeneration') || 'AI主题生成'} style={{ marginTop: 16 }}>
+            <div className="ui-theme-switcher__ai-generation">
+              <p>{t('uiTheme.switcher.aiGenerationDesc') || '未来功能：使用AI生成独特的UI主题'}</p>
+              <Button disabled>
+                {t('uiTheme.switcher.comingSoon') || '敬请期待'}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <Modal
       title={
@@ -225,124 +339,7 @@ function UIThemeSwitcher({ open, onClose }) {
       footer={null}
       className="ui-theme-switcher"
     >
-      <Tabs defaultActiveKey="builtin">
-        {/* 内置主题 / Built-in themes */}
-        <TabPane
-          tab={
-            <span>
-              <AppstoreOutlined />
-              {t('uiTheme.switcher.builtinThemes') || '内置主题'} ({builtinThemes.length})
-            </span>
-          }
-          key="builtin"
-        >
-          <Row gutter={[16, 16]}>
-            {builtinThemes.map(theme => (
-              <Col xs={24} sm={12} md={8} key={theme.id}>
-                {renderThemeCard(theme)}
-              </Col>
-            ))}
-          </Row>
-        </TabPane>
-
-        {/* 自定义主题 / Custom themes */}
-        <TabPane
-          tab={
-            <span>
-              <DownloadOutlined />
-              {t('uiTheme.switcher.customThemes') || '自定义主题'} ({customThemes.length})
-            </span>
-          }
-          key="custom"
-        >
-          {customThemes.length > 0 ? (
-            <Row gutter={[16, 16]}>
-              {customThemes.map(theme => (
-                <Col xs={24} sm={12} md={8} key={theme.id}>
-                  {renderThemeCard(theme)}
-                </Col>
-              ))}
-            </Row>
-          ) : (
-            <div className="ui-theme-switcher__empty">
-              <AppstoreOutlined style={{ fontSize: 64, color: '#ccc' }} />
-              <p>{t('uiTheme.switcher.noCustomThemes') || '暂无自定义主题'}</p>
-              <p>{t('uiTheme.switcher.importTip') || '点击下方按钮导入主题'}</p>
-            </div>
-          )}
-        </TabPane>
-
-        {/* 主题管理 / Theme management */}
-        <TabPane
-          tab={
-            <span>
-              <UploadOutlined />
-              {t('uiTheme.switcher.management') || '主题管理'}
-            </span>
-          }
-          key="management"
-        >
-          <div className="ui-theme-switcher__management">
-            <Card title={t('uiTheme.switcher.importExport') || '导入/导出主题'}>
-              <div className="ui-theme-switcher__actions">
-                <div className="ui-theme-switcher__upload-section">
-                  <div className="ui-theme-switcher__upload-option">
-                    <input
-                      type="checkbox"
-                      id="uploadToServer"
-                      checked={uploadToServer}
-                      onChange={(e) => setUploadToServer(e.target.checked)}
-                    />
-                    <label htmlFor="uploadToServer">
-                      {t('uiTheme.switcher.uploadToServer') || '上传到服务器（推荐）'}
-                    </label>
-                    <span className="ui-theme-switcher__upload-tip">
-                      {t('uiTheme.switcher.serverPersistTip') || '主题将被持久化到服务器静态资源目录'}
-                    </span>
-                  </div>
-
-                  <Upload
-                    accept=".json"
-                    beforeUpload={handleImport}
-                    showUploadList={false}
-                    disabled={uploadingTheme}
-                  >
-                    <Button
-                      icon={<UploadOutlined />}
-                      size="large"
-                      loading={uploadingTheme}
-                    >
-                      {uploadingTheme
-                        ? t('uiTheme.switcher.uploading') || '上传中...'
-                        : t('uiTheme.switcher.importTheme') || '导入主题'}
-                    </Button>
-                  </Upload>
-                </div>
-
-                <div className="ui-theme-switcher__info">
-                  <h4>{t('uiTheme.switcher.howToUse') || '如何使用'}</h4>
-                  <ol>
-                    <li>{t('uiTheme.switcher.step1') || '从主题市场或AI生成获取主题文件'}</li>
-                    <li>{t('uiTheme.switcher.step2') || '勾选"上传到服务器"（推荐）'}</li>
-                    <li>{t('uiTheme.switcher.step3') || '点击"导入主题"按钮选择JSON文件'}</li>
-                    <li>{t('uiTheme.switcher.step4') || '导入成功后在"自定义主题"标签页应用'}</li>
-                    <li>{t('uiTheme.switcher.step5') || '上传到服务器的主题会永久保存'}</li>
-                  </ol>
-                </div>
-              </div>
-            </Card>
-
-            <Card title={t('uiTheme.switcher.aiGeneration') || 'AI主题生成'} style={{ marginTop: 16 }}>
-              <div className="ui-theme-switcher__ai-generation">
-                <p>{t('uiTheme.switcher.aiGenerationDesc') || '未来功能：使用AI生成独特的UI主题'}</p>
-                <Button disabled>
-                  {t('uiTheme.switcher.comingSoon') || '敬请期待'}
-                </Button>
-              </div>
-            </Card>
-          </div>
-        </TabPane>
-      </Tabs>
+      <Tabs defaultActiveKey="builtin" items={tabItems} />
     </Modal>
   );
 }
