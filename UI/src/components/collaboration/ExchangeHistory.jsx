@@ -90,7 +90,9 @@ function ExchangeHistory() {
   if (loading) {
     return (
       <div className="exchange-history__loading">
-        <Spin tip={t('common.loading')} size="large" />
+        <Spin tip={t('common.loading')} size="large">
+          <div style={{ padding: 50 }} />
+        </Spin>
       </div>
     )
   }

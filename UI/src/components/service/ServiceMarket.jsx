@@ -159,7 +159,9 @@ const ServiceMarket = () => {
       <div className="service-market__content">
         {loading ? (
           <div className="service-market__loading">
-            <Spin size="large" tip={t('aiService.loading')} />
+            <Spin size="large" tip={t('aiService.loading')}>
+              <div style={{ padding: 50 }} />
+            </Spin>
           </div>
         ) : filteredServices.length === 0 ? (
           <Empty

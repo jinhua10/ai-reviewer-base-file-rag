@@ -9,7 +9,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { usePageBinding } from '../../engine/ThemeRenderEngine';
+import { usePageBinding } from '../engine/ThemeRenderEngine';
 
 /**
  * 协作面板初始状态 / Collaboration panel initial state

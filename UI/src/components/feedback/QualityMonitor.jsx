@@ -43,7 +43,9 @@ function QualityMonitor() {
   if (loading) {
     return (
       <div className="quality-monitor__loading">
-        <Spin tip={t('common.loading')} size="large" />
+        <Spin tip={t('common.loading')} size="large">
+          <div style={{ padding: 50 }} />
+        </Spin>
       </div>
     )
   }

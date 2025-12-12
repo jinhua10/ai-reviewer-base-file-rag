@@ -15,6 +15,7 @@ import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { UIThemeEngineProvider } from './contexts/UIThemeEngineContext'
 import { ThemeRenderingEngine } from './components/theme'
 import { ErrorBoundary } from './components/common'
+import ThemeEngineErrorBoundary from './components/theme/ThemeEngineErrorBoundary'
 import { QAPanel } from './components/qa'
 import { DocumentList } from './components/document'
 import { RoleList } from './components/role'
@@ -100,16 +101,18 @@ function AppContent() {
 /**
  * 主应用组件 / Main App Component
  * 包装所有Context Provider / Wraps all Context Providers
- * 顺序：Theme → UIThemeEngine → Language → App Content
+ * 顺序：Theme → ErrorBoundary → UIThemeEngine → Language → App Content
  */
 function App() {
   return (
     <ThemeProvider>
-      <UIThemeEngineProvider>
-        <LanguageProvider>
-          <AppContent />
-        </LanguageProvider>
-      </UIThemeEngineProvider>
+      <ThemeEngineErrorBoundary>
+        <UIThemeEngineProvider>
+          <LanguageProvider>
+            <AppContent />
+          </LanguageProvider>
+        </UIThemeEngineProvider>
+      </ThemeEngineErrorBoundary>
     </ThemeProvider>
   )
 }

@@ -40,7 +40,9 @@ function SyncMonitor() {
   if (loading && !data) {
     return (
       <div className="sync-monitor__loading">
-        <Spin tip={t('common.loading')} size="large" />
+        <Spin tip={t('common.loading')} size="large">
+          <div style={{ padding: 50 }} />
+        </Spin>
       </div>
     )
   }

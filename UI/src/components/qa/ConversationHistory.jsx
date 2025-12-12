@@ -115,7 +115,9 @@ function ConversationHistory(props) {
       <div className="conversation-history__content">
         {loading && history.length === 0 ? (
           <div className="conversation-history__loading">
-            <Spin tip={t('common.loading')} />
+            <Spin tip={t('common.loading')}>
+              <div style={{ padding: 50 }} />
+            </Spin>
           </div>
         ) : history.length === 0 ? (
           <Empty

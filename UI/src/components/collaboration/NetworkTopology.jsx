@@ -37,7 +37,9 @@ function NetworkTopology() {
   if (loading) {
     return (
       <div className="network-topology__loading">
-        <Spin tip={t('common.loading')} size="large" />
+        <Spin tip={t('common.loading')} size="large">
+          <div style={{ padding: 50 }} />
+        </Spin>
       </div>
     )
   }

@@ -56,7 +56,9 @@ function EvolutionTimeline() {
   if (loading) {
     return (
       <div className="evolution-timeline__loading">
-        <Spin tip={t('common.loading')} />
+        <Spin tip={t('common.loading')}>
+          <div style={{ padding: 50 }} />
+        </Spin>
       </div>
     )
   }

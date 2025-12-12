@@ -84,7 +84,9 @@ function ThemeLoadingFallback() {
         background: 'var(--theme-background, #fff)',
       }}
     >
-      <Spin size="large" tip="加载主题中... / Loading theme..." />
+      <Spin size="large" tip="加载主题中... / Loading theme...">
+        <div style={{ padding: 50 }} />
+      </Spin>
     </div>
   );
 }

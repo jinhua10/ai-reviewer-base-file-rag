@@ -11,13 +11,13 @@
 import React, { useEffect } from 'react';
 import { Tabs } from 'antd';
 import { TeamOutlined, SwapOutlined, ClusterOutlined, SyncOutlined } from '@ant-design/icons';
-import { useLanguage } from '../../../contexts/LanguageContext';
-import { useCollaborationBinding } from '../../../adapters/CollaborationAdapter';
-import PeerList from '../../collaboration/PeerList';
-import ExchangeHistory from '../../collaboration/ExchangeHistory';
-import NetworkTopology from '../../collaboration/NetworkTopology';
-import SyncMonitor from '../../collaboration/SyncMonitor';
-import '../../../assets/css/collaboration/collaboration-panel.css';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { useCollaborationBinding } from '../../adapters/CollaborationAdapter';
+import PeerList from '../../components/collaboration/PeerList';
+import ExchangeHistory from '../../components/collaboration/ExchangeHistory';
+import NetworkTopology from '../../components/collaboration/NetworkTopology';
+import SyncMonitor from '../../components/collaboration/SyncMonitor';
+import '../../assets/css/collaboration/collaboration-panel.css';
 
 /**
  * 现代主题 - 协作面板UI壳子 / Modern Theme - Collaboration Panel UI Shell

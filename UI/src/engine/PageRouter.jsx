@@ -60,7 +60,9 @@ function PageRouter({ pageId, fallbackComponent: FallbackComponent }) {
         alignItems: 'center',
         minHeight: '400px',
       }}>
-        <Spin size="large" tip="加载主题UI中... / Loading theme UI..." />
+        <Spin size="large" tip="加载主题UI中... / Loading theme UI...">
+          <div style={{ padding: 50 }} />
+        </Spin>
       </div>
     );
   }
@@ -78,7 +80,9 @@ function PageRouter({ pageId, fallbackComponent: FallbackComponent }) {
           alignItems: 'center',
           minHeight: '400px',
         }}>
-          <Spin size="large" tip="渲染UI中... / Rendering UI..." />
+          <Spin size="large" tip="渲染UI中... / Rendering UI...">
+            <div style={{ padding: 50 }} />
+          </Spin>
         </div>
       }
     >

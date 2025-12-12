@@ -67,7 +67,9 @@ function RoleStatistics(props) {
     >
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px' }}>
-          <Spin tip={t('common.loading')} />
+          <Spin tip={t('common.loading')}>
+            <div style={{ padding: 50 }} />
+          </Spin>
         </div>
       ) : (
         <Table

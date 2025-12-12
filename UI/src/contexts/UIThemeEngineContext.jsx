@@ -41,7 +41,7 @@ export const UI_THEMES = {
     },
     // 页面UI壳子映射 / Page UI shell mapping
     shellMapping: {
-      collaboration: () => import('../../themes/modern/CollaborationShell'),
+      collaboration: () => import('../themes/modern/CollaborationShell'),
       // 其他页面可以继续添加 / Other pages can be added
     },
     status: 'active',
@@ -69,7 +69,7 @@ export const UI_THEMES = {
     },
     // 页面UI壳子映射 / Page UI shell mapping
     shellMapping: {
-      collaboration: () => import('../../themes/bubble/CollaborationShell'),
+      collaboration: () => import('../themes/bubble/CollaborationShell'),
       // 其他页面可以继续添加 / Other pages can be added
     },
     // 状态改为active / Status changed to active
@@ -315,15 +315,37 @@ export const useUIThemeEngine = () => {
  * UI主题引擎Provider / UI Theme Engine Provider
  */
 export const UIThemeEngineProvider = ({ children }) => {
+  // 错误状态 / Error state
+  const [error, setError] = useState(null);
+
   // 当前UI主题 / Current UI theme
   const [currentUITheme, setCurrentUITheme] = useState(() => {
-    return localStorage.getItem('uiTheme') || 'modern';
+    try {
+      const saved = localStorage.getItem('uiTheme');
+      // 验证保存的主题是否存在 / Validate if saved theme exists
+      if (saved && UI_THEMES[saved]) {
+        return saved;
+      }
+      return 'modern'; // 默认主题 / Default theme
+    } catch (error) {
+      console.error('❌ Failed to load theme from localStorage:', error);
+      return 'modern'; // 出错时使用默认主题 / Use default theme on error
+    }
   });
 
   // 自定义主题列表 / Custom theme list
   const [customThemes, setCustomThemes] = useState(() => {
-    const saved = localStorage.getItem('customThemes');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('customThemes');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      }
+      return [];
+    } catch (error) {
+      console.error('❌ Failed to load custom themes from localStorage:', error);
+      return [];
+    }
   });
 
   // 主题加载状态 / Theme loading state
@@ -337,8 +359,21 @@ export const UIThemeEngineProvider = ({ children }) => {
 
   // 获取当前主题配置 / Get current theme configuration
   const getCurrentThemeConfig = () => {
-    const allThemes = getAllThemes();
-    return allThemes.find(theme => theme.id === currentUITheme) || UI_THEMES.modern;
+    try {
+      const allThemes = getAllThemes();
+      const theme = allThemes.find(theme => theme.id === currentUITheme);
+
+      // 如果找不到当前主题，返回默认主题 / If current theme not found, return default theme
+      if (!theme) {
+        console.warn('⚠️ Current theme not found, using default theme:', currentUITheme);
+        return UI_THEMES.modern;
+      }
+
+      return theme;
+    } catch (error) {
+      console.error('❌ Error getting theme config, using default:', error);
+      return UI_THEMES.modern; // 出错时返回默认主题 / Return default theme on error
+    }
   };
 
   // 切换UI主题 / Switch UI theme
@@ -395,10 +430,13 @@ export const UIThemeEngineProvider = ({ children }) => {
       const response = await fetch('/api/themes/upload', {
         method: 'POST',
         body: formData,
+        // 添加超时控制 / Add timeout control
+        signal: AbortSignal.timeout(10000), // 10秒超时 / 10 seconds timeout
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload theme to server');
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Server returned ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
@@ -411,9 +449,11 @@ export const UIThemeEngineProvider = ({ children }) => {
       };
     } catch (error) {
       console.error('❌ Failed to upload theme to server:', error);
+      // 返回详细的错误信息 / Return detailed error information
       return {
         success: false,
-        error: error.message,
+        error: error.message || 'Unknown error occurred',
+        fallbackToLocal: true, // 标记应该回退到本地存储 / Mark should fallback to local storage
       };
     }
   };
@@ -421,16 +461,21 @@ export const UIThemeEngineProvider = ({ children }) => {
   // 从服务器加载主题 / Load theme from server
   const loadThemeFromServer = async (themeId) => {
     try {
-      const response = await fetch(`/api/themes/${themeId}`);
+      const response = await fetch(`/api/themes/${themeId}`, {
+        // 添加超时控制 / Add timeout control
+        signal: AbortSignal.timeout(5000), // 5秒超时 / 5 seconds timeout
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to load theme from server');
+        throw new Error(`Server returned ${response.status}`);
       }
 
       const themeData = await response.json();
       console.log('✅ Theme loaded from server:', themeData);
       return themeData;
     } catch (error) {
-      console.error('❌ Failed to load theme from server:', error);
+      console.warn('⚠️ Failed to load theme from server, using local fallback:', error.message);
+      // 返回null，调用方应处理降级 / Return null, caller should handle degradation
       return null;
     }
   };
@@ -440,13 +485,13 @@ export const UIThemeEngineProvider = ({ children }) => {
     try {
       // 验证主题数据 / Validate theme data
       if (!themeData.id || !themeData.name) {
-        throw new Error('Invalid theme data');
+        throw new Error('Invalid theme data: missing id or name');
       }
 
       // 检查是否已存在 / Check if already exists
       const exists = getAllThemes().some(t => t.id === themeData.id);
       if (exists) {
-        throw new Error('Theme already exists');
+        throw new Error('Theme already exists: ' + themeData.id);
       }
 
       // 添加到自定义主题列表 / Add to custom theme list
@@ -454,36 +499,55 @@ export const UIThemeEngineProvider = ({ children }) => {
         ...themeData,
         type: 'custom',
         installDate: new Date().toISOString(),
-        source: options.serverPersisted ? 'server' : 'local', // 标记来源 / Mark source
+        source: 'local', // 默认本地 / Default to local
       };
 
       // 如果选择服务器持久化 / If server persistence is chosen
       if (options.uploadToServer && options.themeFiles) {
-        const uploadResult = await uploadThemeToServer(newTheme, options.themeFiles);
+        console.log('🔄 Attempting to upload theme to server...');
 
-        if (uploadResult.success) {
-          newTheme.serverPath = uploadResult.serverPath;
-          newTheme.source = 'server';
-          console.log('✅ Theme persisted to server:', uploadResult.serverPath);
-        } else {
-          console.warn('⚠️ Server upload failed, falling back to local storage');
+        try {
+          const uploadResult = await uploadThemeToServer(newTheme, options.themeFiles);
+
+          if (uploadResult.success) {
+            newTheme.serverPath = uploadResult.serverPath;
+            newTheme.source = 'server';
+            console.log('✅ Theme persisted to server:', uploadResult.serverPath);
+          } else {
+            console.warn('⚠️ Server upload failed, saving to local storage only');
+            console.warn('Error:', uploadResult.error);
+            // 继续使用本地存储，不抛出错误 / Continue with local storage, don't throw error
+          }
+        } catch (serverError) {
+          console.warn('⚠️ Server not available, saving to local storage only:', serverError.message);
+          // 服务器不可用时，继续本地安装 / Continue with local installation when server unavailable
         }
       }
 
-      const updatedCustomThemes = [...customThemes, newTheme];
-      setCustomThemes(updatedCustomThemes);
-      localStorage.setItem('customThemes', JSON.stringify(updatedCustomThemes));
+      // 无论服务器是否可用，都保存到本地 / Save to local regardless of server availability
+      try {
+        const updatedCustomThemes = [...customThemes, newTheme];
+        setCustomThemes(updatedCustomThemes);
+        localStorage.setItem('customThemes', JSON.stringify(updatedCustomThemes));
 
-      console.log('✅ Custom theme installed:', newTheme.name.zh);
-      return {
-        success: true,
-        theme: newTheme,
-      };
+        const themeName = newTheme.name.zh || newTheme.name.en || newTheme.id;
+        console.log('✅ Custom theme installed locally:', themeName);
+
+        return {
+          success: true,
+          theme: newTheme,
+          installedLocally: true,
+          installedOnServer: newTheme.source === 'server',
+        };
+      } catch (localError) {
+        console.error('❌ Failed to save theme to local storage:', localError);
+        throw new Error('Failed to save theme locally: ' + localError.message);
+      }
     } catch (error) {
       console.error('❌ Failed to install custom theme:', error);
       return {
         success: false,
-        error: error.message,
+        error: error.message || 'Unknown error occurred',
       };
     }
   };
@@ -491,12 +555,22 @@ export const UIThemeEngineProvider = ({ children }) => {
   // 从服务器同步主题列表 / Sync theme list from server
   const syncThemesFromServer = async () => {
     try {
-      const response = await fetch('/api/themes/list');
+      const response = await fetch('/api/themes/list', {
+        // 添加超时控制 / Add timeout control
+        signal: AbortSignal.timeout(5000), // 5秒超时 / 5 seconds timeout
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to sync themes from server');
+        throw new Error(`Server returned ${response.status}`);
       }
 
       const serverThemes = await response.json();
+
+      // 验证返回的数据 / Validate returned data
+      if (!Array.isArray(serverThemes)) {
+        console.warn('⚠️ Server returned invalid theme list, using local themes');
+        return false;
+      }
 
       // 合并服务器主题和本地主题 / Merge server themes with local themes
       const mergedThemes = [...customThemes];
@@ -517,7 +591,8 @@ export const UIThemeEngineProvider = ({ children }) => {
       console.log('✅ Themes synced from server:', mergedThemes.length);
       return true;
     } catch (error) {
-      console.error('❌ Failed to sync themes from server:', error);
+      console.warn('⚠️ Failed to sync themes from server, using local themes:', error.message);
+      // 即使同步失败，也保持本地主题可用 / Keep local themes available even if sync fails
       return false;
     }
   };
@@ -567,11 +642,39 @@ export const UIThemeEngineProvider = ({ children }) => {
     }
   };
 
+  // 初始化和错误恢复 / Initialization and error recovery
+  useEffect(() => {
+    // 验证当前主题是否有效 / Validate if current theme is valid
+    const validateTheme = () => {
+      try {
+        const config = getCurrentThemeConfig();
+        if (!config || config.id !== currentUITheme) {
+          console.warn('⚠️ Invalid theme detected, resetting to default');
+          setCurrentUITheme('modern');
+          localStorage.setItem('uiTheme', 'modern');
+        }
+      } catch (error) {
+        console.error('❌ Error validating theme, resetting to default:', error);
+        setCurrentUITheme('modern');
+        localStorage.setItem('uiTheme', 'modern');
+        setError(error);
+      }
+    };
+
+    validateTheme();
+
+    // 尝试从服务器同步主题（静默失败）/ Try to sync themes from server (silent failure)
+    syncThemesFromServer().catch(err => {
+      console.log('ℹ️ Server themes not available, using local themes only');
+    });
+  }, []); // eslint-disable-line
+
   const value = {
     // 状态 / State
     currentUITheme,
     currentThemeConfig: getCurrentThemeConfig(),
     themeLoading,
+    error, // 暴露错误状态 / Expose error state
 
     // 主题列表 / Theme lists
     builtinThemes: Object.values(UI_THEMES),
@@ -590,6 +693,11 @@ export const UIThemeEngineProvider = ({ children }) => {
     loadThemeFromServer,
     syncThemesFromServer,
   };
+
+  // 如果有严重错误，显示错误提示但不阻止渲染 / If critical error, show error but don't block rendering
+  if (error) {
+    console.error('⚠️ Theme engine error (using fallback):', error);
+  }
 
   return (
     <UIThemeEngineContext.Provider value={value}>

@@ -163,7 +163,9 @@ const WishList = () => {
         <div className="wish-list__main">
           {loading ? (
             <div className="wish-list__loading">
-              <Spin size="large" tip={t('wish.loading')} />
+              <Spin size="large" tip={t('wish.loading')}>
+                <div style={{ padding: 50 }} />
+              </Spin>
             </div>
           ) : wishes.length === 0 ? (
             <Empty
