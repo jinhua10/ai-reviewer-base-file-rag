@@ -26,10 +26,23 @@ import {
 import { useQA } from '../../contexts/QAContext'
 import { useLanguage } from '../../contexts/LanguageContext'
 import MarkdownRenderer from '../qa/MarkdownRenderer'
+import DockDropZone from './DockDropZone'
 import '../../assets/css/ai/floating-ai-panel.css'
 
 const { TextArea } = Input
 const { Option } = Select
+
+// 停靠位置常量
+export const DOCK_POSITIONS = {
+  NONE: 'none',       // 浮动模式
+  LEFT: 'left',       // 左侧停靠
+  RIGHT: 'right',     // 右侧停靠
+  TOP: 'top',         // 顶部停靠
+  BOTTOM: 'bottom',   // 底部停靠
+}
+
+// 停靠检测阈值（像素）
+const DOCK_THRESHOLD = 50
 
 // 默认窗口配置
 const DEFAULT_CONFIG = {
@@ -37,8 +50,9 @@ const DEFAULT_CONFIG = {
   y: 100,
   width: 450,
   height: 600,
-  isMaximized: false,
-  lastNormalConfig: null, // 最大化前的配置
+  dockPosition: DOCK_POSITIONS.NONE,
+  dockSize: 450, // 停靠时的宽度或高度
+  lastFloatingConfig: null, // 停靠前的浮动配置
 }
 
 // 从localStorage加载配置
@@ -73,6 +87,19 @@ const savePanelConfig = (config) => {
   }
 }
 
+// 检测拖拽时是否靠近屏幕边缘
+const detectDockPosition = (x, y) => {
+  const windowWidth = window.innerWidth
+  const windowHeight = window.innerHeight
+
+  if (x < DOCK_THRESHOLD) return DOCK_POSITIONS.LEFT
+  if (x > windowWidth - DOCK_THRESHOLD) return DOCK_POSITIONS.RIGHT
+  if (y < DOCK_THRESHOLD) return DOCK_POSITIONS.TOP
+  if (y > windowHeight - DOCK_THRESHOLD) return DOCK_POSITIONS.BOTTOM
+  
+  return DOCK_POSITIONS.NONE
+}
+
 /**
  * 分析类型 (Analysis types)
  */
@@ -101,6 +128,10 @@ function FloatingAIPanel() {
   // 拖拽状态
   const [dragging, setDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [previewDock, setPreviewDock] = useState(DOCK_POSITIONS.NONE) // 拖拽时预览停靠位置
+  
+  // 判断是否停靠
+  const isDocked = config.dockPosition !== DOCK_POSITIONS.NONE
   
   // 调整大小状态
   const [resizing, setResizing] = useState(false)
@@ -130,16 +161,34 @@ function FloatingAIPanel() {
    */
   const handleMouseDown = useCallback((e) => {
     if (e.target === headerRef.current || headerRef.current?.contains(e.target)) {
-      if (config.isMaximized) return // 最大化状态不允许拖动
+      // 如果处于停靠状态，先切换到浮动模式
+      if (isDocked) {
+        const lastFloating = config.lastFloatingConfig || {
+          x: e.clientX - 225, // 窗口中心对齐鼠标
+          y: e.clientY - 20,
+          width: config.dockSize,
+          height: 600,
+        }
+        setConfig({
+          ...config,
+          ...lastFloating,
+          dockPosition: DOCK_POSITIONS.NONE,
+        })
+        setDragOffset({
+          x: 225, // 窗口宽度一半
+          y: 20,
+        })
+      } else {
+        setDragOffset({
+          x: e.clientX - config.x,
+          y: e.clientY - config.y,
+        })
+      }
       
       setDragging(true)
-      setDragOffset({
-        x: e.clientX - config.x,
-        y: e.clientY - config.y,
-      })
       e.preventDefault()
     }
-  }, [config.x, config.y, config.isMaximized])
+  }, [config, isDocked])
 
   /**
    * 鼠标移动时更新位置（使用requestAnimationFrame优化性能）
@@ -153,6 +202,10 @@ function FloatingAIPanel() {
       rafRef.current = requestAnimationFrame(() => {
         const newX = e.clientX - dragOffset.x
         const newY = e.clientY - dragOffset.y
+        
+        // 检测停靠预览
+        const dockPos = detectDockPosition(e.clientX, e.clientY)
+        setPreviewDock(dockPos)
         
         // 边界限制
         const maxX = window.innerWidth - 100
@@ -217,13 +270,31 @@ function FloatingAIPanel() {
    * 鼠标抬起停止拖动/调整
    */
   const handleMouseUp = useCallback(() => {
-    if (dragging || resizing) {
+    if (dragging) {
+      // 如果有停靠预览，执行停靠
+      if (previewDock !== DOCK_POSITIONS.NONE) {
+        saveConfig({
+          ...config,
+          dockPosition: previewDock,
+          lastFloatingConfig: {
+            x: config.x,
+            y: config.y,
+            width: config.width,
+            height: config.height,
+          },
+        })
+      } else {
+        saveConfig(config)
+      }
+      setPreviewDock(DOCK_POSITIONS.NONE)
+    }
+    if (resizing) {
       saveConfig(config)
     }
     setDragging(false)
     setResizing(false)
     setResizeDirection(null)
-  }, [dragging, resizing, config, saveConfig])
+  }, [dragging, resizing, config, previewDock, saveConfig])
 
   /**
    * 开始调整大小
@@ -283,60 +354,72 @@ function FloatingAIPanel() {
   }, [config, saveConfig])
 
   /**
-   * 分屏 - 左半屏
+   * 停靠 - 左侧
    */
   const snapToLeft = useCallback(() => {
     saveConfig({
-      x: 0,
-      y: 0,
-      width: window.innerWidth / 2,
-      height: window.innerHeight,
-      isMaximized: false,
-      lastNormalConfig: null,
+      ...config,
+      dockPosition: DOCK_POSITIONS.LEFT,
+      dockSize: config.width || 450,
+      lastFloatingConfig: {
+        x: config.x,
+        y: config.y,
+        width: config.width,
+        height: config.height,
+      },
     })
-  }, [saveConfig])
+  }, [config, saveConfig])
 
   /**
-   * 分屏 - 右半屏
+   * 停靠 - 右侧
    */
   const snapToRight = useCallback(() => {
     saveConfig({
-      x: window.innerWidth / 2,
-      y: 0,
-      width: window.innerWidth / 2,
-      height: window.innerHeight,
-      isMaximized: false,
-      lastNormalConfig: null,
+      ...config,
+      dockPosition: DOCK_POSITIONS.RIGHT,
+      dockSize: config.width || 450,
+      lastFloatingConfig: {
+        x: config.x,
+        y: config.y,
+        width: config.width,
+        height: config.height,
+      },
     })
-  }, [saveConfig])
+  }, [config, saveConfig])
 
   /**
-   * 分屏 - 上半屏
+   * 停靠 - 顶部
    */
   const snapToTop = useCallback(() => {
     saveConfig({
-      x: 0,
-      y: 0,
-      width: window.innerWidth,
-      height: window.innerHeight / 2,
-      isMaximized: false,
-      lastNormalConfig: null,
+      ...config,
+      dockPosition: DOCK_POSITIONS.TOP,
+      dockSize: config.height || 600,
+      lastFloatingConfig: {
+        x: config.x,
+        y: config.y,
+        width: config.width,
+        height: config.height,
+      },
     })
-  }, [saveConfig])
+  }, [config, saveConfig])
 
   /**
-   * 分屏 - 下半屏
+   * 停靠 - 底部
    */
   const snapToBottom = useCallback(() => {
     saveConfig({
-      x: 0,
-      y: window.innerHeight / 2,
-      width: window.innerWidth,
-      height: window.innerHeight / 2,
-      isMaximized: false,
-      lastNormalConfig: null,
+      ...config,
+      dockPosition: DOCK_POSITIONS.BOTTOM,
+      dockSize: config.height || 600,
+      lastFloatingConfig: {
+        x: config.x,
+        y: config.y,
+        width: config.width,
+        height: config.height,
+      },
     })
-  }, [saveConfig])
+  }, [config, saveConfig])
 
   /**
    * 重置到默认位置
@@ -417,16 +500,22 @@ function FloatingAIPanel() {
     return null
   }
 
-  return (
-    <div
-      ref={panelRef}
-      className={`floating-ai-panel ${minimized ? 'floating-ai-panel--minimized' : ''} ${dragging || resizing ? 'floating-ai-panel--dragging' : ''} ${config.isMaximized ? 'floating-ai-panel--maximized' : ''}`}
-      style={{
+  // 停靠模式样式
+  const dockedClassName = isDocked ? `floating-ai-panel--docked docked-${config.dockPosition}` : ''
+  const panelStyle = isDocked 
+    ? {} // 停靠模式使用100%宽高
+    : {
         transform: `translate(${config.x}px, ${config.y}px)`,
         width: `${config.width}px`,
         height: minimized ? '48px' : `${config.height}px`,
         willChange: dragging || resizing ? 'transform, width, height' : 'auto',
-      }}
+      }
+
+  return (
+    <div
+      ref={panelRef}
+      className={`floating-ai-panel ${dockedClassName} ${minimized ? 'floating-ai-panel--minimized' : ''} ${dragging || resizing ? 'floating-ai-panel--dragging' : ''}`}
+      style={panelStyle}
     >
       {/* 调整大小手柄 */}
       {!minimized && !config.isMaximized && (
@@ -628,6 +717,9 @@ function FloatingAIPanel() {
           )}
         </div>
       )}
+
+      {/* 停靠预览区域 */}
+      {dragging && <DockDropZone previewDock={previewDock} />}
     </div>
   )
 }
