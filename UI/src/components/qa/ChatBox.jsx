@@ -16,7 +16,7 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import '../../assets/css/qa/chat-box.css'
 
 function ChatBox(props) {
-  const { messages, loading, onFeedback, onToggleHistory } = props
+  const { messages, loading, onFeedback, onToggleHistory, onStopGeneration, isGenerating } = props
   const { t } = useLanguage()
   const messagesEndRef = useRef(null)
 
@@ -77,6 +77,18 @@ function ChatBox(props) {
               <span></span>
               <span></span>
             </div>
+          </div>
+        )}
+
+        {isGenerating && (
+          <div className="chat-box__stop-btn-wrapper">
+            <Button
+              danger
+              onClick={onStopGeneration}
+              className="chat-box__stop-btn"
+            >
+              🛑 {t('qa.stopGeneration')}
+            </Button>
           </div>
         )}
 

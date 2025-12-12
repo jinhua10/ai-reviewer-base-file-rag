@@ -64,6 +64,12 @@ function AnswerCard(props) {
           ) : (
             <MarkdownRenderer content={answer.content} />
           )}
+          
+          {answer.stopped && !answer.streaming && (
+            <div className="answer-card__stopped-badge">
+              ⚠️ {t('qa.generationStopped')}
+            </div>
+          )}
         </div>
 
         {!answer.streaming && (

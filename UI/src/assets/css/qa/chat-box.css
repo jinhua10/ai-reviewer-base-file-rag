@@ -191,6 +191,41 @@
 }
 
 /* ============================================================================
+   停止生成按钮 (Stop Generation Button)
+   ============================================================================ */
+.chat-box__stop-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-box__stop-btn {
+  font-size: 14px;
+  border-radius: 20px;
+  padding: 8px 24px;
+  height: auto;
+  box-shadow: 0 2px 8px rgba(255, 77, 79, 0.2);
+  transition: all 0.3s ease;
+}
+
+.chat-box__stop-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.3);
+}
+
+/* ============================================================================
    响应式样式 (Responsive Styles)
    ============================================================================ */
 @media (max-width: 768px) {

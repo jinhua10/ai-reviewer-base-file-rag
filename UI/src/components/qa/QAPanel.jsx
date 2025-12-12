@@ -33,6 +33,7 @@ function QAPanel() {
   const [similarQuestions, setSimilarQuestions] = useState([]) // 相似问题
   const [historyVisible, setHistoryVisible] = useState(false) // 历史记录可见性
   const [currentQuestion, setCurrentQuestion] = useState('') // 当前问题
+  const [currentEventSource, setCurrentEventSource] = useState(null) // 当前 EventSource 连接
 
   /**
    * 处理问题提交
@@ -65,36 +66,72 @@ function QAPanel() {
       }
       setMessages(prev => [...prev, answerMessage])
 
-      // 调用流式 API / Call streaming API
+      // 调用流式 API（双轨输出）/ Call streaming API (Dual Track)
       const result = await qaApi.askStreaming(
         { question },
         (data) => {
-          // 更新答案内容 / Update answer content
+          console.log('📨 Received data in QAPanel:', data)
+          
+          // 实时更新答案内容 / Update answer content in real-time
           setMessages(prev => {
             const newMessages = [...prev]
             const lastMessage = newMessages[newMessages.length - 1]
+            
+            console.log('📝 Current last message:', lastMessage)
+            
             if (lastMessage && lastMessage.streaming) {
-              // 处理不同类型的数据块 / Handle different types of data chunks
-              if (data.content) {
-                lastMessage.content += data.content
-              } else if (data.chunk) {
-                lastMessage.content += data.chunk
-              }
+              // 处理不同类型的数据 / Handle different types of data
+              switch (data.type) {
+                case 'hope':
+                  // HOPE 快速答案（立即显示）/ HOPE fast answer (display immediately)
+                  lastMessage.content = data.content
+                  lastMessage.source = `HOPE (${data.source})`
+                  lastMessage.confidence = data.confidence
+                  lastMessage.hopeAnswer = data.content
+                  lastMessage.canDirectAnswer = data.canDirectAnswer
+                  break
 
-              // 更新来源信息 / Update source information
-              if (data.sources) {
-                lastMessage.sources = data.sources
-              }
+                case 'llm':
+                  // LLM 流式块（追加显示）/ LLM streaming chunk (append display)
+                  // 如果有 HOPE 答案，在新行显示 LLM 答案
+                  // (If HOPE answer exists, display LLM answer on new line)
+                  if (lastMessage.hopeAnswer) {
+                    if (!lastMessage.llmAnswer) {
+                      lastMessage.llmAnswer = ''
+                      lastMessage.content += '\n\n--- LLM 详细回答 ---\n'
+                    }
+                    lastMessage.llmAnswer += data.content
+                    lastMessage.content += data.content
+                  } else {
+                    lastMessage.content += data.content
+                  }
+                  break
 
-              // 检查是否完成 / Check if done
-              if (data.done || data.type === 'done') {
-                lastMessage.streaming = false
-              }
+                case 'complete':
+                  // 完成 / Complete
+                  lastMessage.streaming = false
+                  lastMessage.sessionId = data.sessionId
+                  if (data.sources) {
+                    lastMessage.sources = data.sources
+                  }
+                  break
 
-              // 处理错误 / Handle error
-              if (data.error) {
-                lastMessage.type = 'error'
-                lastMessage.streaming = false
+                case 'error':
+                  // 错误 / Error
+                  lastMessage.type = 'error'
+                  lastMessage.content = data.error || t('qa.error.failed')
+                  lastMessage.streaming = false
+                  break
+
+                default:
+                  // 兼容旧格式 / Compatible with old format
+                  if (data.content) {
+                    lastMessage.content += data.content
+                  }
+                  if (data.done) {
+                    lastMessage.streaming = false
+                    lastMessage.sessionId = data.sessionId
+                  }
               }
             }
             return newMessages
@@ -102,7 +139,7 @@ function QAPanel() {
         }
       )
 
-      // 保存 sessionId / Save sessionId
+      // 保存 sessionId 和 eventSource / Save sessionId and eventSource
       if (result && result.sessionId) {
         setMessages(prev => {
           const newMessages = [...prev]
@@ -112,6 +149,11 @@ function QAPanel() {
           }
           return newMessages
         })
+      }
+
+      // 保存 EventSource 引用以便停止生成 / Save EventSource reference for stopping
+      if (result && result.eventSource) {
+        setCurrentEventSource(result.eventSource)
       }
 
       // 获取相似问题 / Get similar questions
@@ -140,6 +182,32 @@ function QAPanel() {
       })
     } finally {
       setLoading(false)
+      setCurrentEventSource(null)
+    }
+  }
+
+  /**
+   * 停止生成
+   * Stop generation
+   */
+  const handleStopGeneration = () => {
+    if (currentEventSource) {
+      console.log('🛑 Stopping generation...')
+      currentEventSource.close()
+      setCurrentEventSource(null)
+      setLoading(false)
+
+      // 标记最后一条消息为已完成
+      // Mark last message as completed
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMessage = newMessages[newMessages.length - 1]
+        if (lastMessage && lastMessage.streaming) {
+          lastMessage.streaming = false
+          lastMessage.stopped = true
+        }
+        return newMessages
+      })
     }
   }
 
@@ -197,6 +265,8 @@ function QAPanel() {
             loading={loading}
             onFeedback={handleFeedback}
             onToggleHistory={toggleHistory}
+            onStopGeneration={handleStopGeneration}
+            isGenerating={!!currentEventSource}
           />
 
           {/* 输入框 */}

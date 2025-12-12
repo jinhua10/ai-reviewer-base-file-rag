@@ -323,6 +323,8 @@ export default {
     clearHistory: '清除历史',
     copyAnswer: '复制回答',
     copySuccess: '复制成功',
+    stopGeneration: '停止生成',
+    generationStopped: '生成已停止',
   },
 
   // ============================================================================

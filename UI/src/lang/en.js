@@ -328,6 +328,8 @@ export default {
     clearHistory: 'Clear History',
     copyAnswer: 'Copy Answer',
     copySuccess: 'Copied successfully',
+    stopGeneration: 'Stop Generating',
+    generationStopped: 'Generation Stopped',
   },
 
   // ============================================================================
