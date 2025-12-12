@@ -598,7 +598,11 @@ public class KnowledgeQAService {
             }
 
             // 步骤5: 调用 LLM 生成答案 / Step 5: Call LLM to generate answer
+            log.debug("🔍 Prompt: {}", prompt);
             String answer = llmClient.generate(prompt);
+            
+            // 调试：检查answer中的图片引用
+            log.debug("🔍 Answer: {}", answer);
 
 
             // 步骤6: 提取文档来源 / Step 6: Extract document sources

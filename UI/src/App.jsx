@@ -87,7 +87,7 @@ function AppContent() {
   const isDocked = aiPanelConfig.dockPosition !== DOCK_POSITIONS.NONE
   const dockPosition = aiPanelConfig.dockPosition
   
-  console.log('🏠 App.jsx render - isDocked:', isDocked, 'dockPosition:', dockPosition, 'config:', aiPanelConfig)
+  //console.log('🏠 App.jsx render - isDocked:', isDocked, 'dockPosition:', dockPosition, 'config:', aiPanelConfig)
 
   // 如果localStorage中有停靠状态但当前是浮动模式，重置配置
   React.useEffect(() => {

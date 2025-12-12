@@ -117,11 +117,6 @@ function MarkdownRenderer(props) {
 
     // 图片 - 添加样式和懒加载，完全信赖后端返回的路径
     img({ node, src, alt, ...props }) {
-      // 只记录日志，不做任何路径修改
-      if (src) {
-        console.log('🖼️ Image src from backend:', src);
-      }
-      
       return (
         <img
           src={src}
@@ -129,13 +124,9 @@ function MarkdownRenderer(props) {
           className="markdown-renderer__image"
           loading="lazy"
           onError={(e) => {
-            console.error('❌ Image failed to load:', src);
-            console.error('Error event:', e);
+            console.error('图片加载失败:', src);
             // 显示占位符而不是隐藏
             e.target.alt = alt || '图片加载失败 (Image load failed)';
-          }}
-          onLoad={(e) => {
-            console.log('✅ Image loaded successfully:', src);
           }}
           {...props}
         />

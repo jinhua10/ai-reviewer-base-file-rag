@@ -8,7 +8,7 @@
  * @since 2025-12-12
  */
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Layout } from 'antd'
 import ChatBox from './ChatBox'
 import QuestionInput from './QuestionInput'
@@ -40,6 +40,10 @@ function QAPanel() {
   const [loading, setLoading] = useState(false) // 加载状态
   const [historyVisible, setHistoryVisible] = useState(false) // 历史记录可见性
   const [currentEventSource, setCurrentEventSource] = useState(null) // 当前 EventSource 连接
+  
+  // 使用ref追踪当前流式消息的内容，避免React批量更新导致重复累加
+  const streamingContentRef = useRef('')
+  const streamingLLMAnswerRef = useRef('')
   
   // 从 localStorage 读取流式模式偏好（默认为 true）
   const [isStreamingMode, setIsStreamingMode] = useState(() => {
@@ -110,6 +114,10 @@ function QAPanel() {
         sources: [],
       }
       setMessages(prev => [...prev, answerMessage])
+      
+      // 重置ref内容
+      streamingContentRef.current = ''
+      streamingLLMAnswerRef.current = ''
 
       // 调用流式 API（双轨输出）/ Call streaming API (Dual Track)
       const result = await qaApi.askStreaming(
@@ -118,40 +126,44 @@ function QAPanel() {
           useKnowledgeBase  // 是否使用知识库
         },
         (data) => {
-          console.log('📨 Received data in QAPanel:', data)
+          // 先累加到ref（不触发渲染，避免React批量更新导致的重复累加）
+          // Accumulate to ref first (avoid re-render and duplicate accumulation from React batching)
+          if (data.type === 'hope') {
+            streamingContentRef.current = data.content
+          } else if (data.type === 'llm') {
+            streamingLLMAnswerRef.current += data.content
+          }
           
-          // 实时更新答案内容 / Update answer content in real-time
+          // 然后从ref读取更新UI（只触发一次渲染）
+          // Then read from ref to update UI (trigger render only once)
           setMessages(prev => {
             const newMessages = [...prev]
             const lastMessage = newMessages[newMessages.length - 1]
-            
-            console.log('📝 Current last message:', lastMessage)
             
             if (lastMessage && lastMessage.streaming) {
               // 处理不同类型的数据 / Handle different types of data
               switch (data.type) {
                 case 'hope':
                   // HOPE 快速答案（立即显示）/ HOPE fast answer (display immediately)
-                  lastMessage.content = data.content
+                  lastMessage.content = streamingContentRef.current
                   lastMessage.source = `HOPE (${data.source})`
                   lastMessage.confidence = data.confidence
-                  lastMessage.hopeAnswer = data.content
+                  lastMessage.hopeAnswer = streamingContentRef.current
                   lastMessage.canDirectAnswer = data.canDirectAnswer
                   break
 
                 case 'llm':
-                  // LLM 流式块（追加显示）/ LLM streaming chunk (append display)
+                  // LLM 流式块（从ref读取累加结果）/ LLM streaming chunk (read accumulated result from ref)
                   // 如果有 HOPE 答案，在新行显示 LLM 答案
                   // (If HOPE answer exists, display LLM answer on new line)
                   if (lastMessage.hopeAnswer) {
                     if (!lastMessage.llmAnswer) {
                       lastMessage.llmAnswer = ''
-                      lastMessage.content += '\n\n--- LLM 详细回答 ---\n'
                     }
-                    lastMessage.llmAnswer += data.content
-                    lastMessage.content += data.content
+                    lastMessage.llmAnswer = streamingLLMAnswerRef.current
+                    lastMessage.content = streamingContentRef.current + '\n\n--- LLM 详细回答 ---\n' + streamingLLMAnswerRef.current
                   } else {
-                    lastMessage.content += data.content
+                    lastMessage.content = streamingLLMAnswerRef.current
                   }
                   break
 
@@ -174,7 +186,8 @@ function QAPanel() {
                 default:
                   // 兼容旧格式 / Compatible with old format
                   if (data.content) {
-                    lastMessage.content += data.content
+                    streamingLLMAnswerRef.current += data.content
+                    lastMessage.content = streamingLLMAnswerRef.current
                   }
                   if (data.done) {
                     lastMessage.streaming = false

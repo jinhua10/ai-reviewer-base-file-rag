@@ -71,7 +71,7 @@ const loadPanelConfig = () => {
             config.x = Math.max(10, Math.min(config.x, maxX))
             config.y = Math.max(10, Math.min(config.y, maxY))
 
-            console.log('📍 Loaded panel config:', config, '(screen:', window.innerWidth, 'x', window.innerHeight, ')')
+            //console.log('📍 Loaded panel config:', config, '(screen:', window.innerWidth, 'x', window.innerHeight, ')')
             return config
         }
     } catch (e) {
@@ -152,12 +152,12 @@ function FloatingAIPanel() {
     const rafRef = useRef(null) // requestAnimationFrame引用，优化性能
 
     // 调试日志
-    console.log('🎨 FloatingAIPanel render:', {
-        showFloatingAI,
-        isDocked,
-        dockPosition: config.dockPosition,
-        config: { x: config.x, y: config.y, width: config.width, height: config.height }
-    })
+    // console.log('🎨 FloatingAIPanel render:', {
+    //     showFloatingAI,
+    //     isDocked,
+    //     dockPosition: config.dockPosition,
+    //     config: { x: config.x, y: config.y, width: config.width, height: config.height }
+    // })
 
     // 监听localStorage变化，当重置位置时重新加载配置
     useEffect(() => {
