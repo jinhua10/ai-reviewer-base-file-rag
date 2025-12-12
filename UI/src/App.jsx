@@ -83,11 +83,11 @@ function AppContent() {
     console.log('Navigate to:', key)
   }
 
-  // 判断AI面板是否停靠
-  const isDocked = aiPanelConfig.dockPosition !== DOCK_POSITIONS.NONE
+  // 判断AI面板是否停靠（最大化时不算停靠）
+  const isDocked = aiPanelConfig.dockPosition !== DOCK_POSITIONS.NONE && !aiPanelConfig.isMaximized
   const dockPosition = aiPanelConfig.dockPosition
   
-  //console.log('🏠 App.jsx render - isDocked:', isDocked, 'dockPosition:', dockPosition, 'config:', aiPanelConfig)
+  //console.log('🏠 App.jsx render - isDocked:', isDocked, 'dockPosition:', dockPosition, 'isMaximized:', aiPanelConfig.isMaximized, 'config:', aiPanelConfig)
 
   // 如果localStorage中有停靠状态但当前是浮动模式，重置配置
   React.useEffect(() => {

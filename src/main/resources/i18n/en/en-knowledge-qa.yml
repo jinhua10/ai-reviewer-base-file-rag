@@ -15,6 +15,7 @@ knowledge_qa:
     incremental_request: "Received incremental indexing request: {0}"
     statistics_result: "Statistics result: {0}"
     search_documents: "Searching documents for question: {0} (found {1})"
+    search_similar: "🔍 Searching similar questions: question={0}, minScore={1}, limit={2}"
     session_question: "Session question [{0}]: {1}"
     rebuild_request: "Received rebuild request: {0}"
     indexing_in_progress: "Indexing in progress"

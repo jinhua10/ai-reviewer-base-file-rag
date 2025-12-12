@@ -60,6 +60,11 @@ const loadPanelConfig = () => {
         if (saved) {
             const config = JSON.parse(saved)
 
+            // 最大化状态下不进行边界校验
+            if (config.isMaximized) {
+                return config
+            }
+
             // 确保有必要的属性
             if (!config.width || config.width < 300) config.width = 450
             if (!config.height || config.height < 400) config.height = 600
@@ -422,6 +427,8 @@ function FloatingAIPanel() {
                 lastNormalConfig: null,
             })
         } else {
+            // 最大化时取消最小化
+            setMinimized(false)
             // 最大化
             saveConfig({
                 x: 0,
@@ -503,10 +510,19 @@ function FloatingAIPanel() {
     }, [config, saveConfig])
 
     /**
-     * 重置到默认位置
+     * 重置到默认位置和大小
      */
     const resetPosition = useCallback(() => {
-        saveConfig(DEFAULT_CONFIG)
+        const resetConfig = {
+            ...DEFAULT_CONFIG,
+            x: Math.max(50, window.innerWidth - 500),
+            y: 100,
+            width: 450,
+            height: 600,
+            dockPosition: DOCK_POSITIONS.NONE,
+            isMaximized: false,
+        }
+        saveConfig(resetConfig)
     }, [saveConfig])
 
     /**
@@ -588,7 +604,22 @@ function FloatingAIPanel() {
 
     // 停靠模式样式
     const dockedClassName = isDocked ? `floating-ai-panel--docked docked-${config.dockPosition}` : ''
-    const panelStyle = isDocked
+    const maximizedClassName = config.isMaximized ? 'floating-ai-panel--maximized' : ''
+    
+    // 最大化时覆盖整个屏幕
+    const panelStyle = config.isMaximized
+        ? {
+            position: 'fixed',
+            transform: 'none',
+            width: '100vw',
+            height: '100vh',
+            left: '0',
+            top: '0',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            zIndex: 99999,
+        }
+        : isDocked
         ? {} // 停靠模式使用100%宽高
         : {
             transform: `translate(${config.x}px, ${config.y}px)`,
@@ -602,7 +633,7 @@ function FloatingAIPanel() {
     return (
         <div
             ref={panelRef}
-            className={`floating-ai-panel ${dockedClassName} ${minimized ? 'floating-ai-panel--minimized' : ''} ${dragging || resizing ? 'floating-ai-panel--dragging' : ''}`}
+            className={`floating-ai-panel ${dockedClassName} ${maximizedClassName} ${minimized ? 'floating-ai-panel--minimized' : ''} ${dragging || resizing ? 'floating-ai-panel--dragging' : ''}`}
             style={panelStyle}
         >
             {/* 调整大小手柄 */}
@@ -623,7 +654,7 @@ function FloatingAIPanel() {
             <div
                 ref={headerRef}
                 className="floating-ai-panel__header"
-                onMouseDown={handleMouseDown}
+                onMouseDown={config.isMaximized ? undefined : handleMouseDown}
             >
                 <div className="floating-ai-panel__title">
                     <FileTextOutlined />
@@ -631,46 +662,50 @@ function FloatingAIPanel() {
                     <Tag color="blue">{aiAnalysisDocs.length}</Tag>
                 </div>
                 <div className="floating-ai-panel__actions">
-                    <Tooltip title="左半屏">
-                        <Button
-                            type="text"
-                            size="small"
-                            icon={<DockLeftIcon />}
-                            onClick={snapToLeft}
-                        />
-                    </Tooltip>
-                    <Tooltip title="右半屏">
-                        <Button
-                            type="text"
-                            size="small"
-                            icon={<DockRightIcon />}
-                            onClick={snapToRight}
-                        />
-                    </Tooltip>
-                    <Tooltip title="上半屏">
-                        <Button
-                            type="text"
-                            size="small"
-                            icon={<DockTopIcon />}
-                            onClick={snapToTop}
-                        />
-                    </Tooltip>
-                    <Tooltip title="下半屏">
-                        <Button
-                            type="text"
-                            size="small"
-                            icon={<DockBottomIcon />}
-                            onClick={snapToBottom}
-                        />
-                    </Tooltip>
-                    <Tooltip title={config.isMaximized ? '还原' : '最大化'}>
-                        <Button
-                            type="text"
-                            size="small"
-                            icon={config.isMaximized ? <CompressOutlined /> : <ExpandOutlined />}
-                            onClick={toggleMaximize}
-                        />
-                    </Tooltip>
+                    {!minimized && (
+                        <>
+                            <Tooltip title="左半屏">
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={<DockLeftIcon />}
+                                    onClick={snapToLeft}
+                                />
+                            </Tooltip>
+                            <Tooltip title="右半屏">
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={<DockRightIcon />}
+                                    onClick={snapToRight}
+                                />
+                            </Tooltip>
+                            <Tooltip title="上半屏">
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={<DockTopIcon />}
+                                    onClick={snapToTop}
+                                />
+                            </Tooltip>
+                            <Tooltip title="下半屏">
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={<DockBottomIcon />}
+                                    onClick={snapToBottom}
+                                />
+                            </Tooltip>
+                            <Tooltip title={config.isMaximized ? '还原' : '最大化'}>
+                                <Button
+                                    type="text"
+                                    size="small"
+                                    icon={config.isMaximized ? <CompressOutlined /> : <ExpandOutlined />}
+                                    onClick={toggleMaximize}
+                                />
+                            </Tooltip>
+                        </>
+                    )}
                     <Tooltip title={minimized ? '展开' : '最小化'}>
                         <Button
                             type="text"

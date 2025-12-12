@@ -15,6 +15,7 @@ knowledge_qa:
     incremental_request: "收到增量索引请求：{0}"
     statistics_result: "统计结果：{0}"
     search_documents: "为问题搜索文档：{0}（找到 {1} 个）"
+    search_similar: "🔍 搜索相似问题：问题={0}, 最低分数={1}, 限制={2}"
     session_question: "会话问题 [{0}]：{1}"
     rebuild_request: "收到重建请求：{0}"
     indexing_in_progress: "索引正在进行中"
