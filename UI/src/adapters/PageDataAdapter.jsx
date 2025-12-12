@@ -108,36 +108,51 @@ export function useHomePageData() {
 }
 
 /**
- * 文档管理页面数据适配器
+ * 文档管理页面数据适配器 / Documents page data adapter
  */
 export function useDocumentsPageData() {
   const [data, setData] = useState({
     documents: [],
     stats: {
       total: 0,
-      pending: 0,
-      completed: 0,
-      rejected: 0
+      indexed: 0,
+      unindexed: 0,
+      fileTypes: []
     },
     loading: true,
     error: null
   });
 
   useEffect(() => {
-    // TODO: 替换为真实API
-    setTimeout(() => {
-      setData({
-        documents: [],
-        stats: {
-          total: 856,
-          pending: 45,
-          completed: 789,
-          rejected: 22
-        },
-        loading: false,
-        error: null
-      });
-    }, 500);
+    const fetchData = async () => {
+      try {
+        // 并行获取文档列表和支持的文件类型 / Fetch documents list and file types in parallel
+        const [listResponse, typesResponse] = await Promise.all([
+          apiCall('/documents/list?page=1&pageSize=-1'), // Get all documents
+          apiCall('/documents/supported-types')
+        ]);
+
+        const documents = listResponse.documents || [];
+        const indexedCount = documents.filter(doc => doc.indexed).length;
+
+        setData({
+          documents: documents,
+          stats: {
+            total: listResponse.total || 0,
+            indexed: indexedCount,
+            unindexed: (listResponse.total || 0) - indexedCount,
+            fileTypes: typesResponse.types || []
+          },
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        console.error('Failed to fetch documents page data:', error);
+        setData(prev => ({ ...prev, loading: false, error: error.message }));
+      }
+    };
+
+    fetchData();
   }, []);
 
   return data;

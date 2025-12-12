@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.service.admin.SystemConfigService;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -24,20 +25,28 @@ import java.util.*;
 @CrossOrigin(origins = "*")
 public class AdminController {
 
+    private final SystemConfigService configService;
+
+    public AdminController(SystemConfigService configService) {
+        this.configService = configService;
+    }
+
     /**
      * 更新系统配置 (Update system configuration)
+     *
      * PUT /api/admin/system-config
+     * Body: {
+     *   "maxUploadSize": "20MB",
+     *   "searchMaxLimit": 200,
+     *   "cacheEnabled": true
+     * }
      */
     @PutMapping("/system-config")
     public ResponseEntity<?> updateSystemConfig(@RequestBody Map<String, Object> config) {
         log.info(I18N.get("admin.api.sysconfig_request"));
 
         try {
-            // TODO: 实现实际的配置更新逻辑
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", I18N.get("admin.sysconfig.updated"));
-
+            SystemConfigService.ConfigUpdateResult result = configService.updateSystemConfig(config);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error(I18N.get("admin.api.sysconfig_error"), e);
@@ -46,21 +55,60 @@ public class AdminController {
     }
 
     /**
+     * 获取当前系统配置 (Get current system configuration)
+     *
+     * GET /api/admin/system-config
+     */
+    @GetMapping("/system-config")
+    public ResponseEntity<?> getSystemConfig() {
+        log.info(I18N.get("admin.api.sysconfig_get_request"));
+
+        try {
+            Map<String, Object> config = configService.getCurrentSystemConfig();
+            return ResponseEntity.ok(config);
+        } catch (Exception e) {
+            log.error(I18N.get("admin.api.sysconfig_get_error"), e);
+            return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
      * 更新模型配置 (Update model configuration)
+     *
      * PUT /api/admin/model-config
+     * Body: {
+     *   "model": "gpt-4o",
+     *   "temperature": 0.7,
+     *   "maxTokens": 2000
+     * }
      */
     @PutMapping("/model-config")
     public ResponseEntity<?> updateModelConfig(@RequestBody Map<String, Object> config) {
         log.info(I18N.get("admin.api.modelconfig_request"));
 
         try {
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", I18N.get("admin.modelconfig.updated"));
-
+            SystemConfigService.ConfigUpdateResult result = configService.updateModelConfig(config);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error(I18N.get("admin.api.modelconfig_error"), e);
+            return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    /**
+     * 获取当前模型配置 (Get current model configuration)
+     *
+     * GET /api/admin/model-config
+     */
+    @GetMapping("/model-config")
+    public ResponseEntity<?> getModelConfig() {
+        log.info(I18N.get("admin.api.modelconfig_get_request"));
+
+        try {
+            Map<String, Object> config = configService.getCurrentModelConfig();
+            return ResponseEntity.ok(config);
+        } catch (Exception e) {
+            log.error(I18N.get("admin.api.modelconfig_get_error"), e);
             return ResponseEntity.internalServerError().body(createErrorResponse(e.getMessage()));
         }
     }

@@ -26,8 +26,22 @@ admin:
   api:
     sysconfig_request: "⚙️ 收到系统配置更新请求"
     sysconfig_error: "❌ 系统配置更新出错"
+    sysconfig_get_request: "🔍 收到获取系统配置请求"
+    sysconfig_get_error: "❌ 获取系统配置出错"
     modelconfig_request: "🤖 收到模型配置更新请求"
     modelconfig_error: "❌ 模型配置更新出错"
+    modelconfig_get_request: "🔍 收到获取模型配置请求"
+    modelconfig_get_error: "❌ 获取模型配置出错"
+
+  config:
+    updating: "🔄 正在更新配置: {0}"
+    updated: "✅ 配置更新成功: {0}"
+    updated_success: "✅ {0}更新成功"
+    update_failed: "❌ 配置更新失败: type={0}, error={1}"
+    empty: "❌ 配置不能为空"
+    validated: "✅ 配置验证通过: {0}"
+    applied: "✅ 配置已应用: {0}"
+    saved: "✅ 配置已保存: {0}"
     logs_request: "📋 收到日志查询请求: level={0}, keyword={1}"
     logs_error: "❌ 日志查询出错"
     metrics_request: "📊 收到监控指标请求"

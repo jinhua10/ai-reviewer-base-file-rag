@@ -166,6 +166,36 @@ export default {
     noDocuments: '暂无文档',
     noSearchResults: '未找到匹配的文档',
     loadFailed: '加载失败',
+
+    // Shell页面专用 / Shell page specific
+    shell: {
+      loading: '加载中...',
+      loadingData: '正在获取文档数据...',
+      loadFailed: '加载失败',
+      heroTitle: '文档管理',
+      heroSubtitle: '智能文档处理与管理平台',
+      stats: {
+        totalDocs: '文档总数',
+        totalDocsDesc: '已上传的文档数量',
+        docs: '篇',
+        indexed: '已索引',
+        indexedDesc: '可用于检索的文档',
+        unindexed: '未索引',
+        unindexedDesc: '待处理的文档',
+        fileTypes: '文件类型',
+        fileTypesDesc: '支持的文档格式',
+      },
+      features: {
+        library: '文件库',
+        libraryDesc: '集中管理所有文档',
+        search: '智能搜索',
+        searchDesc: '快速定位所需文件',
+        edit: '在线编辑',
+        editDesc: '实时协作编辑文档',
+        security: '安全存储',
+        securityDesc: '企业级数据安全',
+      }
+    },
   },
 
   // ============================================================================

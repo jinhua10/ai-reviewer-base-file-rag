@@ -299,3 +299,67 @@
     font-size: 48px;
   }
 }
+
+/* ==================== Documents Shell Specific Styles ==================== */
+.bubble-documents-shell .hero-stats {
+  margin-top: 12px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.bubble-documents-shell .card-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--primary-color, #667eea);
+  margin: 12px 0 8px;
+  text-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.bubble-documents-shell .card-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+}
+
+.bubble-documents-shell .docs-features-section {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 40px;
+  padding: 0 20px;
+}
+
+.bubble-documents-shell .section-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 30px;
+  text-shadow: 0 2px 12px rgba(102, 126, 234, 0.4);
+}
+
+.bubble-documents-shell .features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.bubble-documents-shell .feature-card {
+  text-align: center;
+}
+
+.bubble-documents-shell .feature-card h3 {
+  font-size: 18px;
+  margin: 12px 0 8px;
+}
+
+.bubble-documents-shell .feature-card p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Error state */
+.bubble-documents-shell .error-orb .orb-glow {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.3) 0%, transparent 70%);
+  box-shadow: 0 0 80px rgba(239, 68, 68, 0.4);
+}

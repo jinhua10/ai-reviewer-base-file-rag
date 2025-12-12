@@ -26,8 +26,22 @@ admin:
   api:
     sysconfig_request: "⚙️ Received system config update request"
     sysconfig_error: "❌ System config update error"
+    sysconfig_get_request: "🔍 Received get system config request"
+    sysconfig_get_error: "❌ Get system config error"
     modelconfig_request: "🤖 Received model config update request"
     modelconfig_error: "❌ Model config update error"
+    modelconfig_get_request: "🔍 Received get model config request"
+    modelconfig_get_error: "❌ Get model config error"
+
+  config:
+    updating: "🔄 Updating configuration: {0}"
+    updated: "✅ Configuration updated successfully: {0}"
+    updated_success: "✅ {0} updated successfully"
+    update_failed: "❌ Configuration update failed: type={0}, error={1}"
+    empty: "❌ Configuration cannot be empty"
+    validated: "✅ Configuration validated: {0}"
+    applied: "✅ Configuration applied: {0}"
+    saved: "✅ Configuration saved: {0}"
     logs_request: "📋 Received logs query request: level={0}, keyword={1}"
     logs_error: "❌ Logs query error"
     metrics_request: "📊 Received metrics request"

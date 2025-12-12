@@ -136,6 +136,36 @@ export default {
   // ============================================================================
   document: {
     title: 'Document Management',
+    
+    // Shell page specific
+    shell: {
+      loading: 'Loading...',
+      loadingData: 'Fetching document data...',
+      loadFailed: 'Failed to load',
+      heroTitle: 'Document Management',
+      heroSubtitle: 'Intelligent Document Processing Platform',
+      stats: {
+        totalDocs: 'Total Documents',
+        totalDocsDesc: 'Uploaded document count',
+        docs: 'docs',
+        indexed: 'Indexed',
+        indexedDesc: 'Searchable documents',
+        unindexed: 'Unindexed',
+        unindexedDesc: 'Pending documents',
+        fileTypes: 'File Types',
+        fileTypesDesc: 'Supported formats',
+      },
+      features: {
+        library: 'File Library',
+        libraryDesc: 'Centralized document management',
+        search: 'Smart Search',
+        searchDesc: 'Quick file location',
+        edit: 'Online Editing',
+        editDesc: 'Real-time collaboration',
+        security: 'Secure Storage',
+        securityDesc: 'Enterprise-grade security',
+      }
+    },
     upload: 'Upload Document',
     uploadTip: 'Click or drag files to this area to upload',
     uploadHint: 'Support PDF, Word, Excel, PPT formats, max file size 100MB',
