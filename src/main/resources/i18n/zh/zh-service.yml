@@ -1,0 +1,59 @@
+# 中文服务消息
+# 文件: src/main/resources/i18n/zh/zh-service.yml
+
+service:
+  list:
+    loading: "📋 加载服务列表: category={0}, installed={1}"
+    success: "✅ 服务列表加载成功，共 {0} 个"
+    failed: "❌ 服务列表加载失败: {0}"
+
+  detail:
+    loading: "🔍 加载服务详情: {0}"
+    success: "✅ 服务详情加载成功: {0}"
+    failed: "❌ 服务详情加载失败: serviceId={0}, error={1}"
+
+  install:
+    start: "⬇️ 开始安装服务: {0}"
+    success: "✅ 服务安装成功: {0}"
+    failed: "❌ 服务安装失败: serviceId={0}, error={1}"
+
+  uninstall:
+    start: "🗑️ 开始卸载服务: {0}"
+    success: "✅ 服务卸载成功: {0}"
+    failed: "❌ 服务卸载失败: serviceId={0}, error={1}"
+
+  config:
+    update_start: "⚙️ 开始更新配置: {0}"
+    update_success: "✅ 配置更新成功: {0}"
+    update_failed: "❌ 配置更新失败: serviceId={0}, error={1}"
+
+  not_found: "❌ 服务不存在: {0}"
+  already_installed: "⚠️ 服务已安装: {0}"
+  not_installed: "⚠️ 服务未安装: {0}"
+
+  model:
+    switched: "✅ 模型已切换到: {0}"
+
+  api:
+    list_request: "📋 收到服务列表请求: category={0}, installed={1}"
+    list_error: "❌ 服务列表请求出错"
+    detail_request: "🔍 收到服务详情请求: {0}"
+    detail_error: "❌ 服务详情请求出错: {0}"
+    install_request: "⬇️ 收到安装请求: {0}"
+    install_error: "❌ 安装请求出错: {0}"
+    uninstall_request: "🗑️ 收到卸载请求: {0}"
+    uninstall_error: "❌ 卸载请求出错: {0}"
+    config_request: "⚙️ 收到配置更新请求: {0}"
+    config_error: "❌ 配置更新请求出错: {0}"
+    ppt_request: "📊 收到 PPT 生成请求: topic={0}"
+    ppt_error: "❌ PPT 生成请求出错"
+    model_request: "🔄 收到模型切换请求: {0}"
+    model_error: "❌ 模型切换请求出错"
+
+ppt:
+  generate:
+    start: "🎨 开始生成 PPT: {0}"
+    success: "✅ PPT 生成成功: {0}"
+    failed: "❌ PPT 生成失败: {0}"
+    topic_required: "❌ 主题不能为空"
+

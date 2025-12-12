@@ -1,0 +1,43 @@
+# 中文个人中心和管理消息
+# 文件: src/main/resources/i18n/zh/zh-profile-admin.yml
+
+profile:
+  api:
+    info_request: "👤 收到用户信息请求"
+    info_error: "❌ 用户信息请求出错"
+    update_request: "✏️ 收到用户信息更新请求"
+    update_error: "❌ 用户信息更新出错"
+    stats_request: "📊 收到使用统计请求: userId={0}"
+    stats_error: "❌ 使用统计请求出错"
+    contrib_request: "🌟 收到贡献统计请求: userId={0}"
+    contrib_error: "❌ 贡献统计请求出错"
+    achieve_request: "🏆 收到成就列表请求: userId={0}"
+    achieve_error: "❌ 成就列表请求出错"
+    settings_request: "⚙️ 收到设置更新请求"
+    settings_error: "❌ 设置更新出错"
+
+  update:
+    success: "✅ 用户信息更新成功"
+
+  settings:
+    updated: "✅ 设置已更新"
+
+admin:
+  api:
+    sysconfig_request: "⚙️ 收到系统配置更新请求"
+    sysconfig_error: "❌ 系统配置更新出错"
+    modelconfig_request: "🤖 收到模型配置更新请求"
+    modelconfig_error: "❌ 模型配置更新出错"
+    logs_request: "📋 收到日志查询请求: level={0}, keyword={1}"
+    logs_error: "❌ 日志查询出错"
+    metrics_request: "📊 收到监控指标请求"
+    metrics_error: "❌ 监控指标请求出错"
+    health_request: "💚 收到健康检查请求"
+    health_error: "❌ 健康检查出错"
+
+  sysconfig:
+    updated: "✅ 系统配置已更新"
+
+  modelconfig:
+    updated: "✅ 模型配置已更新"
+

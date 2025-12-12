@@ -1,0 +1,59 @@
+# English Service Messages
+# File: src/main/resources/i18n/en/en-service.yml
+
+service:
+  list:
+    loading: "📋 Loading service list: category={0}, installed={1}"
+    success: "✅ Service list loaded successfully, total {0}"
+    failed: "❌ Failed to load service list: {0}"
+
+  detail:
+    loading: "🔍 Loading service detail: {0}"
+    success: "✅ Service detail loaded successfully: {0}"
+    failed: "❌ Failed to load service detail: serviceId={0}, error={1}"
+
+  install:
+    start: "⬇️ Starting to install service: {0}"
+    success: "✅ Service installed successfully: {0}"
+    failed: "❌ Failed to install service: serviceId={0}, error={1}"
+
+  uninstall:
+    start: "🗑️ Starting to uninstall service: {0}"
+    success: "✅ Service uninstalled successfully: {0}"
+    failed: "❌ Failed to uninstall service: serviceId={0}, error={1}"
+
+  config:
+    update_start: "⚙️ Starting to update configuration: {0}"
+    update_success: "✅ Configuration updated successfully: {0}"
+    update_failed: "❌ Failed to update configuration: serviceId={0}, error={1}"
+
+  not_found: "❌ Service not found: {0}"
+  already_installed: "⚠️ Service already installed: {0}"
+  not_installed: "⚠️ Service not installed: {0}"
+
+  model:
+    switched: "✅ Model switched to: {0}"
+
+  api:
+    list_request: "📋 Received service list request: category={0}, installed={1}"
+    list_error: "❌ Service list request error"
+    detail_request: "🔍 Received service detail request: {0}"
+    detail_error: "❌ Service detail request error: {0}"
+    install_request: "⬇️ Received install request: {0}"
+    install_error: "❌ Install request error: {0}"
+    uninstall_request: "🗑️ Received uninstall request: {0}"
+    uninstall_error: "❌ Uninstall request error: {0}"
+    config_request: "⚙️ Received config update request: {0}"
+    config_error: "❌ Config update request error: {0}"
+    ppt_request: "📊 Received PPT generation request: topic={0}"
+    ppt_error: "❌ PPT generation request error"
+    model_request: "🔄 Received model switch request: {0}"
+    model_error: "❌ Model switch request error"
+
+ppt:
+  generate:
+    start: "🎨 Starting to generate PPT: {0}"
+    success: "✅ PPT generated successfully: {0}"
+    failed: "❌ Failed to generate PPT: {0}"
+    topic_required: "❌ Topic cannot be empty"
+

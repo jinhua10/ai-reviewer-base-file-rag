@@ -22,7 +22,7 @@ import { useUIThemeEngine } from '../../../contexts/UIThemeEngineContext';
  */
 function BubbleHeader({ scrollProgress }) {
   const { t, currentLanguage, changeLanguage } = useLanguage();
-  const { currentUITheme, changeUITheme } = useUIThemeEngine();
+  const { currentUITheme, switchUITheme } = useUIThemeEngine();
   const [searchFocused, setSearchFocused] = useState(false);
 
   // 语言选项
@@ -44,22 +44,22 @@ function BubbleHeader({ scrollProgress }) {
     {
       key: 'bubble',
       label: '梦幻气泡',
-      onClick: () => changeUITheme('bubble')
+      onClick: () => switchUITheme('bubble')
     },
     {
       key: 'modern',
       label: '现代简约',
-      onClick: () => changeUITheme('modern')
+      onClick: () => switchUITheme('modern')
     },
     {
       key: 'anime',
       label: '动漫风格',
-      onClick: () => changeUITheme('anime')
+      onClick: () => switchUITheme('anime')
     },
     {
       key: 'cyberpunk',
       label: '赛博朋克',
-      onClick: () => changeUITheme('cyberpunk')
+      onClick: () => switchUITheme('cyberpunk')
     }
   ];
 

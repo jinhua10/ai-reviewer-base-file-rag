@@ -1,0 +1,43 @@
+# English Profile and Admin Messages
+# File: src/main/resources/i18n/en/en-profile-admin.yml
+
+profile:
+  api:
+    info_request: "👤 Received user info request"
+    info_error: "❌ User info request error"
+    update_request: "✏️ Received user info update request"
+    update_error: "❌ User info update error"
+    stats_request: "📊 Received usage statistics request: userId={0}"
+    stats_error: "❌ Usage statistics request error"
+    contrib_request: "🌟 Received contributions request: userId={0}"
+    contrib_error: "❌ Contributions request error"
+    achieve_request: "🏆 Received achievements request: userId={0}"
+    achieve_error: "❌ Achievements request error"
+    settings_request: "⚙️ Received settings update request"
+    settings_error: "❌ Settings update error"
+
+  update:
+    success: "✅ User info updated successfully"
+
+  settings:
+    updated: "✅ Settings updated"
+
+admin:
+  api:
+    sysconfig_request: "⚙️ Received system config update request"
+    sysconfig_error: "❌ System config update error"
+    modelconfig_request: "🤖 Received model config update request"
+    modelconfig_error: "❌ Model config update error"
+    logs_request: "📋 Received logs query request: level={0}, keyword={1}"
+    logs_error: "❌ Logs query error"
+    metrics_request: "📊 Received metrics request"
+    metrics_error: "❌ Metrics request error"
+    health_request: "💚 Received health check request"
+    health_error: "❌ Health check error"
+
+  sysconfig:
+    updated: "✅ System config updated"
+
+  modelconfig:
+    updated: "✅ Model config updated"
+
