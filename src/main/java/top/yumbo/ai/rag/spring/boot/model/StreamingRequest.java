@@ -26,5 +26,11 @@ public class StreamingRequest {
      * 可选：zh/en (Optional: zh/en)
      */
     private String language;
+
+    /**
+     * 是否使用知识库 RAG (Whether to use knowledge base RAG)
+     * true: RAG模式, false: 直接LLM, null: 默认RAG
+     */
+    private Boolean useKnowledgeBase;
 }
 

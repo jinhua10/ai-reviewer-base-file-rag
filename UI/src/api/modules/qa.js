@@ -16,10 +16,14 @@ const qaApi = {
    * @param {Object} params - 问题参数
    * @param {string} params.question - 问题内容
    * @param {string} params.hopeSessionId - HOPE 会话 ID（可选）
+   * @param {boolean} params.useKnowledgeBase - 是否使用知识库 RAG（可选，默认 true）
    * @returns {Promise} 回答结果
    */
   ask(params) {
-    return request.post('/qa/ask', params)
+    return request.post('/qa/ask', {
+      ...params,
+      useKnowledgeBase: params.useKnowledgeBase !== undefined ? params.useKnowledgeBase : true
+    })
   },
 
   /**
@@ -27,10 +31,14 @@ const qaApi = {
    * @param {Object} params - 问题参数
    * @param {string} params.question - 问题内容
    * @param {string} params.sessionId - 会话 ID
+   * @param {boolean} params.useKnowledgeBase - 是否使用知识库 RAG（可选，默认 true）
    * @returns {Promise} 回答结果
    */
   askWithSession(params) {
-    return request.post('/qa/ask-with-session', params)
+    return request.post('/qa/ask-with-session', {
+      ...params,
+      useKnowledgeBase: params.useKnowledgeBase !== undefined ? params.useKnowledgeBase : true
+    })
   },
 
   /**
@@ -58,7 +66,8 @@ const qaApi = {
       
       const response = await request.post('/qa/stream', {
         question: params.question,
-        userId: params.userId || 'anonymous'
+        userId: params.userId || 'anonymous',
+        useKnowledgeBase: params.useKnowledgeBase !== undefined ? params.useKnowledgeBase : true
       })
 
       console.log('📥 Received initial response:', response)

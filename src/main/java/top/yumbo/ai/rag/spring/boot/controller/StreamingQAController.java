@@ -48,13 +48,15 @@ public class StreamingQAController {
      */
     @PostMapping
     public ResponseEntity<Map<String, Object>> ask(@RequestBody StreamingRequest request) {
-        log.info("📝 收到流式问答请求 (Received streaming Q&A request): question={}",
-            request.getQuestion());
+        boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
+        
+        log.info("📝 收到流式问答请求 (Received streaming Q&A request): question={}, RAG={}",
+            request.getQuestion(), useKnowledgeBase);
 
         try {
             // 启动双轨响应
             // (Start dual-track response)
-            var response = streamingService.ask(request.getQuestion(), request.getUserId());
+            var response = streamingService.ask(request.getQuestion(), request.getUserId(), useKnowledgeBase);
 
             // 等待 HOPE 快速答案（通常 <300ms）
             // (Wait for HOPE fast answer, usually <300ms)
@@ -170,8 +172,8 @@ public class StreamingQAController {
         // 异步处理双轨响应
         CompletableFuture.runAsync(() -> {
             try {
-                // 1. 启动双轨服务
-                var response = streamingService.ask(question, hopeSessionId);
+                // 1. 启动双轨服务（默认使用 RAG）
+                var response = streamingService.ask(question, hopeSessionId, true);
 
                 // 2. 等待 HOPE 快速答案（带超时）
                 CompletableFuture<HOPEAnswer> hopeFuture = response.getHopeFuture();

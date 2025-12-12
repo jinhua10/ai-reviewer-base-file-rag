@@ -121,7 +121,7 @@ public class PerformanceBenchmarkService {
 
             long startTime = System.nanoTime();
             try {
-                StreamingResponse response = hybridStreamingService.ask(question, userId);
+                StreamingResponse response = hybridStreamingService.ask(question, userId, true);
                 long duration = (System.nanoTime() - startTime) / 1_000_000;
                 durations.add(duration);
 
@@ -188,7 +188,7 @@ public class PerformanceBenchmarkService {
 
                 // LLM 流式初始化
                 long llmStart = System.nanoTime();
-                StreamingResponse response = hybridStreamingService.ask(question, userId);
+                StreamingResponse response = hybridStreamingService.ask(question, userId, true);
                 long llmDuration = (System.nanoTime() - llmStart) / 1_000_000;
                 llmDurations.add(llmDuration);
 

@@ -70,14 +70,15 @@ public class HybridStreamingService {
      *
      * @param question 用户问题
      * @param userId 用户ID
+     * @param useKnowledgeBase 是否使用知识库 RAG
      * @return 流式响应对象
      */
-    public StreamingResponse ask(String question, String userId) {
+    public StreamingResponse ask(String question, String userId, boolean useKnowledgeBase) {
         long startTime = System.currentTimeMillis();
         String sessionId = UUID.randomUUID().toString();
 
-        log.info("🚀 启动双轨响应 (Starting dual-track response): sessionId={}, question={}",
-            sessionId, question);
+        log.info("🚀 启动双轨响应 (Starting dual-track response): sessionId={}, question={}, RAG={}",
+            sessionId, question, useKnowledgeBase);
 
         // 1. 快速查询 HOPE（目标 <300ms）
         // (Quick query HOPE, target <300ms)
@@ -95,7 +96,7 @@ public class HybridStreamingService {
 
         // 2. 启动 LLM 流式生成（目标 TTFB <1s）
         // (Start LLM streaming, target TTFB <1s)
-        StreamingSession llmSession = startLLMStreaming(question, sessionId, userId);
+        StreamingSession llmSession = startLLMStreaming(question, sessionId, userId, useKnowledgeBase);
 
         // 3. 创建响应对象
         // (Create response object)
@@ -115,7 +116,7 @@ public class HybridStreamingService {
      * 启动 LLM 流式生成
      * (Start LLM streaming generation)
      */
-    private StreamingSession startLLMStreaming(String question, String sessionId, String userId) {
+    private StreamingSession startLLMStreaming(String question, String sessionId, String userId, boolean useKnowledgeBase) {
         StreamingSession session = new StreamingSession(sessionId, question);
         session.setUserId(userId);
 
@@ -128,16 +129,18 @@ public class HybridStreamingService {
         // (Start streaming generation asynchronously)
         CompletableFuture.runAsync(() -> {
             try {
-                log.debug("开始 LLM 流式生成 (Starting LLM streaming): sessionId={}", sessionId);
+                log.debug("开始 LLM 流式生成 (Starting LLM streaming): sessionId={}, RAG={}", sessionId, useKnowledgeBase);
 
-                // 直接使用 LLM 流式接口生成答案
-                // (Directly use LLM streaming interface to generate answer)
-                // 注意：实际的 RAG 检索应该在调用此服务之前完成
-                // (Note: Actual RAG retrieval should be done before calling this service)
-
-                // 简单的提示词（实际使用中应该包含检索到的上下文）
-                // (Simple prompt - should include retrieved context in actual use)
-                String prompt = buildPrompt(question);
+                String prompt;
+                if (useKnowledgeBase) {
+                    // 使用 RAG 检索上下文
+                    // (Use RAG to retrieve context)
+                    prompt = buildPrompt(question);
+                } else {
+                    // 直接 LLM 模式，不检索文档
+                    // (Direct LLM mode, no document retrieval)
+                    prompt = question;
+                }
 
                 // 调用 LLM 流式接口
                 // (Call LLM streaming interface)

@@ -42,14 +42,34 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 问答接口 / Question answering endpoint
+     * 智能问答接口（统一入口）/ Intelligent Q&A endpoint (unified entry)
+     * 
+     * 根据参数自动路由到对应的处理逻辑：
+     * - useKnowledgeBase=true: 使用 RAG 检索知识库回答
+     * - useKnowledgeBase=false: 直接调用 LLM 回答（不检索）
+     * 
+     * @param request 问题请求（包含 useKnowledgeBase 参数）
+     * @return 统一响应格式
      */
     @PostMapping("/ask")
     public QuestionResponse ask(@RequestBody QuestionRequest request) {
-        log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()));
+        boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
+        
+        log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) + 
+                 " [RAG: " + useKnowledgeBase + "]");
 
+        AIAnswer answer;
+        
+        if (useKnowledgeBase) {
+            // 使用知识库 RAG 模式 / Use knowledge base RAG mode
+            answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
+        } else {
+            // 直接 LLM 模式（不使用 RAG）/ Direct LLM mode (without RAG)
+            answer = qaService.askDirectLLM(request.getQuestion());
+        }
+        
         // 支持 HOPE 会话ID / Support HOPE session ID
-        AIAnswer answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
+        // AIAnswer answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
 
         QuestionResponse response = new QuestionResponse();
         response.setQuestion(request.getQuestion());
@@ -74,13 +94,27 @@ public class KnowledgeQAController {
 
     /**
      * 使用会话文档进行问答（用于分页引用）/ QA with session documents (for pagination)
+     * 
+     * 支持知识库开关：
+     * - useKnowledgeBase=true: 使用会话文档 RAG 检索
+     * - useKnowledgeBase=false: 直接 LLM 回答
      */
     @PostMapping("/ask-with-session")
     public QuestionResponse askWithSession(@RequestBody SessionQuestionRequest request) {
+        boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
+        
         log.info(I18N.get("knowledge_qa.log.session_question",
-            request.getQuestion(), request.getSessionId()));
+            request.getQuestion(), request.getSessionId()) + " [RAG: " + useKnowledgeBase + "]");
 
-        AIAnswer answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
+        AIAnswer answer;
+        
+        if (useKnowledgeBase) {
+            // 使用会话文档 RAG 模式 / Use session documents RAG mode
+            answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
+        } else {
+            // 直接 LLM 模式（不使用会话文档）/ Direct LLM mode (without session documents)
+            answer = qaService.askDirectLLM(request.getQuestion());
+        }
 
         QuestionResponse response = new QuestionResponse();
         response.setQuestion(request.getQuestion());
@@ -289,12 +323,14 @@ public class KnowledgeQAController {
     public static class QuestionRequest {
         private String question;
         private String hopeSessionId;  // HOPE 会话ID（用于上下文增强）
+        private Boolean useKnowledgeBase;  // true: RAG模式, false: 直接LLM, null: 默认RAG
     }
 
     @Data
     public static class SessionQuestionRequest {
         private String question;
         private String sessionId;
+        private Boolean useKnowledgeBase;  // true: RAG模式, false: 直接LLM, null: 默认RAG
     }
 
     @Data

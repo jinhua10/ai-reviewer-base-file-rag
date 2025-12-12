@@ -97,7 +97,8 @@ public class BasicFunctionTesterSimplified implements CommandLineRunner {
             long start = System.nanoTime();
             StreamingResponse response = hybridStreamingService.ask(
                 "Docker容器技术介绍",
-                "test-" + System.currentTimeMillis()
+                "test-" + System.currentTimeMillis(),
+                true  // 使用知识库 RAG
             );
             long duration = (System.nanoTime() - start) / 1_000_000;
 
@@ -116,7 +117,8 @@ public class BasicFunctionTesterSimplified implements CommandLineRunner {
         try {
             StreamingResponse response = hybridStreamingService.ask(
                 "测试SSE连接",
-                "test-" + System.currentTimeMillis()
+                "test-" + System.currentTimeMillis(),
+                true  // 使用知识库 RAG
             );
 
             log.info("  ✅ SSE 会话创建成功");
@@ -146,7 +148,7 @@ public class BasicFunctionTesterSimplified implements CommandLineRunner {
                     hopeFastQueryService.queryFast(question, "test-" + System.currentTimeMillis());
 
                     // LLM 流式
-                    hybridStreamingService.ask(question, "test-" + System.currentTimeMillis());
+                    hybridStreamingService.ask(question, "test-" + System.currentTimeMillis(), true);
 
                     success++;
                     Thread.sleep(500);

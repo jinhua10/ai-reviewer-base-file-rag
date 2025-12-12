@@ -328,6 +328,80 @@ public class KnowledgeQAService {
     }
 
     /**
+     * 直接LLM模式（不使用RAG）/ Direct LLM mode (without RAG)
+     * 
+     * 直接调用LLM回答问题，不检索知识库
+     * (Directly call LLM to answer questions without retrieving knowledge base)
+     * 
+     * @param question 问题
+     * @return AI回答
+     */
+    public AIAnswer askDirectLLM(String question) {
+        if (llmClient == null) {
+            throw new IllegalStateException(I18N.get("log.kqa.system_not_initialized"));
+        }
+
+        long startTime = System.currentTimeMillis();
+
+        try {
+            log.info(I18N.get("knowledge_qa_service.question_separator"));
+            log.info(I18N.get("knowledge_qa_service.question_prompt", question) + " [Direct LLM Mode]");
+            log.info(I18N.get("knowledge_qa_service.separator"));
+
+            // 直接调用 LLM，不使用 RAG 检索
+            // (Call LLM directly without RAG retrieval)
+            String answer = llmClient.generate(question);
+
+            long totalTime = System.currentTimeMillis() - startTime;
+
+            // 显示结果
+            log.info(I18N.get("knowledge_qa_service.answer_label"));
+            log.info(answer);
+            log.info(I18N.get("knowledge_qa_service.response_time", totalTime));
+            log.info(I18N.get("knowledge_qa_service.separator"));
+
+            // 保存问答记录
+            String recordId = saveQARecord(question, answer, 
+                Collections.singletonList("Direct LLM"), 
+                Collections.emptyList(), 
+                totalTime);
+
+            AIAnswer aiAnswer = new AIAnswer(
+                answer,
+                Collections.singletonList("Direct LLM"),  // 来源标记为直接LLM
+                totalTime,
+                Collections.emptyList(),  // 无切分块
+                Collections.emptyList(),  // 无图片
+                Collections.emptyList(),  // 无文档
+                0,                        // 未检索文档
+                false                     // 无更多文档
+            );
+
+            aiAnswer.setRecordId(recordId);
+            aiAnswer.setSessionId(null);
+            aiAnswer.setStrategyUsed("DIRECT_LLM");
+            aiAnswer.setDirectAnswer(true);
+            aiAnswer.setHopeSource("DIRECT_LLM");
+
+            return aiAnswer;
+
+        } catch (Exception e) {
+            log.error("❌ Direct LLM processing failed", e);
+            long totalTime = System.currentTimeMillis() - startTime;
+            return new AIAnswer(
+                I18N.get("knowledge_qa_service.answer_generation_failed", e.getMessage()),
+                Collections.singletonList("Direct LLM"),
+                totalTime,
+                Collections.emptyList(),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                0,
+                false
+            );
+        }
+    }
+
+    /**
      * 提问
      *
      * @param question 问题
