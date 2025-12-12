@@ -22,16 +22,18 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Button, Space, message, Modal } from 'antd'
+import { Button, Space, message, Modal, Pagination } from 'antd'
 import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import DocumentCard from './DocumentCard'
 import DocumentUpload from './DocumentUpload'
 import DocumentSearch from './DocumentSearch'
+import DocumentAdvancedSearch from './DocumentAdvancedSearch'
 import DocumentDetail from './DocumentDetail'
 import { Loading } from '../common'
 import { useLanguage } from '../../contexts/LanguageContext'
 import documentApi from '../../api/modules/document'
 import '../../assets/css/document/document-list.css'
+import dayjs from 'dayjs'
 
 function DocumentList() {
   // ============================================================================
@@ -59,6 +61,15 @@ function DocumentList() {
     page: 1, // 当前页码 (Current page number)
     pageSize: 20, // 每页数量 (Items per page)
   })
+  
+  // 前端过滤和排序 (Frontend filtering and sorting)
+  const [filterKeyword, setFilterKeyword] = useState('') // 前端实时过滤关键词 (Frontend real-time filter keyword)
+  const [sortBy, setSortBy] = useState('uploadTime') // 排序字段: uploadTime/name/size (Sort field)
+  const [sortOrder, setSortOrder] = useState('desc') // 排序顺序: asc/desc (Sort order)
+  
+  // 高级搜索 (Advanced search)
+  const [advancedSearchVisible, setAdvancedSearchVisible] = useState(false)
+  const [advancedFilterCriteria, setAdvancedFilterCriteria] = useState(null)
 
   // ============================================================================
   // API Functions / API 函数
@@ -109,25 +120,184 @@ function DocumentList() {
   useEffect(() => {
     loadDocuments()
   }, [loadDocuments])
+  
+  /**
+   * 前端过滤和排序文档列表 (Frontend filter and sort documents)
+   */
+  const filteredAndSortedDocuments = React.useMemo(() => {
+    let result = [...documents]
+    
+    // 简单搜索过滤 (Simple search filtering)
+    if (filterKeyword) {
+      const keyword = filterKeyword.toLowerCase()
+      result = result.filter(doc => 
+        doc.name?.toLowerCase().includes(keyword) ||
+        doc.fileName?.toLowerCase().includes(keyword)
+      )
+    }
+    
+    // 高级搜索过滤 (Advanced search filtering)
+    if (advancedFilterCriteria) {
+      const { fileNamePattern, fileNameMatchType, fileTypes, dateRange } = advancedFilterCriteria
+      
+      // 文件名过滤
+      if (fileNamePattern) {
+        result = result.filter(doc => {
+          const fileName = (doc.name || doc.fileName || '').toLowerCase()
+          const pattern = fileNamePattern.toLowerCase()
+          
+          switch (fileNameMatchType) {
+            case 'equals':
+              return fileName === pattern
+            case 'regex':
+              try {
+                const regex = new RegExp(fileNamePattern, 'i')
+                return regex.test(fileName)
+              } catch (e) {
+                return false
+              }
+            case 'contains':
+            default:
+              return fileName.includes(pattern)
+          }
+        })
+      }
+      
+      // 文件类型过滤
+      if (fileTypes && fileTypes.length > 0) {
+        const allowedExts = fileTypes.flatMap(type => type.split(','))
+        result = result.filter(doc => {
+          const ext = (doc.name || doc.fileName || '').split('.').pop()?.toLowerCase()
+          return allowedExts.includes(ext)
+        })
+      }
+      
+      // 时间范围过滤
+      if (dateRange && dateRange.length === 2) {
+        const [start, end] = dateRange
+        result = result.filter(doc => {
+          const uploadTime = dayjs(doc.uploadTime || doc.createdAt)
+          return uploadTime.isAfter(start.startOf('day')) && uploadTime.isBefore(end.endOf('day'))
+        })
+      }
+    }
+    
+    // 排序 (Sorting)
+    result.sort((a, b) => {
+      let aValue, bValue
+      
+      switch (sortBy) {
+        case 'name':
+          aValue = (a.name || a.fileName || '').toLowerCase()
+          bValue = (b.name || b.fileName || '').toLowerCase()
+          break
+        case 'size':
+          aValue = a.size || a.fileSize || 0
+          bValue = b.size || b.fileSize || 0
+          break
+        case 'uploadTime':
+        default:
+          aValue = new Date(a.uploadTime || a.createdAt || 0).getTime()
+          bValue = new Date(b.uploadTime || b.createdAt || 0).getTime()
+          break
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1
+      } else {
+        return aValue < bValue ? 1 : -1
+      }
+    })
+    
+    return result
+  }, [documents, filterKeyword, advancedFilterCriteria, sortBy, sortOrder])
 
   // ============================================================================
   // Event Handlers / 事件处理函数
   // ============================================================================
   
   /**
-   * 处理搜索事件 (Handle search event)
+   * 处理API搜索事件（回车触发）(Handle API search event - triggered by Enter)
    * 
-   * 更新搜索关键词并重置到第一页
-   * Update search keyword and reset to first page
+   * 更新搜索关键词并重置到第一页，调用后端API
+   * Update search keyword and reset to first page, call backend API
    * 
    * @param {string} keyword - 搜索关键词 (Search keyword)
    */
-  const handleSearch = useCallback((keyword) => {
+  const handleApiSearch = useCallback((keyword) => {
     setSearchParams(prev => ({
       ...prev,
       keyword,
       page: 1,
     }))
+  }, [])
+  
+  /**
+   * 处理前端过滤事件（输入时触发）(Handle frontend filter - triggered on input)
+   * 
+   * 实时过滤前端文档列表
+   * Real-time filter frontend documents list
+   * 
+   * @param {string} keyword - 过滤关键词 (Filter keyword)
+   */
+  const handleFilterChange = useCallback((keyword) => {
+    setFilterKeyword(keyword)
+  }, [])
+  
+  /**
+   * 处理分页变化 (Handle pagination change)
+   */
+  const handlePageChange = useCallback((page, pageSize) => {
+    setSearchParams(prev => ({
+      ...prev,
+      page,
+      pageSize,
+    }))
+  }, [])
+  
+  /**
+   * 处理排序变化 (Handle sort change)
+   */
+  const handleSortChange = useCallback((field) => {
+    if (sortBy === field) {
+      // 切换排序顺序 (Toggle sort order)
+      setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')
+    } else {
+      // 切换排序字段 (Change sort field)
+      setSortBy(field)
+      setSortOrder('desc')
+    }
+  }, [sortBy])
+  
+  /**
+   * 处理高级搜索打开 (Handle advanced search open)
+   */
+  const handleAdvancedSearch = useCallback(() => {
+    setAdvancedSearchVisible(true)
+  }, [])
+  
+  /**
+   * 处理高级搜索关闭 (Handle advanced search close)
+   */
+  const handleAdvancedSearchClose = useCallback(() => {
+    setAdvancedSearchVisible(false)
+  }, [])
+  
+  /**
+   * 处理高级搜索过滤 (Handle advanced search filter)
+   */
+  const handleAdvancedFilter = useCallback((criteria) => {
+    setAdvancedFilterCriteria(criteria)
+  }, [])
+  
+  /**
+   * 处理高级搜索应用 (Handle advanced search apply)
+   */
+  const handleAdvancedApply = useCallback((criteria) => {
+    setAdvancedFilterCriteria(criteria)
+    // TODO: 调用后端API，将criteria转换为后端参数
+    console.log('Apply advanced search to API:', criteria)
+    message.success('已应用高级搜索条件到API')
   }, [])
 
   /**
@@ -257,43 +427,79 @@ function DocumentList() {
         </Space>
       </div>
 
-      {/* 搜索栏 */}
+      {/* 搜索栏 - 根据是否显示高级搜索切换显示 */}
       <div className="document-list__search">
-        <DocumentSearch onSearch={handleSearch} />
+        {!advancedSearchVisible ? (
+          <DocumentSearch 
+            onSearch={handleApiSearch}
+            onFilterChange={handleFilterChange}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSortChange={handleSortChange}
+            onAdvancedSearch={handleAdvancedSearch}
+          />
+        ) : (
+          <DocumentAdvancedSearch
+            visible={advancedSearchVisible}
+            onClose={handleAdvancedSearchClose}
+            onFilter={handleAdvancedFilter}
+            onApply={handleAdvancedApply}
+          />
+        )}
       </div>
 
       {/* 文档列表 */}
       <div className="document-list__content">
         {loading ? (
           <Loading spinning={true} tip={t('common.loading')} />
-        ) : documents.length === 0 ? (
+        ) : filteredAndSortedDocuments.length === 0 ? (
           <div className="document-list__empty">
             <div className="document-list__empty-icon">📄</div>
             <p className="document-list__empty-text">
-              {searchParams.keyword
+              {searchParams.keyword || filterKeyword || advancedFilterCriteria
                 ? t('document.noSearchResults')
                 : t('document.noDocuments')}
             </p>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setUploadVisible(true)}
-            >
-              {t('document.uploadFirst')}
-            </Button>
+            {!searchParams.keyword && !filterKeyword && !advancedFilterCriteria && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setUploadVisible(true)}
+              >
+                {t('document.uploadFirst')}
+              </Button>
+            )}
           </div>
         ) : (
-          <div className="document-list__grid">
-            {documents.map((doc) => (
-              <DocumentCard
-                key={doc.id}
-                document={doc}
-                onView={handleViewDetail}
-                onDelete={handleDelete}
-                onDownload={handleDownload}
-              />
-            ))}
-          </div>
+          <>
+            {/* 分页组件 - 移动到列表上方 */}
+            {total > searchParams.pageSize && (
+              <div className="document-list__pagination-top">
+                <Pagination
+                  current={searchParams.page}
+                  pageSize={searchParams.pageSize}
+                  total={total}
+                  onChange={handlePageChange}
+                  showSizeChanger
+                  showQuickJumper
+                  showTotal={(total) => `共 ${total} 个文档，当前显示 ${filteredAndSortedDocuments.length} 个`}
+                  pageSizeOptions={[10, 20, 50, 100]}
+                />
+              </div>
+            )}
+            
+            <div className="document-list__grid">
+              {filteredAndSortedDocuments.map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  document={doc}
+                  onView={handleViewDetail}
+                  onDelete={handleDelete}
+                  onDownload={handleDownload}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
 

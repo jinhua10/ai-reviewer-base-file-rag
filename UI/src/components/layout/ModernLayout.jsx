@@ -49,18 +49,40 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [uiThemeSwitcherOpen, setUiThemeSwitcherOpen] = useState(false);
   const [clearCacheModalOpen, setClearCacheModalOpen] = useState(false);
-  const [clearOptions, setClearOptions] = useState({
-    floatingPanel: true,
-    theme: true,
-    uiTheme: true,
-    other: true,
+  
+  // 从 localStorage 读取上次的选择 / Load last selection from localStorage
+  const [clearOptions, setClearOptions] = useState(() => {
+    try {
+      const saved = localStorage.getItem('clearCacheOptions');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch (e) {
+      console.error('Failed to load clear cache options:', e);
+    }
+    // 默认值 / Default values
+    return {
+      floatingPanel: true,
+      theme: true,
+      uiTheme: true,
+      other: true,
+    };
   });
 
   /**
    * 处理复选框变化 / Handle checkbox change
    */
   const handleClearOptionChange = useCallback((key) => (e) => {
-    setClearOptions(prev => ({ ...prev, [key]: e.target.checked }));
+    setClearOptions(prev => {
+      const newOptions = { ...prev, [key]: e.target.checked };
+      // 保存到 localStorage / Save to localStorage
+      try {
+        localStorage.setItem('clearCacheOptions', JSON.stringify(newOptions));
+      } catch (e) {
+        console.error('Failed to save clear cache options:', e);
+      }
+      return newOptions;
+    });
   }, []);
 
   /**
@@ -82,10 +104,19 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
     }
     
     if (clearOptions.other) {
+      // 保存选项设置，不要被清除 / Save options before clearing
+      const savedOptions = localStorage.getItem('clearCacheOptions');
+      
       // 清除所有缓存
       localStorage.clear();
       sessionStorage.clear();
-      console.log('🧹 All cache cleared');
+      
+      // 恢复选项设置 / Restore options
+      if (savedOptions) {
+        localStorage.setItem('clearCacheOptions', savedOptions);
+      }
+      
+      console.log('🧹 All cache cleared (except clear options)');
     } else if (keysToRemove.length > 0) {
       // 只清除选中的项
       keysToRemove.forEach(key => localStorage.removeItem(key));
