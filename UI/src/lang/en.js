@@ -41,6 +41,15 @@ export default {
     switchToLight: 'Switch to Light Mode',
     documentation: 'Documentation',
     about: 'About',
+    clearCache: 'Clear Cache',
+    clearCacheTitle: 'Clear Cache',
+    clearCacheDescription: 'Please select cache items to clear:',
+    clearCacheConfirm: 'Confirm Clear',
+    clearCacheWarning: '⚠️ Page will refresh after clearing',
+    floatingPanelConfig: 'Floating Panel Config',
+    themeSettings: 'Theme Settings',
+    uiThemeConfig: 'UI Theme Config',
+    otherCacheData: 'Other Cache Data',
   },
 
   // ============================================================================

@@ -41,6 +41,15 @@ export default {
     switchToLight: '切换到浅色模式',
     documentation: '文档',
     about: '关于',
+    clearCache: '清除缓存',
+    clearCacheTitle: '清除缓存',
+    clearCacheDescription: '请选择要清除的缓存项：',
+    clearCacheConfirm: '确定清除',
+    clearCacheWarning: '⚠️ 清除后页面将自动刷新',
+    floatingPanelConfig: '浮动窗口配置',
+    themeSettings: '主题设置',
+    uiThemeConfig: 'UI主题配置',
+    otherCacheData: '其他缓存数据',
   },
 
   // ============================================================================

@@ -8,7 +8,7 @@
  * @since 2025-12-12
  */
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Layout, Menu, Button, Drawer, Dropdown, Modal, Checkbox } from 'antd';
 import {
   MenuFoldOutlined,
@@ -56,8 +56,17 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
     other: true,
   });
 
-  // 处理清除缓存 / Handle clear cache
-  const handleClearCache = () => {
+  /**
+   * 处理复选框变化 / Handle checkbox change
+   */
+  const handleClearOptionChange = useCallback((key) => (e) => {
+    setClearOptions(prev => ({ ...prev, [key]: e.target.checked }));
+  }, []);
+
+  /**
+   * 处理清除缓存 / Handle clear cache
+   */
+  const handleClearCache = useCallback(() => {
     const keysToRemove = [];
     
     if (clearOptions.floatingPanel) {
@@ -89,7 +98,7 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
     setTimeout(() => {
       window.location.reload();
     }, 300);
-  };
+  }, [clearOptions]);
 
   // 菜单项配置 / Menu items configuration
   const menuItems = [
@@ -223,7 +232,7 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
               type="text"
               icon={<ClearOutlined />}
               onClick={() => setClearCacheModalOpen(true)}
-              title="清除缓存"
+              title={t('common.clearCache')}
             />
             
             {/* UI主题切换器 / UI theme switcher */}
@@ -291,49 +300,49 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
 
       {/* 清除缓存模态框 / Clear cache modal */}
       <Modal
-        title="清除缓存"
+        title={t('common.clearCacheTitle')}
         open={clearCacheModalOpen}
         onOk={handleClearCache}
         onCancel={() => setClearCacheModalOpen(false)}
-        okText="确定清除"
-        cancelText="取消"
+        okText={t('common.clearCacheConfirm')}
+        cancelText={t('common.cancel')}
         okButtonProps={{ danger: true }}
       >
         <div style={{ marginBottom: 16 }}>
           <p style={{ marginBottom: 12, color: 'var(--theme-text-secondary)' }}>
-            请选择要清除的缓存项：
+            {t('common.clearCacheDescription')}
           </p>
           <Checkbox
             checked={clearOptions.floatingPanel}
-            onChange={(e) => setClearOptions({ ...clearOptions, floatingPanel: e.target.checked })}
+            onChange={handleClearOptionChange('floatingPanel')}
             style={{ display: 'block', marginBottom: 8 }}
           >
-            浮动窗口配置
+            {t('common.floatingPanelConfig')}
           </Checkbox>
           <Checkbox
             checked={clearOptions.theme}
-            onChange={(e) => setClearOptions({ ...clearOptions, theme: e.target.checked })}
+            onChange={handleClearOptionChange('theme')}
             style={{ display: 'block', marginBottom: 8 }}
           >
-            主题设置
+            {t('common.themeSettings')}
           </Checkbox>
           <Checkbox
             checked={clearOptions.uiTheme}
-            onChange={(e) => setClearOptions({ ...clearOptions, uiTheme: e.target.checked })}
+            onChange={handleClearOptionChange('uiTheme')}
             style={{ display: 'block', marginBottom: 8 }}
           >
-            UI主题配置
+            {t('common.uiThemeConfig')}
           </Checkbox>
           <Checkbox
             checked={clearOptions.other}
-            onChange={(e) => setClearOptions({ ...clearOptions, other: e.target.checked })}
+            onChange={handleClearOptionChange('other')}
             style={{ display: 'block', marginBottom: 8 }}
           >
-            其他缓存数据
+            {t('common.otherCacheData')}
           </Checkbox>
         </div>
         <p style={{ color: 'var(--theme-text-secondary)', fontSize: 12, margin: 0 }}>
-          ⚠️ 清除后页面将自动刷新
+          {t('common.clearCacheWarning')}
         </p>
       </Modal>
     </Layout>
