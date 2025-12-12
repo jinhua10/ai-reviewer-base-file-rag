@@ -94,18 +94,42 @@ Markdown 渲染:
 
 ## 📋 待完成子任务
 
-### ⏳ Phase 8.1: 文档管理界面（待开始）
+### 🚧 Phase 8.1: 文档管理界面（进行中）
 ```yaml
 组件数: 6个
 预计时间: 4天
-优先级: 中
+优先级: 高（当前任务）
+
+计划组件:
+  - DocumentList.jsx - 文档列表
+  - DocumentUpload.jsx - 文档上传
+  - DocumentCard.jsx - 文档卡片
+  - DocumentDetail.jsx - 文档详情
+  - DocumentSearch.jsx - 文档搜索
+  - UploadDropZone.jsx - 拖拽上传区域
 ```
 
-### ⏳ Phase 8.3: 角色管理界面（待开始）
+### 🚧 Phase 8.3: 角色管理界面（进行中）← **当前任务**
 ```yaml
 组件数: 6个
 预计时间: 3天
-优先级: 中
+优先级: 高（当前实现）
+
+计划组件:
+  - RoleList.jsx - 角色列表主组件
+  - RoleCard.jsx - 角色卡片
+  - RoleEditor.jsx - 角色编辑器（创建/编辑）
+  - RoleConfig.jsx - 角色配置面板
+  - KeywordManager.jsx - 关键词管理
+  - RoleStatistics.jsx - 角色使用统计
+
+功能特性:
+  - 角色列表展示（卡片/列表切换）
+  - 角色创建/编辑
+  - 角色关键词配置
+  - 角色启用/禁用
+  - 角色使用统计
+  - 角色删除（带确认）
 ```
 
 ### ⏳ Phase 8.4: 反馈与演化界面（待开始）
@@ -134,7 +158,22 @@ Markdown 渲染:
 - ✅ 完成国际化文本（中英文）
 - ✅ 修复所有 ESLint 错误（0 errors）
 - ✅ 集成到 App.jsx
-- 🎉 **Phase 8.2 智能问答界面 100% 完成！**
+- 🐛 修复运行时错误：ChatBox 中翻译键错误（`qa.history` → `qa.history.title`）
+- 🎉 **Phase 8.2 智能问答界面 100% 完成并运行正常！**
+- 🚀 开始 Phase 8.1 文档管理界面开发
+- ✅ 完成所有文档管理组件开发（6个组件 + 5个 CSS 文件）
+- ✅ 完成文档管理国际化文本
+- ✅ 集成到 App.jsx
+- 🎉 **Phase 8.1 文档管理界面 100% 完成！**
+- 🐛 修复运行时错误：App.jsx 中 DocumentList 导入缺失
+- ✅ 验证所有组件和导出正确
+- 🚀 开始 Phase 8.3 角色管理界面开发
+- ✅ 完成所有角色管理组件开发（5个组件 + 3个 CSS 文件）
+- ✅ 完成角色管理国际化文本
+- ✅ 集成到 App.jsx
+- 🐛 修复未使用的导入（EyeOutlined, CloseOutlined, Select）
+- 🎉 **Phase 8.3 角色管理界面 100% 完成！**
+- 📊 **Phase 8 总进度: 60% (3/5 完成)**
 
 ---
 

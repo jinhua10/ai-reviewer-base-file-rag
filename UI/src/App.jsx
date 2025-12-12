@@ -13,6 +13,8 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
 import { Header } from './components/layout'
 import { ErrorBoundary } from './components/common'
 import { QAPanel } from './components/qa'
+import { DocumentList } from './components/document'
+import { RoleList } from './components/role'
 import './assets/css/header.css'
 import './assets/css/error-boundary.css'
 
@@ -38,9 +40,9 @@ function AppContent() {
       case 'qa':
         return <QAPanel />
       case 'documents':
-        return <div style={{ padding: '24px' }}>{t('document.title')} - 开发中...</div>
+        return <DocumentList />
       case 'roles':
-        return <div style={{ padding: '24px' }}>{t('nav.roles')} - 开发中...</div>
+        return <RoleList />
       case 'feedback':
         return <div style={{ padding: '24px' }}>{t('nav.feedback')} - 开发中...</div>
       case 'collaboration':

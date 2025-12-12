@@ -32,7 +32,7 @@ function ChatBox(props) {
           onClick={onToggleHistory}
           className="chat-box__history-btn"
         >
-          {t('qa.history')}
+          {t('qa.history.title')}
         </Button>
       </div>
 
