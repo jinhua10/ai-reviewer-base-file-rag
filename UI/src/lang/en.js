@@ -554,10 +554,43 @@ export default {
     contribution: 'Contribution',
     achievement: 'Achievement',
     settings: 'Settings',
+
     avatar: 'Avatar',
     nickname: 'Nickname',
     email: 'Email',
     bio: 'Bio',
+    defaultName: 'No nickname set',
+    noBio: 'This person is lazy and left nothing',
+
+    nicknameRequired: 'Please enter nickname',
+    emailRequired: 'Please enter email',
+    emailInvalid: 'Invalid email format',
+    uploadAvatar: 'Upload Avatar',
+
+    qaCount: 'Q&A Count',
+    documentCount: 'Document Count',
+    feedbackCount: 'Feedback Count',
+    contributionScore: 'Contribution Score',
+    activeHours: 'Active Hours',
+    usageTrend: 'Usage Trend',
+
+    contributionRanking: 'Contribution Ranking',
+
+    unlocked: 'Unlocked',
+    locked: 'Locked',
+
+    language: 'Language',
+    theme: 'Theme',
+    lightTheme: 'Light Theme',
+    darkTheme: 'Dark Theme',
+    autoTheme: 'Follow System',
+    notifications: 'Notifications',
+
+    updateSuccess: 'Information updated successfully',
+    updateFailed: 'Failed to update information',
+    settingsSaved: 'Settings saved',
+    settingsFailed: 'Failed to save settings',
+    loadFailed: 'Failed to load',
   },
 
   // ============================================================================

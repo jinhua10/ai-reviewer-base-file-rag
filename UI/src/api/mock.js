@@ -508,6 +508,75 @@ export const mockData = {
       ],
     },
   ],
+
+  // 用户资料
+  userProfile: {
+    id: '1',
+    nickname: '张三',
+    email: 'zhangsan@example.com',
+    bio: '热爱技术，持续学习中...',
+    avatar: null,
+    statistics: {
+      qaCount: 150,
+      documentCount: 25,
+      feedbackCount: 42,
+      contributionScore: 850,
+      activeHours: 120,
+      trendData: [
+        { date: '2025-12-06', count: 10 },
+        { date: '2025-12-07', count: 15 },
+        { date: '2025-12-08', count: 12 },
+        { date: '2025-12-09', count: 20 },
+        { date: '2025-12-10', count: 18 },
+        { date: '2025-12-11', count: 22 },
+        { date: '2025-12-12', count: 25 },
+      ],
+    },
+  },
+
+  // 贡献统计
+  contributions: [
+    { name: '问答贡献', score: 85 },
+    { name: '文档上传', score: 72 },
+    { name: '反馈质量', score: 90 },
+    { name: '协作贡献', score: 65 },
+  ],
+
+  // 成就列表
+  achievements: [
+    {
+      id: '1',
+      title: '初来乍到',
+      description: '完成首次问答',
+      type: 'bronze',
+      unlocked: true,
+      progress: 100,
+    },
+    {
+      id: '2',
+      title: '知识达人',
+      description: '累计问答100次',
+      type: 'silver',
+      unlocked: true,
+      progress: 100,
+    },
+    {
+      id: '3',
+      title: '贡献之星',
+      description: '获得1000贡献分',
+      type: 'gold',
+      unlocked: false,
+      progress: 85,
+    },
+    {
+      id: '4',
+      title: '钻石会员',
+      description: '成为活跃用户',
+      type: 'diamond',
+      unlocked: false,
+      progress: 60,
+    },
+  ],
 }
 
 /**
@@ -646,6 +715,34 @@ export async function mockRequest(url, method = 'GET', data = null) {
     }
     // 切换模型
     if (url.includes('/model/switch')) {
+      return { data: { success: true } }
+    }
+  }
+
+  // 个人中心 API
+  if (url.includes('/profile')) {
+    // 获取用户信息
+    if (method === 'GET' && url === '/api/profile/info') {
+      return { data: mockData.userProfile }
+    }
+    // 更新用户信息
+    if (method === 'PUT' && url === '/api/profile/info') {
+      return { data: { success: true } }
+    }
+    // 获取使用统计
+    if (url.includes('/statistics')) {
+      return { data: mockData.userProfile.statistics }
+    }
+    // 获取贡献统计
+    if (url.includes('/contributions')) {
+      return { data: mockData.contributions }
+    }
+    // 获取成就列表
+    if (url.includes('/achievements')) {
+      return { data: mockData.achievements }
+    }
+    // 更新设置
+    if (method === 'PUT' && url.includes('/settings')) {
       return { data: { success: true } }
     }
   }

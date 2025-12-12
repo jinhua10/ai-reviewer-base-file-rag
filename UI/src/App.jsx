@@ -19,6 +19,7 @@ import { FeedbackPanel } from './components/feedback'
 import { CollaborationPanel } from './components/collaboration'
 import { WishList } from './components/wish'
 import { ServiceMarket } from './components/service'
+import { UserProfile } from './components/profile'
 import './assets/css/header.css'
 import './assets/css/error-boundary.css'
 
@@ -55,6 +56,8 @@ function AppContent() {
         return <WishList />
       case 'aiService':
         return <ServiceMarket />
+      case 'profile':
+        return <UserProfile />
       default:
         return <QAPanel />
     }

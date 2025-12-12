@@ -561,10 +561,50 @@ export default {
     contribution: '贡献统计',
     achievement: '成就',
     settings: '设置',
+
+    // 个人信息
     avatar: '头像',
     nickname: '昵称',
     email: '邮箱',
     bio: '个人简介',
+    defaultName: '未设置昵称',
+    noBio: '这个人很懒，什么都没留下',
+
+    // 表单验证
+    nicknameRequired: '请输入昵称',
+    emailRequired: '请输入邮箱',
+    emailInvalid: '邮箱格式不正确',
+    uploadAvatar: '上传头像',
+
+    // 统计数据
+    qaCount: '问答次数',
+    documentCount: '文档数量',
+    feedbackCount: '反馈次数',
+    contributionScore: '贡献分数',
+    activeHours: '活跃时长',
+    usageTrend: '使用趋势',
+
+    // 贡献
+    contributionRanking: '贡献排行',
+
+    // 成就
+    unlocked: '已解锁',
+    locked: '未解锁',
+
+    // 设置
+    language: '语言',
+    theme: '主题',
+    lightTheme: '浅色主题',
+    darkTheme: '深色主题',
+    autoTheme: '跟随系统',
+    notifications: '通知',
+
+    // 消息
+    updateSuccess: '信息更新成功',
+    updateFailed: '信息更新失败',
+    settingsSaved: '设置已保存',
+    settingsFailed: '设置保存失败',
+    loadFailed: '加载失败',
   },
 
   // ============================================================================

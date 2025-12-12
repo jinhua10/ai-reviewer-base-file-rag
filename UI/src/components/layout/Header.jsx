@@ -19,7 +19,8 @@ import {
   LikeOutlined,
   ShareAltOutlined,
   StarOutlined,
-  RocketOutlined
+  RocketOutlined,
+  UserOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '@contexts/LanguageContext'
 import PropTypes from 'prop-types'
@@ -87,6 +88,11 @@ function Header({
       key: 'aiService',
       icon: <RocketOutlined />,
       label: t('nav.aiService'),
+    },
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: t('nav.profile'),
     },
   ]
 
