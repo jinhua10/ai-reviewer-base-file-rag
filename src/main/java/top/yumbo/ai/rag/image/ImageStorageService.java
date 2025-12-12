@@ -140,9 +140,14 @@ public class ImageStorageService {
      * 列出文档的所有图片（List all images of the document）
      */
     public List<ImageInfo> listImages(String documentId) throws IOException {
-        Path docImageDir = Paths.get(storageBasePath, IMAGE_DIR, sanitizeFilename(documentId));
+        String sanitizedDocId = sanitizeFilename(documentId);
+        Path docImageDir = Paths.get(storageBasePath, IMAGE_DIR, sanitizedDocId);
+
+        log.debug("Listing images for documentId: {} (sanitized: {}), path: {}", 
+                  documentId, sanitizedDocId, docImageDir);
 
         if (!Files.exists(docImageDir)) {
+            log.debug("Image directory not found: {}", docImageDir);
             return List.of();
         }
 
@@ -155,9 +160,8 @@ public class ImageStorageService {
                 try {
                     String filename = imagePath.getFileName().toString();
                     long fileSize = Files.size(imagePath);
-
-                    // 使用sanitized的documentId来确保路径正确
-                    String sanitizedDocId = sanitizeFilename(documentId);
+                    
+                    log.debug("Found image: documentId={}, filename={}", sanitizedDocId, filename);
                     
                     ImageInfo info = ImageInfo.builder()
                             .documentId(sanitizedDocId)
@@ -167,12 +171,16 @@ public class ImageStorageService {
                             .format(getFileExtension(filename))
                             .build();
 
+                    // 记录生成的URL用于调试
+                    log.debug("Generated URL: {}", info.getUrl());
+                    
                     images.add(info);
                 } catch (IOException e) {
                     log.warn(I18N.get("log.image.read_info_failed", imagePath.toString()), e);
                 }
             });
 
+        log.info("Listed {} images for document: {}", images.size(), sanitizedDocId);
         return images;
     }
 

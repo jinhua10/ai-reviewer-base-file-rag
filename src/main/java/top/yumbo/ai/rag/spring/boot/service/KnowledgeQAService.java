@@ -557,7 +557,10 @@ public class KnowledgeQAService {
 
                             // 生成纯 Markdown 格式，让前端直接渲染图片
                             // (Generate pure Markdown format for direct rendering)
-                            imageContext.append("![").append(imgDesc).append("](").append(img.getUrl()).append(")\n");
+                            String imageUrl = img.getUrl();
+                            String markdownImage = String.format("![%s](%s)\n", imgDesc, imageUrl);
+                            log.debug("Generated Markdown image: {}", markdownImage);
+                            imageContext.append(markdownImage);
                         }
 
                         if (docImages.size() > maxImagesPerDoc) {

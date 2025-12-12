@@ -226,6 +226,14 @@ public class StreamingQAController {
                         // 发送新的块（仅发送新增内容）
                         if (currentAnswer.length() > lastLength) {
                             String newChunk = currentAnswer.substring(lastLength);
+                            
+                            // 调试：如果chunk包含图片标记，记录详细信息
+                            if (newChunk.contains("![") || newChunk.contains("/api/images")) {
+                                log.debug("📸 Image chunk detected:");
+                                log.debug("  Chunk length: {}", newChunk.length());
+                                log.debug("  Chunk content: {}", newChunk.length() > 200 ? newChunk.substring(0, 200) + "..." : newChunk);
+                            }
+                            
                             top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(
                                     newChunk,

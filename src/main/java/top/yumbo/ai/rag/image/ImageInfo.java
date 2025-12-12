@@ -90,8 +90,8 @@ public class ImageInfo {
      * (Note: filename should be just the pure filename like "image_0001.png", not including path)
      */
     public String getUrl() {
-        // 简单直接的 URL 生成，不做任何修补
-        // (Simple and direct URL generation, no patches)
+        // 简单直接的 URL 生成，返回完整路径供AI使用
+        // (Simple and direct URL generation, returns complete path for AI to use)
         return String.format("/api/images/%s/%s", documentId, filename);
     }
 

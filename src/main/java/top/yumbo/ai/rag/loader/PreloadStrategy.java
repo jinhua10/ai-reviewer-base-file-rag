@@ -34,8 +34,11 @@ public class PreloadStrategy {
 
     /**
      * 角色使用统计 (Role usage statistics)
+     *
+     * 使用 ConcurrentHashMap 保证线程安全，因为 recordUsage() 可能在多个线程中被调用
+     * (Using ConcurrentHashMap to ensure thread safety, as recordUsage() may be called from multiple threads)
      */
-    private final Map<String, RoleUsageStats> usageStats = new HashMap<>();
+    private final Map<String, RoleUsageStats> usageStats = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * 构造函数 (Constructor)
@@ -156,25 +159,41 @@ public class PreloadStrategy {
 
     /**
      * 角色使用统计 (Role Usage Statistics)
+     *
+     * 线程安全的统计类，使用 AtomicInteger 保证计数的原子性
+     * (Thread-safe statistics class, using AtomicInteger for atomic counting)
      */
     @Data
     public static class RoleUsageStats {
         /**
          * 使用次数 (Usage count)
+         * 使用 AtomicInteger 保证线程安全
+         * (Using AtomicInteger for thread safety)
          */
-        private int usageCount = 0;
+        private final java.util.concurrent.atomic.AtomicInteger usageCount = new java.util.concurrent.atomic.AtomicInteger(0);
 
         /**
          * 最后使用时间 (Last used time)
+         * volatile 保证可见性
+         * (volatile ensures visibility)
          */
-        private Date lastUsedTime;
+        private volatile Date lastUsedTime;
 
         /**
          * 记录使用 (Record usage)
+         * 线程安全的原子操作
+         * (Thread-safe atomic operation)
          */
         public void recordUsage() {
-            usageCount++;
+            usageCount.incrementAndGet();
             lastUsedTime = new Date();
+        }
+
+        /**
+         * 获取使用次数 (Get usage count)
+         */
+        public int getUsageCount() {
+            return usageCount.get();
         }
     }
 
