@@ -325,6 +325,22 @@ export default {
     copySuccess: '复制成功',
     stopGeneration: '停止生成',
     generationStopped: '生成已停止',
+    
+    // 模式切换 (Mode Toggle)
+    mode: {
+      streaming: '流式模式',
+      nonStreaming: '普通模式',
+      switchToStreaming: '切换到流式模式（实时输出）',
+      switchToNonStreaming: '切换到普通模式（Thinking 动画）',
+    },
+    
+    // 知识库 (Knowledge Base)
+    knowledgeBase: {
+      enabled: 'RAG 模式',
+      disabled: 'AI 直问',
+      enable: '启用知识库（RAG 检索）',
+      disable: '禁用知识库（直接 AI 回答）',
+    },
   },
 
   // ============================================================================

@@ -34,12 +34,51 @@ function QAPanel() {
   const [historyVisible, setHistoryVisible] = useState(false) // 历史记录可见性
   const [currentQuestion, setCurrentQuestion] = useState('') // 当前问题
   const [currentEventSource, setCurrentEventSource] = useState(null) // 当前 EventSource 连接
+  
+  // 从 localStorage 读取流式模式偏好（默认为 true）
+  const [isStreamingMode, setIsStreamingMode] = useState(() => {
+    const saved = localStorage.getItem('qa_streaming_mode')
+    return saved !== null ? saved === 'true' : true
+  })
+  
+  // 从 localStorage 读取知识库开关（默认为 true）
+  const [useKnowledgeBase, setUseKnowledgeBase] = useState(() => {
+    const saved = localStorage.getItem('qa_use_knowledge_base')
+    return saved !== null ? saved === 'true' : true
+  })
+
+  /**
+   * 切换流式/非流式模式
+   */
+  const toggleStreamingMode = () => {
+    const newMode = !isStreamingMode
+    setIsStreamingMode(newMode)
+    localStorage.setItem('qa_streaming_mode', newMode.toString())
+    console.log(`🔄 Switched to ${newMode ? 'streaming' : 'non-streaming'} mode`)
+  }
+  
+  /**
+   * 切换知识库使用
+   */
+  const toggleKnowledgeBase = () => {
+    const newValue = !useKnowledgeBase
+    setUseKnowledgeBase(newValue)
+    localStorage.setItem('qa_use_knowledge_base', newValue.toString())
+    console.log(`🔄 ${newValue ? 'Enabled' : 'Disabled'} knowledge base`)
+  }
 
   /**
    * 处理问题提交
+   * 根据用户选择使用流式或非流式模式
    * @param {string} question - 问题内容
    */
   const handleSubmitQuestion = async (question) => {
+    // 根据用户设置决定使用哪种模式
+    if (!isStreamingMode) {
+      return handleSubmitQuestionNonStreaming(question)
+    }
+    
+    // 默认使用流式模式
     if (!question.trim()) return
 
     // 添加用户问题到消息列表
@@ -68,7 +107,10 @@ function QAPanel() {
 
       // 调用流式 API（双轨输出）/ Call streaming API (Dual Track)
       const result = await qaApi.askStreaming(
-        { question },
+        { 
+          question,
+          useKnowledgeBase  // 是否使用知识库
+        },
         (data) => {
           console.log('📨 Received data in QAPanel:', data)
           
@@ -187,6 +229,83 @@ function QAPanel() {
   }
 
   /**
+   * 非流式问答（带 thinking 动画）
+   * Non-streaming Q&A with thinking animation
+   */
+  const handleSubmitQuestionNonStreaming = async (question) => {
+    if (!question.trim()) return
+
+    // 添加用户问题
+    const userMessage = {
+      id: Date.now(),
+      type: 'question',
+      content: question,
+      timestamp: new Date().toISOString(),
+    }
+    setMessages(prev => [...prev, userMessage])
+    setCurrentQuestion(question)
+    setLoading(true)
+
+    try {
+      // 创建 thinking 状态的答案
+      const answerMessage = {
+        id: Date.now() + 1,
+        type: 'answer',
+        content: '',
+        thinking: true,  // Thinking 状态
+        timestamp: new Date().toISOString(),
+        sessionId: null,
+        sources: [],
+      }
+      setMessages(prev => [...prev, answerMessage])
+
+      // 调用非流式 API
+      const response = await qaApi.ask({ 
+        question,
+        useKnowledgeBase  // 是否使用知识库
+      })
+
+      // 更新答案内容
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMessage = newMessages[newMessages.length - 1]
+        if (lastMessage && lastMessage.thinking) {
+          lastMessage.thinking = false
+          lastMessage.content = response.answer
+          lastMessage.sessionId = response.sessionId
+          lastMessage.sources = response.sources || []
+        }
+        return newMessages
+      })
+
+      // 获取相似问题
+      try {
+        const similarData = await qaApi.getSimilarQuestions(question)
+        if (similarData) {
+          setSimilarQuestions(similarData)
+        }
+      } catch (err) {
+        console.warn('⚠️ Failed to get similar questions:', err)
+      }
+
+    } catch (error) {
+      console.error('❌ Failed to ask question:', error)
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMessage = newMessages[newMessages.length - 1]
+        if (lastMessage && lastMessage.thinking) {
+          lastMessage.type = 'error'
+          lastMessage.content = error.message || t('qa.error.failed')
+          lastMessage.thinking = false
+        }
+        return newMessages
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  /**
    * 停止生成
    * Stop generation
    */
@@ -267,6 +386,10 @@ function QAPanel() {
             onToggleHistory={toggleHistory}
             onStopGeneration={handleStopGeneration}
             isGenerating={!!currentEventSource}
+            isStreamingMode={isStreamingMode}
+            onToggleStreamingMode={toggleStreamingMode}
+            useKnowledgeBase={useKnowledgeBase}
+            onToggleKnowledgeBase={toggleKnowledgeBase}
           />
 
           {/* 输入框 */}

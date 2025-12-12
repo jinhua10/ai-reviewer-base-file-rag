@@ -16,7 +16,18 @@ import { useLanguage } from '../../contexts/LanguageContext'
 import '../../assets/css/qa/chat-box.css'
 
 function ChatBox(props) {
-  const { messages, loading, onFeedback, onToggleHistory, onStopGeneration, isGenerating } = props
+  const { 
+    messages, 
+    loading, 
+    onFeedback, 
+    onToggleHistory, 
+    onStopGeneration, 
+    isGenerating,
+    isStreamingMode,
+    onToggleStreamingMode,
+    useKnowledgeBase,
+    onToggleKnowledgeBase 
+  } = props
   const { t } = useLanguage()
   const messagesEndRef = useRef(null)
 
@@ -27,13 +38,33 @@ function ChatBox(props) {
   return (
     <div className="chat-box">
       <div className="chat-box__toolbar">
-        <Button
-          icon={<HistoryOutlined />}
-          onClick={onToggleHistory}
-          className="chat-box__history-btn"
-        >
-          {t('qa.history.title')}
-        </Button>
+        <div className="chat-box__toolbar-left">
+          <Button
+            icon={<HistoryOutlined />}
+            onClick={onToggleHistory}
+            className="chat-box__history-btn"
+          >
+            {t('qa.history.title')}
+          </Button>
+        </div>
+        
+        <div className="chat-box__toolbar-right">
+          <Button
+            onClick={onToggleKnowledgeBase}
+            className={`chat-box__kb-toggle ${useKnowledgeBase ? 'chat-box__kb-toggle--active' : ''}`}
+            title={useKnowledgeBase ? t('qa.knowledgeBase.disable') : t('qa.knowledgeBase.enable')}
+          >
+            {useKnowledgeBase ? '📚 ' + t('qa.knowledgeBase.enabled') : '🤖 ' + t('qa.knowledgeBase.disabled')}
+          </Button>
+          
+          <Button
+            onClick={onToggleStreamingMode}
+            className="chat-box__mode-toggle"
+            title={isStreamingMode ? t('qa.mode.switchToNonStreaming') : t('qa.mode.switchToStreaming')}
+          >
+            {isStreamingMode ? '⚡ ' + t('qa.mode.streaming') : '💭 ' + t('qa.mode.nonStreaming')}
+          </Button>
+        </div>
       </div>
 
       <div className="chat-box__messages">

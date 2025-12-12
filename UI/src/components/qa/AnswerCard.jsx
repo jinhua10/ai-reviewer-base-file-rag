@@ -59,7 +59,16 @@ function AnswerCard(props) {
 
       <div className="answer-card__content">
         <div className="answer-card__text">
-          {answer.streaming ? (
+          {answer.thinking ? (
+            <div className="answer-card__thinking">
+              <div className="answer-card__thinking-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span className="answer-card__thinking-text">Thinking...</span>
+            </div>
+          ) : answer.streaming ? (
             <StreamingAnswer content={answer.content} />
           ) : (
             <MarkdownRenderer content={answer.content} />

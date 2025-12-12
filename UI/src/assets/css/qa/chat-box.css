@@ -23,11 +23,75 @@
   border-bottom: 1px solid #e8e8e8;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.chat-box__toolbar-left,
+.chat-box__toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .chat-box__history-btn {
   font-size: 14px;
+}
+
+/* 知识库开关 (Knowledge Base Toggle) */
+.chat-box__kb-toggle {
+  font-size: 13px;
+  border-radius: 6px;
+  padding: 4px 12px;
+  height: auto;
+  background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 4px rgba(47, 128, 237, 0.3);
+  transition: all 0.3s ease;
+}
+
+.chat-box__kb-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(47, 128, 237, 0.4);
+  background: linear-gradient(135deg, #3eb9e0 0%, #1a6fd8 100%);
+}
+
+.chat-box__kb-toggle:active {
+  transform: translateY(0);
+}
+
+.chat-box__kb-toggle--active {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  box-shadow: 0 2px 4px rgba(56, 239, 125, 0.3);
+}
+
+.chat-box__kb-toggle--active:hover {
+  background: linear-gradient(135deg, #0e8077 0%, #2dd96a 100%);
+  box-shadow: 0 4px 8px rgba(56, 239, 125, 0.4);
+}
+
+/* 模式切换 (Mode Toggle) */
+.chat-box__mode-toggle {
+  font-size: 13px;
+  border-radius: 6px;
+  padding: 4px 12px;
+  height: auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.chat-box__mode-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #5568d3 0%, #6941a5 100%);
+}
+
+.chat-box__mode-toggle:active {
+  transform: translateY(0);
 }
 
 /* ============================================================================

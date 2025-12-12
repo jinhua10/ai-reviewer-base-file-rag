@@ -330,6 +330,22 @@ export default {
     copySuccess: 'Copied successfully',
     stopGeneration: 'Stop Generating',
     generationStopped: 'Generation Stopped',
+    
+    // Mode Toggle
+    mode: {
+      streaming: 'Streaming',
+      nonStreaming: 'Standard',
+      switchToStreaming: 'Switch to Streaming Mode (Real-time output)',
+      switchToNonStreaming: 'Switch to Standard Mode (Thinking animation)',
+    },
+    
+    // Knowledge Base
+    knowledgeBase: {
+      enabled: 'RAG Mode',
+      disabled: 'Direct AI',
+      enable: 'Enable Knowledge Base (RAG retrieval)',
+      disable: 'Disable Knowledge Base (Direct AI answer)',
+    },
   },
 
   // ============================================================================
