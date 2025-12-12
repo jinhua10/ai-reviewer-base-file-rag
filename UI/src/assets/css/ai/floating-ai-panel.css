@@ -230,6 +230,13 @@
     overflow-y: auto;
 }
 
+/* 拖放高亮样式 */
+.floating-ai-panel__docs--drag-over {
+    border-color: #1890ff !important;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+    background-color: rgba(24, 144, 255, 0.05);
+}
+
 .floating-ai-panel__empty {
     text-align: center;
     padding: 24px 16px;

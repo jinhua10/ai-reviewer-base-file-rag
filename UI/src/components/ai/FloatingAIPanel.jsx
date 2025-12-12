@@ -118,6 +118,7 @@ function FloatingAIPanel() {
     const { t } = useLanguage()
     const {
         aiAnalysisDocs,
+        addDocToAIAnalysis,
         removeDocFromAIAnalysis,
         clearAIAnalysisDocs,
         showFloatingAI,
@@ -133,11 +134,44 @@ function FloatingAIPanel() {
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
     const [previewDock, setPreviewDock] = useState(DOCK_POSITIONS.NONE) // 拖拽时预览停靠位置
 
+    // 拖放状态
+    const [dragOver, setDragOver] = useState(false)
+
     // 判断是否停靠
     const isDocked = config.dockPosition !== DOCK_POSITIONS.NONE
 
     // 调整大小状态
     const [resizing, setResizing] = useState(false)
+    
+    // 处理文档拖放
+    const handleDragOver = useCallback((e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setDragOver(true)
+    }, [])
+    
+    const handleDragLeave = useCallback((e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setDragOver(false)
+    }, [])
+    
+    const handleDrop = useCallback((e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setDragOver(false)
+        
+        try {
+            const jsonData = e.dataTransfer.getData('application/json')
+            if (jsonData) {
+                const document = JSON.parse(jsonData)
+                console.log('📥 Dropped document to AI panel:', document)
+                addDocToAIAnalysis(document)
+            }
+        } catch (error) {
+            console.error('Failed to parse dropped document:', error)
+        }
+    }, [addDocToAIAnalysis])
     const [resizeDirection, setResizeDirection] = useState(null)
     const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 })
 
@@ -674,13 +708,16 @@ function FloatingAIPanel() {
                                 清空
                             </Button>
                         }
-                        className="floating-ai-panel__docs"
+                        className={`floating-ai-panel__docs ${dragOver ? 'floating-ai-panel__docs--drag-over' : ''}`}
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
                     >
                         {aiAnalysisDocs.length === 0 ? (
                             <div className="floating-ai-panel__empty">
                                 <p>暂无文档</p>
                                 <p className="floating-ai-panel__empty-hint">
-                                    从QA回答或文档列表中添加文档
+                                    🖱️ 从文档列表拖拽文档到这里，或从QA回答中添加
                                 </p>
                             </div>
                         ) : (

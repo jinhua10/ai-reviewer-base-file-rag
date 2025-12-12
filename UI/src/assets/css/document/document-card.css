@@ -110,6 +110,48 @@
 }
 
 /* ============================================================================
+   拖拽样式 (Drag & Drop Styles)
+   ============================================================================ */
+.document-card[draggable="true"] {
+  cursor: grab;
+}
+
+.document-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+.document-card--dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  box-shadow: 0 8px 24px rgba(24, 144, 255, 0.3);
+  border: 2px dashed #1890ff;
+}
+
+/* 拖拽提示 */
+.document-card::before {
+  content: '🤖 拖拽到AI分析面板';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(24, 144, 255, 0.95);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.document-card--dragging::before {
+  opacity: 1;
+}
+
+/* ============================================================================
    响应式样式 (Responsive Styles)
    ============================================================================ */
 @media (max-width: 768px) {

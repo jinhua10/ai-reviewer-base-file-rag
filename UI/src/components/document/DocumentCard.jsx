@@ -8,12 +8,13 @@
  * @since 2025-12-12
  */
 
-import React from 'react'
-import { Card, Button, Space, Tooltip, Tag } from 'antd'
+import React, { useState } from 'react'
+import { Card, Button, Space, Tooltip, Tag, message } from 'antd'
 import {
   EyeOutlined,
   DownloadOutlined,
   DeleteOutlined,
+  RobotOutlined,
   FileWordOutlined,
   FileExcelOutlined,
   FilePptOutlined,
@@ -26,11 +27,41 @@ import {
   FileOutlined,
 } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
+import { useQA } from '../../contexts/QAContext'
 import '../../assets/css/document/document-card.css'
 
 function DocumentCard(props) {
-  const { document, onView, onDelete, onDownload } = props
+  const { document, onView, onDelete, onDownload, onAddToAI } = props
   const { t } = useLanguage()
+  const { addDocToAIAnalysis } = useQA()
+  const [isDragging, setIsDragging] = useState(false)
+  
+  // 处理添加到AI分析
+  const handleAddToAI = (e) => {
+    e.stopPropagation()
+    if (addDocToAIAnalysis) {
+      addDocToAIAnalysis(document)
+      message.success(`已将 "${document.name}" 添加到AI分析`)
+    }
+    if (onAddToAI) {
+      onAddToAI(document)
+    }
+  }
+  
+  // 拖拽开始
+  const handleDragStart = (e) => {
+    setIsDragging(true)
+    e.dataTransfer.effectAllowed = 'copy'
+    e.dataTransfer.setData('application/json', JSON.stringify(document))
+    e.dataTransfer.setData('text/plain', document.name)
+    console.log('👋 开始拖拽文档:', document.name)
+  }
+  
+  // 拖拽结束
+  const handleDragEnd = (e) => {
+    setIsDragging(false)
+    console.log('👋 结束拖拽文档:', document.name)
+  }
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 B'
@@ -101,9 +132,12 @@ function DocumentCard(props) {
 
   return (
     <Card
-      className="document-card"
+      className={`document-card ${isDragging ? 'document-card--dragging' : ''}`}
       hoverable
       onClick={() => onView && onView(document)}
+      draggable
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
       <div className="document-card__icon" style={{ position: 'relative' }}>
         <span 
@@ -168,6 +202,15 @@ function DocumentCard(props) {
         onClick={(e) => e.stopPropagation()}
       >
         <Space>
+          <Tooltip title="加入AI分析">
+            <Button
+              type="text"
+              size="small"
+              icon={<RobotOutlined />}
+              onClick={handleAddToAI}
+              style={{ color: '#1890ff' }}
+            />
+          </Tooltip>
           <Tooltip title={t('document.view')}>
             <Button
               type="text"
