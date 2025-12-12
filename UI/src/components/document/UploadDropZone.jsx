@@ -14,17 +14,19 @@ import '../../assets/css/document/upload-dropzone.css'
 const { Dragger } = Upload
 
 function UploadDropZone(props) {
-  const { onUpload, uploading, progress } = props
+  const { onUpload, uploading, progress, multiple = true } = props
   const { t } = useLanguage()
 
-  const handleBeforeUpload = useCallback((file) => {
+  // 支持批量上传：收集所有文件后一次性上传 / Support batch upload: collect all files then upload once
+  const handleBeforeUpload = useCallback((file, fileList) => {
     const isValidSize = file.size / 1024 / 1024 < 100
     if (!isValidSize) {
       return false
     }
 
-    if (onUpload) {
-      onUpload(file)
+    // 当是最后一个文件时，触发上传 / When it's the last file, trigger upload
+    if (fileList[fileList.length - 1] === file && onUpload) {
+      onUpload(fileList)
     }
     return false
   }, [onUpload])
@@ -32,8 +34,8 @@ function UploadDropZone(props) {
   return (
     <div className="upload-dropzone">
       <Dragger
-        name="file"
-        multiple={false}
+        name="files"
+        multiple={multiple}
         beforeUpload={handleBeforeUpload}
         showUploadList={false}
         disabled={uploading}

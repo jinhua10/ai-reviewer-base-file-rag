@@ -275,8 +275,8 @@ export function useSettingsPageData() {
  * 已配置后端API基础URL
  */
 export async function apiCall(endpoint, options = {}) {
-  // 后端API基础URL（Spring Boot默认端口8080）
-  const baseURL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080/api';
+  // 后端API基础URL - 使用Vite代理配置的相对路径 / Backend API base URL - use Vite proxy relative path
+  const baseURL = process.env.REACT_APP_API_BASE_URL || '/api';
   
   const defaultOptions = {
     headers: {
@@ -336,6 +336,68 @@ export async function askQuestion(question, hopeSessionId = null) {
  */
 export async function searchDocuments(query, limit = 10) {
   return apiCall(`/qa/search?query=${encodeURIComponent(query)}&limit=${limit}`);
+}
+
+/**
+ * 批量上传文档 / Batch upload documents
+ * @param {File[]} files - 文件数组
+ * @param {Function} onProgress - 进度回调
+ * @returns {Promise} 上传结果
+ */
+export async function batchUploadDocuments(files, onProgress) {
+  const formData = new FormData();
+  
+  // 添加所有文件到FormData / Add all files to FormData
+  files.forEach((file) => {
+    formData.append('files', file);
+  });
+  
+  // 添加语言参数 / Add language parameter
+  formData.append('lang', localStorage.getItem('language') || 'zh');
+  
+  try {
+    const baseURL = process.env.REACT_APP_API_BASE_URL || '/api';
+    
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      
+      // 监听上传进度 / Monitor upload progress
+      if (onProgress) {
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            onProgress(percentComplete);
+          }
+        });
+      }
+      
+      // 监听完成 / Monitor completion
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const result = JSON.parse(xhr.responseText);
+            console.log('Batch upload success:', result);
+            resolve(result);
+          } catch (e) {
+            reject(new Error('Failed to parse response'));
+          }
+        } else {
+          reject(new Error(`Upload failed with status ${xhr.status}`));
+        }
+      });
+      
+      // 监听错误 / Monitor errors
+      xhr.addEventListener('error', () => {
+        reject(new Error('Network error during upload'));
+      });
+      
+      xhr.open('POST', `${baseURL}/documents/upload-batch`);
+      xhr.send(formData);
+    });
+  } catch (error) {
+    console.error('Batch upload failed:', error);
+    throw error;
+  }
 }
 
 /**

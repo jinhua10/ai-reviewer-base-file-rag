@@ -45,6 +45,21 @@ export function KnowledgeProvider({ children }) {
     }
   }, [])
 
+  const batchUploadDocuments = useCallback(async (formData, onProgress) => {
+    try {
+      setLoading(true)
+      const result = await api.document.batchUpload(formData, onProgress)
+      // 刷新文档列表 / Refresh document list
+      await fetchDocuments()
+      return result
+    } catch (error) {
+      console.error('Failed to batch upload documents:', error)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }, [fetchDocuments])
+
   const deleteDocument = useCallback(async (documentId) => {
     try {
       setLoading(true)
@@ -76,6 +91,7 @@ export function KnowledgeProvider({ children }) {
     statistics,
     fetchDocuments,
     uploadDocument,
+    batchUploadDocuments,
     deleteDocument,
     fetchStatistics,
     setCurrentDocument,

@@ -136,6 +136,13 @@ export default {
   // ============================================================================
   document: {
     title: 'Document Management',
+    upload: 'Upload Document',
+    uploadTip: 'Click or drag files to this area to upload',
+    uploadHint: 'Support PDF, Word, Excel, PPT formats, max 100MB per file, batch upload supported',
+    uploadSuccess: 'Upload successful',
+    uploadFailed: 'Upload failed',
+    batchUploadSuccess: 'Batch upload completed: {success} succeeded, {failed} failed',
+    batchUploading: 'Uploading {count} files...',
     
     // Shell page specific
     shell: {

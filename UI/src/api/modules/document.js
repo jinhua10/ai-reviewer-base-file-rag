@@ -55,6 +55,28 @@ const documentApi = {
   },
 
   /**
+   * 批量上传文档 (Batch upload documents)
+   * @param {FormData} formData - 表单数据（包含多个文件）
+   * @param {Function} onProgress - 上传进度回调
+   * @returns {Promise} 上传结果
+   */
+  batchUpload(formData, onProgress) {
+    return request.post('/documents/upload-batch', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: (progressEvent) => {
+        if (onProgress) {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          )
+          onProgress(percentCompleted)
+        }
+      },
+    })
+  },
+
+  /**
    * 删除文档 (Delete document)
    * @param {string} id - 文档 ID
    * @returns {Promise} 删除结果

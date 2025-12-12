@@ -16,7 +16,7 @@ import java.util.Map;
 
 /**
  * 系统配置管理服务 (System Configuration Management Service)
- *
+ * <p>
  * 提供动态更新和管理系统配置的功能
  * (Provides dynamic system configuration update and management)
  *
@@ -190,7 +190,7 @@ public class SystemConfigService {
 
     /**
      * 应用系统配置 (Apply system configuration)
-     *
+     * <p>
      * 注意：配置类的大部分字段是只读的（没有setter）
      * (Note: Most configuration class fields are read-only without setters)
      * 这里只记录配置更改，实际应用需要重启服务

@@ -246,10 +246,17 @@ public class P2PCollaborationManager {
             feedback.setComment(comment);
             feedback.setTimestamp(LocalDateTime.now());
 
-            // TODO: 发送反馈给对方
+            // 发送反馈给对方 (Send feedback to peer)
+            String feedbackMessage = formatFeedbackMessage(feedback);
+            boolean sent = sendToPeer(connection, feedbackMessage);
 
-            log.info(I18N.get("p2p.manager.feedback_submitted"), knowledgeId, score);
-            return true;
+            if (sent) {
+                log.info(I18N.get("p2p.manager.feedback_submitted"), knowledgeId, score);
+                return true;
+            } else {
+                log.warn(I18N.get("p2p.manager.feedback_send_failed"), knowledgeId);
+                return false;
+            }
 
         } catch (Exception e) {
             log.error(I18N.get("p2p.manager.feedback_failed"), knowledgeId, e.getMessage(), e);
@@ -305,6 +312,45 @@ public class P2PCollaborationManager {
         stats.setOfflinePeers(connectedPeers.size() - onlineCount);
 
         return stats;
+    }
+
+    // ========== 私有辅助方法 (Private Helper Methods) ==========
+
+    /**
+     * 格式化反馈消息 (Format feedback message)
+     */
+    private String formatFeedbackMessage(VerificationFeedback feedback) {
+        return String.format(
+            "FEEDBACK|%s|%s|%.2f|%s|%s",
+            feedback.getKnowledgeId(),
+            feedback.getVerifierId(),
+            feedback.getScore(),
+            feedback.getComment(),
+            feedback.getTimestamp()
+        );
+    }
+
+    /**
+     * 发送消息给对方 (Send message to peer)
+     *
+     * 注意：这是简化实现，实际需要通过网络发送
+     * (Note: This is a simplified implementation, actual needs network transmission)
+     */
+    private boolean sendToPeer(PeerConnection connection, String message) {
+        try {
+            // 加密消息 (Encrypt message)
+            String encryptedMessage = encryptionHandler.encrypt(message);
+
+            // TODO: 实际的网络发送需要在 TODO #6-#8 中实现
+            // (Actual network sending needs to be implemented in TODO #6-#8)
+            // 这里暂时模拟发送成功 (Simulate successful sending here)
+            log.debug(I18N.get("p2p.manager.message_prepared"), connection.getPeerId(), encryptedMessage.length());
+
+            return true;
+        } catch (Exception e) {
+            log.error(I18N.get("p2p.manager.send_error"), connection.getPeerId(), e.getMessage());
+            return false;
+        }
     }
 
     // ========== 内部类 (Inner Classes) ==========

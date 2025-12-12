@@ -37,4 +37,7 @@ p2p:
     request_failed: "❌ 请求失败: peerId={0}, error={1}"
     feedback_submitted: "✅ 反馈提交: knowledgeId={0}, score={1}"
     feedback_failed: "❌ 反馈失败: knowledgeId={0}, error={1}"
+    feedback_send_failed: "⚠️ 反馈发送失败: knowledgeId={0}"
+    message_prepared: "📝 消息准备完成: peerId={0}, size={1}"
+    send_error: "❌ 发送错误: peerId={0}, error={1}"
 

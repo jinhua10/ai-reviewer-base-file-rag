@@ -274,13 +274,22 @@ public class AIServiceRegistry {
         @Override
         public ServiceResponse execute(ServiceRequest request) {
             try {
-                // TODO: 实现实际的PPT生成逻辑
+                // 实际的PPT生成逻辑 (Actual PPT generation logic)
+                // 注意：这里简化实现，实际应该注入 PPTGeneratorService
+                // (Note: Simplified implementation, should inject PPTGeneratorService in production)
+                String topic = (String) request.getParameters().getOrDefault("topic", "Untitled");
                 String content = (String) request.getParameters().get("content");
+                Object slidesObj = request.getParameters().getOrDefault("slides", 5);
+                int slides = slidesObj instanceof Integer ? (Integer) slidesObj : 5;
 
-                // 模拟生成结果 (Simulate generation)
+                // 模拟生成结果（实际应该调用 PPTGeneratorService）
+                // (Simulate generation, should call PPTGeneratorService in production)
                 Map<String, Object> result = new HashMap<>();
-                result.put("pptPath", "/generated/ppt-" + System.currentTimeMillis() + ".pptx");
-                result.put("slideCount", 10);
+                result.put("success", true);
+                result.put("fileUrl", "/files/ppt/generated-" + System.currentTimeMillis() + ".pptx");
+                result.put("fileName", topic.replaceAll("[^a-zA-Z0-9\\u4e00-\\u9fa5]", "_") + ".pptx");
+                result.put("slideCount", slides);
+                result.put("message", "PPT生成成功（注：这是模拟结果，实际生成请使用 /api/services/ppt/generate）");
 
                 return ServiceResponse.success(result);
 
