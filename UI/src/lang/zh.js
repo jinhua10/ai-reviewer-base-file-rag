@@ -328,17 +328,122 @@ export default {
   wish: {
     title: '愿望单',
     submit: '提交愿望',
+    submitTitle: '提交新愿望',
+    submitSuccess: '提交成功',
+    submitFailed: '提交失败',
     vote: '投票',
-    ranking: '排行榜',
-    myWishes: '我的愿望',
-    allWishes: '全部愿望',
-    wishTitle: '愿望标题',
-    wishDescription: '愿望描述',
-    voteCount: '投票数',
-    status: '状态',
-    pending: '待处理',
-    inProgress: '进行中',
-    completed: '已完成',
+    voted: '已投票',
+    voteUp: '点赞',
+    voteDown: '点踩',
+    cancelVote: '取消投票',
+    voteSuccess: '投票成功',
+    voteFailed: '投票失败',
+    votes: '票',
+    viewDetail: '查看详情',
+    anonymous: '匿名用户',
+
+    // 时间
+    minutesAgo: '分钟前',
+    hoursAgo: '小时前',
+    daysAgo: '天前',
+
+    // 总数
+    totalWishes: '个愿望',
+
+    // 视图模式
+    view: {
+      grid: '网格',
+      list: '列表',
+    },
+
+    // 搜索和筛选
+    searchPlaceholder: '搜索愿望标题或内容...',
+    filter: {
+      all: '全部',
+      status: '按状态筛选',
+      category: '按分类筛选',
+    },
+
+    // 排序
+    sort: {
+      latest: '最新',
+      hottest: '最热',
+      most_voted: '最多投票',
+    },
+
+    // 状态
+    status: {
+      pending: '待审核',
+      in_progress: '进行中',
+      completed: '已完成',
+      rejected: '已拒绝',
+    },
+
+    // 分类
+    category: {
+      feature: '功能增强',
+      bug: 'Bug修复',
+      interface: '界面优化',
+    },
+
+    // 表单
+    form: {
+      title: '愿望标题',
+      titlePlaceholder: '请输入愿望标题（最多50字）',
+      titleRequired: '请输入愿望标题',
+      titleTooLong: '标题长度不能超过50字',
+
+      description: '愿望描述',
+      descriptionPlaceholder: '请详细描述您的愿望（最多500字）',
+      descriptionRequired: '请输入愿望描述',
+      descriptionTooLong: '描述长度不能超过500字',
+
+      category: '愿望分类',
+      categoryPlaceholder: '请选择分类',
+      categoryRequired: '请选择愿望分类',
+
+      submit: '提交',
+      cancel: '取消',
+
+      // 提示
+      tipsTitle: '💡 提交提示：',
+      tip1: '请清晰描述您的愿望，方便他人理解和投票',
+      tip2: '查看是否已有类似愿望，避免重复提交',
+      tip3: '愿望提交后将进入审核，通过后即可展示',
+    },
+
+    // 详情页
+    detail: {
+      description: '详细描述',
+      statusHistory: '状态历史',
+      comments: '评论',
+    },
+
+    // 排行榜
+    ranking: {
+      title: '愿望排行榜',
+      empty: '暂无排行数据',
+    },
+
+    // 评论
+    comment: {
+      placeholder: '发表您的看法...',
+      replyPlaceholder: '回复评论...',
+      reply: '回复',
+      replyTo: '回复',
+      submit: '发表评论',
+      submitReply: '发表回复',
+      submitSuccess: '评论成功',
+      submitFailed: '评论失败',
+      emptyWarning: '请输入评论内容',
+      empty: '暂无评论，快来抢沙发！',
+      cancel: '取消',
+    },
+
+    // 空状态和加载
+    empty: '暂无愿望，快来提交第一个吧！',
+    loading: '加载中...',
+    loadFailed: '加载失败',
   },
 
   // ============================================================================

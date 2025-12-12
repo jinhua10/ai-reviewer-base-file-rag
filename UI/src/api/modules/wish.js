@@ -1,55 +1,89 @@
-/**
- * 愿望单 API 模块 (Wish List API Module)
- *
- * @author AI Reviewer Team
- * @since 2025-12-12
- */
+// Wish API Module
+import api from '../index';
 
-import { request } from '../index'
-
-const wishApi = {
+export const wishApi = {
   /**
-   * 获取愿望单列表 (Get wish list)
+   * 获取愿望列表
+   * @param {Object} params - 查询参数
+   * @param {string} params.status - 状态筛选
+   * @param {string} params.category - 分类筛选
+   * @param {string} params.sortBy - 排序方式
+   * @param {string} params.keyword - 搜索关键词
+   * @returns {Promise}
    */
-  getList(params) {
-    return request.get('/wishes', params)
+  getWishes: (params) => {
+    return api.get('/api/wishes', { params });
   },
 
   /**
-   * 提交愿望 (Submit wish)
+   * 获取愿望详情
+   * @param {number|string} id - 愿望ID
+   * @returns {Promise}
    */
-  submit(data) {
-    return request.post('/wishes', data)
+  getWishDetail: (id) => {
+    return api.get(`/api/wishes/${id}`);
   },
 
   /**
-   * 投票 (Vote for wish)
+   * 提交新愿望
+   * @param {Object} data - 愿望数据
+   * @param {string} data.title - 标题
+   * @param {string} data.description - 描述
+   * @param {string} data.category - 分类
+   * @returns {Promise}
    */
-  vote(wishId) {
-    return request.post(`/wishes/${wishId}/vote`)
+  submitWish: (data) => {
+    return api.post('/api/wishes', data);
   },
 
   /**
-   * 取消投票 (Cancel vote)
+   * 投票
+   * @param {number|string} id - 愿望ID
+   * @param {string} voteType - 投票类型 (up/down)
+   * @returns {Promise}
    */
-  cancelVote(wishId) {
-    return request.delete(`/wishes/${wishId}/vote`)
+  voteWish: (id, voteType) => {
+    return api.post(`/api/wishes/${id}/vote`, { voteType });
   },
 
   /**
-   * 获取排行榜 (Get ranking)
+   * 获取评论列表
+   * @param {number|string} wishId - 愿望ID
+   * @param {Object} params - 查询参数
+   * @returns {Promise}
    */
-  getRanking(params) {
-    return request.get('/wishes/ranking', params)
+  getComments: (wishId, params = {}) => {
+    return api.get(`/api/wishes/${wishId}/comments`, { params });
   },
 
   /**
-   * 获取我的愿望 (Get my wishes)
+   * 添加评论
+   * @param {number|string} wishId - 愿望ID
+   * @param {Object} data - 评论数据
+   * @param {string} data.content - 评论内容
+   * @param {number} data.parentId - 父评论ID（回复时）
+   * @returns {Promise}
    */
-  getMyWishes(params) {
-    return request.get('/wishes/my', params)
+  addComment: (wishId, data) => {
+    return api.post(`/api/wishes/${wishId}/comments`, data);
   },
-}
 
-export default wishApi
+  /**
+   * 点赞评论
+   * @param {number|string} commentId - 评论ID
+   * @returns {Promise}
+   */
+  likeComment: (commentId) => {
+    return api.post(`/api/comments/${commentId}/like`);
+  },
+
+  /**
+   * 获取愿望排行榜
+   * @param {number} limit - 数量限制
+   * @returns {Promise}
+   */
+  getRanking: (limit = 10) => {
+    return api.get('/api/wishes/ranking', { params: { limit } });
+  },
+};
 

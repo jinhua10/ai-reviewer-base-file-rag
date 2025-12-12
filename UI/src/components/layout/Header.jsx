@@ -17,7 +17,8 @@ import {
   TeamOutlined,
   GlobalOutlined,
   LikeOutlined,
-  ShareAltOutlined
+  ShareAltOutlined,
+  StarOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '@contexts/LanguageContext'
 import PropTypes from 'prop-types'
@@ -75,6 +76,11 @@ function Header({
       key: 'collaboration',
       icon: <ShareAltOutlined />,
       label: t('nav.collaboration'),
+    },
+    {
+      key: 'wish',
+      icon: <StarOutlined />,
+      label: t('nav.wish'),
     },
   ]
 

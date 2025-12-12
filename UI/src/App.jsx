@@ -17,6 +17,7 @@ import { DocumentList } from './components/document'
 import { RoleList } from './components/role'
 import { FeedbackPanel } from './components/feedback'
 import { CollaborationPanel } from './components/collaboration'
+import { WishList } from './components/wish'
 import './assets/css/header.css'
 import './assets/css/error-boundary.css'
 
@@ -49,6 +50,8 @@ function AppContent() {
         return <FeedbackPanel />
       case 'collaboration':
         return <CollaborationPanel />
+      case 'wish':
+        return <WishList />
       default:
         return <QAPanel />
     }

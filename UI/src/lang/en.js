@@ -328,17 +328,122 @@ export default {
   wish: {
     title: 'Wish List',
     submit: 'Submit Wish',
+    submitTitle: 'Submit New Wish',
+    submitSuccess: 'Submitted successfully',
+    submitFailed: 'Failed to submit',
     vote: 'Vote',
-    ranking: 'Ranking',
-    myWishes: 'My Wishes',
-    allWishes: 'All Wishes',
-    wishTitle: 'Wish Title',
-    wishDescription: 'Description',
-    voteCount: 'Votes',
-    status: 'Status',
-    pending: 'Pending',
-    inProgress: 'In Progress',
-    completed: 'Completed',
+    voted: 'Voted',
+    voteUp: 'Upvote',
+    voteDown: 'Downvote',
+    cancelVote: 'Cancel Vote',
+    voteSuccess: 'Voted successfully',
+    voteFailed: 'Failed to vote',
+    votes: 'votes',
+    viewDetail: 'View Detail',
+    anonymous: 'Anonymous',
+
+    // Time
+    minutesAgo: 'minutes ago',
+    hoursAgo: 'hours ago',
+    daysAgo: 'days ago',
+
+    // Total
+    totalWishes: 'wishes',
+
+    // View mode
+    view: {
+      grid: 'Grid',
+      list: 'List',
+    },
+
+    // Search and filter
+    searchPlaceholder: 'Search wish title or content...',
+    filter: {
+      all: 'All',
+      status: 'Filter by Status',
+      category: 'Filter by Category',
+    },
+
+    // Sort
+    sort: {
+      latest: 'Latest',
+      hottest: 'Hottest',
+      most_voted: 'Most Voted',
+    },
+
+    // Status
+    status: {
+      pending: 'Pending',
+      in_progress: 'In Progress',
+      completed: 'Completed',
+      rejected: 'Rejected',
+    },
+
+    // Category
+    category: {
+      feature: 'Feature Enhancement',
+      bug: 'Bug Fix',
+      interface: 'UI Optimization',
+    },
+
+    // Form
+    form: {
+      title: 'Title',
+      titlePlaceholder: 'Enter wish title (max 50 chars)',
+      titleRequired: 'Please enter a title',
+      titleTooLong: 'Title cannot exceed 50 characters',
+
+      description: 'Description',
+      descriptionPlaceholder: 'Describe your wish in detail (max 500 chars)',
+      descriptionRequired: 'Please enter a description',
+      descriptionTooLong: 'Description cannot exceed 500 characters',
+
+      category: 'Category',
+      categoryPlaceholder: 'Select category',
+      categoryRequired: 'Please select a category',
+
+      submit: 'Submit',
+      cancel: 'Cancel',
+
+      // Tips
+      tipsTitle: '💡 Tips:',
+      tip1: 'Describe your wish clearly for better understanding',
+      tip2: 'Check if similar wishes already exist',
+      tip3: 'Wishes will be reviewed before being displayed',
+    },
+
+    // Detail page
+    detail: {
+      description: 'Description',
+      statusHistory: 'Status History',
+      comments: 'Comments',
+    },
+
+    // Ranking
+    ranking: {
+      title: 'Wish Ranking',
+      empty: 'No ranking data',
+    },
+
+    // Comment
+    comment: {
+      placeholder: 'Share your thoughts...',
+      replyPlaceholder: 'Reply to comment...',
+      reply: 'Reply',
+      replyTo: 'Reply to',
+      submit: 'Submit Comment',
+      submitReply: 'Submit Reply',
+      submitSuccess: 'Comment submitted',
+      submitFailed: 'Failed to submit comment',
+      emptyWarning: 'Please enter comment content',
+      empty: 'No comments yet, be the first!',
+      cancel: 'Cancel',
+    },
+
+    // Empty state and loading
+    empty: 'No wishes yet, be the first to submit!',
+    loading: 'Loading...',
+    loadFailed: 'Failed to load',
   },
 
   // ============================================================================

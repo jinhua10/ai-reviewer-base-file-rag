@@ -244,6 +244,203 @@ export const mockData = {
       successRate: 0.88,
     },
   ],
+
+  // 愿望单
+  wishes: {
+    list: [
+      {
+        id: '1',
+        title: '支持暗色模式',
+        description: '希望系统能够支持暗色模式，保护眼睛，特别是在晚上使用时。建议可以自动切换，也可以手动切换。',
+        category: 'interface',
+        status: 'in_progress',
+        votes: 42,
+        commentsCount: 8,
+        author: {
+          id: '1',
+          name: '张三',
+          avatar: null,
+        },
+        createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 86400000).toISOString(),
+        userVoted: 'up',
+      },
+      {
+        id: '2',
+        title: '添加代码高亮功能',
+        description: '在问答中展示代码时，希望能够支持语法高亮，支持多种编程语言，提升代码可读性。',
+        category: 'feature',
+        status: 'completed',
+        votes: 38,
+        commentsCount: 12,
+        author: {
+          id: '2',
+          name: '李四',
+          avatar: null,
+        },
+        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        userVoted: null,
+      },
+      {
+        id: '3',
+        title: '修复文档上传失败的问题',
+        description: '当上传大文件时（>50MB），经常会出现上传失败的情况，希望能够修复这个问题。',
+        category: 'bug',
+        status: 'pending',
+        votes: 35,
+        commentsCount: 5,
+        author: {
+          id: '3',
+          name: '王五',
+          avatar: null,
+        },
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 86400000).toISOString(),
+        userVoted: null,
+      },
+      {
+        id: '4',
+        title: '增加导出对话记录功能',
+        description: '希望能够将问答历史导出为 Markdown 或 PDF 格式，方便保存和分享。',
+        category: 'feature',
+        status: 'pending',
+        votes: 30,
+        commentsCount: 3,
+        author: {
+          id: '4',
+          name: '赵六',
+          avatar: null,
+        },
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 3600000).toISOString(),
+        userVoted: null,
+      },
+      {
+        id: '5',
+        title: '优化搜索功能',
+        description: '当前的搜索功能不够智能，希望能够支持模糊搜索、关键词高亮等功能。',
+        category: 'interface',
+        status: 'pending',
+        votes: 28,
+        commentsCount: 7,
+        author: {
+          id: '5',
+          name: '孙七',
+          avatar: null,
+        },
+        createdAt: new Date(Date.now() - 12 * 3600000).toISOString(),
+        updatedAt: new Date(Date.now() - 6 * 3600000).toISOString(),
+        userVoted: null,
+      },
+    ],
+  },
+
+  // 愿望详情（包含状态历史）
+  wishDetail: {
+    '1': {
+      id: '1',
+      title: '支持暗色模式',
+      description: '希望系统能够支持暗色模式，保护眼睛，特别是在晚上使用时。建议可以自动切换，也可以手动切换。',
+      category: 'interface',
+      status: 'in_progress',
+      votes: 42,
+      commentsCount: 8,
+      author: {
+        id: '1',
+        name: '张三',
+        avatar: null,
+      },
+      createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 86400000).toISOString(),
+      statusHistory: [
+        {
+          status: 'pending',
+          timestamp: new Date(Date.now() - 3 * 86400000).toISOString(),
+          comment: '愿望已提交，等待审核',
+        },
+        {
+          status: 'in_progress',
+          timestamp: new Date(Date.now() - 2 * 86400000).toISOString(),
+          comment: '已通过审核，开始实施',
+        },
+      ],
+    },
+  },
+
+  // 愿望评论
+  wishComments: {
+    '1': [
+      {
+        id: '1',
+        content: '非常期待这个功能！',
+        author: {
+          id: '10',
+          name: '用户A',
+          avatar: null,
+        },
+        likes: 5,
+        userLiked: false,
+        createdAt: new Date(Date.now() - 2 * 86400000).toISOString(),
+        replies: [
+          {
+            id: '2',
+            content: '同感！希望能尽快实现',
+            author: {
+              id: '11',
+              name: '用户B',
+              avatar: null,
+            },
+            likes: 2,
+            userLiked: false,
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+          },
+        ],
+      },
+      {
+        id: '3',
+        content: '建议参考 GitHub 的暗色模式实现',
+        author: {
+          id: '12',
+          name: '用户C',
+          avatar: null,
+        },
+        likes: 3,
+        userLiked: true,
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        replies: [],
+      },
+    ],
+  },
+
+  // 愿望排行榜
+  wishRanking: [
+    {
+      id: '1',
+      title: '支持暗色模式',
+      votes: 42,
+    },
+    {
+      id: '2',
+      title: '添加代码高亮功能',
+      votes: 38,
+    },
+    {
+      id: '3',
+      title: '修复文档上传失败的问题',
+      votes: 35,
+    },
+    {
+      id: '4',
+      title: '增加导出对话记录功能',
+      votes: 30,
+    },
+    {
+      id: '5',
+      title: '优化搜索功能',
+      votes: 28,
+    },
+  ],
 }
 
 /**
@@ -296,6 +493,61 @@ export async function mockRequest(url, method = 'GET', data = null) {
   }
   if (url.includes('/collaboration/sync-status')) {
     return { data: mockData.syncStatus }
+  }
+
+  // 愿望单 API
+  if (url.includes('/wishes')) {
+    // 获取愿望列表
+    if (method === 'GET' && url === '/api/wishes') {
+      return { data: mockData.wishes.list }
+    }
+    // 获取愿望详情
+    if (method === 'GET' && url.match(/\/api\/wishes\/\d+$/)) {
+      const id = url.split('/').pop()
+      return { data: mockData.wishDetail[id] || mockData.wishes.list.find(w => w.id === id) }
+    }
+    // 提交愿望
+    if (method === 'POST' && url === '/api/wishes') {
+      const newWish = {
+        id: String(mockData.wishes.list.length + 1),
+        ...data,
+        votes: 0,
+        commentsCount: 0,
+        status: 'pending',
+        author: {
+          id: '999',
+          name: '当前用户',
+          avatar: null,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        userVoted: null,
+      }
+      mockData.wishes.list.unshift(newWish)
+      return { data: newWish }
+    }
+    // 投票
+    if (method === 'POST' && url.includes('/vote')) {
+      return { data: { success: true } }
+    }
+    // 获取评论
+    if (method === 'GET' && url.includes('/comments')) {
+      const wishId = url.split('/')[3]
+      return { data: mockData.wishComments[wishId] || [] }
+    }
+    // 添加评论
+    if (method === 'POST' && url.includes('/comments')) {
+      return { data: { success: true } }
+    }
+    // 获取排行榜
+    if (url.includes('/ranking')) {
+      return { data: mockData.wishRanking }
+    }
+  }
+
+  // 评论点赞
+  if (url.includes('/comments/') && url.includes('/like')) {
+    return { data: { success: true } }
   }
 
   return null
