@@ -10,6 +10,7 @@
 
 import React, { useState } from 'react'
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import { Header } from './components/layout'
 import { ErrorBoundary } from './components/common'
 import { QAPanel } from './components/qa'
@@ -87,13 +88,15 @@ function AppContent() {
 
 /**
  * 主应用组件 (Main App Component)
- * 包装 LanguageProvider (Wraps LanguageProvider)
+ * 包装 LanguageProvider 和 ThemeProvider (Wraps LanguageProvider and ThemeProvider)
  */
 function App() {
   return (
-    <LanguageProvider>
-      <AppContent />
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
+    </ThemeProvider>
   )
 }
 

@@ -53,27 +53,47 @@ function QAPanel() {
     setLoading(true)
 
     try {
-      // 创建答案消息占位符
+      // 创建答案消息占位符 / Create answer message placeholder
       const answerMessage = {
         id: Date.now() + 1,
         type: 'answer',
         content: '',
         streaming: true,
         timestamp: new Date().toISOString(),
+        sessionId: null,
+        sources: [],
       }
       setMessages(prev => [...prev, answerMessage])
 
-      // 调用流式 API
-      const eventSource = qaApi.askStreaming(
+      // 调用流式 API / Call streaming API
+      const result = await qaApi.askStreaming(
         { question },
         (data) => {
-          // 更新答案内容
+          // 更新答案内容 / Update answer content
           setMessages(prev => {
             const newMessages = [...prev]
             const lastMessage = newMessages[newMessages.length - 1]
-            if (lastMessage.streaming) {
-              lastMessage.content += data.chunk || data.content || ''
-              if (data.done) {
+            if (lastMessage && lastMessage.streaming) {
+              // 处理不同类型的数据块 / Handle different types of data chunks
+              if (data.content) {
+                lastMessage.content += data.content
+              } else if (data.chunk) {
+                lastMessage.content += data.chunk
+              }
+
+              // 更新来源信息 / Update source information
+              if (data.sources) {
+                lastMessage.sources = data.sources
+              }
+
+              // 检查是否完成 / Check if done
+              if (data.done || data.type === 'done') {
+                lastMessage.streaming = false
+              }
+
+              // 处理错误 / Handle error
+              if (data.error) {
+                lastMessage.type = 'error'
                 lastMessage.streaming = false
               }
             }
@@ -82,24 +102,41 @@ function QAPanel() {
         }
       )
 
-      // 保存 eventSource 以便取消
-      answerMessage.eventSource = eventSource
+      // 保存 sessionId / Save sessionId
+      if (result && result.sessionId) {
+        setMessages(prev => {
+          const newMessages = [...prev]
+          const lastMessage = newMessages[newMessages.length - 1]
+          if (lastMessage) {
+            lastMessage.sessionId = result.sessionId
+          }
+          return newMessages
+        })
+      }
 
-      // 获取相似问题
-      const similarData = await qaApi.getSimilarQuestions(question)
-      if (similarData?.data) {
-        setSimilarQuestions(similarData.data)
+      // 获取相似问题 / Get similar questions
+      try {
+        const similarData = await qaApi.getSimilarQuestions(question)
+        if (similarData?.data) {
+          setSimilarQuestions(similarData.data)
+        }
+      } catch (err) {
+        console.warn('⚠️ Failed to get similar questions:', err)
       }
 
     } catch (error) {
       console.error('❌ Failed to ask question:', error)
-      // 添加错误消息
-      setMessages(prev => [...prev, {
-        id: Date.now() + 2,
-        type: 'error',
-        content: t('qa.error.failed'),
-        timestamp: new Date().toISOString(),
-      }])
+      // 添加错误消息 / Add error message
+      setMessages(prev => {
+        const newMessages = [...prev]
+        const lastMessage = newMessages[newMessages.length - 1]
+        if (lastMessage && lastMessage.streaming) {
+          lastMessage.type = 'error'
+          lastMessage.content = error.message || t('qa.error.failed')
+          lastMessage.streaming = false
+        }
+        return newMessages
+      })
     } finally {
       setLoading(false)
     }

@@ -21,9 +21,11 @@ import {
   StarOutlined,
   RocketOutlined,
   UserOutlined,
-  SettingOutlined
+  SettingOutlined,
+  BulbOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '@contexts/LanguageContext'
+import { useTheme } from '@contexts/ThemeContext'
 import PropTypes from 'prop-types'
 
 /**
@@ -47,6 +49,7 @@ function Header({
   showLanguageToggle = true
 }) {
   const { t, language, toggleLanguage } = useLanguage()
+  const { theme, toggleTheme } = useTheme()
 
   // 菜单项配置 (Menu items configuration)
   const menuItems = [
@@ -122,6 +125,14 @@ function Header({
 
         {/* 右侧操作区 (Right actions) */}
         <div className="app-header__actions">
+          <Button
+            icon={<BulbOutlined />}
+            onClick={toggleTheme}
+            className="app-header__theme-btn"
+            title={theme === 'light' ? t('common.switchToDark') : t('common.switchToLight')}
+          >
+            {theme === 'light' ? '🌙' : '☀️'}
+          </Button>
           {showLanguageToggle && (
             <Button
               icon={<GlobalOutlined />}

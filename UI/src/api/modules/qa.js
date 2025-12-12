@@ -36,64 +36,106 @@ const qaApi = {
   /**
    * 流式问答 (Streaming Q&A)
    * @param {Object} params - 问题参数
+   * @param {string} params.question - 问题内容
    * @param {Function} onChunk - 数据块回调
-   * @returns {Promise} EventSource 实例
+   * @returns {Promise} 返回一个包含sessionId和sseUrl的对象
    */
-  askStreaming(params, onChunk) {
-    // 使用 EventSource 进行流式传输
-    const url = `/qa/ask-streaming?question=${encodeURIComponent(params.question)}`
-    const eventSource = new EventSource(url)
+  async askStreaming(params, onChunk) {
+    try {
+      // 步骤1: 发起流式请求，获取sessionId和sseUrl
+      // Step 1: Initiate streaming request, get sessionId and sseUrl
+      const response = await request.post('/qa/stream', {
+        question: params.question,
+        userId: 'web-user-' + Date.now()
+      })
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (onChunk) {
-        onChunk(data)
+      const { sessionId, sseUrl, hopeAnswer } = response.data || response
+
+      // 如果HOPE能直接回答，立即返回
+      // If HOPE can answer directly, return immediately
+      if (hopeAnswer && hopeAnswer.canDirectAnswer) {
+        if (onChunk) {
+          onChunk({
+            content: hopeAnswer.answer,
+            done: true,
+            source: 'HOPE',
+            confidence: hopeAnswer.confidence
+          })
+        }
+        return { sessionId, closed: true }
       }
-    }
 
-    eventSource.onerror = (error) => {
-      console.error('❌ Streaming error:', error)
-      eventSource.close()
-    }
+      // 步骤2: 使用SSE接收流式数据
+      // Step 2: Use SSE to receive streaming data
+      const fullUrl = sseUrl.startsWith('http') ? sseUrl : window.location.origin + sseUrl
+      const eventSource = new EventSource(fullUrl)
 
-    return eventSource
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (onChunk) {
+            onChunk(data)
+          }
+          // 如果收到完成标记，关闭连接
+          // If done signal received, close connection
+          if (data.done || data.type === 'done') {
+            eventSource.close()
+          }
+        } catch (error) {
+          console.error('❌ Failed to parse SSE data:', error)
+        }
+      }
+
+      eventSource.onerror = (error) => {
+        console.error('❌ SSE connection error:', error)
+        eventSource.close()
+        if (onChunk) {
+          onChunk({ error: true, message: 'Connection lost' })
+        }
+      }
+
+      return { sessionId, eventSource }
+    } catch (error) {
+      console.error('❌ Failed to start streaming:', error)
+      throw error
+    }
   },
 
   /**
-   * 获取问答历史 (Get Q&A history)
-   * @param {Object} params - 查询参数
-   * @param {number} params.page - 页码
-   * @param {number} params.pageSize - 每页条数
-   * @returns {Promise} 历史记录
+   * 获取问答历史 / Get Q&A history
+   * @param {Object} params - 查询参数 / Query parameters
+   * @param {number} params.page - 页码 / Page number
+   * @param {number} params.pageSize - 每页条数 / Items per page
+   * @returns {Promise} 历史记录 / History records
    */
   getHistory(params) {
     return request.get('/qa/history', params)
   },
 
   /**
-   * 获取相似问题 (Get similar questions)
-   * @param {string} question - 问题内容
-   * @returns {Promise} 相似问题列表
+   * 获取相似问题 / Get similar questions
+   * @param {string} question - 问题内容 / Question content
+   * @returns {Promise} 相似问题列表 / Similar questions list
    */
   getSimilarQuestions(question) {
     return request.get('/qa/similar', { question })
   },
 
   /**
-   * 反馈回答质量 (Feedback answer quality)
-   * @param {Object} params - 反馈参数
-   * @param {string} params.answerId - 回答 ID
-   * @param {number} params.rating - 评分（1-5）
-   * @param {string} params.comment - 评论（可选）
-   * @returns {Promise} 反馈结果
+   * 反馈回答质量 / Feedback answer quality
+   * @param {Object} params - 反馈参数 / Feedback parameters
+   * @param {string} params.answerId - 回答 ID / Answer ID
+   * @param {number} params.rating - 评分（1-5）/ Rating (1-5)
+   * @param {string} params.comment - 评论（可选）/ Comment (optional)
+   * @returns {Promise} 反馈结果 / Feedback result
    */
   feedback(params) {
     return request.post('/qa/feedback', params)
   },
 
   /**
-   * 获取推荐提示词 (Get recommended prompts)
-   * @returns {Promise} 推荐提示词列表
+   * 获取推荐提示词 / Get recommended prompts
+   * @returns {Promise} 推荐提示词列表 / Recommended prompts list
    */
   getRecommendedPrompts() {
     return request.get('/qa/prompts/recommended')

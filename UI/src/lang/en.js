@@ -37,6 +37,8 @@ export default {
     collapse: 'Collapse',
     expand: 'Expand',
     loadMore: 'Load More',
+    switchToDark: 'Switch to Dark Mode',
+    switchToLight: 'Switch to Light Mode',
   },
 
   // ============================================================================
