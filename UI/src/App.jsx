@@ -20,6 +20,7 @@ import { CollaborationPanel } from './components/collaboration'
 import { WishList } from './components/wish'
 import { ServiceMarket } from './components/service'
 import { UserProfile } from './components/profile'
+import { AdminPanel } from './components/admin'
 import './assets/css/header.css'
 import './assets/css/error-boundary.css'
 
@@ -58,6 +59,8 @@ function AppContent() {
         return <ServiceMarket />
       case 'profile':
         return <UserProfile />
+      case 'admin':
+        return <AdminPanel />
       default:
         return <QAPanel />
     }

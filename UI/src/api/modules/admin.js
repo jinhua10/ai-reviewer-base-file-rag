@@ -1,83 +1,40 @@
-/**
- * 管理 API 模块 (Admin API Module)
- *
- * @author AI Reviewer Team
- * @since 2025-12-12
- */
+// Admin API Module
+import api from '../index';
 
-import { request } from '../index'
-
-const adminApi = {
+export const adminApi = {
   /**
-   * 获取系统配置 (Get system configuration)
+   * 更新系统配置
    */
-  getSystemConfig() {
-    return request.get('/admin/config')
+  updateSystemConfig: (config) => {
+    return api.put('/api/admin/system-config', config);
   },
 
   /**
-   * 更新系统配置 (Update system configuration)
+   * 更新模型配置
    */
-  updateSystemConfig(data) {
-    return request.put('/admin/config', data)
+  updateModelConfig: (config) => {
+    return api.put('/api/admin/model-config', config);
   },
 
   /**
-   * 获取模型配置 (Get model configuration)
+   * 获取日志
    */
-  getModelConfig() {
-    return request.get('/admin/model-config')
+  getLogs: (params) => {
+    return api.get('/api/admin/logs', { params });
   },
 
   /**
-   * 更新模型配置 (Update model configuration)
+   * 获取监控指标
    */
-  updateModelConfig(data) {
-    return request.put('/admin/model-config', data)
+  getMetrics: () => {
+    return api.get('/api/admin/metrics');
   },
 
   /**
-   * 获取日志 (Get logs)
+   * 健康检查
    */
-  getLogs(params) {
-    return request.get('/admin/logs', params)
+  healthCheck: () => {
+    return api.get('/api/admin/health');
   },
-
-  /**
-   * 获取性能监控数据 (Get performance monitoring data)
-   */
-  getPerformanceMonitor() {
-    return request.get('/admin/performance-monitor')
-  },
-
-  /**
-   * 健康检查 (Health check)
-   */
-  healthCheck() {
-    return request.get('/admin/health')
-  },
-
-  /**
-   * 创建备份 (Create backup)
-   */
-  createBackup() {
-    return request.post('/admin/backup')
-  },
-
-  /**
-   * 获取备份列表 (Get backup list)
-   */
-  getBackupList() {
-    return request.get('/admin/backups')
-  },
-
-  /**
-   * 恢复备份 (Restore backup)
-   */
-  restoreBackup(backupId) {
-    return request.post(`/admin/backups/${backupId}/restore`)
-  },
-}
-
-export default adminApi
+};
 

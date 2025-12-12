@@ -20,7 +20,8 @@ import {
   ShareAltOutlined,
   StarOutlined,
   RocketOutlined,
-  UserOutlined
+  UserOutlined,
+  SettingOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '@contexts/LanguageContext'
 import PropTypes from 'prop-types'
@@ -93,6 +94,11 @@ function Header({
       key: 'profile',
       icon: <UserOutlined />,
       label: t('nav.profile'),
+    },
+    {
+      key: 'admin',
+      icon: <SettingOutlined />,
+      label: t('nav.admin'),
     },
   ]
 

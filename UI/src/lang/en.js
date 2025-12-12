@@ -604,6 +604,41 @@ export default {
     monitor: 'Monitor',
     healthCheck: 'Health Check',
     backup: 'Backup',
+
+    config: {
+      systemName: 'System Name',
+      maxFileSize: 'Max File Size',
+      enableCache: 'Enable Cache',
+      saveSuccess: 'Configuration saved successfully',
+      saveFailed: 'Failed to save configuration',
+    },
+
+    model: {
+      llmModel: 'LLM Model',
+      selectModel: 'Select Model',
+      gpt35: 'GPT-3.5',
+      gpt4: 'GPT-4',
+      local: 'Local Model',
+      vectorDB: 'Vector Database',
+      saveSuccess: 'Model configuration saved successfully',
+      saveFailed: 'Failed to save model configuration',
+    },
+
+    log: {
+      searchPlaceholder: 'Search logs...',
+      all: 'All',
+      error: 'Error',
+      warn: 'Warning',
+      info: 'Info',
+      download: 'Download Logs',
+    },
+
+    monitor: {
+      cpu: 'CPU Usage',
+      memory: 'Memory Usage',
+      requests: 'Requests',
+      errors: 'Errors',
+    },
   },
 
   // ============================================================================

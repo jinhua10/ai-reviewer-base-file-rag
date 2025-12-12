@@ -577,6 +577,23 @@ export const mockData = {
       progress: 60,
     },
   ],
+
+  // 系统日志
+  logs: [
+    { level: 'INFO', timestamp: '2025-12-12 16:30:00', message: '系统启动成功' },
+    { level: 'INFO', timestamp: '2025-12-12 16:31:15', message: '用户登录: zhangsan' },
+    { level: 'WARN', timestamp: '2025-12-12 16:32:30', message: 'API响应时间较长: 2500ms' },
+    { level: 'ERROR', timestamp: '2025-12-12 16:33:45', message: '数据库连接超时' },
+    { level: 'INFO', timestamp: '2025-12-12 16:35:00', message: '文档上传成功' },
+  ],
+
+  // 监控指标
+  metrics: {
+    cpu: 45,
+    memory: 68,
+    requests: 1250,
+    errors: 5,
+  },
 }
 
 /**
@@ -744,6 +761,30 @@ export async function mockRequest(url, method = 'GET', data = null) {
     // 更新设置
     if (method === 'PUT' && url.includes('/settings')) {
       return { data: { success: true } }
+    }
+  }
+
+  // 系统管理 API
+  if (url.includes('/admin')) {
+    // 更新系统配置
+    if (method === 'PUT' && url.includes('/system-config')) {
+      return { data: { success: true } }
+    }
+    // 更新模型配置
+    if (method === 'PUT' && url.includes('/model-config')) {
+      return { data: { success: true } }
+    }
+    // 获取日志
+    if (method === 'GET' && url.includes('/logs')) {
+      return { data: mockData.logs }
+    }
+    // 获取监控指标
+    if (method === 'GET' && url.includes('/metrics')) {
+      return { data: mockData.metrics }
+    }
+    // 健康检查
+    if (url.includes('/health')) {
+      return { data: { status: 'healthy' } }
     }
   }
 

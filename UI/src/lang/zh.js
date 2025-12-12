@@ -618,6 +618,45 @@ export default {
     monitor: '性能监控',
     healthCheck: '健康检查',
     backup: '备份管理',
+
+    // 系统配置
+    config: {
+      systemName: '系统名称',
+      maxFileSize: '最大文件大小',
+      enableCache: '启用缓存',
+      saveSuccess: '配置保存成功',
+      saveFailed: '配置保存失败',
+    },
+
+    // 模型配置
+    model: {
+      llmModel: 'LLM模型',
+      selectModel: '选择模型',
+      gpt35: 'GPT-3.5',
+      gpt4: 'GPT-4',
+      local: '本地模型',
+      vectorDB: '向量数据库',
+      saveSuccess: '模型配置保存成功',
+      saveFailed: '模型配置保存失败',
+    },
+
+    // 日志查看
+    log: {
+      searchPlaceholder: '搜索日志...',
+      all: '全部',
+      error: '错误',
+      warn: '警告',
+      info: '信息',
+      download: '下载日志',
+    },
+
+    // 监控
+    monitor: {
+      cpu: 'CPU使用率',
+      memory: '内存使用率',
+      requests: '请求数',
+      errors: '错误数',
+    },
   },
 
   // ============================================================================
