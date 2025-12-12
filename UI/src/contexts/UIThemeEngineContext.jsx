@@ -39,9 +39,15 @@ export const UI_THEMES = {
       animation: 'smooth', // smooth | minimal | none
       density: 'comfortable', // compact | comfortable | spacious
     },
+    // 页面UI壳子映射 / Page UI shell mapping
+    shellMapping: {
+      collaboration: () => import('../../themes/modern/CollaborationShell'),
+      // 其他页面可以继续添加 / Other pages can be added
+    },
+    status: 'active',
   },
 
-  // 气泡主题（未来实现）/ Bubble theme (future implementation)
+  // 气泡主题 / Bubble theme
   bubble: {
     id: 'bubble',
     name: {
@@ -61,8 +67,13 @@ export const UI_THEMES = {
       animation: 'bouncy',
       density: 'spacious',
     },
-    // 标记为开发中 / Mark as in development
-    status: 'developing',
+    // 页面UI壳子映射 / Page UI shell mapping
+    shellMapping: {
+      collaboration: () => import('../../themes/bubble/CollaborationShell'),
+      // 其他页面可以继续添加 / Other pages can be added
+    },
+    // 状态改为active / Status changed to active
+    status: 'active',
   },
 
   // 动漫卡通主题（未来实现）/ Anime cartoon theme (future implementation)
