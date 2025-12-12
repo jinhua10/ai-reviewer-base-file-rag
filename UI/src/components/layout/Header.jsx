@@ -1,0 +1,111 @@
+/**
+ * Header 导航栏组件 (Header Navigation Component)
+ *
+ * 提供应用顶部导航栏
+ * (Provides application top navigation bar)
+ *
+ * @author AI Reviewer Team
+ * @since 2025-12-12
+ */
+
+import React from 'react'
+import { Menu, Button } from 'antd'
+import {
+  HomeOutlined,
+  MessageOutlined,
+  FileOutlined,
+  TeamOutlined,
+  GlobalOutlined
+} from '@ant-design/icons'
+import { useLanguage } from '@contexts/LanguageContext'
+import PropTypes from 'prop-types'
+
+/**
+ * Header 组件
+ *
+ * @param {Object} props - 组件属性
+ * @param {string} props.activeKey - 当前激活的菜单项
+ * @param {Function} props.onMenuClick - 菜单点击回调
+ * @param {boolean} props.showLanguageToggle - 是否显示语言切换按钮
+ *
+ * @example
+ * <Header
+ *   activeKey="qa"
+ *   onMenuClick={(key) => console.log(key)}
+ *   showLanguageToggle={true}
+ * />
+ */
+function Header({
+  activeKey = 'home',
+  onMenuClick,
+  showLanguageToggle = true
+}) {
+  const { t, language, toggleLanguage } = useLanguage()
+
+  // 菜单项配置 (Menu items configuration)
+  const menuItems = [
+    {
+      key: 'home',
+      icon: <HomeOutlined />,
+      label: t('nav.home'),
+    },
+    {
+      key: 'qa',
+      icon: <MessageOutlined />,
+      label: t('nav.qa'),
+    },
+    {
+      key: 'documents',
+      icon: <FileOutlined />,
+      label: t('nav.documents'),
+    },
+    {
+      key: 'roles',
+      icon: <TeamOutlined />,
+      label: t('nav.roles'),
+    },
+  ]
+
+  return (
+    <header className="app-header">
+      <div className="app-header__container">
+        {/* Logo 和标题 (Logo and title) */}
+        <div className="app-header__logo">
+          <span className="app-header__logo-icon">🤖</span>
+          <span className="app-header__logo-text">AI Reviewer</span>
+        </div>
+
+        {/* 导航菜单 (Navigation menu) */}
+        <Menu
+          mode="horizontal"
+          selectedKeys={[activeKey]}
+          items={menuItems}
+          onClick={({ key }) => onMenuClick?.(key)}
+          className="app-header__menu"
+        />
+
+        {/* 右侧操作区 (Right actions) */}
+        <div className="app-header__actions">
+          {showLanguageToggle && (
+            <Button
+              icon={<GlobalOutlined />}
+              onClick={toggleLanguage}
+              className="app-header__language-btn"
+            >
+              {language === 'zh' ? 'EN' : '中文'}
+            </Button>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}
+
+Header.propTypes = {
+  activeKey: PropTypes.string,
+  onMenuClick: PropTypes.func,
+  showLanguageToggle: PropTypes.bool,
+}
+
+export default Header
+

@@ -1,0 +1,252 @@
+/**
+ * English Language Pack
+ *
+ * @author AI Reviewer Team
+ * @since 2025-12-12
+ */
+
+export default {
+  // ============================================================================
+  // Common
+  // ============================================================================
+  common: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    add: 'Add',
+    search: 'Search',
+    filter: 'Filter',
+    reset: 'Reset',
+    submit: 'Submit',
+    close: 'Close',
+    back: 'Back',
+    next: 'Next',
+    prev: 'Previous',
+    finish: 'Finish',
+    loading: 'Loading...',
+    success: 'Success',
+    error: 'Error',
+    warning: 'Warning',
+    info: 'Info',
+    upload: 'Upload',
+    download: 'Download',
+    refresh: 'Refresh',
+    more: 'More',
+    collapse: 'Collapse',
+    expand: 'Expand',
+  },
+
+  // ============================================================================
+  // Navigation
+  // ============================================================================
+  nav: {
+    home: 'Home',
+    qa: 'Q&A',
+    documents: 'Documents',
+    roles: 'Roles',
+    feedback: 'Feedback',
+    collaboration: 'Collaboration',
+    wish: 'Wish List',
+    aiService: 'AI Services',
+    profile: 'Profile',
+    settings: 'Settings',
+    admin: 'Admin',
+  },
+
+  // ============================================================================
+  // Document Management
+  // ============================================================================
+  document: {
+    title: 'Document Management',
+    upload: 'Upload Document',
+    uploadTip: 'Click or drag files to this area to upload',
+    uploadSuccess: 'Upload successful',
+    uploadFailed: 'Upload failed',
+    uploadLimit: 'File size cannot exceed {size}MB',
+    list: 'Document List',
+    total: 'Total {count} documents',
+    name: 'Document Name',
+    size: 'Size',
+    uploadTime: 'Upload Time',
+    action: 'Action',
+    view: 'View',
+    delete: 'Delete',
+    deleteConfirm: 'Are you sure you want to delete this document?',
+    deleteSuccess: 'Delete successful',
+    deleteFailed: 'Delete failed',
+    preview: 'Preview',
+    detail: 'Detail',
+    category: 'Category',
+    tags: 'Tags',
+  },
+
+  // ============================================================================
+  // Q&A
+  // ============================================================================
+  qa: {
+    title: 'Intelligent Q&A',
+    placeholder: 'Enter your question...',
+    ask: 'Ask',
+    thinking: 'Thinking...',
+    answer: 'Answer',
+    sources: 'Sources',
+    relatedQuestions: 'Related Questions',
+    feedback: 'Was this answer helpful?',
+    helpful: 'Helpful',
+    notHelpful: 'Not Helpful',
+    feedbackSuccess: 'Thank you for your feedback',
+    history: 'Chat History',
+    newChat: 'New Chat',
+    clearHistory: 'Clear History',
+    copyAnswer: 'Copy Answer',
+    copySuccess: 'Copied successfully',
+  },
+
+  // ============================================================================
+  // Role Management
+  // ============================================================================
+  role: {
+    title: 'Role Management',
+    list: 'Role List',
+    create: 'Create Role',
+    edit: 'Edit Role',
+    name: 'Role Name',
+    description: 'Description',
+    keywords: 'Keywords',
+    addKeyword: 'Add Keyword',
+    status: 'Status',
+    enabled: 'Enabled',
+    disabled: 'Disabled',
+    statistics: 'Statistics',
+    usageCount: 'Usage Count',
+    successRate: 'Success Rate',
+  },
+
+  // ============================================================================
+  // Feedback & Evolution
+  // ============================================================================
+  feedback: {
+    title: 'Feedback & Evolution',
+    conflictList: 'Conflict List',
+    voting: 'Voting',
+    evolution: 'Evolution History',
+    quality: 'Quality Monitor',
+    conceptA: 'Concept A',
+    conceptB: 'Concept B',
+    vote: 'Vote',
+    voteA: 'Choose A',
+    voteB: 'Choose B',
+    voteSuccess: 'Vote successful',
+    timeline: 'Timeline',
+  },
+
+  // ============================================================================
+  // Collaboration
+  // ============================================================================
+  collaboration: {
+    title: 'Collaboration Network',
+    peers: 'Peers',
+    addPeer: 'Add Peer',
+    connectionCode: 'Connection Code',
+    generateCode: 'Generate Code',
+    enterCode: 'Enter Code',
+    connect: 'Connect',
+    exchange: 'Knowledge Exchange',
+    contribution: 'Contribution',
+    networkGraph: 'Network Graph',
+  },
+
+  // ============================================================================
+  // Wish List
+  // ============================================================================
+  wish: {
+    title: 'Wish List',
+    submit: 'Submit Wish',
+    vote: 'Vote',
+    ranking: 'Ranking',
+    myWishes: 'My Wishes',
+    allWishes: 'All Wishes',
+    wishTitle: 'Wish Title',
+    wishDescription: 'Description',
+    voteCount: 'Votes',
+    status: 'Status',
+    pending: 'Pending',
+    inProgress: 'In Progress',
+    completed: 'Completed',
+  },
+
+  // ============================================================================
+  // AI Service
+  // ============================================================================
+  aiService: {
+    title: 'AI Service Market',
+    market: 'Market',
+    installed: 'Installed',
+    available: 'Available',
+    install: 'Install',
+    uninstall: 'Uninstall',
+    configure: 'Configure',
+    usage: 'Usage',
+    pptGenerator: 'PPT Generator',
+    modelSwitcher: 'Model Switcher',
+    localModel: 'Local Model',
+    onlineModel: 'Online Model',
+  },
+
+  // ============================================================================
+  // User Profile
+  // ============================================================================
+  profile: {
+    title: 'Profile',
+    info: 'Personal Info',
+    editInfo: 'Edit Info',
+    statistics: 'Statistics',
+    contribution: 'Contribution',
+    achievement: 'Achievement',
+    settings: 'Settings',
+    avatar: 'Avatar',
+    nickname: 'Nickname',
+    email: 'Email',
+    bio: 'Bio',
+  },
+
+  // ============================================================================
+  // Admin
+  // ============================================================================
+  admin: {
+    title: 'System Admin',
+    systemConfig: 'System Config',
+    modelConfig: 'Model Config',
+    logViewer: 'Log Viewer',
+    monitor: 'Monitor',
+    healthCheck: 'Health Check',
+    backup: 'Backup',
+  },
+
+  // ============================================================================
+  // Error Messages
+  // ============================================================================
+  error: {
+    networkError: 'Network error, please check connection',
+    serverError: 'Server error, please try again later',
+    notFound: 'Resource not found',
+    unauthorized: 'Unauthorized, please login first',
+    forbidden: 'Access forbidden',
+    validationError: 'Validation failed',
+    unknownError: 'Unknown error',
+  },
+
+  // ============================================================================
+  // Success Messages
+  // ============================================================================
+  success: {
+    saved: 'Saved successfully',
+    deleted: 'Deleted successfully',
+    updated: 'Updated successfully',
+    created: 'Created successfully',
+    uploaded: 'Uploaded successfully',
+  },
+}
+

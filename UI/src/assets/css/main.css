@@ -79,6 +79,15 @@ body {
 .app-container {
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
+}
+
+/* 语言切换按钮 (Language Toggle) */
+.language-toggle {
+  position: fixed;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: 1000;
 }
 
 /* 头部 (Header) */
@@ -117,7 +126,17 @@ body {
 .welcome-message h2 {
   color: var(--primary-color);
   font-size: 2rem;
+  margin-bottom: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.welcome-message h3 {
+  color: var(--text-primary);
+  font-size: 1.3rem;
   margin-bottom: var(--spacing-md);
+  text-align: left;
 }
 
 .welcome-message p {
@@ -128,7 +147,7 @@ body {
 
 .welcome-message ul {
   text-align: left;
-  max-width: 500px;
+  max-width: 600px;
   margin: 0 auto;
   padding: var(--spacing-lg);
   background: var(--bg-tertiary);
@@ -140,6 +159,28 @@ body {
   padding: var(--spacing-sm) 0;
   color: var(--text-primary);
   font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* 特性列表 (Feature List) */
+.feature-list,
+.next-steps {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.feature-list ul,
+.next-steps ul {
+  list-style: none;
+}
+
+/* 测试按钮区域 (Test Buttons) */
+.test-buttons {
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-light);
 }
 
 /* ============================================================================
