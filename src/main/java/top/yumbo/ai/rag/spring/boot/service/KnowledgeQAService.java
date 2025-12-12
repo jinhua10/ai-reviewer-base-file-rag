@@ -1314,6 +1314,91 @@ public class KnowledgeQAService {
     }
 
     /**
+     * 为流式输出搜索文档（使用完整的 RAG 检索逻辑）
+     * (Search documents for streaming with full RAG retrieval logic)
+     * 
+     * @param question 问题
+     * @return 检索到的文档列表
+     */
+    public List<Document> searchDocumentsForStreaming(String question) {
+        if (rag == null) {
+            throw new IllegalStateException(I18N.get("log.kqa.kb_not_initialized"));
+        }
+
+        try {
+            // 复用完整的检索逻辑（混合检索、策略调度、PPL Rerank）
+            // (Reuse full retrieval logic: hybrid search, strategy dispatcher, PPL rerank)
+            List<Document> documents;
+
+            if (searchStrategyDispatcher != null && !searchStrategyDispatcher.getAllStrategies().isEmpty()) {
+                documents = searchWithStrategyDispatcher(question);
+            } else if (embeddingEngine != null && vectorIndexEngine != null) {
+                documents = hybridSearchService.hybridSearch(question, rag, embeddingEngine, vectorIndexEngine);
+            } else {
+                documents = hybridSearchService.keywordSearch(question, rag);
+            }
+
+            // PPL Rerank（如果启用）
+            if (pplServiceFacade != null && pplConfig != null && pplConfig.getReranking() != null &&
+                pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
+                try {
+                    documents = pplServiceFacade.rerank(question, documents);
+                } catch (Exception e) {
+                    log.warn("PPL Rerank failed in streaming: {}", e.getMessage());
+                }
+            }
+
+            // 限制文档数量
+            int docsPerQuery = configService.getDocumentsPerQuery();
+            if (documents.size() > docsPerQuery) {
+                documents = documents.subList(0, docsPerQuery);
+            }
+
+            return documents;
+
+        } catch (Exception e) {
+            log.error("Failed to search documents for streaming: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 构建带上下文的 Prompt（供流式输出使用）
+     * (Build prompt with context for streaming)
+     * 
+     * @param question 问题
+     * @param context 上下文
+     * @param documents 文档列表
+     * @return 完整的 Prompt
+     */
+    public String buildPromptWithContext(String question, String context, List<Document> documents) {
+        try {
+            List<String> usedDocTitles = documents.stream()
+                .map(Document::getTitle)
+                .distinct()
+                .collect(Collectors.toList());
+
+            // 简化版 Prompt（不包含图片，流式场景通常不需要）
+            // (Simplified prompt without images, streaming usually doesn't need them)
+            return buildEnhancedPrompt(
+                question,
+                context,
+                "",  // 无图片上下文
+                false,  // 无图片
+                usedDocTitles,
+                false,  // 无更多文档
+                0  // 剩余文档数为 0
+            );
+
+        } catch (Exception e) {
+            log.error("Failed to build prompt with context: {}", e.getMessage(), e);
+            // 降级：返回基础 Prompt
+            String template = properties.getLlm().getPromptTemplate();
+            return template.replace("{question}", question).replace("{context}", context);
+        }
+    }
+
+    /**
      * 销毁资源
      */
     @PreDestroy

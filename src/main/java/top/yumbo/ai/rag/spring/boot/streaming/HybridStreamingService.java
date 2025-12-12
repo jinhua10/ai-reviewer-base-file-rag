@@ -37,6 +37,7 @@ public class HybridStreamingService {
     private final LLMClient llmClient;
     private final StreamingSessionMonitor sessionMonitor;
     private final SmartContextBuilder contextBuilder;
+    private final top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService knowledgeQAService;
 
     // 活跃会话管理
     // (Active session management)
@@ -50,16 +51,19 @@ public class HybridStreamingService {
      * @param llmClient LLM 客户端
      * @param sessionMonitor 会话监控器
      * @param contextBuilder 上下文构建器
+     * @param knowledgeQAService 知识库问答服务（用于 RAG 检索）
      */
     public HybridStreamingService(
             HOPEFastQueryService hopeFastQueryService,
             LLMClient llmClient,
             StreamingSessionMonitor sessionMonitor,
-            SmartContextBuilder contextBuilder) {
+            SmartContextBuilder contextBuilder,
+            top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService knowledgeQAService) {
         this.hopeFastQueryService = hopeFastQueryService;
         this.llmClient = llmClient;
         this.sessionMonitor = sessionMonitor;
         this.contextBuilder = contextBuilder;
+        this.knowledgeQAService = knowledgeQAService;
 
         log.info("HybridStreamingService initialized (混合流式服务已初始化)");
     }
@@ -159,15 +163,32 @@ public class HybridStreamingService {
     }
 
     /**
-     * 构建提示词
-     * (Build prompt)
+     * 构建带 RAG 上下文的提示词
+     * (Build prompt with RAG context)
      */
     private String buildPrompt(String question) {
-        // 简化版：直接使用问题
-        // (Simplified: directly use question)
-        // 实际使用中应该包含从 RAG 检索到的上下文
-        // (Should include context retrieved from RAG in actual use)
-        return String.format("请回答以下问题：\n\n%s", question);
+        try {
+            // 复用 KnowledgeQAService 的检索逻辑
+            // (Reuse KnowledgeQAService's retrieval logic)
+            List<Document> documents = knowledgeQAService.searchDocumentsForStreaming(question);
+            
+            if (documents == null || documents.isEmpty()) {
+                log.warn("未检索到相关文档，使用直接提问 (No documents found, using direct question)");
+                return question;
+            }
+            
+            // 使用 SmartContextBuilder 构建上下文
+            // (Use SmartContextBuilder to build context)
+            String context = contextBuilder.buildSmartContext(question, documents);
+            
+            // 构建带上下文的 Prompt
+            // (Build prompt with context)
+            return knowledgeQAService.buildPromptWithContext(question, context, documents);
+            
+        } catch (Exception e) {
+            log.error("构建 RAG Prompt 失败，降级到直接提问 (Failed to build RAG prompt, fallback to direct): {}", e.getMessage());
+            return question;
+        }
     }
 
     /**
