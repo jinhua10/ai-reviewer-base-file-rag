@@ -1,0 +1,173 @@
+/**
+ * 全局样式 (Global Styles)
+ *
+ * @author AI Reviewer Team
+ * @since 2025-12-12
+ */
+
+/* ============================================================================
+   CSS 变量定义 (CSS Variables)
+   ============================================================================ */
+:root {
+  /* 主题色 (Theme Colors) */
+  --primary-color: #667eea;
+  --primary-hover: #5568d3;
+  --secondary-color: #764ba2;
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+  /* 状态色 (Status Colors) */
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --error-color: #f5222d;
+  --info-color: #1890ff;
+
+  /* 文本色 (Text Colors) */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --text-white: #ffffff;
+
+  /* 背景色 (Background Colors) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --bg-tertiary: #fafafa;
+
+  /* 边框色 (Border Colors) */
+  --border-color: #d9d9d9;
+  --border-light: #e8e8e8;
+
+  /* 阴影 (Shadows) */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.2);
+
+  /* 圆角 (Border Radius) */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* 间距 (Spacing) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* 过渡 (Transitions) */
+  --transition-fast: 0.2s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
+}
+
+/* ============================================================================
+   全局样式 (Global Styles)
+   ============================================================================ */
+body {
+  background: var(--primary-gradient);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+#root {
+  padding: var(--spacing-lg);
+}
+
+/* ============================================================================
+   应用容器 (App Container)
+   ============================================================================ */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 头部 (Header) */
+.header {
+  text-align: center;
+  color: var(--text-white);
+  margin-bottom: var(--spacing-xl);
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin-bottom: var(--spacing-sm);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header p {
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* 主内容区 (Main Content) */
+.main-content {
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
+  min-height: 400px;
+}
+
+/* 欢迎消息 (Welcome Message) */
+.welcome-message {
+  text-align: center;
+  padding: var(--spacing-xl);
+}
+
+.welcome-message h2 {
+  color: var(--primary-color);
+  font-size: 2rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.welcome-message p {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-lg);
+}
+
+.welcome-message ul {
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-md);
+  border-left: 4px solid var(--primary-color);
+}
+
+.welcome-message li {
+  padding: var(--spacing-sm) 0;
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+/* ============================================================================
+   响应式设计 (Responsive Design)
+   ============================================================================ */
+@media (max-width: 768px) {
+  #root {
+    padding: var(--spacing-md);
+  }
+
+  .header h1 {
+    font-size: 2rem;
+  }
+
+  .header p {
+    font-size: 1rem;
+  }
+
+  .main-content {
+    padding: var(--spacing-lg);
+  }
+
+  .welcome-message h2 {
+    font-size: 1.5rem;
+  }
+
+  .welcome-message p {
+    font-size: 1rem;
+  }
+}
+
