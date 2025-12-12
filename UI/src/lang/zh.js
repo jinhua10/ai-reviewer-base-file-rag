@@ -45,6 +45,7 @@ export default {
   // 主题定制器 (Theme Customizer)
   // ============================================================================
   theme: {
+    colorTheme: '颜色主题',
     customizer: {
       title: '主题定制器',
       primary: '主色调',
@@ -60,6 +61,53 @@ export default {
       previewText: '这是主要文本',
       previewSecondary: '这是次要文本',
       previewButton: '主要按钮',
+    },
+  },
+
+  // ============================================================================
+  // UI主题引擎 (UI Theme Engine)
+  // ============================================================================
+  uiTheme: {
+    switcher: {
+      title: 'UI主题切换器',
+      current: '当前',
+      apply: '应用',
+      builtin: '内置',
+      custom: '自定义',
+      developing: '开发中',
+      comingSoon: '敬请期待',
+      version: '版本',
+      author: '作者',
+      builtinThemes: '内置主题',
+      customThemes: '自定义主题',
+      management: '主题管理',
+      importExport: '导入/导出主题',
+      importTheme: '导入主题',
+      exportTheme: '导出主题',
+      export: '导出',
+      uninstall: '卸载',
+      confirmUninstall: '确认卸载',
+      uninstallWarning: '确定要卸载这个主题吗？',
+      switchSuccess: '主题切换成功',
+      themeInDev: '该主题正在开发中，敬请期待',
+      importSuccess: '主题导入成功',
+      importFailed: '主题导入失败',
+      exportSuccess: '主题导出成功',
+      uninstallSuccess: '主题卸载成功',
+      noCustomThemes: '暂无自定义主题',
+      importTip: '点击下方按钮导入主题',
+      howToUse: '如何使用',
+      step1: '从主题市场或AI生成获取主题文件',
+      step2: '勾选"上传到服务器"（推荐）',
+      step3: '点击"导入主题"按钮选择JSON文件',
+      step4: '导入成功后在"自定义主题"标签页应用',
+      step5: '上传到服务器的主题会永久保存',
+      aiGeneration: 'AI主题生成',
+      aiGenerationDesc: '未来功能：使用AI生成独特的UI主题',
+      uploadToServer: '上传到服务器（推荐）',
+      serverPersistTip: '主题将被持久化到服务器静态资源目录',
+      uploadSuccess: '主题已上传到服务器',
+      uploading: '上传中...',
     },
   },
 

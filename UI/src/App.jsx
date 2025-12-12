@@ -12,7 +12,8 @@ import React, { useState } from 'react'
 import { ConfigProvider, theme as antdTheme } from 'antd'
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
-import { ModernLayout } from './components/layout'
+import { UIThemeEngineProvider } from './contexts/UIThemeEngineContext'
+import { ThemeRenderingEngine } from './components/theme'
 import { ErrorBoundary } from './components/common'
 import { QAPanel } from './components/qa'
 import { DocumentList } from './components/document'
@@ -85,27 +86,30 @@ function AppContent() {
   return (
     <ConfigProvider theme={antdThemeConfig}>
       <ErrorBoundary>
-        <ModernLayout
+        <ThemeRenderingEngine
           activeKey={activeMenu}
           onMenuChange={handleMenuClick}
         >
           {renderContent()}
-        </ModernLayout>
+        </ThemeRenderingEngine>
       </ErrorBoundary>
     </ConfigProvider>
   )
 }
 
 /**
- * 主应用组件 (Main App Component)
- * 包装 LanguageProvider 和 ThemeProvider (Wraps LanguageProvider and ThemeProvider)
+ * 主应用组件 / Main App Component
+ * 包装所有Context Provider / Wraps all Context Providers
+ * 顺序：Theme → UIThemeEngine → Language → App Content
  */
 function App() {
   return (
     <ThemeProvider>
-      <LanguageProvider>
-        <AppContent />
-      </LanguageProvider>
+      <UIThemeEngineProvider>
+        <LanguageProvider>
+          <AppContent />
+        </LanguageProvider>
+      </UIThemeEngineProvider>
     </ThemeProvider>
   )
 }

@@ -25,10 +25,13 @@ import {
   BulbOutlined,
   GlobalOutlined,
   BgColorsOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useUIThemeEngine } from '../../contexts/UIThemeEngineContext';
 import ThemeCustomizer from './ThemeCustomizer';
+import { UIThemeSwitcher } from '../theme';
 import './modern-layout.css';
 
 const { Header, Sider, Content } = Layout;
@@ -39,9 +42,11 @@ const { Header, Sider, Content } = Layout;
 function ModernLayout({ children, activeKey, onMenuChange }) {
   const { t, language, toggleLanguage } = useLanguage();
   const { themeName, setTheme, presetThemes } = useTheme();
+  const { currentUITheme } = useUIThemeEngine();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customizerOpen, setCustomizerOpen] = useState(false);
+  const [uiThemeSwitcherOpen, setUiThemeSwitcherOpen] = useState(false);
 
   // 菜单项配置 / Menu items configuration
   const menuItems = [
@@ -170,12 +175,24 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
           </div>
 
           <div className="modern-layout__header-right">
-            {/* 主题选择器 / Theme selector */}
+            {/* UI主题切换器 / UI theme switcher */}
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              onClick={() => setUiThemeSwitcherOpen(true)}
+              title={t('uiTheme.switcher.title') || 'UI主题切换器'}
+            />
+
+            {/* 颜色主题选择器 / Color theme selector */}
             <Dropdown
               menu={{ items: themeMenuItems }}
               placement="bottomRight"
             >
-              <Button type="text" icon={<BgColorsOutlined />} />
+              <Button
+                type="text"
+                icon={<BgColorsOutlined />}
+                title={t('theme.colorTheme') || '颜色主题'}
+              />
             </Dropdown>
 
             {/* 主题定制器 / Theme customizer */}
@@ -183,6 +200,7 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
               type="text"
               icon={<BulbOutlined />}
               onClick={() => setCustomizerOpen(true)}
+              title={t('theme.customizer.title') || '主题定制器'}
             />
 
             {/* 语言切换 / Language toggle */}
@@ -212,6 +230,12 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
       <ThemeCustomizer
         open={customizerOpen}
         onClose={() => setCustomizerOpen(false)}
+      />
+
+      {/* UI主题切换器 / UI theme switcher */}
+      <UIThemeSwitcher
+        open={uiThemeSwitcherOpen}
+        onClose={() => setUiThemeSwitcherOpen(false)}
       />
     </Layout>
   );

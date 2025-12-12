@@ -788,6 +788,47 @@ export async function mockRequest(url, method = 'GET', data = null) {
     }
   }
 
+  // 主题管理 API / Theme Management API
+  if (url.includes('/themes')) {
+    // 上传主题 / Upload theme
+    if (method === 'POST' && url.includes('/upload')) {
+      return {
+        data: {
+          success: true,
+          themeId: 'custom-' + Date.now(),
+          path: '/static/themes/' + Date.now(),
+          message: '主题上传成功 / Theme uploaded successfully'
+        }
+      }
+    }
+    // 获取主题列表 / Get theme list
+    if (method === 'GET' && url.includes('/list')) {
+      return {
+        data: [] // 返回空数组，实际使用时从服务器加载 / Return empty array, load from server in production
+      }
+    }
+    // 获取主题详情 / Get theme details
+    if (method === 'GET' && url.match(/\/themes\/[^\/]+$/)) {
+      const themeId = url.split('/').pop()
+      return {
+        data: {
+          id: themeId,
+          name: { zh: '主题名称', en: 'Theme Name' },
+          type: 'custom',
+          source: 'server'
+        }
+      }
+    }
+    // 删除主题 / Delete theme
+    if (method === 'DELETE') {
+      return { data: { success: true } }
+    }
+    // 同步主题 / Sync theme
+    if (method === 'PUT' && url.includes('/sync')) {
+      return { data: { success: true } }
+    }
+  }
+
   return null
 }
 

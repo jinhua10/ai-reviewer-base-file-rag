@@ -45,6 +45,7 @@ export default {
   // Theme Customizer
   // ============================================================================
   theme: {
+    colorTheme: 'Color Theme',
     customizer: {
       title: 'Theme Customizer',
       primary: 'Primary Color',
@@ -60,6 +61,53 @@ export default {
       previewText: 'This is primary text',
       previewSecondary: 'This is secondary text',
       previewButton: 'Primary Button',
+    },
+  },
+
+  // ============================================================================
+  // UI Theme Engine
+  // ============================================================================
+  uiTheme: {
+    switcher: {
+      title: 'UI Theme Switcher',
+      current: 'Current',
+      apply: 'Apply',
+      builtin: 'Built-in',
+      custom: 'Custom',
+      developing: 'In Development',
+      comingSoon: 'Coming Soon',
+      version: 'Version',
+      author: 'Author',
+      builtinThemes: 'Built-in Themes',
+      customThemes: 'Custom Themes',
+      management: 'Theme Management',
+      importExport: 'Import/Export Themes',
+      importTheme: 'Import Theme',
+      exportTheme: 'Export Theme',
+      export: 'Export',
+      uninstall: 'Uninstall',
+      confirmUninstall: 'Confirm Uninstall',
+      uninstallWarning: 'Are you sure you want to uninstall this theme?',
+      switchSuccess: 'Theme switched successfully',
+      themeInDev: 'This theme is in development, coming soon',
+      importSuccess: 'Theme imported successfully',
+      importFailed: 'Failed to import theme',
+      exportSuccess: 'Theme exported successfully',
+      uninstallSuccess: 'Theme uninstalled successfully',
+      noCustomThemes: 'No custom themes',
+      importTip: 'Click the button below to import a theme',
+      howToUse: 'How to Use',
+      step1: 'Get theme file from theme marketplace or AI generation',
+      step2: 'Check "Upload to Server" (Recommended)',
+      step3: 'Click "Import Theme" button to select JSON file',
+      step4: 'Apply in "Custom Themes" tab after successful import',
+      step5: 'Themes uploaded to server will be permanently saved',
+      aiGeneration: 'AI Theme Generation',
+      aiGenerationDesc: 'Future feature: Generate unique UI themes using AI',
+      uploadToServer: 'Upload to Server (Recommended)',
+      serverPersistTip: 'Theme will be persisted to server static resources directory',
+      uploadSuccess: 'Theme uploaded to server successfully',
+      uploading: 'Uploading...',
     },
   },
 
