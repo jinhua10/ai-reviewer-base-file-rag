@@ -9,7 +9,7 @@
  */
 
 import React, { useState } from 'react';
-import { Layout, Menu, Button, Drawer, Dropdown } from 'antd';
+import { Layout, Menu, Button, Drawer, Dropdown, Modal, Checkbox } from 'antd';
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -48,6 +48,48 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customizerOpen, setCustomizerOpen] = useState(false);
   const [uiThemeSwitcherOpen, setUiThemeSwitcherOpen] = useState(false);
+  const [clearCacheModalOpen, setClearCacheModalOpen] = useState(false);
+  const [clearOptions, setClearOptions] = useState({
+    floatingPanel: true,
+    theme: true,
+    uiTheme: true,
+    other: true,
+  });
+
+  // 处理清除缓存 / Handle clear cache
+  const handleClearCache = () => {
+    const keysToRemove = [];
+    
+    if (clearOptions.floatingPanel) {
+      keysToRemove.push('floating_ai_panel_config');
+    }
+    if (clearOptions.theme) {
+      keysToRemove.push('selectedTheme');
+      keysToRemove.push('customTheme');
+    }
+    if (clearOptions.uiTheme) {
+      keysToRemove.push('selectedUITheme');
+      keysToRemove.push('uiThemeConfig');
+    }
+    
+    if (clearOptions.other) {
+      // 清除所有缓存
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('🧹 All cache cleared');
+    } else if (keysToRemove.length > 0) {
+      // 只清除选中的项
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log('🧹 Selected cache cleared:', keysToRemove);
+    }
+    
+    setClearCacheModalOpen(false);
+    
+    // 延迟一下刷新，让用户看到模态框关闭
+    setTimeout(() => {
+      window.location.reload();
+    }, 300);
+  };
 
   // 菜单项配置 / Menu items configuration
   const menuItems = [
@@ -180,14 +222,7 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
             <Button
               type="text"
               icon={<ClearOutlined />}
-              onClick={() => {
-                if (window.confirm('确定要清除所有本地缓存吗？\n\n这将清除：\n- 浯动窗口配置\n- 主题设置\n- 其他缓存数据\n\n页面将自动刷新。')) {
-                  localStorage.clear()
-                  sessionStorage.clear()
-                  console.log('🧹 All cache cleared')
-                  window.location.reload()
-                }
-              }}
+              onClick={() => setClearCacheModalOpen(true)}
               title="清除缓存"
             />
             
@@ -253,6 +288,54 @@ function ModernLayout({ children, activeKey, onMenuChange }) {
         open={uiThemeSwitcherOpen}
         onClose={() => setUiThemeSwitcherOpen(false)}
       />
+
+      {/* 清除缓存模态框 / Clear cache modal */}
+      <Modal
+        title="清除缓存"
+        open={clearCacheModalOpen}
+        onOk={handleClearCache}
+        onCancel={() => setClearCacheModalOpen(false)}
+        okText="确定清除"
+        cancelText="取消"
+        okButtonProps={{ danger: true }}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <p style={{ marginBottom: 12, color: 'var(--theme-text-secondary)' }}>
+            请选择要清除的缓存项：
+          </p>
+          <Checkbox
+            checked={clearOptions.floatingPanel}
+            onChange={(e) => setClearOptions({ ...clearOptions, floatingPanel: e.target.checked })}
+            style={{ display: 'block', marginBottom: 8 }}
+          >
+            浮动窗口配置
+          </Checkbox>
+          <Checkbox
+            checked={clearOptions.theme}
+            onChange={(e) => setClearOptions({ ...clearOptions, theme: e.target.checked })}
+            style={{ display: 'block', marginBottom: 8 }}
+          >
+            主题设置
+          </Checkbox>
+          <Checkbox
+            checked={clearOptions.uiTheme}
+            onChange={(e) => setClearOptions({ ...clearOptions, uiTheme: e.target.checked })}
+            style={{ display: 'block', marginBottom: 8 }}
+          >
+            UI主题配置
+          </Checkbox>
+          <Checkbox
+            checked={clearOptions.other}
+            onChange={(e) => setClearOptions({ ...clearOptions, other: e.target.checked })}
+            style={{ display: 'block', marginBottom: 8 }}
+          >
+            其他缓存数据
+          </Checkbox>
+        </div>
+        <p style={{ color: 'var(--theme-text-secondary)', fontSize: 12, margin: 0 }}>
+          ⚠️ 清除后页面将自动刷新
+        </p>
+      </Modal>
     </Layout>
   );
 }
