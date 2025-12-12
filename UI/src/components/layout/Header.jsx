@@ -18,7 +18,8 @@ import {
   GlobalOutlined,
   LikeOutlined,
   ShareAltOutlined,
-  StarOutlined
+  StarOutlined,
+  RocketOutlined
 } from '@ant-design/icons'
 import { useLanguage } from '@contexts/LanguageContext'
 import PropTypes from 'prop-types'
@@ -81,6 +82,11 @@ function Header({
       key: 'wish',
       icon: <StarOutlined />,
       label: t('nav.wish'),
+    },
+    {
+      key: 'aiService',
+      icon: <RocketOutlined />,
+      label: t('nav.aiService'),
     },
   ]
 

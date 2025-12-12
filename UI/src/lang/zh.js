@@ -452,16 +452,102 @@ export default {
   aiService: {
     title: 'AI 服务市场',
     market: '服务市场',
+    all: '全部服务',
     installed: '已安装',
     available: '可用服务',
+    services: '个服务',
     install: '安装',
     uninstall: '卸载',
     configure: '配置',
     usage: '使用',
+    usages: '次使用',
+    author: '作者',
+    official: '官方',
+    new: '新',
+    popular: '热门',
+
+    // 搜索和筛选
+    searchPlaceholder: '搜索服务名称或描述...',
+
+    // 分类
+    category: {
+      all: '全部分类',
+      generation: '内容生成',
+      analysis: '数据分析',
+      conversion: '格式转换',
+      optimization: '性能优化',
+    },
+
+    // PPT生成器
     pptGenerator: 'PPT 生成器',
+    ppt: {
+      step1: '输入主题',
+      step2: '生成大纲',
+      step3: '导出PPT',
+      topic: '演示主题',
+      topicPlaceholder: '请输入您要制作的PPT主题',
+      outline: '大纲内容',
+      outlinePlaceholder: '输入大纲内容（可选）',
+      style: '演示风格',
+      styleBusiness: '商务风格',
+      styleAcademic: '学术风格',
+      styleCreative: '创意风格',
+      generate: '生成PPT',
+      generateSuccess: 'PPT生成成功',
+      generateFailed: 'PPT生成失败',
+    },
+
+    // 模型切换
     modelSwitcher: '模型切换',
     localModel: '本地模型',
     onlineModel: '在线模型',
+    model: {
+      title: '选择AI模型',
+      localDesc: '使用本地部署的AI模型，响应快速，数据安全',
+      onlineDesc: '使用云端AI模型，功能强大，持续更新',
+      fast: '快速',
+      offline: '离线可用',
+      powerful: '功能强大',
+      latest: '最新版本',
+      apply: '应用设置',
+      switchSuccess: '模型切换成功',
+      switchFailed: '模型切换失败',
+    },
+
+    // 配置
+    config: {
+      enabled: '启用服务',
+      model: '选择模型',
+      selectModel: '请选择模型',
+      apiKey: 'API密钥',
+      apiKeyPlaceholder: '请输入API密钥（如需要）',
+      saveSuccess: '配置保存成功',
+      saveFailed: '配置保存失败',
+    },
+
+    // 详情
+    detail: {
+      overview: '概览',
+      configuration: '配置',
+      changelog: '更新日志',
+      description: '服务描述',
+      info: '基本信息',
+      version: '版本',
+      author: '作者',
+      usageCount: '使用次数',
+      size: '大小',
+      features: '功能特性',
+      noChangelog: '暂无更新日志',
+    },
+
+    // 状态消息
+    installSuccess: '安装成功',
+    installFailed: '安装失败',
+    uninstallSuccess: '卸载成功',
+    uninstallFailed: '卸载失败',
+    loading: '加载中...',
+    loadFailed: '加载失败',
+    empty: '暂无服务',
   },
 
   // ============================================================================

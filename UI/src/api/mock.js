@@ -441,6 +441,73 @@ export const mockData = {
       votes: 28,
     },
   ],
+
+  // AI服务
+  services: [
+    {
+      id: '1',
+      name: 'PPT生成器',
+      description: '根据主题和大纲自动生成精美的PPT演示文稿',
+      category: 'generation',
+      icon: '📊',
+      rating: 4.8,
+      usageCount: 1250,
+      author: '官方',
+      installed: true,
+      isPopular: true,
+      version: '1.2.0',
+      size: '15MB',
+      features: [
+        '支持多种演示风格',
+        '自动生成大纲',
+        '智能排版',
+        '一键导出'
+      ],
+      config: {
+        enabled: true,
+        model: 'local',
+      },
+    },
+    {
+      id: '2',
+      name: '代码分析助手',
+      description: '智能分析代码质量，提供优化建议',
+      category: 'analysis',
+      icon: '🔍',
+      rating: 4.6,
+      usageCount: 890,
+      author: '官方',
+      installed: false,
+      isNew: true,
+      version: '1.0.0',
+      size: '8MB',
+      features: [
+        '代码质量检测',
+        '性能分析',
+        '安全漏洞扫描',
+        '重构建议'
+      ],
+    },
+    {
+      id: '3',
+      name: '文档转换器',
+      description: '支持多种文档格式之间的智能转换',
+      category: 'conversion',
+      icon: '🔄',
+      rating: 4.5,
+      usageCount: 650,
+      author: '第三方',
+      installed: false,
+      version: '2.1.0',
+      size: '12MB',
+      features: [
+        '支持PDF、Word、Markdown等格式',
+        '保持原有格式',
+        '批量转换',
+        '高质量输出'
+      ],
+    },
+  ],
 }
 
 /**
@@ -548,6 +615,39 @@ export async function mockRequest(url, method = 'GET', data = null) {
   // 评论点赞
   if (url.includes('/comments/') && url.includes('/like')) {
     return { data: { success: true } }
+  }
+
+  // AI服务 API
+  if (url.includes('/services')) {
+    // 获取服务列表
+    if (method === 'GET' && url === '/api/services') {
+      return { data: mockData.services }
+    }
+    // 获取服务详情
+    if (method === 'GET' && url.match(/\/api\/services\/\d+$/)) {
+      const id = url.split('/').pop()
+      return { data: mockData.services.find(s => s.id === id) }
+    }
+    // 安装服务
+    if (method === 'POST' && url.includes('/install')) {
+      return { data: { success: true } }
+    }
+    // 卸载服务
+    if (method === 'POST' && url.includes('/uninstall')) {
+      return { data: { success: true } }
+    }
+    // 更新配置
+    if (method === 'PUT' && url.includes('/config')) {
+      return { data: { success: true } }
+    }
+    // 生成PPT
+    if (url.includes('/ppt/generate')) {
+      return { data: { success: true, fileUrl: '/ppt/demo.pptx' } }
+    }
+    // 切换模型
+    if (url.includes('/model/switch')) {
+      return { data: { success: true } }
+    }
   }
 
   return null
