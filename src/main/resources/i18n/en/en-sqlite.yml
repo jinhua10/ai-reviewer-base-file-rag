@@ -1,0 +1,21 @@
+# SQLite Metadata Manager Internationalization
+# SQLite 元数据管理器国际化
+
+sqlite_metadata_manager:
+  log:
+    initialized: "✅ SQLite metadata manager initialized successfully: {0}"
+    failed_init: "❌ SQLite metadata manager initialization failed"
+    document_saved: "💾 Document saved: {0}"
+    document_deleted: "🗑️ Document deleted: {0}"
+    retrieved_ids: "📋 Retrieved {0} document IDs"
+
+  error:
+    failed_init: "SQLite metadata manager initialization failed"
+    failed_save: "Failed to save document: {0}"
+    failed_find: "Failed to find document: {0}"
+    failed_delete: "Failed to delete document: {0}"
+
+  failed_exists: "Failed to check document existence"
+  failed_find_by_hash: "Failed to find document by hash"
+  failed_count: "Failed to count documents"
+

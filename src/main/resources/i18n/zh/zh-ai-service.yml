@@ -1,0 +1,19 @@
+# AI 服务注册中心国际化
+# AI Service Registry Internationalization
+
+ai:
+  service:
+    registry:
+      initialized: "🚀 AI 服务注册中心初始化完成"
+
+    builtin:
+      registered: "✅ 内置服务注册完成，共 {0} 个"
+
+    registered: "✅ 服务注册成功: {0} (ID: {1})"
+    unregistered: "🗑️ 服务注销: {0}"
+    not_found: "⚠️ 服务未找到: {0}"
+    disabled: "⚠️ 服务已禁用: {0}"
+    invoking: "🔄 正在调用服务: {0}"
+    invoked: "✅ 服务调用完成: {0}, 耗时 {1}ms"
+    invoke_failed: "❌ 服务调用失败: serviceId={0}, error={1}"
+

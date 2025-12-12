@@ -20,7 +20,7 @@ const documentApi = {
    * @returns {Promise} 文档列表
    */
   getList(params) {
-    return request.get('/documents', params)
+    return request.get('/documents/list', params)
   },
 
   /**
@@ -78,29 +78,31 @@ const documentApi = {
 
   /**
    * 删除文档 (Delete document)
-   * @param {string} id - 文档 ID
+   * @param {string} fileName - 文档文件名
    * @returns {Promise} 删除结果
    */
-  delete(id) {
-    return request.delete(`/documents/${id}`)
+  delete(fileName) {
+    return request.delete(`/documents/${encodeURIComponent(fileName)}`)
   },
 
   /**
    * 批量删除文档 (Batch delete documents)
-   * @param {Array<string>} ids - 文档 ID 列表
+   * @param {Array<string>} fileNames - 文档文件名列表
    * @returns {Promise} 删除结果
    */
-  batchDelete(ids) {
-    return request.post('/documents/batch-delete', { ids })
+  batchDelete(fileNames) {
+    return request.delete('/documents/batch', { 
+      data: { fileNames }
+    })
   },
 
   /**
    * 下载文档 (Download document)
-   * @param {string} id - 文档 ID
+   * @param {string} fileName - 文档文件名
    * @returns {Promise} 文件 Blob
    */
-  download(id) {
-    return request.get(`/documents/${id}/download`, null, {
+  download(fileName) {
+    return request.get('/documents/download', { fileName }, {
       responseType: 'blob',
     })
   },

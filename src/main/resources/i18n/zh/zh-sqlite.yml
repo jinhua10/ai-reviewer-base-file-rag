@@ -1,0 +1,21 @@
+# SQLite 元数据管理器国际化
+# SQLite Metadata Manager Internationalization
+
+sqlite_metadata_manager:
+  log:
+    initialized: "✅ SQLite 元数据管理器初始化成功: {0}"
+    failed_init: "❌ SQLite 元数据管理器初始化失败"
+    document_saved: "💾 文档已保存: {0}"
+    document_deleted: "🗑️ 文档已删除: {0}"
+    retrieved_ids: "📋 获取到 {0} 个文档 ID"
+
+  error:
+    failed_init: "SQLite 元数据管理器初始化失败"
+    failed_save: "文档保存失败: {0}"
+    failed_find: "文档查找失败: {0}"
+    failed_delete: "文档删除失败: {0}"
+
+  failed_exists: "检查文档存在性失败"
+  failed_find_by_hash: "根据哈希查找文档失败"
+  failed_count: "统计文档数量失败"
+
