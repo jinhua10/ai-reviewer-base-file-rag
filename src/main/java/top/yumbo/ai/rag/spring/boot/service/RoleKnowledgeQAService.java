@@ -8,6 +8,7 @@ import top.yumbo.ai.rag.evolution.concept.MinimalConcept;
 import top.yumbo.ai.rag.evolution.concept.RoleCollaborationService;
 import top.yumbo.ai.rag.evolution.concept.RoleKnowledgeService;
 import top.yumbo.ai.rag.evolution.concept.RoleResponseBid;
+import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 
 import java.util.*;
@@ -68,57 +69,57 @@ public class RoleKnowledgeQAService {
      * @return AIAnswer
      */
     public AIAnswer askWithRole(String question, String roleName) {
-        log.info("🎭 角色知识库问答：问题=[{}], 角色=[{}]", question, roleName);
+        log.info(I18N.get("role.knowledge.qa.start"), question, roleName);
 
         AIAnswer answer;
 
         try {
-            // 策略 1: 指定角色的本地知识库查询
+            // 策略 1: 指定角色的本地知识库查询 (Strategy 1: Local role knowledge base query)
             if (roleName != null && !roleName.isEmpty() && !"general".equals(roleName)) {
-                log.info("📚 使用指定角色 [{}] 的本地知识库", roleName);
+                log.info(I18N.get("role.knowledge.qa.use-local"), roleName);
                 answer = queryLocalRoleKnowledge(question, roleName);
 
-                // 如果本地知识库能回答（置信度 >= 0.6），直接返回
+                // 如果本地知识库能回答（置信度 >= 0.6），直接返回 (If local KB can answer with confidence >= 0.6, return directly)
                 if (answer.getHopeConfidence() >= 0.6) {
-                    log.info("✅ 角色 [{}] 本地知识库成功回答，置信度: {}",
+                    log.info(I18N.get("role.knowledge.qa.local-success"),
                         roleName, answer.getHopeConfidence());
                     return answer;
                 }
 
-                log.info("⚠️ 角色 [{}] 本地知识库置信度不足: {}",
+                log.info(I18N.get("role.knowledge.qa.local-insufficient"),
                     roleName, answer.getHopeConfidence());
             }
 
-            // 策略 2: 通用角色或本地无答案 -> 举手抢答
-            log.info("🙋 发起举手抢答机制");
+            // 策略 2: 通用角色或本地无答案 -> 举手抢答 (Strategy 2: Bidding mechanism)
+            log.info(I18N.get("role.knowledge.qa.bidding-start"));
             List<RoleResponseBid> bids = collaborationService.collectRoleBids(question);
 
             if (!bids.isEmpty()) {
-                // 选择最佳角色
+                // 选择最佳角色 (Select best role)
                 RoleResponseBid bestBid = collaborationService.selectBestRole(bids);
 
                 if (bestBid != null && bestBid.getConfidenceScore() >= 0.6) {
-                    log.info("🏆 选中角色: {}, 置信度: {}",
+                    log.info(I18N.get("role.knowledge.qa.bidding-winner"),
                         bestBid.getRoleName(), bestBid.getConfidenceScore());
 
-                    // 使用选中角色的知识库
+                    // 使用选中角色的知识库 (Use selected role's knowledge base)
                     answer = queryLocalRoleKnowledge(question, bestBid.getRoleName());
 
-                    // 给予积分奖励
-                    rewardRole(bestBid.getRoleName(), 10, "成功回答问题");
+                    // 给予积分奖励 (Reward credits)
+                    rewardRole(bestBid.getRoleName(), 10, I18N.get("role.knowledge.qa.bidding-winner"));
 
                     return answer;
                 }
             }
 
-            // 策略 3: 大家都不懂 -> 发起悬赏
-            log.warn("❓ 所有角色都无法回答，发起悬赏机制");
+            // 策略 3: 大家都不懂 -> 发起悬赏 (Strategy 3: Create bounty)
+            log.warn(I18N.get("role.knowledge.qa.all-failed"));
             answer = createBountyRequest(question, roleName);
 
         } catch (Exception e) {
-            log.error("❌ 角色知识库问答失败", e);
+            log.error(I18N.get("role.knowledge.qa.query-failed"), e);
             answer = new AIAnswer(
-                "抱歉，角色知识库查询失败：" + e.getMessage(),
+                I18N.get("role.knowledge.qa.error-message", e.getMessage()),
                 Collections.emptyList(),
                 0
             );
@@ -136,20 +137,20 @@ public class RoleKnowledgeQAService {
      * @return AIAnswer
      */
     private AIAnswer queryLocalRoleKnowledge(String question, String roleName) {
-        log.info("🔍 查询角色 [{}] 的本地知识库", roleName);
+        log.info(I18N.get("role.knowledge.qa.query-local-start"), roleName);
 
         long startTime = System.currentTimeMillis();
 
-        // 1. 从角色知识库搜索相关概念
+        // 1. 从角色知识库搜索相关概念 (Search relevant concepts from role knowledge base)
         List<MinimalConcept> concepts =
             roleKnowledgeService.searchConceptsForRole(roleName, extractKeywords(question));
 
-        log.info("📦 找到 {} 个相关概念", concepts.size());
+        log.info(I18N.get("role.knowledge.qa.concepts-found"), concepts.size());
 
         if (concepts.isEmpty()) {
-            // 没有相关概念，置信度为 0
+            // 没有相关概念，置信度为 0 (No relevant concepts, confidence = 0)
             AIAnswer answer = new AIAnswer(
-                "本地知识库暂无相关信息",
+                I18N.get("role.knowledge.qa.no-concepts"),
                 Collections.emptyList(),
                 System.currentTimeMillis() - startTime
             );
@@ -194,14 +195,16 @@ public class RoleKnowledgeQAService {
      */
     private String buildContextFromConcepts(List<MinimalConcept> concepts, String roleName) {
         StringBuilder context = new StringBuilder();
-        context.append("作为 ").append(getRoleDisplayName(roleName)).append("，我掌握以下知识：\n\n");
+        String roleDisplayName = I18N.get("role.knowledge.role." + roleName);
+        context.append(I18N.get("role.knowledge.qa.answer-prefix", roleDisplayName));
 
         for (MinimalConcept concept : concepts) {
             context.append("- ").append(concept.getName());
             if (concept.getDescription() != null && !concept.getDescription().isEmpty()) {
                 context.append(": ").append(concept.getDescription());
             }
-            context.append(" (置信度: ").append(String.format("%.2f", concept.getConfidence())).append(")\n");
+            context.append(" (").append(I18N.get("common.confidence")).append(": ")
+                   .append(String.format("%.2f", concept.getConfidence())).append(")\n");
         }
 
         return context.toString();
@@ -210,23 +213,24 @@ public class RoleKnowledgeQAService {
     /**
      * 使用上下文生成答案 (Generate answer with context)
      *
-     * 当前简化实现：基于概念拼接答案
-     * TODO: 后续集成 LLM 服务进行智能生成
+     * 当前简化实现：基于概念拼接答案 (Current simplified implementation: concatenate concepts)
+     * TODO: 后续集成 LLM 服务进行智能生成 (TODO: Integrate LLM service for intelligent generation)
      */
     private String generateAnswerWithContext(String question, String context,
                                             String roleName, List<MinimalConcept> concepts) {
         StringBuilder answer = new StringBuilder();
+        String roleDisplayName = I18N.get("role.knowledge.role." + roleName);
 
-        answer.append("【").append(getRoleDisplayName(roleName)).append("回答】\n\n");
+        answer.append(I18N.get("role.knowledge.qa.answer-prefix", roleDisplayName));
 
         if (concepts.size() == 1) {
             MinimalConcept concept = concepts.get(0);
-            answer.append("根据我的专业知识，").append(concept.getName());
+            answer.append(I18N.get("role.knowledge.qa.answer-single", concept.getName()));
             if (concept.getDescription() != null) {
                 answer.append("：").append(concept.getDescription());
             }
         } else {
-            answer.append("根据我的专业知识，这个问题涉及以下几个方面：\n\n");
+            answer.append(I18N.get("role.knowledge.qa.answer-multiple"));
             for (int i = 0; i < Math.min(concepts.size(), 3); i++) {
                 MinimalConcept concept = concepts.get(i);
                 answer.append((i + 1)).append(". ").append(concept.getName());
@@ -237,9 +241,9 @@ public class RoleKnowledgeQAService {
             }
         }
 
-        answer.append("\n💡 提示：这是基于角色本地知识库的回答");
+        answer.append(I18N.get("role.knowledge.qa.answer-hint"));
 
-        // TODO: 集成 LLM 后的实现
+        // TODO: 集成 LLM 后的实现 (TODO: Implementation after LLM integration)
         // String llmAnswer = llmService.generateWithContext(question, context, roleName);
         // return llmAnswer;
 
@@ -258,31 +262,23 @@ public class RoleKnowledgeQAService {
         bounty.setId(bountyId);
         bounty.setQuestion(question);
         bounty.setRequestingRole(requestingRole);
-        bounty.setReward(50);  // 悬赏 50 积分
+        bounty.setReward(50);  // 悬赏 50 积分 (Bounty: 50 credits)
         bounty.setStatus("active");
         bounty.setCreatedAt(System.currentTimeMillis());
-        bounty.setDeadline(System.currentTimeMillis() + 24 * 60 * 60 * 1000);  // 24小时有效
+        bounty.setDeadline(System.currentTimeMillis() + 24 * 60 * 60 * 1000);  // 24小时有效 (Valid for 24 hours)
 
         activeBounties.put(bountyId, bounty);
 
-        log.info("🎯 创建悬赏: ID={}, 问题={}, 奖励={}积分", bountyId, question, bounty.getReward());
+        log.info(I18N.get("role.knowledge.bounty.created"), bountyId, question, bounty.getReward());
 
-        // 构建响应
-        String answerText = String.format(
-            """
-            【悬赏中】
-            
-            这个问题暂时没有角色能够回答。
-            
-            🎯 悬赏ID: %s
-            💰 奖励: %d 积分
-            ⏰ 截止时间: 24小时
-            
-            欢迎各角色节点主动学习相关知识后提交答案！
-            提交答案后将获得积分，用于优先实现愿望单需求。
-            """,
-            bountyId, bounty.getReward()
-        );
+        // 构建响应 (Build response)
+        String answerText = I18N.get("role.knowledge.bounty.title") + "\n\n" +
+            I18N.get("role.knowledge.bounty.no-answer") + "\n\n" +
+            I18N.get("role.knowledge.bounty.id-label", bountyId) + "\n" +
+            I18N.get("role.knowledge.bounty.reward-label", bounty.getReward()) + "\n" +
+            I18N.get("role.knowledge.bounty.deadline-label") + "\n\n" +
+            I18N.get("role.knowledge.bounty.call-to-action") + "\n" +
+            I18N.get("role.knowledge.bounty.credit-usage");
 
         AIAnswer answer = new AIAnswer(answerText, Collections.emptyList(), 100);
         answer.setStrategyUsed("bounty:" + bountyId);
@@ -302,14 +298,14 @@ public class RoleKnowledgeQAService {
         BountyRequest bounty = activeBounties.get(bountyId);
 
         if (bounty == null) {
-            throw new IllegalArgumentException("悬赏不存在: " + bountyId);
+            throw new IllegalArgumentException(I18N.get("role.knowledge.bounty.not-found", bountyId));
         }
 
         if (!"active".equals(bounty.getStatus())) {
-            throw new IllegalStateException("悬赏已关闭");
+            throw new IllegalStateException(I18N.get("role.knowledge.bounty.closed"));
         }
 
-        // 创建提交记录
+        // 创建提交记录 (Create submission record)
         BountySubmission submission = new BountySubmission();
         submission.setId(UUID.randomUUID().toString());
         submission.setBountyId(bountyId);
@@ -321,9 +317,9 @@ public class RoleKnowledgeQAService {
 
         bounty.getSubmissions().add(submission);
 
-        log.info("📝 角色 [{}] 提交悬赏答案: bountyId={}", roleName, bountyId);
+        log.info(I18N.get("role.knowledge.bounty.submitted"), roleName, bountyId);
 
-        // TODO: 这里可以加入审核机制，当前简化为自动通过
+        // TODO: 这里可以加入审核机制，当前简化为自动通过 (TODO: Can add review mechanism, currently auto-approved)
         approveSubmission(bountyId, submission.getId());
 
         return submission;
@@ -343,19 +339,19 @@ public class RoleKnowledgeQAService {
 
         if (submission == null) return;
 
-        // 批准提交
+        // 批准提交 (Approve submission)
         submission.setStatus("approved");
         submission.setApprovedAt(System.currentTimeMillis());
 
-        // 关闭悬赏
+        // 关闭悬赏 (Close bounty)
         bounty.setStatus("closed");
         bounty.setWinnerRole(submission.getRoleName());
 
-        // 奖励积分
+        // 奖励积分 (Reward credits)
         rewardRole(submission.getRoleName(), bounty.getReward(),
-            "完成悬赏：" + bounty.getQuestion());
+            I18N.get("role.knowledge.bounty.submitted"));
 
-        log.info("🎊 批准悬赏提交: bountyId={}, 获胜角色={}, 奖励={}积分",
+        log.info(I18N.get("role.knowledge.bounty.approved"),
             bountyId, submission.getRoleName(), bounty.getReward());
     }
 
@@ -375,14 +371,14 @@ public class RoleKnowledgeQAService {
         roleCredit.setTotalCredits(roleCredit.getTotalCredits() + credits);
         roleCredit.setAnswerCount(roleCredit.getAnswerCount() + 1);
 
-        if (reason.contains("悬赏")) {
+        if (reason.contains("悬赏") || reason.contains("bounty")) {
             roleCredit.setBountyWins(roleCredit.getBountyWins() + 1);
         }
 
         roleCredit.setLastRewardTime(System.currentTimeMillis());
         roleCredit.setLastRewardReason(reason);
 
-        log.info("🎁 奖励角色 [{}] {} 积分：{}", roleName, credits, reason);
+        log.info(I18N.get("role.knowledge.credit.rewarded"), roleName, credits, reason);
     }
 
     /**

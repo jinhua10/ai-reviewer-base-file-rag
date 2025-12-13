@@ -1,0 +1,64 @@
+# Role Knowledge Base Q&A Module Internationalization - English
+# 角色知识库问答模块国际化 - 英文
+# File: src/main/resources/i18n/en/en-role-knowledge.yml
+
+role:
+  knowledge:
+    qa:
+      # Q&A Process (问答流程)
+      start: "🎭 Role knowledge Q&A: question=[{0}], role=[{1}]"
+      use-local: "📚 Using local knowledge base of role [{0}]"
+      local-success: "✅ Role [{0}] answered successfully with confidence: {1}"
+      local-insufficient: "⚠️ Role [{0}] insufficient confidence: {1}"
+      bidding-start: "🙋 Starting bidding mechanism"
+      bidding-winner: "🏆 Selected role: {0}, confidence: {1}"
+      all-failed: "❓ All roles failed to answer, creating bounty"
+      query-failed: "❌ Role knowledge Q&A failed"
+
+      # Local Query (本地查询)
+      query-local-start: "🔍 Querying local knowledge base of role [{0}]"
+      concepts-found: "📦 Found {0} relevant concepts"
+      no-concepts: "No relevant information in local knowledge base"
+
+      # Answer Generation (答案生成)
+      answer-prefix: "【{0} Answer】\n\n"
+      answer-single: "Based on my expertise, {0}"
+      answer-multiple: "Based on my expertise, this question involves the following aspects:\n\n"
+      answer-hint: "\n💡 Note: This answer is based on role's local knowledge base"
+
+      # Error Messages (错误信息)
+      error-message: "Sorry, role knowledge query failed: {0}"
+
+    bounty:
+      # Bounty System (悬赏系统)
+      created: "🎯 Bounty created: ID={0}, question={1}, reward={2} credits"
+      title: "【Bounty Active】"
+      no-answer: "No role can answer this question currently."
+      id-label: "🎯 Bounty ID: {0}"
+      reward-label: "💰 Reward: {0} credits"
+      deadline-label: "⏰ Deadline: 24 hours"
+      call-to-action: "Welcome role nodes to learn and submit answers!"
+      credit-usage: "You will earn credits after submission, which can be used to prioritize wishlist items."
+
+      # Submission (提交)
+      submitted: "📝 Role [{0}] submitted bounty answer: bountyId={1}"
+      approved: "🎊 Bounty submission approved: bountyId={0}, winner={1}, reward={2} credits"
+      not-found: "Bounty not found: {0}"
+      closed: "Bounty is closed"
+
+    credit:
+      # Credit System (积分系统)
+      rewarded: "🎁 Rewarded role [{0}] {1} credits: {2}"
+
+    role:
+      # Role Names (角色名称)
+      general: "General"
+      developer: "Developer"
+      devops: "DevOps Engineer"
+      architect: "Architect"
+      researcher: "Researcher"
+      product_manager: "Product Manager"
+      data_scientist: "Data Scientist"
+      security_engineer: "Security Engineer"
+      tester: "Test Engineer"
+
