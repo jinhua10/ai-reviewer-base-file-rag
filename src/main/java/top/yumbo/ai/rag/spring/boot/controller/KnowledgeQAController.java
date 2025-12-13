@@ -45,27 +45,47 @@ public class KnowledgeQAController {
      * 智能问答接口（统一入口）/ Intelligent Q&A endpoint (unified entry)
      * 
      * 根据参数自动路由到对应的处理逻辑：
-     * - useKnowledgeBase=true: 使用 RAG 检索知识库回答
-     * - useKnowledgeBase=false: 直接调用 LLM 回答（不检索）
-     * 
-     * @param request 问题请求（包含 useKnowledgeBase 参数）
+     * - knowledgeMode="none": 直接调用 LLM 回答（不检索）
+     * - knowledgeMode="rag": 使用传统 RAG 检索知识库回答
+     * - knowledgeMode="role": 使用角色知识库回答
+     *
+     * @param request 问题请求（包含 knowledgeMode 和 roleName 参数）
      * @return 统一响应格式
      */
     @PostMapping("/ask")
     public QuestionResponse ask(@RequestBody QuestionRequest request) {
+        // 解析知识库模式 (Parse knowledge mode)
+        String knowledgeMode = request.getKnowledgeMode();
         boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
         
-        log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) + 
-                 " [RAG: " + useKnowledgeBase + "]");
+        // 如果指定了 knowledgeMode，优先使用 (If knowledgeMode is specified, use it with priority)
+        if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
+            useKnowledgeBase = !"none".equals(knowledgeMode);
+        }
+
+        String roleName = request.getRoleName();
+        boolean useRoleKnowledge = "role".equals(knowledgeMode);
+
+        log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) +
+                 " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + "]");
 
         AIAnswer answer;
         
-        if (useKnowledgeBase) {
-            // 使用知识库 RAG 模式 / Use knowledge base RAG mode
-            answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
-        } else {
+        if (!useKnowledgeBase) {
             // 直接 LLM 模式（不使用 RAG）/ Direct LLM mode (without RAG)
             answer = qaService.askDirectLLM(request.getQuestion());
+        } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
+            // 使用角色知识库模式 / Use role-based knowledge base mode
+            // TODO: 实现角色知识库查询逻辑
+            // answer = qaService.askWithRole(request.getQuestion(), roleName);
+            // 当前暂时使用传统 RAG（待后续集成 RoleCollaborationService）
+            log.info("📝 角色知识库模式：使用角色 [{}]（待完整实现）", roleName);
+            answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
+            // 标记为角色回答
+            answer.setStrategyUsed("role:" + roleName);
+        } else {
+            // 使用知识库 RAG 模式 / Use knowledge base RAG mode
+            answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
         }
         
         // 支持 HOPE 会话ID / Support HOPE session ID
@@ -95,25 +115,44 @@ public class KnowledgeQAController {
     /**
      * 使用会话文档进行问答（用于分页引用）/ QA with session documents (for pagination)
      * 
-     * 支持知识库开关：
-     * - useKnowledgeBase=true: 使用会话文档 RAG 检索
-     * - useKnowledgeBase=false: 直接 LLM 回答
+     * 支持知识库模式：
+     * - knowledgeMode="none": 直接 LLM 回答
+     * - knowledgeMode="rag": 使用会话文档 RAG 检索
+     * - knowledgeMode="role": 使用角色知识库
      */
     @PostMapping("/ask-with-session")
     public QuestionResponse askWithSession(@RequestBody SessionQuestionRequest request) {
+        // 解析知识库模式 (Parse knowledge mode)
+        String knowledgeMode = request.getKnowledgeMode();
         boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
         
+        // 如果指定了 knowledgeMode，优先使用 (If knowledgeMode is specified, use it with priority)
+        if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
+            useKnowledgeBase = !"none".equals(knowledgeMode);
+        }
+
+        String roleName = request.getRoleName();
+        boolean useRoleKnowledge = "role".equals(knowledgeMode);
+
         log.info(I18N.get("knowledge_qa.log.session_question",
-            request.getQuestion(), request.getSessionId()) + " [RAG: " + useKnowledgeBase + "]");
+            request.getQuestion(), request.getSessionId()) +
+            " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + "]");
 
         AIAnswer answer;
         
-        if (useKnowledgeBase) {
-            // 使用会话文档 RAG 模式 / Use session documents RAG mode
-            answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
-        } else {
+        if (!useKnowledgeBase) {
             // 直接 LLM 模式（不使用会话文档）/ Direct LLM mode (without session documents)
             answer = qaService.askDirectLLM(request.getQuestion());
+        } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
+            // 使用角色知识库模式 / Use role-based knowledge base mode
+            // TODO: 实现角色知识库查询逻辑
+            log.info("📝 角色知识库模式（会话）：使用角色 [{}]（待完整实现）", roleName);
+            answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
+            // 标记为角色回答
+            answer.setStrategyUsed("role:" + roleName);
+        } else {
+            // 使用会话文档 RAG 模式 / Use session documents RAG mode
+            answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
         }
 
         QuestionResponse response = new QuestionResponse();
@@ -323,14 +362,42 @@ public class KnowledgeQAController {
     public static class QuestionRequest {
         private String question;
         private String hopeSessionId;  // HOPE 会话ID（用于上下文增强）
-        private Boolean useKnowledgeBase;  // true: RAG模式, false: 直接LLM, null: 默认RAG
+        private Boolean useKnowledgeBase;  // true: RAG模式, false: 直接LLM, null: 默认RAG（兼容旧版）
+
+        /**
+         * 知识库模式 (Knowledge base mode)
+         * 可选值 (Options):
+         * - "none": 不使用RAG，直接LLM (Direct LLM without RAG)
+         * - "rag": 使用传统RAG (Traditional RAG)
+         * - "role": 使用角色知识库 (Role-based knowledge base)
+         * null 或空表示使用传统RAG (null or empty means traditional RAG)
+         */
+        private String knowledgeMode;
+
+        /**
+         * 角色名称 (Role name)
+         * 当 knowledgeMode="role" 时使用
+         * (Used when knowledgeMode="role")
+         * 例如: developer, devops, architect, general 等
+         */
+        private String roleName;
     }
 
     @Data
     public static class SessionQuestionRequest {
         private String question;
         private String sessionId;
-        private Boolean useKnowledgeBase;  // true: RAG模式, false: 直接LLM, null: 默认RAG
+        private Boolean useKnowledgeBase;  // true: RAG模式, false: 直接LLM, null: 默认RAG（兼容旧版）
+
+        /**
+         * 知识库模式 (Knowledge base mode)
+         */
+        private String knowledgeMode;
+
+        /**
+         * 角色名称 (Role name)
+         */
+        private String roleName;
     }
 
     @Data

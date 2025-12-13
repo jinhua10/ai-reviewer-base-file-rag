@@ -32,5 +32,25 @@ public class StreamingRequest {
      * true: RAG模式, false: 直接LLM, null: 默认RAG
      */
     private Boolean useKnowledgeBase;
+
+    /**
+     * 知识库模式 (Knowledge base mode)
+     * 可选值 (Options):
+     * - "none": 不使用RAG，直接LLM (Direct LLM without RAG)
+     * - "rag": 使用传统RAG (Traditional RAG)
+     * - "role": 使用角色知识库 (Role-based knowledge base)
+     * null 或空表示使用传统RAG (null or empty means traditional RAG)
+     */
+    private String knowledgeMode;
+
+    /**
+     * 角色名称 (Role name)
+     * 当 knowledgeMode="role" 时使用
+     * (Used when knowledgeMode="role")
+     * 例如: developer, devops, architect, general 等
+     */
+    private String roleName;
 }
+
+
 

@@ -40,7 +40,7 @@ public class StreamingQAController {
     /**
      * 发起流式问答
      * (Initiate streaming Q&A)
-     *
+     * <p>
      * POST /api/qa/stream
      *
      * @param request 请求体
@@ -48,10 +48,22 @@ public class StreamingQAController {
      */
     @PostMapping
     public ResponseEntity<Map<String, Object>> ask(@RequestBody StreamingRequest request) {
+        // 解析知识库模式
+        // (Parse knowledge mode)
+        String knowledgeMode = request.getKnowledgeMode();
         boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
-        
-        log.info("📝 收到流式问答请求 (Received streaming Q&A request): question={}, RAG={}",
-            request.getQuestion(), useKnowledgeBase);
+
+        // 如果指定了 knowledgeMode，优先使用
+        // (If knowledgeMode is specified, use it with priority)
+        if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
+            useKnowledgeBase = !"none".equals(knowledgeMode);
+        }
+
+        String roleName = request.getRoleName();
+        boolean useRoleKnowledge = "role".equals(knowledgeMode);
+
+        log.info("📝 收到流式问答请求 (Received streaming Q&A request): question={}, mode={}, role={}, RAG={}",
+                request.getQuestion(), knowledgeMode, roleName, useKnowledgeBase);
 
         try {
             // 启动双轨响应
@@ -74,20 +86,23 @@ public class StreamingQAController {
             result.put("question", response.getQuestion());
             result.put("hopeAnswer", hopeAnswer);
             result.put("sseUrl", "/api/qa/stream/" + response.getSessionId());
+            result.put("knowledgeMode", knowledgeMode);
+            result.put("useRoleKnowledge", useRoleKnowledge);
+            result.put("roleName", roleName);
 
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
             log.error("流式问答失败 (Streaming Q&A failed): {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
-                .body(Map.of("error", e.getMessage()));
+                    .body(Map.of("error", e.getMessage()));
         }
     }
 
     /**
      * 订阅 LLM 流式输出（SSE）
      * (Subscribe to LLM streaming output via SSE)
-     *
+     * <p>
      * GET /api/qa/stream/{sessionId}
      *
      * @param sessionId 会话ID
@@ -105,8 +120,8 @@ public class StreamingQAController {
             emitter = new SseEmitter();
             try {
                 emitter.send(SseEmitter.event()
-                    .name("error")
-                    .data("Session not found"));
+                        .name("error")
+                        .data("Session not found"));
                 emitter.complete();
             } catch (Exception e) {
                 log.error("发送错误失败 (Failed to send error): {}", e.getMessage());
@@ -119,7 +134,7 @@ public class StreamingQAController {
     /**
      * 获取会话状态
      * (Get session status)
-     *
+     * <p>
      * GET /api/qa/stream/{sessionId}/status
      *
      * @param sessionId 会话ID
@@ -146,13 +161,13 @@ public class StreamingQAController {
     /**
      * 双轨流式响应（HOPE + LLM）
      * (Dual-track streaming response - HOPE + LLM)
-     *
+     * <p>
      * 同时返回 HOPE 快速答案和 LLM 流式生成
      * (Returns both HOPE quick answer and LLM streaming generation)
-     *
+     * <p>
      * GET /api/qa/stream/dual-track?question=xxx&sessionId=xxx
      *
-     * @param question 用户问题 (User question)
+     * @param question  用户问题 (User question)
      * @param sessionId HOPE 会话ID（可选）(HOPE session ID, optional)
      * @return SSE 流，包含 HOPE 答案和 LLM 块 (SSE stream with HOPE answer and LLM chunks)
      */
@@ -167,7 +182,7 @@ public class StreamingQAController {
 
         // 生成 HOPE 会话 ID（如果没有提供）
         String hopeSessionId = sessionId != null ? sessionId :
-            "hope_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+                "hope_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8);
 
         // 异步处理双轨响应
         CompletableFuture.runAsync(() -> {
@@ -189,17 +204,17 @@ public class StreamingQAController {
                     // 发送 HOPE 答案
                     if (hopeAnswer != null && hopeAnswer.getAnswer() != null && !hopeAnswer.getAnswer().isEmpty()) {
                         top.yumbo.ai.rag.spring.boot.model.StreamMessage hopeMsg =
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.hopeAnswer(
-                                hopeAnswer.getAnswer(),
-                                hopeAnswer.getSource(),
-                                hopeAnswer.getConfidence(),
-                                hopeTime,
-                                hopeAnswer.isCanDirectAnswer() ? "DIRECT_ANSWER" : "REFERENCE"
-                            );
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.hopeAnswer(
+                                        hopeAnswer.getAnswer(),
+                                        hopeAnswer.getSource(),
+                                        hopeAnswer.getConfidence(),
+                                        hopeTime,
+                                        hopeAnswer.isCanDirectAnswer() ? "DIRECT_ANSWER" : "REFERENCE"
+                                );
 
                         emitter.send(SseEmitter.event()
-                            .name("hope")
-                            .data(hopeMsg));
+                                .name("hope")
+                                .data(hopeMsg));
 
                         log.info(I18N.get("log.streaming.hope_sent", hopeTime));
                     }
@@ -226,23 +241,23 @@ public class StreamingQAController {
                         // 发送新的块（仅发送新增内容）
                         if (currentAnswer.length() > lastLength) {
                             String newChunk = currentAnswer.substring(lastLength);
-                            
+
                             // 调试：如果chunk包含图片标记，记录详细信息
                             if (newChunk.contains("![") || newChunk.contains("/api/images")) {
                                 log.debug("📸 Image chunk detected:");
                                 log.debug("  Chunk length: {}", newChunk.length());
                                 log.debug("  Chunk content: {}", newChunk.length() > 200 ? newChunk.substring(0, 200) + "..." : newChunk);
                             }
-                            
+
                             top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
-                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(
-                                    newChunk,
-                                    chunkIndex++
-                                );
+                                    top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(
+                                            newChunk,
+                                            chunkIndex++
+                                    );
 
                             emitter.send(SseEmitter.event()
-                                .name("llm")
-                                .data(llmMsg));
+                                    .name("llm")
+                                    .data(llmMsg));
 
                             lastLength = currentAnswer.length();
                         }
@@ -259,14 +274,14 @@ public class StreamingQAController {
                     // 发送完成消息
                     long llmTime = System.currentTimeMillis() - llmStartTime;
                     top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
-                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(
-                            chunkIndex,
-                            llmTime
-                        );
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(
+                                    chunkIndex,
+                                    llmTime
+                            );
 
                     emitter.send(SseEmitter.event()
-                        .name("complete")
-                        .data(completeMsg));
+                            .name("complete")
+                            .data(completeMsg));
 
                     log.info(I18N.get("log.streaming.llm_complete", chunkIndex, llmTime));
                 }
@@ -279,13 +294,13 @@ public class StreamingQAController {
 
                 try {
                     top.yumbo.ai.rag.spring.boot.model.StreamMessage errorMsg =
-                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.error(
-                            I18N.get("error.streaming.failed", e.getMessage())
-                        );
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.error(
+                                    I18N.get("error.streaming.failed", e.getMessage())
+                            );
 
                     emitter.send(SseEmitter.event()
-                        .name("error")
-                        .data(errorMsg));
+                            .name("error")
+                            .data(errorMsg));
 
                     emitter.completeWithError(e);
                 } catch (Exception sendError) {

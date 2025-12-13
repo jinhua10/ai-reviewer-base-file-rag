@@ -51,10 +51,16 @@ function QAPanel() {
     return saved !== null ? saved === 'true' : true
   })
   
-  // 从 localStorage 读取知识库开关（默认为 true）
-  const [useKnowledgeBase, setUseKnowledgeBase] = useState(() => {
-    const saved = localStorage.getItem('qa_use_knowledge_base')
-    return saved !== null ? saved === 'true' : true
+  // 知识库模式：'none' | 'rag' | 'role'（默认为 'rag'）
+  const [knowledgeMode, setKnowledgeMode] = useState(() => {
+    const saved = localStorage.getItem('qa_knowledge_mode')
+    return saved || 'rag'
+  })
+
+  // 角色名称（当 knowledgeMode='role' 时使用）
+  const [roleName, setRoleName] = useState(() => {
+    const saved = localStorage.getItem('qa_role_name')
+    return saved || 'general'
   })
 
   /**
@@ -68,13 +74,21 @@ function QAPanel() {
   }
   
   /**
-   * 切换知识库使用
+   * 切换知识库模式
    */
-  const toggleKnowledgeBase = () => {
-    const newValue = !useKnowledgeBase
-    setUseKnowledgeBase(newValue)
-    localStorage.setItem('qa_use_knowledge_base', newValue.toString())
-    console.log(`🔄 ${newValue ? 'Enabled' : 'Disabled'} knowledge base`)
+  const handleKnowledgeModeChange = (mode) => {
+    setKnowledgeMode(mode)
+    localStorage.setItem('qa_knowledge_mode', mode)
+    console.log(`🔄 Switched knowledge mode to: ${mode}`)
+  }
+
+  /**
+   * 切换角色
+   */
+  const handleRoleNameChange = (role) => {
+    setRoleName(role)
+    localStorage.setItem('qa_role_name', role)
+    console.log(`🔄 Switched role to: ${role}`)
   }
 
   /**
@@ -123,7 +137,9 @@ function QAPanel() {
       const result = await qaApi.askStreaming(
         { 
           question,
-          useKnowledgeBase  // 是否使用知识库
+          knowledgeMode,      // 知识库模式: 'none' | 'rag' | 'role'
+          roleName,           // 角色名称（当 knowledgeMode='role' 时）
+          useKnowledgeBase: knowledgeMode !== 'none'  // 兼容旧API
         },
         (data) => {
           // 先累加到ref（不触发渲染，避免React批量更新导致的重复累加）
@@ -281,7 +297,9 @@ function QAPanel() {
       // 调用非流式 API
       const response = await qaApi.ask({ 
         question,
-        useKnowledgeBase  // 是否使用知识库
+        knowledgeMode,      // 知识库模式: 'none' | 'rag' | 'role'
+        roleName,           // 角色名称（当 knowledgeMode='role' 时）
+        useKnowledgeBase: knowledgeMode !== 'none'  // 兼容旧API
       })
 
       // 更新答案内容
@@ -408,8 +426,10 @@ function QAPanel() {
             isGenerating={!!currentEventSource}
             isStreamingMode={isStreamingMode}
             onToggleStreamingMode={toggleStreamingMode}
-            useKnowledgeBase={useKnowledgeBase}
-            onToggleKnowledgeBase={toggleKnowledgeBase}
+            knowledgeMode={knowledgeMode}
+            onKnowledgeModeChange={handleKnowledgeModeChange}
+            roleName={roleName}
+            onRoleNameChange={handleRoleNameChange}
           />
 
           {/* 输入框 */}

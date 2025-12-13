@@ -9,11 +9,24 @@
  */
 
 import React, { useRef, useEffect } from 'react'
-import { Button } from 'antd'
+import { Button, Radio, Select } from 'antd'
 import { HistoryOutlined } from '@ant-design/icons'
 import AnswerCard from './AnswerCard'
 import { useLanguage } from '../../contexts/LanguageContext'
 import '../../assets/css/qa/chat-box.css'
+
+// 角色列表 (Role list)
+const ROLES = [
+  { value: 'general', labelKey: 'qa.role.general' },
+  { value: 'developer', labelKey: 'qa.role.developer' },
+  { value: 'devops', labelKey: 'qa.role.devops' },
+  { value: 'architect', labelKey: 'qa.role.architect' },
+  { value: 'researcher', labelKey: 'qa.role.researcher' },
+  { value: 'product_manager', labelKey: 'qa.role.productManager' },
+  { value: 'data_scientist', labelKey: 'qa.role.dataScientist' },
+  { value: 'security_engineer', labelKey: 'qa.role.securityEngineer' },
+  { value: 'tester', labelKey: 'qa.role.tester' },
+]
 
 function ChatBox(props) {
   const { 
@@ -25,8 +38,10 @@ function ChatBox(props) {
     isGenerating,
     isStreamingMode,
     onToggleStreamingMode,
-    useKnowledgeBase,
-    onToggleKnowledgeBase 
+    knowledgeMode,        // 'none' | 'rag' | 'role'
+    onKnowledgeModeChange,
+    roleName,
+    onRoleNameChange
   } = props
   const { t } = useLanguage()
   const messagesEndRef = useRef(null)
@@ -49,18 +64,46 @@ function ChatBox(props) {
         </div>
         
         <div className="chat-box__toolbar-right">
-          <Button
-            onClick={onToggleKnowledgeBase}
-            className={`chat-box__kb-toggle ${useKnowledgeBase ? 'chat-box__kb-toggle--active' : ''}`}
-            title={useKnowledgeBase ? t('qa.knowledgeBase.disable') : t('qa.knowledgeBase.enable')}
-          >
-            {useKnowledgeBase ? '📚 ' + t('qa.knowledgeBase.enabled') : '🤖 ' + t('qa.knowledgeBase.disabled')}
-          </Button>
-          
+          {/* 知识库模式选择 (Knowledge Mode Selection) */}
+          <div className="chat-box__kb-mode">
+            <span className="chat-box__kb-mode-label">{t('qa.knowledgeMode.label')}:</span>
+            <Radio.Group
+              value={knowledgeMode}
+              onChange={(e) => onKnowledgeModeChange(e.target.value)}
+              size="small"
+              className="chat-box__kb-mode-group"
+            >
+              <Radio.Button value="none">{t('qa.knowledgeMode.none')}</Radio.Button>
+              <Radio.Button value="rag">{t('qa.knowledgeMode.rag')}</Radio.Button>
+              <Radio.Button value="role">{t('qa.knowledgeMode.role')}</Radio.Button>
+            </Radio.Group>
+          </div>
+
+          {/* 角色选择（仅在角色模式下显示） (Role Selection) */}
+          {knowledgeMode === 'role' && (
+            <Select
+              value={roleName}
+              onChange={onRoleNameChange}
+              size="small"
+              className="chat-box__role-select"
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {ROLES.map(role => (
+                <Select.Option key={role.value} value={role.value}>
+                  {t(role.labelKey)}
+                </Select.Option>
+              ))}
+            </Select>
+          )}
+
           <Button
             onClick={onToggleStreamingMode}
             className="chat-box__mode-toggle"
             title={isStreamingMode ? t('qa.mode.switchToNonStreaming') : t('qa.mode.switchToStreaming')}
+            size="small"
           >
             {isStreamingMode ? '⚡ ' + t('qa.mode.streaming') : '💭 ' + t('qa.mode.nonStreaming')}
           </Button>

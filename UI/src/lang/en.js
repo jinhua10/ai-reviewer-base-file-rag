@@ -348,7 +348,28 @@ export default {
       switchToNonStreaming: 'Switch to Standard Mode (Thinking animation)',
     },
     
-    // Knowledge Base
+    // Knowledge Mode
+    knowledgeMode: {
+      label: 'Knowledge Mode',
+      none: 'No RAG',
+      rag: 'Use RAG',
+      role: 'Role KB',
+    },
+
+    // Role
+    role: {
+      general: 'General',
+      developer: 'Developer',
+      devops: 'DevOps',
+      architect: 'Architect',
+      researcher: 'Researcher',
+      productManager: 'Product Manager',
+      dataScientist: 'Data Scientist',
+      securityEngineer: 'Security Engineer',
+      tester: 'Test Engineer',
+    },
+
+    // Knowledge Base (keep for compatibility)
     knowledgeBase: {
       enabled: 'RAG Mode',
       disabled: 'Direct AI',

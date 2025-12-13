@@ -343,7 +343,28 @@ export default {
       switchToNonStreaming: '切换到普通模式（Thinking 动画）',
     },
     
-    // 知识库 (Knowledge Base)
+    // 知识库模式 (Knowledge Mode)
+    knowledgeMode: {
+      label: '知识库模式',
+      none: '不使用RAG',
+      rag: '使用RAG',
+      role: '角色知识库',
+    },
+
+    // 角色 (Role)
+    role: {
+      general: '通用角色',
+      developer: '开发者',
+      devops: '运维工程师',
+      architect: '架构师',
+      researcher: '研究员',
+      productManager: '产品经理',
+      dataScientist: '数据科学家',
+      securityEngineer: '安全工程师',
+      tester: '测试工程师',
+    },
+
+    // 知识库 (Knowledge Base - 保留兼容)
     knowledgeBase: {
       enabled: 'RAG 模式',
       disabled: 'AI 直问',

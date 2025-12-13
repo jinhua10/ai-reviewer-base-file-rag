@@ -67,7 +67,9 @@ const qaApi = {
       const response = await request.post('/qa/stream', {
         question: params.question,
         userId: params.userId || 'anonymous',
-        useKnowledgeBase: params.useKnowledgeBase !== undefined ? params.useKnowledgeBase : true
+        useKnowledgeBase: params.useKnowledgeBase !== undefined ? params.useKnowledgeBase : true,
+        knowledgeMode: params.knowledgeMode, // 'none' | 'rag' | 'role'
+        roleName: params.roleName // 角色名称（当 knowledgeMode='role' 时）
       })
 
       console.log('📥 Received initial response:', response)
