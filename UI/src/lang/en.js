@@ -394,6 +394,7 @@ export default {
     successRate: 'Success Rate',
     noRoles: 'No roles yet',
     loadFailed: 'Failed to load',
+    searchPlaceholder: 'Search role name, description or keywords...',
   },
 
   // ============================================================================

@@ -122,3 +122,46 @@ log:
     load_failed: "加载问答记录失败：文件={0}"
     records_dir: "问答记录存储目录：{0}"
     records_dir_failed: "创建问答记录目录失败：{0}"
+
+  # 冲突与演化 (Conflicts & Evolution)
+  conflicts:
+    query:
+      start: "🔍 查询冲突列表: status={0}, page={1}, pageSize={2}"
+      success: "✅ 查询冲突成功: total={0}, returned={1}"
+      failed: "❌ 查询冲突失败"
+  
+  vote:
+    submitted: "✅ 投票已提交: userId={0}, conflictId={1}, choice={2}"
+    success: "投票成功！您的选择将帮助改进知识库"
+    failed: "❌ 提交投票失败"
+    impact: "您选择了方案{0}，这将影响该概念的最终版本"
+    error:
+      invalid_choice: "选择必须是 A 或 B"
+  
+  evolution:
+    query:
+      start: "🔍 查询演化历史: conceptId={0}"
+      success: "✅ 查询演化历史成功: conceptId={0}, versions={1}"
+      failed: "❌ 查询演化历史失败"
+  
+  quality:
+    query:
+      start: "🔍 查询质量监控数据"
+      success: "✅ 查询质量监控数据成功"
+      failed: "❌ 查询质量监控数据失败"
+  
+  prompts:
+    query:
+      start: "🔍 查询提示词推荐: strategy={0}, limit={1}"
+      success: "✅ 查询提示词推荐成功: count={0}, strategy={1}"
+      failed: "❌ 查询提示词推荐失败"
+  
+  submit:
+    received: "✅ 收到反馈提交: type={0}"
+    failed: "❌ 提交反馈失败"
+  
+  list:
+    query:
+      start: "🔍 查询反馈列表: page={0}, pageSize={1}"
+      success: "✅ 查询反馈列表成功: count={0}"
+      failed: "❌ 查询反馈列表失败"
