@@ -414,6 +414,7 @@ export default {
     // 状态
     all: '全部',
     pending: '待处理',
+    voting: '投票中',
     resolved: '已解决',
 
     // 冲突

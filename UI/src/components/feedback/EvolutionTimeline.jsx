@@ -26,8 +26,9 @@ function EvolutionTimeline() {
     try {
       const response = await feedbackApi.getEvolutionHistory()
       if (response) {
-        // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
-        setTimeline(response || [])
+        // Backend returns {success, conceptId, history: [...]} structure
+        const historyData = response.history || response || []
+        setTimeline(Array.isArray(historyData) ? historyData : [])
       }
     } catch (error) {
       console.error('Failed to load timeline:', error)
@@ -76,21 +77,23 @@ function EvolutionTimeline() {
   return (
     <div className="evolution-timeline">
       <Timeline>
-        {timeline.map((item) => (
-          <Timeline.Item
-            key={item.id}
-            dot={getTimelineIcon(item.type)}
-            color={getTimelineColor(item.type)}
-          >
-            <Card className="evolution-timeline__card">
-              <div className="evolution-timeline__header">
-                <Tag color={getTimelineColor(item.type)}>
-                  {t(`feedback.timeline.${item.type}`)}
-                </Tag>
-                <span className="evolution-timeline__time">
-                  {new Date(item.timestamp).toLocaleString()}
-                </span>
-              </div>
+        {timeline.map((item) => {
+          const itemType = item.type || 'created' // Default to 'created' if type is missing
+          return (
+            <Timeline.Item
+              key={item.id}
+              dot={getTimelineIcon(itemType)}
+              color={getTimelineColor(itemType)}
+            >
+              <Card className="evolution-timeline__card">
+                <div className="evolution-timeline__header">
+                  <Tag color={getTimelineColor(itemType)}>
+                    {t(`feedback.timeline.${itemType}`)}
+                  </Tag>
+                  <span className="evolution-timeline__time">
+                    {new Date(item.timestamp).toLocaleString()}
+                  </span>
+                </div>
 
               <div className="evolution-timeline__content">
                 <h4 className="evolution-timeline__title">{item.title}</h4>
@@ -118,8 +121,9 @@ function EvolutionTimeline() {
                 )}
               </div>
             </Card>
-          </Timeline.Item>
-        ))}
+            </Timeline.Item>
+          )
+        })}
       </Timeline>
     </div>
   )

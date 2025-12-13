@@ -702,35 +702,54 @@ public class FeedbackController {
      * 创建模拟演化历史数据 / Create mock evolution history data
      */
     private List<Map<String, Object>> createMockEvolutionHistory(String conceptId) {
-        return List.of(
-            Map.of(
-                "id", "evo-1",
-                "conceptId", conceptId,
-                "version", 1,
-                "content", "初始版本：微服务是一种架构风格",
-                "author", "system",
-                "timestamp", System.currentTimeMillis() - 604800000,
-                "reason", "初始创建"
-            ),
-            Map.of(
-                "id", "evo-2",
-                "conceptId", conceptId,
-                "version", 2,
-                "content", "更新版本：微服务是一种将应用程序构建为小型独立服务的架构风格",
-                "author", "admin",
-                "timestamp", System.currentTimeMillis() - 432000000,
-                "reason", "用户反馈优化"
-            ),
-            Map.of(
-                "id", "evo-3",
-                "conceptId", conceptId,
-                "version", 3,
-                "content", "当前版本：微服务是一种分布式架构风格，每个服务独立部署、独立扩展",
-                "author", "expert",
-                "timestamp", System.currentTimeMillis() - 86400000,
-                "reason", "社区投票决定"
-            )
-        );
+        // 创建历史记录1 - Map.of() 最多支持10个键值对，超过需要用HashMap
+        Map<String, Object> evo1 = new java.util.HashMap<>();
+        evo1.put("id", "evo-1");
+        evo1.put("conceptId", conceptId);
+        evo1.put("version", 1);
+        evo1.put("type", "created");
+        evo1.put("title", "概念创建");
+        evo1.put("description", "初始创建概念定义");
+        evo1.put("content", "初始版本：微服务是一种架构风格");
+        evo1.put("author", "system");
+        evo1.put("timestamp", System.currentTimeMillis() - 604800000);
+        evo1.put("reason", "初始创建");
+        
+        // 创建历史记录2
+        Map<String, Object> evo2 = new java.util.HashMap<>();
+        evo2.put("id", "evo-2");
+        evo2.put("conceptId", conceptId);
+        evo2.put("version", 2);
+        evo2.put("type", "updated");
+        evo2.put("title", "概念更新");
+        evo2.put("description", "根据用户反馈优化定义");
+        evo2.put("content", "更新版本：微服务是一种将应用程序构建为小型独立服务的架构风格");
+        evo2.put("author", "admin");
+        evo2.put("timestamp", System.currentTimeMillis() - 432000000);
+        evo2.put("reason", "用户反馈优化");
+        evo2.put("changes", Map.of(
+            "before", "微服务是一种架构风格",
+            "after", "微服务是一种将应用程序构建为小型独立服务的架构风格"
+        ));
+        
+        // 创建历史记录3
+        Map<String, Object> evo3 = new java.util.HashMap<>();
+        evo3.put("id", "evo-3");
+        evo3.put("conceptId", conceptId);
+        evo3.put("version", 3);
+        evo3.put("type", "resolved");
+        evo3.put("title", "冲突解决");
+        evo3.put("description", "通过社区投票确定最终版本");
+        evo3.put("content", "当前版本：微服务是一种分布式架构风格，每个服务独立部署、独立扩展");
+        evo3.put("author", "expert");
+        evo3.put("timestamp", System.currentTimeMillis() - 86400000);
+        evo3.put("reason", "社区投票决定");
+        evo3.put("changes", Map.of(
+            "before", "微服务是一种将应用程序构建为小型独立服务的架构风格",
+            "after", "微服务是一种分布式架构风格，每个服务独立部署、独立扩展"
+        ));
+        
+        return List.of(evo1, evo2, evo3);
     }
 
     /**

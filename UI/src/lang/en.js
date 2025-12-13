@@ -410,6 +410,7 @@ export default {
     // Status
     all: 'All',
     pending: 'Pending',
+    voting: 'Voting',
     resolved: 'Resolved',
 
     // Conflicts

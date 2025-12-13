@@ -64,6 +64,49 @@ feedback:
 
   cleared: "All feedback cleared"
 
+  # Conflicts & Evolution API
+  conflicts:
+    query:
+      start: "🔍 Querying conflicts: status={0}, page={1}, pageSize={2}"
+      success: "✅ Query conflicts successful: total={0}, returned={1}"
+      failed: "❌ Query conflicts failed"
+
+  vote:
+    submitted: "✅ Vote submitted: userId={0}, conflictId={1}, choice={2}"
+    success: "Vote successful! Your choice will help improve the knowledge base"
+    failed: "❌ Failed to submit vote"
+    impact: "You chose option {0}, this will affect the final version of this concept"
+    error:
+      invalid_choice: "Choice must be A or B"
+
+  evolution:
+    query:
+      start: "🔍 Querying evolution history: conceptId={0}"
+      success: "✅ Query evolution history successful: conceptId={0}, versions={1}"
+      failed: "❌ Query evolution history failed"
+
+  quality:
+    query:
+      start: "🔍 Querying quality monitoring data"
+      success: "✅ Query quality monitoring data successful"
+      failed: "❌ Query quality monitoring data failed"
+
+  prompts:
+    query:
+      start: "🔍 Querying prompt recommendations: strategy={0}, limit={1}"
+      success: "✅ Query prompt recommendations successful: count={0}, strategy={1}"
+      failed: "❌ Query prompt recommendations failed"
+
+  submit:
+    received: "✅ Feedback submission received: type={0}"
+    failed: "❌ Failed to submit feedback"
+
+  list:
+    query:
+      start: "🔍 Querying feedback list: page={0}, pageSize={1}"
+      success: "✅ Query feedback list successful: count={0}"
+      failed: "❌ Query feedback list failed"
+
 # Log Messages
 log:
   feedback:
@@ -122,50 +165,5 @@ log:
     pending_failed: "Failed to get pending records"
     stats_failed: "Failed to get statistics"
     load_failed: "Failed to load Q&A records: file={0}"
-    records_dir: "Q&A records storage directory: {0}"
-    records_dir_failed: "Failed to create Q&A records directory: {0}"
-
-  # Conflicts & Evolution
-  conflicts:
-    query:
-      start: "🔍 Querying conflicts: status={0}, page={1}, pageSize={2}"
-      success: "✅ Query conflicts successful: total={0}, returned={1}"
-      failed: "❌ Query conflicts failed"
-  
-  vote:
-    submitted: "✅ Vote submitted: userId={0}, conflictId={1}, choice={2}"
-    success: "Vote successful! Your choice will help improve the knowledge base"
-    failed: "❌ Failed to submit vote"
-    impact: "You chose option {0}, this will affect the final version of this concept"
-    error:
-      invalid_choice: "Choice must be A or B"
-  
-  evolution:
-    query:
-      start: "🔍 Querying evolution history: conceptId={0}"
-      success: "✅ Query evolution history successful: conceptId={0}, versions={1}"
-      failed: "❌ Query evolution history failed"
-  
-  quality:
-    query:
-      start: "🔍 Querying quality monitoring data"
-      success: "✅ Query quality monitoring data successful"
-      failed: "❌ Query quality monitoring data failed"
-  
-  prompts:
-    query:
-      start: "🔍 Querying prompt recommendations: strategy={0}, limit={1}"
-      success: "✅ Query prompt recommendations successful: count={0}, strategy={1}"
-      failed: "❌ Query prompt recommendations failed"
-  
-  submit:
-    received: "✅ Feedback submission received: type={0}"
-    failed: "❌ Failed to submit feedback"
-  
-  list:
-    query:
-      start: "🔍 Querying feedback list: page={0}, pageSize={1}"
-      success: "✅ Query feedback list successful: count={0}"
-      failed: "❌ Query feedback list failed"
     records_dir: "Q&A records storage directory: {0}"
     records_dir_failed: "Failed to create Q&A records directory: {0}"

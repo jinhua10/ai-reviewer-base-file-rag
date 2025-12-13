@@ -83,7 +83,7 @@ function ConflictCard(props) {
               percent={calculateVoteProgress()}
               showInfo={false}
               strokeColor="#667eea"
-              trailColor="#f0f0f0"
+              railColor="#f0f0f0"
             />
           </div>
         )}

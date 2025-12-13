@@ -68,6 +68,7 @@ function ConflictList() {
             options={[
               { label: t('feedback.all'), value: 'all' },
               { label: t('feedback.pending'), value: 'pending' },
+              { label: t('feedback.status.voting'), value: 'voting' },
               { label: t('feedback.resolved'), value: 'resolved' },
             ]}
           />
