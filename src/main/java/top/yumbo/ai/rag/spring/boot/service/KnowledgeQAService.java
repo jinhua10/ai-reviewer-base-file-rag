@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import top.yumbo.ai.rag.chunking.ChunkingStrategy;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
@@ -84,7 +85,7 @@ public class KnowledgeQAService {
 
     /**
      * -- GETTER --
-     *  检查是否正在索引
+     * 检查是否正在索引
      */
     // 索引状态标记
     @Getter
@@ -299,25 +300,25 @@ public class KnowledgeQAService {
 
         // 初始化智能上下文构建器（使用新的构造函数，包含存储服务）/ Initialize smart context builder (using new constructor with storage service)
         contextBuilder = new SmartContextBuilder(
-            properties.getLlm().getMaxContextLength(),
-            properties.getLlm().getMaxDocLength(),
-            true, // preserveFullContent（由策略控制，保留兼容性）/ preserveFullContent (controlled by strategy, maintain compatibility)
-            properties.getLlm().getChunking(),
-            strategy,
-            llmClient,
-            chunkStorageService  // 传递块存储服务 / Pass chunk storage service
+                properties.getLlm().getMaxContextLength(),
+                properties.getLlm().getMaxDocLength(),
+                true, // preserveFullContent（由策略控制，保留兼容性）/ preserveFullContent (controlled by strategy, maintain compatibility)
+                properties.getLlm().getChunking(),
+                strategy,
+                llmClient,
+                chunkStorageService  // 传递块存储服务 / Pass chunk storage service
         );
 
         log.info(I18N.get("knowledge_qa_service.log.smart_context_initialized",
-            properties.getLlm().getMaxContextLength(), properties.getLlm().getMaxDocLength()));
+                properties.getLlm().getMaxContextLength(), properties.getLlm().getMaxDocLength()));
         log.info(I18N.get("knowledge_qa_service.log.chunking_strategy", strategy, strategy.getDescription()));
         log.info(I18N.get("knowledge_qa_service.log.chunk_size_chars", properties.getLlm().getChunking().getChunkSize()));
         log.info(I18N.get("knowledge_qa_service.log.chunk_overlap_chars", properties.getLlm().getChunking().getChunkOverlap()));
 
         if (strategy == ChunkingStrategy.AI_SEMANTIC
-            && properties.getLlm().getChunking().getAiChunking().isEnabled()) {
+                && properties.getLlm().getChunking().getAiChunking().isEnabled()) {
             log.info(I18N.get("knowledge_qa_service.log.ai_chunking_enabled",
-                properties.getLlm().getChunking().getAiChunking().getModel()));
+                    properties.getLlm().getChunking().getAiChunking().getModel()));
         }
 
         if (embeddingEngine != null && vectorIndexEngine != null) {
@@ -329,10 +330,10 @@ public class KnowledgeQAService {
 
     /**
      * 直接LLM模式（不使用RAG）/ Direct LLM mode (without RAG)
-     * 
+     * <p>
      * 直接调用LLM回答问题，不检索知识库
      * (Directly call LLM to answer questions without retrieving knowledge base)
-     * 
+     *
      * @param question 问题
      * @return AI回答
      */
@@ -361,20 +362,20 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 保存问答记录
-            String recordId = saveQARecord(question, answer, 
-                Collections.singletonList("Direct LLM"), 
-                Collections.emptyList(), 
-                totalTime);
+            String recordId = saveQARecord(question, answer,
+                    Collections.singletonList("Direct LLM"),
+                    Collections.emptyList(),
+                    totalTime);
 
             AIAnswer aiAnswer = new AIAnswer(
-                answer,
-                Collections.singletonList("Direct LLM"),  // 来源标记为直接LLM
-                totalTime,
-                Collections.emptyList(),  // 无切分块
-                Collections.emptyList(),  // 无图片
-                Collections.emptyList(),  // 无文档
-                0,                        // 未检索文档
-                false                     // 无更多文档
+                    answer,
+                    Collections.singletonList("Direct LLM"),  // 来源标记为直接LLM
+                    totalTime,
+                    Collections.emptyList(),  // 无切分块
+                    Collections.emptyList(),  // 无图片
+                    Collections.emptyList(),  // 无文档
+                    0,                        // 未检索文档
+                    false                     // 无更多文档
             );
 
             aiAnswer.setRecordId(recordId);
@@ -389,15 +390,43 @@ public class KnowledgeQAService {
             log.error("❌ Direct LLM processing failed", e);
             long totalTime = System.currentTimeMillis() - startTime;
             return new AIAnswer(
-                I18N.get("knowledge_qa_service.answer_generation_failed", e.getMessage()),
-                Collections.singletonList("Direct LLM"),
-                totalTime,
-                Collections.emptyList(),
-                Collections.emptyList(),
-                Collections.emptyList(),
-                0,
-                false
+                    I18N.get("knowledge_qa_service.answer_generation_failed", e.getMessage()),
+                    Collections.singletonList("Direct LLM"),
+                    totalTime,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    0,
+                    false
             );
+        }
+    }
+
+    /**
+     * 直接调用 LLM - 流式版本 / Call LLM directly - Streaming version
+     * <p>
+     * 不使用 RAG 检索，直接向 LLM 提问，实时流式返回
+     * (No RAG retrieval, ask LLM directly with streaming response)
+     *
+     * @param question 问题 (Question)
+     * @return Flux<String> 流式答案片段 (Streaming answer chunks)
+     */
+    public Flux<String> askDirectLLMStream(String question) {
+        if (llmClient == null) {
+            return Flux.just(I18N.get("log.kqa.system_not_initialized"));
+        }
+
+        try {
+            log.info(I18N.get("knowledge_qa_service.question_separator"));
+            log.info(I18N.get("knowledge_qa_service.question_prompt", question) + " [Direct LLM Mode - Streaming]");
+            log.info(I18N.get("knowledge_qa_service.separator"));
+
+            // 直接调用 LLM 流式接口
+            return llmClient.generateStream(question);
+
+        } catch (Exception e) {
+            log.error("❌ Direct LLM streaming failed", e);
+            return Flux.just(I18N.get("knowledge_qa_service.answer_generation_failed", e.getMessage()));
         }
     }
 
@@ -414,7 +443,7 @@ public class KnowledgeQAService {
     /**
      * 提问（带会话ID）
      *
-     * @param question 问题
+     * @param question      问题
      * @param hopeSessionId HOPE 会话ID（用于上下文增强）
      * @return 回答
      */
@@ -470,7 +499,7 @@ public class KnowledgeQAService {
 
             // 步骤1.5: PPL Rerank（如果启用）(Step 1.5: PPL Rerank if enabled)
             if (pplServiceFacade != null && pplConfig != null && pplConfig.getReranking() != null &&
-                pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
+                    pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
                 try {
                     log.info(I18N.get("log.ppl.rerank_start", documents.size()));
                     long rerankStart = System.currentTimeMillis();
@@ -499,12 +528,12 @@ public class KnowledgeQAService {
 
                 // 获取第一批文档 / Get first batch of documents
                 SearchSessionService.SessionDocuments firstBatch =
-                    sessionService.getCurrentDocuments(sessionId);
+                        sessionService.getCurrentDocuments(sessionId);
                 documents = firstBatch.getDocuments();
                 hasMoreDocs = firstBatch.isHasNext();
 
                 log.info(I18N.get("knowledge_qa_service.create_session",
-                    sessionId, totalDocs, documents.size(), firstBatch.getRemainingDocuments()));
+                        sessionId, totalDocs, documents.size(), firstBatch.getRemainingDocuments()));
             }
 
             if (totalDocs > docsPerQuery) {
@@ -534,7 +563,7 @@ public class KnowledgeQAService {
             for (top.yumbo.ai.rag.model.Document doc : documents) {
                 try {
                     List<ImageInfo> docImages =
-                        imageStorageService.listImages(doc.getTitle());
+                            imageStorageService.listImages(doc.getTitle());
 
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
@@ -552,8 +581,8 @@ public class KnowledgeQAService {
                         for (int i = 0; i < displayCount; i++) {
                             ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
-                                ? img.getDescription()
-                                : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
+                                    ? img.getDescription()
+                                    : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
 
                             // 生成纯 Markdown 格式，让前端直接渲染图片
                             // (Generate pure Markdown format for direct rendering)
@@ -579,13 +608,13 @@ public class KnowledgeQAService {
                     .toList();
 
             String prompt = buildEnhancedPrompt(
-                question,
-                context,
-                imageContext.toString(),
-                !allImages.isEmpty(),
-                usedDocTitles,
-                hasMoreDocs,
-                remainingDocs.size()
+                    question,
+                    context,
+                    imageContext.toString(),
+                    !allImages.isEmpty(),
+                    usedDocTitles,
+                    hasMoreDocs,
+                    remainingDocs.size()
             );
 
             if (!allImages.isEmpty()) {
@@ -600,7 +629,7 @@ public class KnowledgeQAService {
             // 步骤5: 调用 LLM 生成答案 / Step 5: Call LLM to generate answer
             log.debug("🔍 Prompt: {}", prompt);
             String answer = llmClient.generate(prompt);
-            
+
             // 调试：检查answer中的图片引用
             log.debug("🔍 Answer: {}", answer);
 
@@ -616,7 +645,7 @@ public class KnowledgeQAService {
             List<ImageInfo> images = Collections.emptyList();
 
             if (!documents.isEmpty()) {
-                String firstDocTitle = documents.get(0).getTitle();
+                String firstDocTitle = documents.getFirst().getTitle();
                 if (chunkStorageService != null && imageStorageService != null) {
                     try {
                         chunks = chunkStorageService.listChunks(firstDocTitle);
@@ -634,22 +663,22 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.answer_label"));
             log.info(answer);
             log.info(I18N.get("knowledge_qa_service.sources_label", sources.size()));
-             sources.forEach(source -> log.info("   - {}", source));
+            sources.forEach(source -> log.info("   - {}", source));
             log.info(I18N.get("knowledge_qa_service.response_time", totalTime));
-             log.info(I18N.get("knowledge_qa_service.separator"));
+            log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 保存问答记录（用于反馈和优化）/ Save QA record (for feedback and optimization)
             String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
 
             AIAnswer aiAnswer = new AIAnswer(
-                answer,
-                sources,
-                totalTime,
-                chunks,
-                images,
-                usedDocTitles,      // 本次使用的文档
-                totalDocs,          // 检索到的总文档数
-                hasMoreDocs         // 是否还有更多文档
+                    answer,
+                    sources,
+                    totalTime,
+                    chunks,
+                    images,
+                    usedDocTitles,      // 本次使用的文档
+                    totalDocs,          // 检索到的总文档数
+                    hasMoreDocs         // 是否还有更多文档
             );
 
             // 设置记录ID，方便后续反馈
@@ -710,10 +739,125 @@ public class KnowledgeQAService {
     }
 
     /**
+     * 提问 - 流式版本 / Ask question - Streaming version
+     * <p>
+     * 使用 RAG 检索并流式返回答案
+     * (Use RAG retrieval and return streaming answer)
+     *
+     * @param question 问题 (Question)
+     * @param hopeSessionId HOPE 会话ID（可选）(HOPE session ID, optional)
+     * @return Flux<String> 流式答案片段 (Streaming answer chunks)
+     */
+    public Flux<String> askStream(String question, String hopeSessionId) {
+        if (rag == null || llmClient == null) {
+            return Flux.just(I18N.get("log.kqa.system_not_initialized"));
+        }
+
+        try {
+            log.info(I18N.get("knowledge_qa_service.question_separator"));
+            log.info(I18N.get("knowledge_qa_service.question_prompt", question) + " [Streaming Mode]");
+            log.info(I18N.get("knowledge_qa_service.separator"));
+
+            // 设置 HOPE 会话ID
+            if (hopeSessionId != null && !hopeSessionId.isEmpty()) {
+                HOPEEnhancedLLMClient.setSessionId(hopeSessionId);
+            }
+
+            // 步骤1: 检索相关文档
+            List<Document> documents;
+            if (searchStrategyDispatcher != null && !searchStrategyDispatcher.getAllStrategies().isEmpty()) {
+                documents = searchWithStrategyDispatcher(question);
+            } else if (embeddingEngine != null && vectorIndexEngine != null) {
+                documents = hybridSearchService.hybridSearch(question, rag, embeddingEngine, vectorIndexEngine);
+            } else {
+                documents = hybridSearchService.keywordSearch(question, rag);
+            }
+
+            // PPL Rerank（如果启用）
+            if (pplServiceFacade != null && pplConfig != null && pplConfig.getReranking() != null &&
+                    pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
+                try {
+                    documents = pplServiceFacade.rerank(question, documents);
+                } catch (Exception e) {
+                    log.warn(I18N.get("log.ppl.rerank_failed", e.getMessage()));
+                }
+            }
+
+            // 限制文档数量
+            int docsPerQuery = configService.getDocumentsPerQuery();
+            if (documents.size() > docsPerQuery) {
+                documents = documents.subList(0, docsPerQuery);
+            }
+
+            // 步骤2: 构建上下文
+            String context = contextBuilder != null
+                ? contextBuilder.buildSmartContext(question, documents)
+                : documents.stream()
+                    .map(doc -> doc.getTitle() + ": " + doc.getContent())
+                    .collect(java.util.stream.Collectors.joining("\n\n"));
+
+            // 步骤3: 收集图片信息
+            StringBuilder imageContext = new StringBuilder();
+            for (Document doc : documents) {
+                try {
+                    List<ImageInfo> docImages = imageStorageService.listImages(doc.getTitle());
+                    if (!docImages.isEmpty()) {
+                        imageContext.append("\n---\n");
+                        imageContext.append("📎 ").append(I18N.get("knowledge_qa_service.doc_images_header",
+                            doc.getTitle(), Math.min(docImages.size(), properties.getImageProcessing().getMaxImagesPerDoc())));
+                        imageContext.append("\n");
+
+                        for (int i = 0; i < Math.min(docImages.size(), properties.getImageProcessing().getMaxImagesPerDoc()); i++) {
+                            ImageInfo img = docImages.get(i);
+                            String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
+                                ? img.getDescription()
+                                : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
+                            imageContext.append(String.format("![%s](%s)\n", imgDesc, img.getUrl()));
+                        }
+                    }
+                } catch (Exception e) {
+                    log.warn(I18N.get("knowledge_qa_service.image_not_found", doc.getTitle()), e);
+                }
+            }
+
+            // 步骤4: 构建 Prompt
+            List<String> usedDocTitles = documents.stream()
+                .map(Document::getTitle)
+                .distinct()
+                .toList();
+
+            String prompt = buildEnhancedPrompt(
+                question,
+                context,
+                imageContext.toString(),
+                imageContext.length() > 0,
+                usedDocTitles,
+                false,
+                0
+            );
+
+            log.info(I18N.get("knowledge_qa_service.using_docs", usedDocTitles.size()));
+
+            // 步骤5: 流式调用 LLM
+            Flux<String> answerStream = llmClient.generateStream(prompt);
+
+            // 清除 HOPE 会话ID
+            return answerStream.doFinally(signalType -> {
+                HOPEEnhancedLLMClient.clearSessionId();
+            });
+
+        } catch (Exception e) {
+            log.error("❌ Streaming QA processing failed", e);
+            HOPEEnhancedLLMClient.clearSessionId();
+            return Flux.just(I18N.get("knowledge_qa_service.error_processing", e.getMessage()));
+        }
+    }
+
+    /**
      * 带上下文的问答（供策略层调用）
      * (QA with context - for strategy layer)
      *
-     * @param prompt 提示词/问题
+     * @param prompt  提示词/问题
      * @param context 上下文内容（可以为空）
      * @return 答案字符串
      */
@@ -742,7 +886,7 @@ public class KnowledgeQAService {
     /**
      * 直接问答（不使用知识库检索）
      * (Direct QA - without knowledge base retrieval)
-     *
+     * <p>
      * 用于单文档分析场景，直接将文档内容作为上下文发送给 LLM
      * (Used for single document analysis, directly sends document content as context to LLM)
      *
@@ -767,18 +911,18 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.log.direct_qa_complete", totalTime));
 
             return new AIAnswer(
-                answer,
-                List.of(), // 无引用来源 (No reference sources)
-                totalTime
+                    answer,
+                    List.of(), // 无引用来源 (No reference sources)
+                    totalTime
             );
 
         } catch (Exception e) {
             log.error(I18N.get("knowledge_qa_service.log.direct_qa_failed"), e);
             long totalTime = System.currentTimeMillis() - startTime;
             return new AIAnswer(
-                I18N.get("knowledge_qa_service.log.direct_qa_error", e.getMessage()),
-                List.of(),
-                totalTime
+                    I18N.get("knowledge_qa_service.log.direct_qa_error", e.getMessage()),
+                    List.of(),
+                    totalTime
             );
         }
     }
@@ -786,7 +930,7 @@ public class KnowledgeQAService {
     /**
      * 使用会话中的特定批次文档进行问答
      *
-     * @param question 问题
+     * @param question  问题
      * @param sessionId 会话ID
      * @return 回答
      */
@@ -804,23 +948,23 @@ public class KnowledgeQAService {
 
             // 从会话获取当前批次的文档 / Get current batch of documents from session
             SearchSessionService.SessionDocuments sessionDocs =
-                sessionService.getCurrentDocuments(sessionId);
+                    sessionService.getCurrentDocuments(sessionId);
 
             List<Document> documents = sessionDocs.getDocuments();
 
             log.info(I18N.get("knowledge_qa_service.using_session_docs",
-                sessionDocs.getTotalDocuments(),
-                sessionDocs.getCurrentPage(),
-                sessionDocs.getTotalPages(),
-                documents.size()));
+                    sessionDocs.getTotalDocuments(),
+                    sessionDocs.getCurrentPage(),
+                    sessionDocs.getTotalPages(),
+                    documents.size()));
 
             // 获取会话信息 / Get session information
             SearchSessionService.SessionInfo sessionInfo =
-                sessionService.getSessionInfo(sessionId);
+                    sessionService.getSessionInfo(sessionId);
 
             // 步骤2: 构建智能上下文 / Step 2: Build smart context
             if (!documents.isEmpty() && contextBuilder != null) {
-                String firstDocTitle = documents.get(0).getTitle();
+                String firstDocTitle = documents.getFirst().getTitle();
                 contextBuilder.setCurrentDocumentId(firstDocTitle);
             }
 
@@ -835,7 +979,7 @@ public class KnowledgeQAService {
             for (top.yumbo.ai.rag.model.Document doc : documents) {
                 try {
                     List<ImageInfo> docImages =
-                        imageStorageService.listImages(doc.getTitle());
+                            imageStorageService.listImages(doc.getTitle());
 
                     if (!docImages.isEmpty()) {
                         allImages.addAll(docImages);
@@ -854,8 +998,8 @@ public class KnowledgeQAService {
                         for (int i = 0; i < displayCount; i++) {
                             ImageInfo img = docImages.get(i);
                             String imgDesc = img.getDescription() != null && !img.getDescription().isEmpty()
-                                ? img.getDescription()
-                                : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
+                                    ? img.getDescription()
+                                    : I18N.get("knowledge_qa_service.image_desc_default", i + 1);
 
                             imageContext.append("![").append(imgDesc).append("](").append(img.getUrl()).append(")\n");
                         }
@@ -871,21 +1015,21 @@ public class KnowledgeQAService {
 
             // 步骤4: 构建增强的 Prompt
             List<String> usedDocTitles = documents.stream()
-                .map(Document::getTitle)
-                .distinct()
-                .toList();
+                    .map(Document::getTitle)
+                    .distinct()
+                    .toList();
 
             boolean hasMoreDocs = sessionInfo.isHasNext();
             int remainingDocsCount = sessionInfo.getRemainingDocuments();
 
             String prompt = buildEnhancedPrompt(
-                question,
-                context,
-                imageContext.toString(),
-                !allImages.isEmpty(),
-                usedDocTitles,
-                hasMoreDocs,
-                remainingDocsCount
+                    question,
+                    context,
+                    imageContext.toString(),
+                    !allImages.isEmpty(),
+                    usedDocTitles,
+                    hasMoreDocs,
+                    remainingDocsCount
             );
 
             if (!allImages.isEmpty()) {
@@ -911,7 +1055,7 @@ public class KnowledgeQAService {
             List<ImageInfo> images = Collections.emptyList();
 
             if (!documents.isEmpty()) {
-                String firstDocTitle = documents.get(0).getTitle();
+                String firstDocTitle = documents.getFirst().getTitle();
                 if (chunkStorageService != null && imageStorageService != null) {
                     try {
                         chunks = chunkStorageService.listChunks(firstDocTitle);
@@ -929,22 +1073,22 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.answer_label"));
             log.info(answer);
             log.info(I18N.get("knowledge_qa_service.sources_label", sources.size()));
-             sources.forEach(source -> log.info("   - {}", source));
+            sources.forEach(source -> log.info("   - {}", source));
             log.info(I18N.get("knowledge_qa_service.response_time", totalTime));
-             log.info(I18N.get("knowledge_qa_service.separator"));
+            log.info(I18N.get("knowledge_qa_service.separator"));
 
             // 保存问答记录 / Save QA record
             String recordId = saveQARecord(question, answer, sources, usedDocTitles, totalTime);
 
             AIAnswer aiAnswer = new AIAnswer(
-                answer,
-                sources,
-                totalTime,
-                chunks,
-                images,
-                usedDocTitles,
-                sessionInfo.getTotalDocuments(),
-                hasMoreDocs
+                    answer,
+                    sources,
+                    totalTime,
+                    chunks,
+                    images,
+                    usedDocTitles,
+                    sessionInfo.getTotalDocuments(),
+                    hasMoreDocs
             );
 
             aiAnswer.setRecordId(recordId);
@@ -979,18 +1123,18 @@ public class KnowledgeQAService {
     /**
      * 构建增强的 LLM Prompt（包含图片信息和文档使用说明）
      *
-     * @param question 用户问题
-     * @param context 文本上下文
-     * @param imageContext 图片上下文（图片URL和描述）
-     * @param hasImages 是否有可用图片
-     * @param usedDocuments 本次使用的文档列表
-     * @param hasMoreDocs 是否还有更多文档未处理
+     * @param question       用户问题
+     * @param context        文本上下文
+     * @param imageContext   图片上下文（图片URL和描述）
+     * @param hasImages      是否有可用图片
+     * @param usedDocuments  本次使用的文档列表
+     * @param hasMoreDocs    是否还有更多文档未处理
      * @param remainingCount 剩余文档数量
      * @return 增强的 Prompt
      */
     private String buildEnhancedPrompt(String question, String context, String imageContext,
-                                      boolean hasImages, List<String> usedDocuments,
-                                      boolean hasMoreDocs, int remainingCount) {
+                                       boolean hasImages, List<String> usedDocuments,
+                                       boolean hasMoreDocs, int remainingCount) {
         // 从配置中获取提示词模板（From configuration get prompt template）
         String template = properties.getLlm().getPromptTemplate();
 
@@ -1019,7 +1163,7 @@ public class KnowledgeQAService {
         // 如果有更多未处理的文档，提示用户（If there are more unprocessed documents, prompt the user）
         if (hasMoreDocs && remainingCount > 0) {
             enhancement.append("\n\n").append(I18N.get("knowledge_qa_service.more_docs_notice",
-                usedDocuments.size(), remainingCount));
+                    usedDocuments.size(), remainingCount));
         }
 
         // 添加图片信息（在问题和上下文之后）（Add image information after question and context）
@@ -1030,9 +1174,9 @@ public class KnowledgeQAService {
         // 【关键】构建最终 Prompt：图片指南 → 基础模板 → 文档说明 → 图片列表
         // (Critical) Build final prompt: Image guide → Base template → Doc instructions → Image list
         return imageGuide.toString() +
-               template.replace("{question}", question)
-                      .replace("{context}", context) +
-               enhancement.toString();
+                template.replace("{question}", question)
+                        .replace("{context}", context) +
+                enhancement.toString();
     }
 
     /**
@@ -1077,14 +1221,14 @@ public class KnowledgeQAService {
 
         // 计算索引完成度：基于唯一文档数而非块数
         stats.setIndexProgress(fileSystemDocCount > 0 ?
-            (int) Math.round((double) Math.min(uniqueDocsCount, fileSystemDocCount) / fileSystemDocCount * 100) : 100);
+                (int) Math.round((double) Math.min(uniqueDocsCount, fileSystemDocCount) / fileSystemDocCount * 100) : 100);
 
         // 为了兼容性，设置 indexedDocumentCount 为唯一文档数
         stats.setIndexedDocumentCount(uniqueDocsCount);
 
         log.debug(I18N.get("knowledge_qa_service.debug_enhanced_stats_v2",
-            fileSystemDocCount, uniqueDocsCount, totalIndexedChunks,
-            stats.getUnindexedCount(), stats.getIndexProgress()));
+                fileSystemDocCount, uniqueDocsCount, totalIndexedChunks,
+                stats.getUnindexedCount(), stats.getIndexProgress()));
 
         return stats;
     }
@@ -1127,21 +1271,21 @@ public class KnowledgeQAService {
 
             // 支持的文件扩展名
             List<String> supportedExtensions = Arrays.asList(
-                "xlsx", "xls", "docx", "doc", "pptx", "ppt", "pdf", "txt", "md", "html", "xml"
+                    "xlsx", "xls", "docx", "doc", "pptx", "ppt", "pdf", "txt", "md", "html", "xml"
             );
 
             // 扫描并统计文件
             try (Stream<Path> paths = Files.walk(documentsPath, 1)) {
                 long count = paths
-                    .filter(Files::isRegularFile)
-                    .filter(path -> {
-                        String filename = path.getFileName().toString();
-                        int lastDot = filename.lastIndexOf('.');
-                        if (lastDot == -1) return false;
-                        String extension = filename.substring(lastDot + 1).toLowerCase();
-                        return supportedExtensions.contains(extension);
-                    })
-                    .count();
+                        .filter(Files::isRegularFile)
+                        .filter(path -> {
+                            String filename = path.getFileName().toString();
+                            int lastDot = filename.lastIndexOf('.');
+                            if (lastDot == -1) return false;
+                            String extension = filename.substring(lastDot + 1).toLowerCase();
+                            return supportedExtensions.contains(extension);
+                        })
+                        .count();
 
                 log.debug(I18N.get("log.kqa.scanned_files_count", count));
                 return count;
@@ -1313,14 +1457,14 @@ public class KnowledgeQAService {
                 .build());
 
         return result.getDocuments().stream()
-            .map(ScoredDocument::getDocument)
-            .collect(Collectors.toList());
+                .map(ScoredDocument::getDocument)
+                .collect(Collectors.toList());
     }
 
     /**
      * 为流式输出搜索文档（使用完整的 RAG 检索逻辑）
      * (Search documents for streaming with full RAG retrieval logic)
-     * 
+     *
      * @param question 问题
      * @return 检索到的文档列表
      */
@@ -1344,7 +1488,7 @@ public class KnowledgeQAService {
 
             // PPL Rerank（如果启用）
             if (pplServiceFacade != null && pplConfig != null && pplConfig.getReranking() != null &&
-                pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
+                    pplConfig.getReranking().isEnabled() && !documents.isEmpty()) {
                 try {
                     documents = pplServiceFacade.rerank(question, documents);
                 } catch (Exception e) {
@@ -1369,18 +1513,18 @@ public class KnowledgeQAService {
     /**
      * 构建带上下文的 Prompt（供流式输出使用，支持图片）
      * (Build prompt with context for streaming, with image support)
-     * 
-     * @param question 问题
-     * @param context 上下文
+     *
+     * @param question  问题
+     * @param context   上下文
      * @param documents 文档列表
      * @return 完整的 Prompt
      */
     public String buildPromptWithContext(String question, String context, List<Document> documents) {
         try {
             List<String> usedDocTitles = documents.stream()
-                .map(Document::getTitle)
-                .distinct()
-                .collect(Collectors.toList());
+                    .map(Document::getTitle)
+                    .distinct()
+                    .collect(Collectors.toList());
 
             // 收集图片信息（与非流式保持一致）
             // (Collect image info, consistent with non-streaming)
@@ -1403,14 +1547,14 @@ public class KnowledgeQAService {
 
                         for (int i = 0; i < displayCount; i++) {
                             ImageInfo img = docImages.get(i);
-                            imageContext.append(String.format("![%s](%s)\n", 
-                                img.getDescription() != null ? img.getDescription() : "Image " + (i + 1),
-                                img.getUrl()));
+                            imageContext.append(String.format("![%s](%s)\n",
+                                    img.getDescription() != null ? img.getDescription() : "Image " + (i + 1),
+                                    img.getUrl()));
                         }
 
                         if (docImages.size() > displayCount) {
-                            imageContext.append(I18N.get("knowledge_qa_service.more_images_notice", 
-                                docImages.size() - displayCount));
+                            imageContext.append(I18N.get("knowledge_qa_service.more_images_notice",
+                                    docImages.size() - displayCount));
                             imageContext.append("\n");
                         }
                     }
@@ -1425,13 +1569,13 @@ public class KnowledgeQAService {
             log.info("Streaming prompt with {} images from {} documents", allImages.size(), documents.size());
 
             return buildEnhancedPrompt(
-                question,
-                context,
-                imageContextStr,
-                hasImages,
-                usedDocTitles,
-                false,  // 流式不支持分页
-                0
+                    question,
+                    context,
+                    imageContextStr,
+                    hasImages,
+                    usedDocTitles,
+                    false,  // 流式不支持分页
+                    0
             );
 
         } catch (Exception e) {
@@ -1466,16 +1610,16 @@ public class KnowledgeQAService {
      * 保存问答记录 (Save QA record)
      */
     private String saveQARecord(String question, String answer,
-                               List<String> retrievedDocs, List<String> usedDocs,
-                               long responseTimeMs) {
+                                List<String> retrievedDocs, List<String> usedDocs,
+                                long responseTimeMs) {
         try {
             QARecord record = QARecord.builder()
-                .question(question)
-                .answer(answer)
-                .retrievedDocuments(retrievedDocs)
-                .usedDocuments(usedDocs)
-                .responseTimeMs(responseTimeMs)
-                .build();
+                    .question(question)
+                    .answer(answer)
+                    .retrievedDocuments(retrievedDocs)
+                    .usedDocuments(usedDocs)
+                    .responseTimeMs(responseTimeMs)
+                    .build();
 
             String recordId = qaRecordService.saveRecord(record);
             log.debug(I18N.get("knowledge_qa_service.log.record_saved", recordId));
@@ -1496,19 +1640,12 @@ public class KnowledgeQAService {
         if (hopeSource == null) {
             return "Unknown";
         }
-        switch (hopeSource.toUpperCase()) {
-            case "PERMANENT":
-            case "PERMANENT_LAYER":
-                return I18N.get("hope.layer.permanent");  // "低频层 (技能知识库)"
-            case "ORDINARY":
-            case "ORDINARY_LAYER":
-                return I18N.get("hope.layer.ordinary");   // "中频层 (近期知识)"
-            case "HIGH_FREQUENCY":
-            case "HIGH_FREQUENCY_LAYER":
-                return I18N.get("hope.layer.high_frequency");  // "高频层 (实时上下文)"
-            default:
-                return hopeSource;
-        }
+        return switch (hopeSource.toUpperCase()) {
+            case "PERMANENT", "PERMANENT_LAYER" -> I18N.get("hope.layer.permanent");  // "低频层 (技能知识库)"
+            case "ORDINARY", "ORDINARY_LAYER" -> I18N.get("hope.layer.ordinary");   // "中频层 (近期知识)"
+            case "HIGH_FREQUENCY", "HIGH_FREQUENCY_LAYER" -> I18N.get("hope.layer.high_frequency");  // "高频层 (实时上下文)"
+            default -> hopeSource;
+        };
     }
 
     /**
@@ -1534,15 +1671,15 @@ public class KnowledgeQAService {
         String keywords = hybridSearchService.extractKeywords(question);
 
         SearchContext context =
-            SearchContext.builder()
-                .question(question)
-                .expandedQuestion(question)
-                .keywords(keywords)
-                .rag(rag)
-                .embeddingEngine(embeddingEngine)
-                .vectorIndexEngine(vectorIndexEngine)
-                .parameters(params)
-                .build();
+                SearchContext.builder()
+                        .question(question)
+                        .expandedQuestion(question)
+                        .keywords(keywords)
+                        .rag(rag)
+                        .embeddingEngine(embeddingEngine)
+                        .vectorIndexEngine(vectorIndexEngine)
+                        .parameters(params)
+                        .build();
 
         // 使用策略调度器执行检索 (Execute search using strategy dispatcher)
         return searchStrategyDispatcher.search(context);

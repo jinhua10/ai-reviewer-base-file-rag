@@ -1,5 +1,8 @@
 package top.yumbo.ai.rag.spring.boot.model;
 
+import lombok.Data;
+import top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo;
+import top.yumbo.ai.rag.image.ImageInfo;
 import top.yumbo.ai.rag.spring.boot.service.SimilarQAService;
 
 import java.util.Collections;
@@ -14,12 +17,13 @@ import java.util.List;
  * @author AI Reviewer Team
  * @since 2.0.0
  */
+@Data
 public class AIAnswer {
     private final String answer;
     private final List<String> sources;
     private final long responseTimeMs;
-    private final List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> chunks;
-    private final List<top.yumbo.ai.rag.image.ImageInfo> images;
+    private final List<ChunkStorageInfo> chunks;
+    private final List<ImageInfo> images;
 
     // 新增：文档使用情况 / New: Document usage
     private final List<String> usedDocuments;  // 本次实际使用的文档 / Documents actually used this time
@@ -67,28 +71,5 @@ public class AIAnswer {
         this.hasMoreDocuments = hasMoreDocuments;
     }
 
-    public String getAnswer() { return answer; }
-    public List<String> getSources() { return sources; }
-    public long getResponseTimeMs() { return responseTimeMs; }
-    public List<top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo> getChunks() { return chunks; }
-    public List<top.yumbo.ai.rag.image.ImageInfo> getImages() { return images; }
-    public List<String> getUsedDocuments() { return usedDocuments; }
-    public int getTotalRetrieved() { return totalRetrieved; }
-    public boolean isHasMoreDocuments() { return hasMoreDocuments; }
-    public String getRecordId() { return recordId; }
-    public void setRecordId(String recordId) { this.recordId = recordId; }
-    public String getSessionId() { return sessionId; }
-    public void setSessionId(String sessionId) { this.sessionId = sessionId; }
-    public List<SimilarQAService.SimilarQA> getSimilarQuestions() { return similarQuestions; }
-    public void setSimilarQuestions(List<SimilarQAService.SimilarQA> similarQuestions) { this.similarQuestions = similarQuestions; }
 
-    // HOPE 相关 getter/setter
-    public String getHopeSource() { return hopeSource; }
-    public void setHopeSource(String hopeSource) { this.hopeSource = hopeSource; }
-    public boolean isDirectAnswer() { return directAnswer; }
-    public void setDirectAnswer(boolean directAnswer) { this.directAnswer = directAnswer; }
-    public String getStrategyUsed() { return strategyUsed; }
-    public void setStrategyUsed(String strategyUsed) { this.strategyUsed = strategyUsed; }
-    public double getHopeConfidence() { return hopeConfidence; }
-    public void setHopeConfidence(double hopeConfidence) { this.hopeConfidence = hopeConfidence; }
 }

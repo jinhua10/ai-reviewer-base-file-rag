@@ -94,3 +94,7 @@ role:
       submit-success: "提交成功，等待审核"
       submit-failed: "提交失败"
 
+      # API 错误消息 (API Error Messages)
+      streaming-failed: "流式问答失败"
+      service-unavailable: "抱歉，问答服务暂时不可用：{0}"
+

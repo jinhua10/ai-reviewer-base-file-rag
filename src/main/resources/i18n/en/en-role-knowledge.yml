@@ -94,3 +94,7 @@ role:
       submit-success: "Submitted successfully, pending review"
       submit-failed: "Submission failed"
 
+      # API Error Messages (API 错误消息)
+      streaming-failed: "Streaming QA failed"
+      service-unavailable: "Sorry, the QA service is temporarily unavailable: {0}"
+

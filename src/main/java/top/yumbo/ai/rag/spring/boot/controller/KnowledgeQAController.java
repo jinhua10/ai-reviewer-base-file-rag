@@ -3,8 +3,10 @@ package top.yumbo.ai.rag.spring.boot.controller;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
@@ -109,6 +111,55 @@ public class KnowledgeQAController {
         response.setHopeConfidence(answer.getHopeConfidence());
 
         return response;
+    }
+
+    /**
+     * 智能问答接口 - 流式版本 / Intelligent Q&A endpoint - Streaming version
+     * <p>
+     * 支持实时流式输出，用户可以看到生成过程
+     * (Supports real-time streaming output, users can see the generation process)
+     * <p>
+     * 根据参数自动路由：
+     * - knowledgeMode="none": 直接调用 LLM 流式回答
+     * - knowledgeMode="rag": 使用传统 RAG 流式回答
+     * - knowledgeMode="role": 使用角色知识库流式回答
+     *
+     * @param request 问题请求（包含 knowledgeMode 和 roleName 参数）
+     * @return 流式响应（Server-Sent Events）
+     */
+    @PostMapping(value = "/ask-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> askStream(@RequestBody QuestionRequest request) {
+        // 解析知识库模式 (Parse knowledge mode)
+        String knowledgeMode = request.getKnowledgeMode();
+        boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
+
+        // 如果指定了 knowledgeMode，优先使用 (If knowledgeMode is specified, use it with priority)
+        if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
+            useKnowledgeBase = !"none".equals(knowledgeMode);
+        }
+
+        String roleName = request.getRoleName();
+        boolean useRoleKnowledge = "role".equals(knowledgeMode);
+
+        log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) +
+                 " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + ", streaming: true]");
+
+        try {
+            if (!useKnowledgeBase) {
+                // 直接 LLM 模式 - 流式 / Direct LLM mode - Streaming
+                return qaService.askDirectLLMStream(request.getQuestion());
+            } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
+                // 使用角色知识库模式 - 流式 / Use role-based knowledge base mode - Streaming
+                log.info(I18N.get("role.knowledge.api.role-mode"), roleName);
+                return roleKnowledgeQAService.askWithRoleStream(request.getQuestion(), roleName);
+            } else {
+                // 使用知识库 RAG 模式 - 流式 / Use knowledge base RAG mode - Streaming
+                return qaService.askStream(request.getQuestion(), request.getHopeSessionId());
+            }
+        } catch (Exception e) {
+            log.error(I18N.get("role.knowledge.api.streaming-failed"), e);
+            return Flux.just(I18N.get("role.knowledge.api.service-unavailable", e.getMessage()));
+        }
     }
 
     /**
