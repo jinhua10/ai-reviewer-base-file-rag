@@ -42,10 +42,10 @@ const qaApi = {
   },
 
   /**
-   * 流式问答 - 双轨架构 (Streaming Q&A - Dual-track Architecture)
+   * 流式问答 - 真正的双轨架构 (Streaming Q&A - True Dual-track Architecture)
    *
-   * 第一轨：立即返回 HOPE 快速答案（<300ms）
-   * 第二轨：通过 SSE 订阅 LLM 详细答案（流式）
+   * 在一个 SSE 连接中同时接收 HOPE 快速答案和 LLM 流式输出
+   * (Receive both HOPE fast answer and LLM streaming in one SSE connection)
    *
    * @param {Object} params - 问题参数
    * @param {string} params.question - 问题内容
@@ -54,7 +54,7 @@ const qaApi = {
    * @param {boolean} params.useKnowledgeBase - 是否使用知识库（兼容参数）
    * @param {string} params.hopeSessionId - HOPE 会话 ID（可选）
    * @param {Function} onChunk - 数据块回调
-   * @returns {Promise<{sessionId, eventSource, stop}>}
+   * @returns {Promise<{eventSource, stop}>}
    */
   async askStreaming(params, onChunk) {
     try {
@@ -62,70 +62,59 @@ const qaApi = {
       console.log('📝 Knowledge Mode:', params.knowledgeMode)
       console.log('👤 Role Name:', params.roleName)
 
-      // Step 1: 发起双轨流式请求，获取 sessionId 和 HOPE 快速答案
-      const response = await fetch('/api/qa/ask-stream', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          question: params.question,
-          knowledgeMode: params.knowledgeMode || 'rag',
-          roleName: params.roleName || 'general',
-          useKnowledgeBase: params.useKnowledgeBase !== undefined ? params.useKnowledgeBase : true,
-          hopeSessionId: params.hopeSessionId
-        })
+      // 构建查询参数
+      const queryParams = new URLSearchParams({
+        question: params.question
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      if (params.hopeSessionId) {
+        queryParams.append('sessionId', params.hopeSessionId)
       }
 
-      const result = await response.json()
-      const { sessionId, hopeAnswer, sseUrl, question } = result
-
-      console.log('📥 Received session info:', {
-        sessionId,
-        hasHopeAnswer: !!hopeAnswer,
-        sseUrl
-      })
-
-      // Step 2: 如果有 HOPE 快速答案，立即发送
-      if (hopeAnswer && hopeAnswer.answer && onChunk) {
-        console.log('💡 HOPE fast answer received:', {
-          source: hopeAnswer.source,
-          confidence: hopeAnswer.confidence,
-          responseTime: hopeAnswer.responseTime
-        })
-
-        onChunk({
-          content: hopeAnswer.answer,
-          done: false,
-          type: 'hope',
-          source: hopeAnswer.source,
-          confidence: hopeAnswer.confidence,
-          canDirectAnswer: hopeAnswer.canDirectAnswer,
-          responseTime: hopeAnswer.responseTime
-        })
-      }
-
-      // Step 3: 订阅 LLM 流式输出（SSE）
-      const eventSourceUrl = `${window.location.origin}${sseUrl}`
-      console.log('📡 Subscribing to LLM stream:', eventSourceUrl)
+      // 使用单端点双轨流式接口
+      const eventSourceUrl = `${window.location.origin}/api/qa/stream/dual-track?${queryParams}`
+      console.log('📡 Connecting to dual-track SSE:', eventSourceUrl)
 
       const eventSource = new EventSource(eventSourceUrl)
+
+      // 监听 HOPE 快速答案
+      eventSource.addEventListener('hope', (event) => {
+        try {
+          const hopeData = JSON.parse(event.data)
+          console.log('💡 HOPE fast answer received:', {
+            source: hopeData.hopeSource,
+            confidence: hopeData.confidence,
+            responseTime: hopeData.responseTime
+          })
+
+          if (onChunk) {
+            onChunk({
+              content: hopeData.content,
+              done: false,
+              type: 'hope',
+              source: hopeData.hopeSource,
+              confidence: hopeData.confidence,
+              canDirectAnswer: hopeData.answerType === 'DIRECT_ANSWER',
+              responseTime: hopeData.responseTime
+            })
+          }
+        } catch (error) {
+          console.error('❌ Failed to parse HOPE answer:', error)
+        }
+      })
 
       // 监听 LLM 流式输出
       eventSource.addEventListener('llm', (event) => {
         try {
-          const data = event.data
-          console.log('📦 LLM chunk received:', data.substring(0, 50))
+          const llmData = JSON.parse(event.data)
+          console.log('📦 LLM chunk received:', llmData.content.substring(0, 50))
 
           if (onChunk) {
             onChunk({
-              content: data,
+              content: llmData.content,
               done: false,
-              type: 'llm'
+              type: 'llm',
+              chunkIndex: llmData.chunkIndex
             })
           }
         } catch (error) {
@@ -135,7 +124,7 @@ const qaApi = {
 
       // 监听完成事件
       eventSource.addEventListener('complete', (event) => {
-        console.log('✅ LLM streaming completed')
+        console.log('✅ Dual-track streaming completed')
 
         try {
           const stats = JSON.parse(event.data)
@@ -146,19 +135,16 @@ const qaApi = {
               content: '',
               done: true,
               type: 'complete',
-              sessionId,
               totalChunks: stats.totalChunks,
               totalTime: stats.totalTime
             })
           }
         } catch (e) {
-          // 如果解析失败，仍然发送完成信号
           if (onChunk) {
             onChunk({
               content: '',
               done: true,
-              type: 'complete',
-              sessionId
+              type: 'complete'
             })
           }
         }
@@ -186,7 +172,6 @@ const qaApi = {
 
       // 返回控制对象
       return {
-        sessionId,
         eventSource,
         stop: () => {
           eventSource.close()

@@ -216,17 +216,6 @@ function QAPanel() {
         }
       )
 
-      // 保存 sessionId 和 eventSource / Save sessionId and eventSource
-      if (result && result.sessionId) {
-        setMessages(prev => {
-          const newMessages = [...prev]
-          const lastMessage = newMessages[newMessages.length - 1]
-          if (lastMessage) {
-            lastMessage.sessionId = result.sessionId
-          }
-          return newMessages
-        })
-      }
 
       // 保存 EventSource 引用以便停止生成 / Save EventSource reference for stopping
       if (result && result.eventSource) {

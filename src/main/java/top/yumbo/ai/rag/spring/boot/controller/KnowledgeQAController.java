@@ -162,7 +162,7 @@ public class KnowledgeQAController {
             try {
                 hopeAnswer = response.getHopeFuture().get();
             } catch (Exception e) {
-                log.warn("获取 HOPE 答案失败 (Failed to get HOPE answer): {}", e.getMessage());
+                log.warn(I18N.get("role.knowledge.api.hope-answer-failed") + ": {}", e.getMessage());
             }
 
             // 返回会话信息 (Return session info)
@@ -194,22 +194,201 @@ public class KnowledgeQAController {
      */
     @GetMapping(value = "/stream/{sessionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribeStream(@PathVariable String sessionId) {
-        log.info("📡 客户端订阅流式输出 (Client subscribed to streaming): sessionId={}", sessionId);
+        log.info(I18N.get("role.knowledge.api.client-subscribed") + ": sessionId={}", sessionId);
 
         SseEmitter emitter = hybridStreamingService.createSSEStream(sessionId);
 
         if (emitter == null) {
-            log.warn("会话不存在 (Session not found): sessionId={}", sessionId);
+            log.warn(I18N.get("role.knowledge.api.session-not-found") + ": sessionId={}", sessionId);
             emitter = new SseEmitter();
             try {
                 emitter.send(SseEmitter.event()
                         .name("error")
-                        .data("Session not found"));
+                        .data(I18N.get("role.knowledge.api.session-not-found")));
                 emitter.complete();
             } catch (Exception e) {
-                log.error("发送错误失败 (Failed to send error): {}", e.getMessage());
+                log.error(I18N.get("role.knowledge.api.send-error-failed") + ": {}", e.getMessage());
             }
         }
+
+        return emitter;
+    }
+
+    /**
+     * 获取会话状态 / Get session status
+     * <p>
+     * 查询流式会话的当前状态
+     * (Query current status of streaming session)
+     *
+     * @param sessionId 会话ID
+     * @return 会话状态信息
+     */
+    @GetMapping("/stream/{sessionId}/status")
+    public ResponseEntity<Map<String, Object>> getStreamStatus(@PathVariable String sessionId) {
+        var session = hybridStreamingService.getSession(sessionId);
+
+        if (session == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, Object> status = new java.util.HashMap<>();
+        status.put("sessionId", sessionId);
+        status.put("status", session.getStatus().name());
+        status.put("progress", session.getProgress());
+        status.put("durationSeconds", session.getDurationSeconds());
+        status.put("answerLength", session.getFullAnswer().length());
+
+        return ResponseEntity.ok(status);
+    }
+
+    /**
+     * 双轨流式响应（单端点版本）/ Dual-track streaming (single endpoint version)
+     * <p>
+     * 在一个 SSE 连接中同时返回 HOPE 快速答案和 LLM 流式生成
+     * (Returns both HOPE quick answer and LLM streaming in one SSE connection)
+     * <p>
+     * 适用于简单场景，不需要先初始化会话
+     * (For simple scenarios without session initialization)
+     *
+     * @param question  用户问题
+     * @param sessionId HOPE 会话ID（可选）
+     * @return SSE 流
+     */
+    @GetMapping(value = "/stream/dual-track", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter dualTrackStreaming(
+            @RequestParam String question,
+            @RequestParam(required = false) String sessionId) {
+
+        log.info(I18N.get("role.knowledge.api.dual-track-start") + ": question={}", question);
+
+        SseEmitter emitter = new SseEmitter(60000L); // 60 秒超时
+
+        // 生成 HOPE 会话 ID
+        String hopeSessionId = sessionId != null ? sessionId :
+                "hope_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8);
+
+        // 异步处理双轨响应
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                // 1. 启动双轨服务
+                var response = hybridStreamingService.ask(question, hopeSessionId, true);
+
+                // 2. 等待 HOPE 快速答案
+                java.util.concurrent.CompletableFuture<top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer> hopeFuture =
+                    response.getHopeFuture();
+
+                long hopeStartTime = System.currentTimeMillis();
+                top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer hopeAnswer;
+
+                try {
+                    hopeAnswer = hopeFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    long hopeTime = System.currentTimeMillis() - hopeStartTime;
+
+                    // 发送 HOPE 答案
+                    if (hopeAnswer != null && hopeAnswer.getAnswer() != null && !hopeAnswer.getAnswer().isEmpty()) {
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage hopeMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.hopeAnswer(
+                                        hopeAnswer.getAnswer(),
+                                        hopeAnswer.getSource(),
+                                        hopeAnswer.getConfidence(),
+                                        hopeTime,
+                                        hopeAnswer.isCanDirectAnswer() ? "DIRECT_ANSWER" : "REFERENCE"
+                                );
+
+                        emitter.send(SseEmitter.event()
+                                .name("hope")
+                                .data(hopeMsg));
+
+                        log.info(I18N.get("role.knowledge.api.hope-answer-sent") + ": {}ms", hopeTime);
+                    }
+                } catch (java.util.concurrent.TimeoutException e) {
+                    log.warn(I18N.get("role.knowledge.api.hope-answer-timeout"));
+                } catch (Exception e) {
+                    log.error(I18N.get("role.knowledge.api.hope-answer-get-failed"), e);
+                }
+
+                // 3. 获取 LLM 流式输出
+                var session = hybridStreamingService.getSession(response.getSessionId());
+                if (session != null) {
+                    int chunkIndex = 0;
+                    long llmStartTime = System.currentTimeMillis();
+                    int lastLength = 0;
+
+                    // 轮询获取新内容
+                    while (session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
+                        String currentAnswer = session.getFullAnswer().toString();
+
+                        // 发送新增内容
+                        if (currentAnswer.length() > lastLength) {
+                            String newChunk = currentAnswer.substring(lastLength);
+
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
+                                    top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(
+                                            newChunk,
+                                            chunkIndex++
+                                    );
+
+                            emitter.send(SseEmitter.event()
+                                    .name("llm")
+                                    .data(llmMsg));
+
+                            lastLength = currentAnswer.length();
+                        }
+
+                        // 避免忙等待
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
+                        }
+                    }
+
+                    // 发送完成消息
+                    long llmTime = System.currentTimeMillis() - llmStartTime;
+                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(
+                                    chunkIndex,
+                                    llmTime
+                            );
+
+                    emitter.send(SseEmitter.event()
+                            .name("complete")
+                            .data(completeMsg));
+
+                    log.info(I18N.get("role.knowledge.api.llm-complete") + ": {} chunks, {}ms", chunkIndex, llmTime);
+                }
+
+                emitter.complete();
+                log.info(I18N.get("role.knowledge.api.dual-track-complete"));
+
+            } catch (Exception e) {
+                log.error(I18N.get("role.knowledge.api.dual-track-failed"), e);
+
+                try {
+                    top.yumbo.ai.rag.spring.boot.model.StreamMessage errorMsg =
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.error(
+                                    I18N.get("role.knowledge.api.streaming-failed") + ": " + e.getMessage()
+                            );
+
+                    emitter.send(SseEmitter.event()
+                            .name("error")
+                            .data(errorMsg));
+
+                    emitter.completeWithError(e);
+                } catch (Exception sendError) {
+                    log.error(I18N.get("role.knowledge.api.send-error-msg-failed"), sendError);
+                }
+            }
+        });
+
+        // 设置超时和错误回调
+        emitter.onTimeout(() -> {
+            log.warn(I18N.get("role.knowledge.api.sse-timeout"));
+            emitter.complete();
+        });
+
+        emitter.onError(e -> log.error(I18N.get("role.knowledge.api.sse-error"), e));
 
         return emitter;
     }

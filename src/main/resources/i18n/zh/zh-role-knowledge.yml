@@ -98,3 +98,19 @@ role:
       streaming-failed: "流式问答失败"
       service-unavailable: "抱歉，问答服务暂时不可用：{0}"
 
+      # 双轨流式日志 (Dual-track Streaming Logs)
+      hope-answer-failed: "获取 HOPE 答案失败"
+      session-not-found: "会话不存在"
+      send-error-failed: "发送错误失败"
+      client-subscribed: "📡 客户端订阅流式输出"
+      dual-track-start: "🚀 双轨流式问答（单端点）"
+      hope-answer-sent: "💡 HOPE 答案已发送"
+      hope-answer-timeout: "⏱️ HOPE 答案超时"
+      hope-answer-get-failed: "❌ HOPE 答案获取失败"
+      llm-complete: "✅ LLM 流式完成"
+      dual-track-complete: "🎉 双轨流式问答完成"
+      dual-track-failed: "❌ 双轨流式问答失败"
+      send-error-msg-failed: "发送错误消息失败"
+      sse-timeout: "⏱️ SSE 连接超时"
+      sse-error: "❌ SSE 连接错误"
+

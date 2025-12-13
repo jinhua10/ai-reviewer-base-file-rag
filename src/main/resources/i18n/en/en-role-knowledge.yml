@@ -98,3 +98,19 @@ role:
       streaming-failed: "Streaming QA failed"
       service-unavailable: "Sorry, the QA service is temporarily unavailable: {0}"
 
+      # Dual-track Streaming Logs (双轨流式日志)
+      hope-answer-failed: "Failed to get HOPE answer"
+      session-not-found: "Session not found"
+      send-error-failed: "Failed to send error"
+      client-subscribed: "📡 Client subscribed to streaming"
+      dual-track-start: "🚀 Dual-track streaming (single endpoint)"
+      hope-answer-sent: "💡 HOPE answer sent"
+      hope-answer-timeout: "⏱️ HOPE answer timeout"
+      hope-answer-get-failed: "❌ Failed to get HOPE answer"
+      llm-complete: "✅ LLM streaming completed"
+      dual-track-complete: "🎉 Dual-track streaming completed"
+      dual-track-failed: "❌ Dual-track streaming failed"
+      send-error-msg-failed: "Failed to send error message"
+      sse-timeout: "⏱️ SSE connection timeout"
+      sse-error: "❌ SSE connection error"
+
