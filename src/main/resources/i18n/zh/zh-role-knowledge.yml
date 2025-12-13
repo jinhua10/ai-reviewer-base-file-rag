@@ -114,3 +114,12 @@ role:
       sse-timeout: "⏱️ SSE 连接超时"
       sse-error: "❌ SSE 连接错误"
 
+      # 双轨模式日志 (Dual-track Mode Logs)
+      direct-llm-single-track: "📝 Direct LLM mode (no RAG) - Single track"
+      role-dual-track: "👤 Role knowledge mode: {} - Dual track"
+      rag-dual-track: "🔍 RAG mode - Dual track (Pure LLM + RAG Enhanced)"
+
+      # 右面板标题 (Right Panel Headers)
+      hope-fast-answer-header: "💡 HOPE 快速答案"
+      rag-enhanced-answer-header: "🔍 RAG 增强答案"
+

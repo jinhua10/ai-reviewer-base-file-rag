@@ -280,15 +280,15 @@ public class KnowledgeQAController {
         java.util.concurrent.CompletableFuture.runAsync(() -> {
             try {
                 // 1. 根据知识库模式启动相应的服务
-                String llmAnswer;
 
                 if (!useKnowledgeBase) {
-                    // 直接 LLM 模式（不使用 RAG）
-                    log.info("📝 Direct LLM mode (no RAG)");
-                    llmAnswer = qaService.askDirectLLM(question).getAnswer();
+                    // ========== 不使用 RAG：单轨 LLM 输出（在线 AI 服务）==========
+                    log.info(I18N.get("role.knowledge.api.direct-llm-single-track"));
 
-                    // 直接 LLM 模式没有 HOPE 答案，直接发送 LLM 内容
-                    // 分块发送
+                    // 直接调用 LLM，流式输出
+                    String llmAnswer = qaService.askDirectLLM(question).getAnswer();
+
+                    // 分块发送（模拟流式效果）
                     int chunkSize = 5;
                     int chunkIndex = 0;
                     for (int i = 0; i < llmAnswer.length(); i += chunkSize) {
@@ -299,8 +299,6 @@ public class KnowledgeQAController {
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
                         emitter.send(SseEmitter.event().name("llm").data(llmMsg));
-
-                        // 模拟流式延迟
                         Thread.sleep(50);
                     }
 
@@ -310,21 +308,36 @@ public class KnowledgeQAController {
                     emitter.send(SseEmitter.event().name("complete").data(completeMsg));
 
                 } else if (useRoleKnowledge) {
-                    // 角色知识库模式
-                    log.info("👤 Role knowledge mode: {}", roleName);
-                    llmAnswer = roleKnowledgeQAService.askWithRole(question, roleName).getAnswer();
+                    // ========== 角色知识库：双轨输出 ==========
+                    // 左轨：纯 LLM 答案
+                    // 右轨：角色知识库增强答案
+                    log.info(I18N.get("role.knowledge.api.role-dual-track"), roleName);
 
-                    // 分块发送
-                    int chunkSize = 5;
+                    // 左轨：纯 LLM 答案
+                    String pureLLMAnswer = qaService.askDirectLLM(question).getAnswer();
                     int chunkIndex = 0;
-                    for (int i = 0; i < llmAnswer.length(); i += chunkSize) {
-                        int end = Math.min(i + chunkSize, llmAnswer.length());
-                        String chunk = llmAnswer.substring(i, end);
+                    for (int i = 0; i < pureLLMAnswer.length(); i += 5) {
+                        int end = Math.min(i + 5, pureLLMAnswer.length());
+                        String chunk = pureLLMAnswer.substring(i, end);
 
-                        top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage leftMsg =
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                        emitter.send(SseEmitter.event().name("llm").data(llmMsg));
+                        emitter.send(SseEmitter.event().name("left").data(leftMsg));
+                        Thread.sleep(50);
+                    }
+
+                    // 右轨：角色知识库增强答案
+                    String roleAnswer = roleKnowledgeQAService.askWithRole(question, roleName).getAnswer();
+                    chunkIndex = 0;
+                    for (int i = 0; i < roleAnswer.length(); i += 5) {
+                        int end = Math.min(i + 5, roleAnswer.length());
+                        String chunk = roleAnswer.substring(i, end);
+
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+
+                        emitter.send(SseEmitter.event().name("right").data(rightMsg));
                         Thread.sleep(50);
                     }
 
@@ -334,95 +347,105 @@ public class KnowledgeQAController {
                     emitter.send(SseEmitter.event().name("complete").data(completeMsg));
 
                 } else {
-                    // 传统 RAG 模式（使用 HOPE + LLM 双轨）
-                    log.info("🔍 RAG mode with HOPE");
+                    // ========== 传统 RAG：双轨输出 ==========
+                    // 左轨：纯 LLM 答案
+                    // 右轨：RAG 增强答案（HOPE + 检索增强）
+                    log.info(I18N.get("role.knowledge.api.rag-dual-track"));
+
+                    // 左轨：纯 LLM 答案（不使用检索）
+                    String pureLLMAnswer = qaService.askDirectLLM(question).getAnswer();
+                    int chunkIndex = 0;
+                    for (int i = 0; i < pureLLMAnswer.length(); i += 5) {
+                        int end = Math.min(i + 5, pureLLMAnswer.length());
+                        String chunk = pureLLMAnswer.substring(i, end);
+
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage leftMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+
+                        emitter.send(SseEmitter.event().name("left").data(leftMsg));
+                        Thread.sleep(50);
+                    }
+
+                    // 右轨：RAG 增强答案（使用 HOPE + 检索）
                     var response = hybridStreamingService.ask(question, hopeSessionId, true);
 
-                // 2. 等待 HOPE 快速答案
-                java.util.concurrent.CompletableFuture<top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer> hopeFuture =
-                    response.getHopeFuture();
+                    // 右轨：先发送 HOPE 快速答案
+                    java.util.concurrent.CompletableFuture<top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer> hopeFuture =
+                        response.getHopeFuture();
 
-                long hopeStartTime = System.currentTimeMillis();
-                top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer hopeAnswer;
+                    StringBuilder rightContent = new StringBuilder();
 
-                try {
-                    hopeAnswer = hopeFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
-                    long hopeTime = System.currentTimeMillis() - hopeStartTime;
+                    try {
+                        top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer hopeAnswer =
+                            hopeFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
 
-                    // 发送 HOPE 答案
-                    if (hopeAnswer != null && hopeAnswer.getAnswer() != null && !hopeAnswer.getAnswer().isEmpty()) {
-                        top.yumbo.ai.rag.spring.boot.model.StreamMessage hopeMsg =
-                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.hopeAnswer(
-                                        hopeAnswer.getAnswer(),
-                                        hopeAnswer.getSource(),
-                                        hopeAnswer.getConfidence(),
-                                        hopeTime,
-                                        hopeAnswer.isCanDirectAnswer() ? "DIRECT_ANSWER" : "REFERENCE"
-                                );
+                        if (hopeAnswer != null && hopeAnswer.getAnswer() != null && !hopeAnswer.getAnswer().isEmpty()) {
+                            String hopeText = I18N.get("role.knowledge.api.hope-fast-answer-header") + "\n" + hopeAnswer.getAnswer() + "\n\n";
+                            rightContent.append(hopeText);
 
-                        emitter.send(SseEmitter.event()
-                                .name("hope")
-                                .data(hopeMsg));
+                            // 发送 HOPE 到右面板
+                            chunkIndex = 0;
+                            for (int i = 0; i < hopeText.length(); i += 5) {
+                                int end = Math.min(i + 5, hopeText.length());
+                                String chunk = hopeText.substring(i, end);
 
-                        log.info(I18N.get("role.knowledge.api.hope-answer-sent") + ": {}ms", hopeTime);
-                    }
-                } catch (java.util.concurrent.TimeoutException e) {
-                    log.warn(I18N.get("role.knowledge.api.hope-answer-timeout"));
-                } catch (Exception e) {
-                    log.error(I18N.get("role.knowledge.api.hope-answer-get-failed"), e);
-                }
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                // 3. 获取 LLM 流式输出
-                var session = hybridStreamingService.getSession(response.getSessionId());
-                if (session != null) {
-                    int chunkIndex = 0;
-                    long llmStartTime = System.currentTimeMillis();
-                    int lastLength = 0;
+                                emitter.send(SseEmitter.event().name("right").data(rightMsg));
+                                Thread.sleep(50);
+                            }
 
-                    // 轮询获取新内容
-                    while (session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
-                        String currentAnswer = session.getFullAnswer().toString();
-
-                        // 发送新增内容
-                        if (currentAnswer.length() > lastLength) {
-                            String newChunk = currentAnswer.substring(lastLength);
-
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
-                                    top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(
-                                            newChunk,
-                                            chunkIndex++
-                                    );
-
-                            emitter.send(SseEmitter.event()
-                                    .name("llm")
-                                    .data(llmMsg));
-
-                            lastLength = currentAnswer.length();
+                            log.info(I18N.get("role.knowledge.api.hope-answer-sent"));
                         }
+                    } catch (java.util.concurrent.TimeoutException e) {
+                        log.warn(I18N.get("role.knowledge.api.hope-answer-timeout"));
+                    } catch (Exception e) {
+                        log.error(I18N.get("role.knowledge.api.hope-answer-get-failed"), e);
+                    }
 
-                        // 避免忙等待
-                        try {
+                    // 右轨：继续发送 LLM RAG 增强答案
+                    String ragHeader = I18N.get("role.knowledge.api.rag-enhanced-answer-header") + "\n";
+                    for (int i = 0; i < ragHeader.length(); i += 5) {
+                        int end = Math.min(i + 5, ragHeader.length());
+                        String chunk = ragHeader.substring(i, end);
+
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+
+                        emitter.send(SseEmitter.event().name("right").data(rightMsg));
+                        Thread.sleep(50);
+                    }
+
+                    // 获取 RAG LLM 流式输出
+                    var session = hybridStreamingService.getSession(response.getSessionId());
+                    if (session != null) {
+                        int lastLength = 0;
+
+                        while (session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
+                            String currentAnswer = session.getFullAnswer().toString();
+
+                            if (currentAnswer.length() > lastLength) {
+                                String newChunk = currentAnswer.substring(lastLength);
+
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(newChunk, chunkIndex++);
+
+                                emitter.send(SseEmitter.event().name("right").data(rightMsg));
+
+                                lastLength = currentAnswer.length();
+                            }
+
                             Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            break;
                         }
                     }
 
                     // 发送完成消息
-                    long llmTime = System.currentTimeMillis() - llmStartTime;
                     top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(
-                                    chunkIndex,
-                                    llmTime
-                            );
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * 50);
+                    emitter.send(SseEmitter.event().name("complete").data(completeMsg));
 
-                    emitter.send(SseEmitter.event()
-                            .name("complete")
-                            .data(completeMsg));
-
-                    log.info(I18N.get("role.knowledge.api.llm-complete") + ": {} chunks, {}ms", chunkIndex, llmTime);
-                }
+                    log.info(I18N.get("role.knowledge.api.dual-track-complete"));
                 } // 结束 RAG 模式的 else 块
 
                 emitter.complete();

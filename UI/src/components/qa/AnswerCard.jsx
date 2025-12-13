@@ -70,9 +70,42 @@ function AnswerCard(props) {
               </div>
               <span className="answer-card__thinking-text">Thinking...</span>
             </div>
+          ) : answer.dualTrack ? (
+            // 双轨模式：左右双面板显示
+            <div className="answer-card__dual-track">
+              <div className="answer-card__panel answer-card__panel--left">
+                <div className="answer-card__panel-header">
+                  <span className="answer-card__panel-icon">🤖</span>
+                  <span className="answer-card__panel-title">AI 直接回答</span>
+                </div>
+                <div className="answer-card__panel-content">
+                  {answer.streaming ? (
+                    <StreamingAnswer content={answer.leftPanel || ''} streaming={answer.streaming} />
+                  ) : (
+                    <MarkdownRenderer content={answer.leftPanel || ''} isStreaming={false} />
+                  )}
+                </div>
+              </div>
+
+              <div className="answer-card__panel answer-card__panel--right">
+                <div className="answer-card__panel-header">
+                  <span className="answer-card__panel-icon">📚</span>
+                  <span className="answer-card__panel-title">知识库增强回答</span>
+                </div>
+                <div className="answer-card__panel-content">
+                  {answer.streaming ? (
+                    <StreamingAnswer content={answer.rightPanel || ''} streaming={answer.streaming} />
+                  ) : (
+                    <MarkdownRenderer content={answer.rightPanel || ''} isStreaming={false} />
+                  )}
+                </div>
+              </div>
+            </div>
           ) : answer.streaming ? (
+            // 单轨模式：单面板流式显示
             <StreamingAnswer content={answer.content} streaming={answer.streaming} />
           ) : (
+            // 单轨模式：单面板静态显示
             <MarkdownRenderer content={answer.content} isStreaming={false} />
           )}
           

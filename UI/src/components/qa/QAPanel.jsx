@@ -145,74 +145,70 @@ function QAPanel() {
           // 调试日志
           console.log('📨 Received data:', data.type, data)
 
-          // 先累加到ref（不触发渲染，避免React批量更新导致的重复累加）
-          // Accumulate to ref first (avoid re-render and duplicate accumulation from React batching)
-          if (data.type === 'hope') {
-            console.log('💡 HOPE answer:', data.content)
-            streamingContentRef.current = data.content
+          // 累加到ref
+          if (data.type === 'left') {
+            // 左面板：纯 LLM
+            console.log('⬅️ Left panel:', data.content)
+            if (!streamingContentRef.current.leftPanel) {
+              streamingContentRef.current = { leftPanel: '', rightPanel: '' }
+            }
+            streamingContentRef.current.leftPanel += data.content
+          } else if (data.type === 'right') {
+            // 右面板：RAG 增强 / 角色知识库
+            console.log('➡️ Right panel:', data.content)
+            if (!streamingContentRef.current.rightPanel) {
+              streamingContentRef.current = { leftPanel: '', rightPanel: '' }
+            }
+            streamingContentRef.current.rightPanel += data.content
           } else if (data.type === 'llm') {
+            // 单轨 LLM（不使用 RAG）
             console.log('📦 LLM chunk:', data.content)
             streamingLLMAnswerRef.current += data.content
           }
           
-          // 然后从ref读取更新UI（只触发一次渲染）
-          // Then read from ref to update UI (trigger render only once)
+          // 更新 UI
           setMessages(prev => {
             const newMessages = [...prev]
             const lastMessage = newMessages[newMessages.length - 1]
             
             if (lastMessage && lastMessage.streaming) {
-              // 处理不同类型的数据 / Handle different types of data
               switch (data.type) {
-                case 'hope':
-                  // HOPE 快速答案（立即显示）/ HOPE fast answer (display immediately)
-                  lastMessage.content = streamingContentRef.current
-                  lastMessage.source = `HOPE (${data.source})`
-                  lastMessage.confidence = data.confidence
-                  lastMessage.hopeAnswer = streamingContentRef.current
-                  lastMessage.canDirectAnswer = data.canDirectAnswer
+                case 'left':
+                case 'right':
+                  // 双轨模式
+                  lastMessage.dualTrack = true
+                  lastMessage.leftPanel = streamingContentRef.current.leftPanel || ''
+                  lastMessage.rightPanel = streamingContentRef.current.rightPanel || ''
+                  lastMessage.content = `[双轨输出]\n左面板: ${lastMessage.leftPanel.substring(0, 50)}...\n右面板: ${lastMessage.rightPanel.substring(0, 50)}...`
                   break
 
                 case 'llm':
-                  // LLM 流式块（从ref读取累加结果）/ LLM streaming chunk (read accumulated result from ref)
-                  // 如果有 HOPE 答案，在新行显示 LLM 答案
-                  // (If HOPE answer exists, display LLM answer on new line)
-                  if (lastMessage.hopeAnswer) {
-                    if (!lastMessage.llmAnswer) {
-                      lastMessage.llmAnswer = ''
-                    }
-                    lastMessage.llmAnswer = streamingLLMAnswerRef.current
-                    lastMessage.content = streamingContentRef.current + '\n\n--- LLM 详细回答 ---\n' + streamingLLMAnswerRef.current
-                  } else {
-                    lastMessage.content = streamingLLMAnswerRef.current
-                  }
+                  // 单轨模式（不使用 RAG）
+                  lastMessage.dualTrack = false
+                  lastMessage.content = streamingLLMAnswerRef.current
                   break
 
                 case 'complete':
-                  // 完成 / Complete
+                  // 完成
                   lastMessage.streaming = false
                   lastMessage.sessionId = data.sessionId
-                  if (data.sources) {
-                    lastMessage.sources = data.sources
-                  }
                   break
 
                 case 'error':
-                  // 错误 / Error
+                  // 错误
                   lastMessage.type = 'error'
                   lastMessage.content = data.error || t('qa.error.failed')
                   lastMessage.streaming = false
                   break
 
                 default:
-                  // 兼容旧格式 / Compatible with old format
+                  // 兼容
                   if (data.content) {
                     streamingLLMAnswerRef.current += data.content
                     lastMessage.content = streamingLLMAnswerRef.current
                   }
                   if (data.done) {
                     lastMessage.streaming = false
-                    lastMessage.sessionId = data.sessionId
                   }
               }
             }

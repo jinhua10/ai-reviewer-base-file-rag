@@ -79,33 +79,45 @@ const qaApi = {
 
       const eventSource = new EventSource(eventSourceUrl)
 
-      // 监听 HOPE 快速答案
-      eventSource.addEventListener('hope', (event) => {
+      // 监听左面板输出（纯 LLM / 单轨模式的 LLM）
+      eventSource.addEventListener('left', (event) => {
         try {
-          const hopeData = JSON.parse(event.data)
-          console.log('💡 HOPE fast answer received:', {
-            source: hopeData.hopeSource,
-            confidence: hopeData.confidence,
-            responseTime: hopeData.responseTime
-          })
+          const leftData = JSON.parse(event.data)
+          console.log('⬅️ Left panel chunk:', leftData.content.substring(0, 30))
 
           if (onChunk) {
             onChunk({
-              content: hopeData.content,
+              content: leftData.content,
               done: false,
-              type: 'hope',
-              source: hopeData.hopeSource,
-              confidence: hopeData.confidence,
-              canDirectAnswer: hopeData.answerType === 'DIRECT_ANSWER',
-              responseTime: hopeData.responseTime
+              type: 'left',  // 左面板
+              chunkIndex: leftData.chunkIndex
             })
           }
         } catch (error) {
-          console.error('❌ Failed to parse HOPE answer:', error)
+          console.error('❌ Failed to parse left panel chunk:', error)
         }
       })
 
-      // 监听 LLM 流式输出
+      // 监听右面板输出（RAG 增强 / 角色知识库）
+      eventSource.addEventListener('right', (event) => {
+        try {
+          const rightData = JSON.parse(event.data)
+          console.log('➡️ Right panel chunk:', rightData.content.substring(0, 30))
+
+          if (onChunk) {
+            onChunk({
+              content: rightData.content,
+              done: false,
+              type: 'right',  // 右面板
+              chunkIndex: rightData.chunkIndex
+            })
+          }
+        } catch (error) {
+          console.error('❌ Failed to parse right panel chunk:', error)
+        }
+      })
+
+      // 监听 LLM 流式输出（单轨模式：不使用 RAG）
       eventSource.addEventListener('llm', (event) => {
         try {
           const llmData = JSON.parse(event.data)
@@ -115,7 +127,7 @@ const qaApi = {
             onChunk({
               content: llmData.content,
               done: false,
-              type: 'llm',
+              type: 'llm',  // 单面板 LLM
               chunkIndex: llmData.chunkIndex
             })
           }

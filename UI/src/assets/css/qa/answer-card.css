@@ -204,3 +204,69 @@
   }
 }
 
+/* ============================================================================
+   双轨模式：左右双面板 (Dual-track Mode: Left-Right Panels)
+   ============================================================================ */
+.answer-card__dual-track {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.answer-card__panel {
+  border: 1px solid var(--border-color, #e0e0e0);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface-color, #ffffff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.answer-card__panel:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.answer-card__panel--left .answer-card__panel-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.answer-card__panel--right .answer-card__panel-header {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+}
+
+.answer-card__panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.answer-card__panel-icon {
+  font-size: 18px;
+}
+
+.answer-card__panel-title {
+  flex: 1;
+}
+
+.answer-card__panel-content {
+  padding: 16px;
+  min-height: 200px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+/* 响应式：小屏幕下垂直排列 */
+@media (max-width: 768px) {
+  .answer-card__dual-track {
+    grid-template-columns: 1fr;
+  }
+}
+
