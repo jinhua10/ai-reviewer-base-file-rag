@@ -248,6 +248,10 @@ log:
     extract_image: "📷 Extracting image: {0} ({1}KB)"
     extract_success: "✅ Image content extracted successfully: {0} -> {1} characters"
     extract_empty: "⚠️  Image content is empty: {0}"
+    estimated_position: "Image {0} estimated position: {1} ({2}/{3})"
+    ppt:
+      legacy:
+        found: "Slide {0} found legacy format image: {1} ({2} KB)"
     slide_images: "Slide {0} contains {1} images"
     sheet_images: "Worksheet {0} contains {1} images"
     docx_images: "✅ Extracted {0} images from DOCX"
