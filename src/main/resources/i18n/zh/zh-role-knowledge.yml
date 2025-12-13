@@ -28,6 +28,25 @@ role:
 
       # 错误信息 (Error Messages)
       error-message: "抱歉，角色知识库查询失败：{0}"
+      llm-failed: "LLM 生成答案失败，使用简化版本"
+      llm-stream-failed: "LLM 流式生成答案失败，使用简化版本"
+
+      # 系统提示词 (System Prompt)
+      system-prompt: |
+        你是一个{0}。请根据你的专业知识和提供的概念，准确、专业地回答用户的问题。
+        
+        回答要求：
+        1. 使用专业术语，体现{0}的专业性
+        2. 基于提供的概念和知识进行回答
+        3. 回答要清晰、结构化、易于理解
+        4. 如果概念不足以完整回答，请说明并给出合理建议
+        5. 保持客观、准确，不要编造信息
+
+      # 用户提示词 (User Prompt)
+      user-prompt-question: "用户问题：{0}\n\n"
+      user-prompt-concepts: "我掌握的相关知识概念：\n"
+      user-prompt-confidence: " (置信度: {0})\n"
+      user-prompt-instruction: "\n请基于以上知识，作为{0}回答用户的问题。"
 
     bounty:
       # 悬赏系统 (Bounty System)

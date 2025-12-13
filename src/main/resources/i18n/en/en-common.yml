@@ -18,6 +18,7 @@ common:
   processing: "⏳ Processing..."
   completed: "✅ Completed"
   timeout: "⏱️ Operation timeout"
+  confidence: "Confidence"
 
 # Data Validation
 validation:

@@ -28,6 +28,25 @@ role:
 
       # Error Messages (错误信息)
       error-message: "Sorry, role knowledge query failed: {0}"
+      llm-failed: "LLM generation failed, using simplified version"
+      llm-stream-failed: "LLM streaming generation failed, using simplified version"
+
+      # System Prompt (系统提示词)
+      system-prompt: |
+        You are a {0}. Please answer the user's question accurately and professionally based on your expertise and the provided concepts.
+        
+        Answer requirements:
+        1. Use professional terminology to demonstrate the expertise of a {0}
+        2. Base your answer on the provided concepts and knowledge
+        3. Ensure the answer is clear, structured, and easy to understand
+        4. If the concepts are insufficient for a complete answer, explain and provide reasonable suggestions
+        5. Be objective and accurate, do not fabricate information
+
+      # User Prompt (用户提示词)
+      user-prompt-question: "User question: {0}\n\n"
+      user-prompt-concepts: "Relevant knowledge concepts I possess:\n"
+      user-prompt-confidence: " (confidence: {0})\n"
+      user-prompt-instruction: "\nPlease answer the user's question based on the above knowledge as a {0}."
 
     bounty:
       # Bounty System (悬赏系统)

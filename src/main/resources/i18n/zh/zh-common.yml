@@ -18,6 +18,7 @@ common:
   processing: "⏳ 处理中..."
   completed: "✅ 完成"
   timeout: "⏱️ 操作超时"
+  confidence: "置信度"
 
 # 数据验证 (Data Validation)
 validation:

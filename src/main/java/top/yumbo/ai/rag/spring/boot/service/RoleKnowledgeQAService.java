@@ -4,11 +4,13 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import top.yumbo.ai.rag.evolution.concept.MinimalConcept;
 import top.yumbo.ai.rag.evolution.concept.RoleCollaborationService;
 import top.yumbo.ai.rag.evolution.concept.RoleKnowledgeService;
 import top.yumbo.ai.rag.evolution.concept.RoleResponseBid;
 import top.yumbo.ai.rag.i18n.I18N;
+import top.yumbo.ai.rag.spring.boot.llm.LLMClient;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 
 import java.util.*;
@@ -36,6 +38,7 @@ public class RoleKnowledgeQAService {
     private final RoleKnowledgeService roleKnowledgeService;
     private final RoleCollaborationService collaborationService;
     private final KnowledgeQAService qaService;  // 传统 RAG 服务（作为兜底）
+    private final LLMClient llmClient;  // LLM 客户端 (LLM Client)
 
     // 悬赏系统 (Bounty System)
     private final Map<String, BountyRequest> activeBounties = new HashMap<>();
@@ -47,12 +50,14 @@ public class RoleKnowledgeQAService {
     public RoleKnowledgeQAService(
             RoleKnowledgeService roleKnowledgeService,
             RoleCollaborationService collaborationService,
-            KnowledgeQAService qaService) {
+            KnowledgeQAService qaService,
+            LLMClient llmClient) {
         this.roleKnowledgeService = roleKnowledgeService;
         this.collaborationService = collaborationService;
         this.qaService = qaService;
+        this.llmClient = llmClient;
 
-        // 初始化所有角色的积分
+        // 初始化所有角色的积分 (Initialize role credits)
         initializeRoleCredits();
     }
 
@@ -127,6 +132,90 @@ public class RoleKnowledgeQAService {
         }
 
         return answer;
+    }
+
+    /**
+     * 使用角色知识库回答问题 - 流式 (Answer question using role knowledge base - Streaming)
+     * <p>
+     * 策略与非流式版本相同，但返回流式响应
+     * (Same strategy as non-streaming version, but returns streaming response)
+     *
+     * @param question 问题 (Question)
+     * @param roleName 角色名称（可选） (Role name, optional)
+     * @return Flux<String> 流式答案片段 (Streaming answer chunks)
+     */
+    public Flux<String> askWithRoleStream(String question, String roleName) {
+        log.info(I18N.get("role.knowledge.qa.start"), question, roleName);
+
+        try {
+            // 策略 1: 指定角色的本地知识库查询 (Strategy 1: Local role knowledge base query)
+            if (roleName != null && !roleName.isEmpty() && !"general".equals(roleName)) {
+                log.info(I18N.get("role.knowledge.qa.use-local"), roleName);
+
+                // 搜索概念 (Search concepts)
+                List<MinimalConcept> concepts =
+                    roleKnowledgeService.searchConceptsForRole(roleName, extractKeywords(question));
+
+                if (concepts.isEmpty()) {
+                    // 没有概念，返回提示信息 (No concepts, return hint)
+                    return Flux.just(I18N.get("role.knowledge.qa.no-concepts"));
+                }
+
+                // 计算置信度 (Calculate confidence)
+                double avgConfidence = concepts.stream()
+                    .mapToDouble(MinimalConcept::getConfidence)
+                    .average()
+                    .orElse(0.0);
+
+                // 如果本地知识库能回答（置信度 >= 0.6），流式返回 (If confidence >= 0.6, stream response)
+                if (avgConfidence >= 0.6) {
+                    log.info(I18N.get("role.knowledge.qa.local-success"), roleName, avgConfidence);
+                    String context = buildContextFromConcepts(concepts, roleName);
+                    return generateAnswerWithContextStream(question, context, roleName, concepts);
+                }
+
+                log.info(I18N.get("role.knowledge.qa.local-insufficient"), roleName, avgConfidence);
+            }
+
+            // 策略 2: 通用角色或本地无答案 -> 举手抢答 (Strategy 2: Bidding mechanism)
+            log.info(I18N.get("role.knowledge.qa.bidding-start"));
+            List<RoleResponseBid> bids = collaborationService.collectRoleBids(question);
+
+            if (!bids.isEmpty()) {
+                RoleResponseBid bestBid = collaborationService.selectBestRole(bids);
+
+                if (bestBid != null && bestBid.getConfidenceScore() >= 0.6) {
+                    log.info(I18N.get("role.knowledge.qa.bidding-winner"),
+                        bestBid.getRoleName(), bestBid.getConfidenceScore());
+
+                    // 使用选中角色的知识库 - 流式 (Use selected role's knowledge base - Streaming)
+                    List<MinimalConcept> concepts =
+                        roleKnowledgeService.searchConceptsForRole(
+                            bestBid.getRoleName(), extractKeywords(question));
+
+                    if (!concepts.isEmpty()) {
+                        String context = buildContextFromConcepts(concepts, bestBid.getRoleName());
+
+                        // 给予积分奖励 (Reward credits)
+                        rewardRole(bestBid.getRoleName(), 10, I18N.get("role.knowledge.qa.bidding-winner"));
+
+                        return generateAnswerWithContextStream(
+                            question, context, bestBid.getRoleName(), concepts);
+                    }
+                }
+            }
+
+            // 策略 3: 大家都不懂 -> 发起悬赏 (Strategy 3: Create bounty)
+            log.warn(I18N.get("role.knowledge.qa.all-failed"));
+            AIAnswer bountyAnswer = createBountyRequest(question, roleName);
+            return Flux.just(bountyAnswer.getAnswer());
+
+        } catch (Exception e) {
+            log.error(I18N.get("role.knowledge.qa.query-failed"), e);
+            return Flux.just(
+                I18N.get("role.knowledge.qa.error-message", e.getMessage())
+            );
+        }
     }
 
     /**
@@ -211,17 +300,120 @@ public class RoleKnowledgeQAService {
     }
 
     /**
-     * 使用上下文生成答案 (Generate answer with context)
+     * 使用上下文生成答案 - 非流式 (Generate answer with context - Non-streaming)
      * <p>
-     * 当前简化实现：基于概念拼接答案 (Current simplified implementation: concatenate concepts)
-     * TODO: 后续集成 LLM 服务进行智能生成 (TODO: Integrate LLM service for intelligent generation)
+     * 使用 LLM 服务结合角色知识库的概念智能生成答案
+     * (Use LLM service to intelligently generate answers with role knowledge base concepts)
      */
     private String generateAnswerWithContext(String question, String context,
                                              String roleName, List<MinimalConcept> concepts) {
-        StringBuilder answer = new StringBuilder();
         String roleDisplayName = I18N.get("role.knowledge.role." + roleName);
 
-        answer.append(I18N.get("role.knowledge.qa.answer-prefix", roleDisplayName));
+        try {
+            // 构建系统提示词 (Build system prompt)
+            String systemPrompt = buildSystemPrompt(roleDisplayName, roleName);
+
+            // 构建用户提示词 (Build user prompt)
+            String userPrompt = buildUserPrompt(question, concepts, roleDisplayName);
+
+            // 调用 LLM 生成答案 - 非流式 (Call LLM to generate answer - Non-streaming)
+            String llmAnswer = llmClient.generate(userPrompt, systemPrompt);
+
+            // 添加角色标识和提示 (Add role identifier and hint)
+            StringBuilder finalAnswer = new StringBuilder();
+            finalAnswer.append(I18N.get("role.knowledge.qa.answer-prefix", roleDisplayName));
+            finalAnswer.append(llmAnswer);
+            finalAnswer.append(I18N.get("role.knowledge.qa.answer-hint"));
+
+            return finalAnswer.toString();
+
+        } catch (Exception e) {
+            // LLM 调用失败时使用简化版本 (Use simplified version when LLM call fails)
+            log.warn(I18N.get("role.knowledge.qa.llm-failed") + ": {}", e.getMessage());
+            return generateSimplifiedAnswer(question, concepts, roleDisplayName);
+        }
+    }
+
+    /**
+     * 使用上下文生成答案 - 流式 (Generate answer with context - Streaming)
+     * <p>
+     * 使用 LLM 流式服务结合角色知识库的概念智能生成答案
+     * (Use LLM streaming service to intelligently generate answers with role knowledge base concepts)
+     *
+     * @param question 问题 (Question)
+     * @param context 上下文 (Context)
+     * @param roleName 角色名称 (Role name)
+     * @param concepts 概念列表 (Concept list)
+     * @return Flux<String> 流式答案片段 (Streaming answer chunks)
+     */
+    private reactor.core.publisher.Flux<String> generateAnswerWithContextStream(
+            String question, String context, String roleName, List<MinimalConcept> concepts) {
+        String roleDisplayName = I18N.get("role.knowledge.role." + roleName);
+
+        try {
+            // 构建系统提示词 (Build system prompt)
+            String systemPrompt = buildSystemPrompt(roleDisplayName, roleName);
+
+            // 构建用户提示词 (Build user prompt)
+            String userPrompt = buildUserPrompt(question, concepts, roleDisplayName);
+
+            // 先发送角色标识 (Send role identifier first)
+            String prefix = I18N.get("role.knowledge.qa.answer-prefix", roleDisplayName);
+
+            // 调用 LLM 流式生成答案 (Call LLM to generate answer - Streaming)
+            reactor.core.publisher.Flux<String> llmStream = llmClient.generateStream(userPrompt, systemPrompt);
+
+            // 在流的开头添加角色标识，结尾添加提示 (Add role identifier at start and hint at end)
+            return reactor.core.publisher.Flux.concat(
+                reactor.core.publisher.Flux.just(prefix),
+                llmStream,
+                reactor.core.publisher.Flux.just(I18N.get("role.knowledge.qa.answer-hint"))
+            );
+
+        } catch (Exception e) {
+            // LLM 调用失败时使用简化版本 (Use simplified version when LLM call fails)
+            log.warn(I18N.get("role.knowledge.qa.llm-stream-failed") + ": {}", e.getMessage());
+            String fallbackAnswer = generateSimplifiedAnswer(question, concepts, roleDisplayName);
+            return reactor.core.publisher.Flux.just(fallbackAnswer);
+        }
+    }
+
+    /**
+     * 构建系统提示词 (Build system prompt)
+     */
+    private String buildSystemPrompt(String roleDisplayName, String roleName) {
+        return I18N.get("role.knowledge.qa.system-prompt", roleDisplayName);
+    }
+
+    /**
+     * 构建用户提示词 (Build user prompt)
+     */
+    private String buildUserPrompt(String question, List<MinimalConcept> concepts, String roleDisplayName) {
+        StringBuilder prompt = new StringBuilder();
+        prompt.append(I18N.get("role.knowledge.qa.user-prompt-question", question));
+        prompt.append(I18N.get("role.knowledge.qa.user-prompt-concepts"));
+
+        for (int i = 0; i < Math.min(concepts.size(), 5); i++) {
+            MinimalConcept concept = concepts.get(i);
+            prompt.append((i + 1)).append(". ").append(concept.getName());
+            if (concept.getDescription() != null && !concept.getDescription().isEmpty()) {
+                prompt.append("：").append(concept.getDescription());
+            }
+            prompt.append(I18N.get("role.knowledge.qa.user-prompt-confidence",
+                String.format("%.2f", concept.getConfidence())));
+        }
+
+        prompt.append(I18N.get("role.knowledge.qa.user-prompt-instruction", roleDisplayName));
+
+        return prompt.toString();
+    }
+
+    /**
+     * 生成简化版答案（LLM 失败时的兜底方案）
+     * (Generate simplified answer - fallback when LLM fails)
+     */
+    private String generateSimplifiedAnswer(String question, List<MinimalConcept> concepts, String roleDisplayName) {
+        StringBuilder answer = new StringBuilder();
 
         if (concepts.size() == 1) {
             MinimalConcept concept = concepts.getFirst();
@@ -240,12 +432,6 @@ public class RoleKnowledgeQAService {
                 answer.append("\n");
             }
         }
-
-        answer.append(I18N.get("role.knowledge.qa.answer-hint"));
-
-        // TODO: 集成 LLM 后的实现 (TODO: Implementation after LLM integration)
-        // String llmAnswer = llmService.generateWithContext(question, context, roleName);
-        // return llmAnswer;
 
         return answer.toString();
     }

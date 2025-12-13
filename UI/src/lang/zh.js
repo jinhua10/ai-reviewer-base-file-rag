@@ -380,6 +380,42 @@ export default {
       download: '下载文档',
       addAllToAnalysis: '全部加入分析',
     },
+
+    // 悬赏系统 (Bounty System)
+    bounty: {
+      title: '悬赏列表',
+      active: '活跃悬赏',
+      closed: '已关闭',
+      expired: '已过期',
+      id: '悬赏ID',
+      question: '问题',
+      reward: '奖励',
+      credits: '积分',
+      deadline: '截止时间',
+      status: '状态',
+      submit: '提交答案',
+      submitAnswer: '提交答案',
+      answer: '答案内容',
+      sources: '资料来源',
+      submitting: '提交中...',
+      submitSuccess: '提交成功，等待审核',
+      submitFailed: '提交失败',
+      noActiveBounties: '暂无活跃悬赏',
+      viewDetails: '查看详情',
+    },
+
+    // 排行榜 (Leaderboard)
+    leaderboard: {
+      title: '角色贡献排行榜',
+      rank: '排名',
+      roleName: '角色名称',
+      totalCredits: '总积分',
+      answerCount: '回答次数',
+      bountyWins: '悬赏获胜',
+      lastReward: '最近奖励',
+      noData: '暂无数据',
+      refresh: '刷新',
+    },
   },
 
   // ============================================================================

@@ -376,6 +376,42 @@ export default {
       enable: 'Enable Knowledge Base (RAG retrieval)',
       disable: 'Disable Knowledge Base (Direct AI answer)',
     },
+
+    // Bounty System
+    bounty: {
+      title: 'Bounty List',
+      active: 'Active Bounties',
+      closed: 'Closed',
+      expired: 'Expired',
+      id: 'Bounty ID',
+      question: 'Question',
+      reward: 'Reward',
+      credits: 'Credits',
+      deadline: 'Deadline',
+      status: 'Status',
+      submit: 'Submit Answer',
+      submitAnswer: 'Submit Answer',
+      answer: 'Answer Content',
+      sources: 'Sources',
+      submitting: 'Submitting...',
+      submitSuccess: 'Submitted successfully, pending review',
+      submitFailed: 'Submission failed',
+      noActiveBounties: 'No active bounties',
+      viewDetails: 'View Details',
+    },
+
+    // Leaderboard
+    leaderboard: {
+      title: 'Role Contribution Leaderboard',
+      rank: 'Rank',
+      roleName: 'Role Name',
+      totalCredits: 'Total Credits',
+      answerCount: 'Answer Count',
+      bountyWins: 'Bounty Wins',
+      lastReward: 'Last Reward',
+      noData: 'No data',
+      refresh: 'Refresh',
+    },
   },
 
   // ============================================================================
