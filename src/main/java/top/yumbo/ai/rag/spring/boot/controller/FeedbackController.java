@@ -9,6 +9,7 @@ import top.yumbo.ai.rag.feedback.QARecordService;
 import top.yumbo.ai.rag.hope.HOPEKnowledgeManager;
 import top.yumbo.ai.rag.i18n.I18N;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,12 +27,21 @@ public class FeedbackController {
 
     private final QARecordService qaRecordService;
     private final HOPEKnowledgeManager hopeManager;
+    private final top.yumbo.ai.rag.evolution.service.ConceptConflictService conflictService;
+    private final top.yumbo.ai.rag.evolution.service.ConceptEvolutionService evolutionService;
+    private final top.yumbo.ai.rag.evolution.service.VotingService votingService;
 
     @Autowired
     public FeedbackController(QARecordService qaRecordService,
-                              @Autowired(required = false) HOPEKnowledgeManager hopeManager) {
+                              @Autowired(required = false) HOPEKnowledgeManager hopeManager,
+                              @Autowired(required = false) top.yumbo.ai.rag.evolution.service.ConceptConflictService conflictService,
+                              @Autowired(required = false) top.yumbo.ai.rag.evolution.service.ConceptEvolutionService evolutionService,
+                              @Autowired(required = false) top.yumbo.ai.rag.evolution.service.VotingService votingService) {
         this.qaRecordService = qaRecordService;
         this.hopeManager = hopeManager;
+        this.conflictService = conflictService;
+        this.evolutionService = evolutionService;
+        this.votingService = votingService;
     }
 
     /**
@@ -432,7 +442,7 @@ public class FeedbackController {
             int total = filteredConflicts.size();
             int start = (page - 1) * pageSize;
             int end = Math.min(start + pageSize, total);
-            List<Map<String, Object>> pagedConflicts = 
+            List<Map<String, Object>> pagedConflicts =
                 start < total ? filteredConflicts.subList(start, end) : List.of();
 
             log.info(I18N.get("feedback.conflicts.query.success", total, pagedConflicts.size()));
@@ -466,7 +476,7 @@ public class FeedbackController {
     public ResponseEntity<?> vote(
             @RequestBody Map<String, Object> request,
             @RequestHeader(value = "Accept-Language", defaultValue = "zh") String lang) {
-        
+
         try {
             String conflictId = (String) request.get("conflictId");
             String choice = (String) request.get("choice"); // "A" or "B"
@@ -564,15 +574,33 @@ public class FeedbackController {
         try {
             log.debug(I18N.get("feedback.quality.query.start"));
 
-            // TODO: 实际实现需要接入质量监控服务
-            // For now, return mock data for frontend development
-            Map<String, Object> mockData = createMockQualityMonitor();
+            // 如果服务不可用，返回 mock 数据 (If services not available, return mock data)
+            if (conflictService == null || evolutionService == null) {
+                Map<String, Object> mockData = createMockQualityMonitor();
+                log.info(I18N.get("feedback.quality.query.success"));
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", mockData
+                ));
+            }
+
+            // 使用真实的服务获取质量监控数据 (Use real services to get quality monitoring data)
+            Map<String, Object> conflictStats = conflictService.getStatistics();
+            Map<String, Object> evolutionStats = evolutionService.getStatistics();
+            Map<String, Object> voteStats = votingService != null ?
+                votingService.getStatistics() : new HashMap<>();
+
+            Map<String, Object> monitorData = new HashMap<>();
+            monitorData.put("conflicts", conflictStats);
+            monitorData.put("evolution", evolutionStats);
+            monitorData.put("votes", voteStats);
+            monitorData.put("timestamp", System.currentTimeMillis());
 
             log.info(I18N.get("feedback.quality.query.success"));
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "data", mockData
+                "data", monitorData
             ));
 
         } catch (Exception e) {
@@ -595,10 +623,10 @@ public class FeedbackController {
     public ResponseEntity<?> submitFeedback(
             @RequestBody Map<String, Object> data,
             @RequestHeader(value = "Accept-Language", defaultValue = "zh") String lang) {
-        
+
         try {
             String type = (String) data.get("type");
-            
+
             if (type == null) {
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -638,13 +666,13 @@ public class FeedbackController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize,
             @RequestHeader(value = "Accept-Language", defaultValue = "zh") String lang) {
-        
+
         try {
             log.debug(I18N.get("feedback.list.query.start"), page, pageSize);
 
             // 使用现有的 recent 记录作为反馈列表
             List<QARecord> records = qaRecordService.getRecentRecords(pageSize);
-            
+
             log.info(I18N.get("feedback.list.query.success"), records.size());
 
             return ResponseEntity.ok(Map.of(
@@ -667,6 +695,57 @@ public class FeedbackController {
     // Mock数据生成方法（用于前端开发）
     // Mock Data Generation Methods (For Frontend Development)
     // ============================================================================
+
+    // ============================================================================
+    // 数据转换方法 (Data Conversion Methods)
+    // ============================================================================
+
+    /**
+     * 将 ConceptConflict 转换为 Map (Convert ConceptConflict to Map)
+     */
+    private Map<String, Object> convertConflictToMap(top.yumbo.ai.rag.evolution.model.ConceptConflict conflict) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", conflict.getId());
+        map.put("question", conflict.getQuestion());
+        map.put("conceptA", conflict.getConceptA());
+        map.put("conceptB", conflict.getConceptB());
+        map.put("sourceA", conflict.getSourceA());
+        map.put("sourceB", conflict.getSourceB());
+        map.put("status", conflict.getStatus().name().toLowerCase());
+        map.put("votes", conflict.getVotes());
+        map.put("resolvedChoice", conflict.getResolvedChoice());
+        map.put("createdAt", conflict.getCreatedAt() != null ?
+            conflict.getCreatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : null);
+        map.put("updatedAt", conflict.getUpdatedAt() != null ?
+            conflict.getUpdatedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : null);
+        map.put("resolvedAt", conflict.getResolvedAt() != null ?
+            conflict.getResolvedAt().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : null);
+        map.put("confidenceScore", conflict.getConfidenceScore());
+        map.put("type", conflict.getType() != null ? conflict.getType().name().toLowerCase() : null);
+        return map;
+    }
+
+    /**
+     * 将 ConceptEvolution 转换为 Map (Convert ConceptEvolution to Map)
+     */
+    private Map<String, Object> convertEvolutionToMap(top.yumbo.ai.rag.evolution.model.ConceptEvolution evolution) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", evolution.getId());
+        map.put("conceptId", evolution.getConceptId());
+        map.put("version", evolution.getVersion());
+        map.put("type", evolution.getType() != null ? evolution.getType().name().toLowerCase() : null);
+        map.put("title", evolution.getTitle());
+        map.put("description", evolution.getDescription());
+        map.put("content", evolution.getContent());
+        map.put("changes", evolution.getChanges());
+        map.put("author", evolution.getAuthor());
+        map.put("timestamp", evolution.getTimestamp() != null ?
+            evolution.getTimestamp().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli() : null);
+        map.put("reason", evolution.getReason());
+        map.put("relatedConflictId", evolution.getRelatedConflictId());
+        map.put("confidence", evolution.getConfidence());
+        return map;
+    }
 
     /**
      * 创建模拟冲突数据 / Create mock conflict data
@@ -720,7 +799,7 @@ public class FeedbackController {
         evo1.put("author", "system");
         evo1.put("timestamp", System.currentTimeMillis() - 604800000);
         evo1.put("reason", "初始创建");
-        
+
         // 创建历史记录2
         Map<String, Object> evo2 = new java.util.HashMap<>();
         evo2.put("id", "evo-2");
