@@ -16,10 +16,10 @@ import java.util.stream.Collectors;
 
 /**
  * 角色知识库问答服务 (Role Knowledge Base Q&A Service)
- *
+ * <p>
  * 实现基于"术业有专攻"理念的智能协作问答系统
  * (Implements intelligent collaborative Q&A system based on "specialization" principle)
- *
+ * <p>
  * 核心功能 (Core Features):
  * 1. 本地角色知识库查询（优先） (Local role knowledge base query - priority)
  * 2. 举手抢答机制（本地无答案时） (Bidding mechanism when local answer unavailable)
@@ -58,7 +58,7 @@ public class RoleKnowledgeQAService {
 
     /**
      * 使用角色知识库回答问题 (Answer question using role knowledge base)
-     *
+     * <p>
      * 策略 (Strategy):
      * 1. 如果指定角色，优先使用该角色的本地知识库
      * 2. 如果是通用角色或未指定，举手抢答
@@ -82,12 +82,12 @@ public class RoleKnowledgeQAService {
                 // 如果本地知识库能回答（置信度 >= 0.6），直接返回 (If local KB can answer with confidence >= 0.6, return directly)
                 if (answer.getHopeConfidence() >= 0.6) {
                     log.info(I18N.get("role.knowledge.qa.local-success"),
-                        roleName, answer.getHopeConfidence());
+                            roleName, answer.getHopeConfidence());
                     return answer;
                 }
 
                 log.info(I18N.get("role.knowledge.qa.local-insufficient"),
-                    roleName, answer.getHopeConfidence());
+                        roleName, answer.getHopeConfidence());
             }
 
             // 策略 2: 通用角色或本地无答案 -> 举手抢答 (Strategy 2: Bidding mechanism)
@@ -100,7 +100,7 @@ public class RoleKnowledgeQAService {
 
                 if (bestBid != null && bestBid.getConfidenceScore() >= 0.6) {
                     log.info(I18N.get("role.knowledge.qa.bidding-winner"),
-                        bestBid.getRoleName(), bestBid.getConfidenceScore());
+                            bestBid.getRoleName(), bestBid.getConfidenceScore());
 
                     // 使用选中角色的知识库 (Use selected role's knowledge base)
                     answer = queryLocalRoleKnowledge(question, bestBid.getRoleName());
@@ -119,9 +119,9 @@ public class RoleKnowledgeQAService {
         } catch (Exception e) {
             log.error(I18N.get("role.knowledge.qa.query-failed"), e);
             answer = new AIAnswer(
-                I18N.get("role.knowledge.qa.error-message", e.getMessage()),
-                Collections.emptyList(),
-                0
+                    I18N.get("role.knowledge.qa.error-message", e.getMessage()),
+                    Collections.emptyList(),
+                    0
             );
             answer.setStrategyUsed("error");
         }
@@ -143,16 +143,16 @@ public class RoleKnowledgeQAService {
 
         // 1. 从角色知识库搜索相关概念 (Search relevant concepts from role knowledge base)
         List<MinimalConcept> concepts =
-            roleKnowledgeService.searchConceptsForRole(roleName, extractKeywords(question));
+                roleKnowledgeService.searchConceptsForRole(roleName, extractKeywords(question));
 
         log.info(I18N.get("role.knowledge.qa.concepts-found"), concepts.size());
 
         if (concepts.isEmpty()) {
             // 没有相关概念，置信度为 0 (No relevant concepts, confidence = 0)
             AIAnswer answer = new AIAnswer(
-                I18N.get("role.knowledge.qa.no-concepts"),
-                Collections.emptyList(),
-                System.currentTimeMillis() - startTime
+                    I18N.get("role.knowledge.qa.no-concepts"),
+                    Collections.emptyList(),
+                    System.currentTimeMillis() - startTime
             );
             answer.setHopeConfidence(0.0);
             answer.setStrategyUsed("role:" + roleName + ":no_concept");
@@ -161,9 +161,9 @@ public class RoleKnowledgeQAService {
 
         // 2. 计算平均置信度
         double avgConfidence = concepts.stream()
-            .mapToDouble(MinimalConcept::getConfidence)
-            .average()
-            .orElse(0.0);
+                .mapToDouble(MinimalConcept::getConfidence)
+                .average()
+                .orElse(0.0);
 
         // 3. 构建上下文（从概念中提取知识）
         String context = buildContextFromConcepts(concepts, roleName);
@@ -175,14 +175,14 @@ public class RoleKnowledgeQAService {
         // 5. 构建响应
         // 设置来源
         List<String> sources = concepts.stream()
-            .map(c -> c.getId() + ":" + c.getName())
-            .limit(5)
-            .collect(Collectors.toList());
+                .map(c -> c.getId() + ":" + c.getName())
+                .limit(5)
+                .collect(Collectors.toList());
 
         AIAnswer aiAnswer = new AIAnswer(
-            answer,
-            sources,
-            System.currentTimeMillis() - startTime
+                answer,
+                sources,
+                System.currentTimeMillis() - startTime
         );
         aiAnswer.setHopeConfidence(avgConfidence);
         aiAnswer.setStrategyUsed("role:" + roleName + ":local");
@@ -204,7 +204,7 @@ public class RoleKnowledgeQAService {
                 context.append(": ").append(concept.getDescription());
             }
             context.append(" (").append(I18N.get("common.confidence")).append(": ")
-                   .append(String.format("%.2f", concept.getConfidence())).append(")\n");
+                    .append(String.format("%.2f", concept.getConfidence())).append(")\n");
         }
 
         return context.toString();
@@ -212,19 +212,19 @@ public class RoleKnowledgeQAService {
 
     /**
      * 使用上下文生成答案 (Generate answer with context)
-     *
+     * <p>
      * 当前简化实现：基于概念拼接答案 (Current simplified implementation: concatenate concepts)
      * TODO: 后续集成 LLM 服务进行智能生成 (TODO: Integrate LLM service for intelligent generation)
      */
     private String generateAnswerWithContext(String question, String context,
-                                            String roleName, List<MinimalConcept> concepts) {
+                                             String roleName, List<MinimalConcept> concepts) {
         StringBuilder answer = new StringBuilder();
         String roleDisplayName = I18N.get("role.knowledge.role." + roleName);
 
         answer.append(I18N.get("role.knowledge.qa.answer-prefix", roleDisplayName));
 
         if (concepts.size() == 1) {
-            MinimalConcept concept = concepts.get(0);
+            MinimalConcept concept = concepts.getFirst();
             answer.append(I18N.get("role.knowledge.qa.answer-single", concept.getName()));
             if (concept.getDescription() != null) {
                 answer.append("：").append(concept.getDescription());
@@ -252,7 +252,7 @@ public class RoleKnowledgeQAService {
 
     /**
      * 创建悬赏请求 (Create bounty request)
-     *
+     * <p>
      * 当所有角色都无法回答时，发起悬赏让子节点主动学习
      */
     private AIAnswer createBountyRequest(String question, String requestingRole) {
@@ -273,12 +273,12 @@ public class RoleKnowledgeQAService {
 
         // 构建响应 (Build response)
         String answerText = I18N.get("role.knowledge.bounty.title") + "\n\n" +
-            I18N.get("role.knowledge.bounty.no-answer") + "\n\n" +
-            I18N.get("role.knowledge.bounty.id-label", bountyId) + "\n" +
-            I18N.get("role.knowledge.bounty.reward-label", bounty.getReward()) + "\n" +
-            I18N.get("role.knowledge.bounty.deadline-label") + "\n\n" +
-            I18N.get("role.knowledge.bounty.call-to-action") + "\n" +
-            I18N.get("role.knowledge.bounty.credit-usage");
+                I18N.get("role.knowledge.bounty.no-answer") + "\n\n" +
+                I18N.get("role.knowledge.bounty.id-label", bountyId) + "\n" +
+                I18N.get("role.knowledge.bounty.reward-label", bounty.getReward()) + "\n" +
+                I18N.get("role.knowledge.bounty.deadline-label") + "\n\n" +
+                I18N.get("role.knowledge.bounty.call-to-action") + "\n" +
+                I18N.get("role.knowledge.bounty.credit-usage");
 
         AIAnswer answer = new AIAnswer(answerText, Collections.emptyList(), 100);
         answer.setStrategyUsed("bounty:" + bountyId);
@@ -290,11 +290,11 @@ public class RoleKnowledgeQAService {
 
     /**
      * 提交悬赏答案 (Submit bounty answer)
-     *
+     * <p>
      * 角色节点学习后提交答案获取积分
      */
     public BountySubmission submitBountyAnswer(String bountyId, String roleName,
-                                              String answer, List<String> sources) {
+                                               String answer, List<String> sources) {
         BountyRequest bounty = activeBounties.get(bountyId);
 
         if (bounty == null) {
@@ -333,9 +333,9 @@ public class RoleKnowledgeQAService {
         if (bounty == null) return;
 
         BountySubmission submission = bounty.getSubmissions().stream()
-            .filter(s -> s.getId().equals(submissionId))
-            .findFirst()
-            .orElse(null);
+                .filter(s -> s.getId().equals(submissionId))
+                .findFirst()
+                .orElse(null);
 
         if (submission == null) return;
 
@@ -349,10 +349,10 @@ public class RoleKnowledgeQAService {
 
         // 奖励积分 (Reward credits)
         rewardRole(submission.getRoleName(), bounty.getReward(),
-            I18N.get("role.knowledge.bounty.submitted"));
+                I18N.get("role.knowledge.bounty.submitted"));
 
         log.info(I18N.get("role.knowledge.bounty.approved"),
-            bountyId, submission.getRoleName(), bounty.getReward());
+                bountyId, submission.getRoleName(), bounty.getReward());
     }
 
     /**
@@ -386,8 +386,8 @@ public class RoleKnowledgeQAService {
      */
     public List<RoleCredit> getLeaderboard() {
         return roleCredits.values().stream()
-            .sorted((a, b) -> Integer.compare(b.getTotalCredits(), a.getTotalCredits()))
-            .collect(Collectors.toList());
+                .sorted((a, b) -> Integer.compare(b.getTotalCredits(), a.getTotalCredits()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -395,9 +395,9 @@ public class RoleKnowledgeQAService {
      */
     public List<BountyRequest> getActiveBounties() {
         return activeBounties.values().stream()
-            .filter(b -> "active".equals(b.getStatus()))
-            .sorted((a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()))
-            .collect(Collectors.toList());
+                .filter(b -> "active".equals(b.getStatus()))
+                .sorted((a, b) -> Long.compare(b.getCreatedAt(), a.getCreatedAt()))
+                .collect(Collectors.toList());
     }
 
     /**
@@ -405,8 +405,8 @@ public class RoleKnowledgeQAService {
      */
     private void initializeRoleCredits() {
         String[] roles = {"general", "developer", "devops", "architect",
-                         "researcher", "product_manager", "data_scientist",
-                         "security_engineer", "tester"};
+                "researcher", "product_manager", "data_scientist",
+                "security_engineer", "tester"};
 
         for (String role : roles) {
             RoleCredit credit = new RoleCredit();
@@ -423,7 +423,7 @@ public class RoleKnowledgeQAService {
      */
     private String extractKeywords(String question) {
         // 简化版：去除标点符号
-        return question.replaceAll("[?？！!。，,、；;：:\"\"''（）()]", " ").trim();
+        return question.replaceAll("[?？！!。，,、；;：:\"'（）()]", " ").trim();
     }
 
     /**
@@ -431,15 +431,15 @@ public class RoleKnowledgeQAService {
      */
     private String getRoleDisplayName(String roleCode) {
         Map<String, String> names = Map.of(
-            "general", "通用角色",
-            "developer", "开发者",
-            "devops", "运维工程师",
-            "architect", "架构师",
-            "researcher", "研究员",
-            "product_manager", "产品经理",
-            "data_scientist", "数据科学家",
-            "security_engineer", "安全工程师",
-            "tester", "测试工程师"
+                "general", "通用角色",
+                "developer", "开发者",
+                "devops", "运维工程师",
+                "architect", "架构师",
+                "researcher", "研究员",
+                "product_manager", "产品经理",
+                "data_scientist", "数据科学家",
+                "security_engineer", "安全工程师",
+                "tester", "测试工程师"
         );
         return names.getOrDefault(roleCode, roleCode);
     }
@@ -448,7 +448,7 @@ public class RoleKnowledgeQAService {
 
     /**
      * 悬赏请求 (Bounty Request)
-     *
+     * <p>
      * 当所有角色都无法回答问题时创建悬赏，激励子节点主动学习
      * (Created when no role can answer, incentivizing nodes to learn actively)
      */
@@ -467,7 +467,7 @@ public class RoleKnowledgeQAService {
 
     /**
      * 悬赏提交 (Bounty Submission)
-     *
+     * <p>
      * 角色节点学习后提交的答案
      * (Answer submitted by role node after learning)
      */
@@ -485,7 +485,7 @@ public class RoleKnowledgeQAService {
 
     /**
      * 角色积分 (Role Credit)
-     *
+     * <p>
      * 记录角色的贡献和积分信息
      * (Records role's contribution and credit information)
      */
