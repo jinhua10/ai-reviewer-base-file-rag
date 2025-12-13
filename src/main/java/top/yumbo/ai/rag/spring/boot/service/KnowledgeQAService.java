@@ -349,9 +349,16 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.question_prompt", question) + " [Direct LLM Mode]");
             log.info(I18N.get("knowledge_qa_service.separator"));
 
-            // 直接调用 LLM，不使用 RAG 检索
-            // (Call LLM directly without RAG retrieval)
-            String answer = llmClient.generate(question);
+            // 直接调用 LLM，不使用 RAG 检索和 HOPE 增强
+            // (Call LLM directly without RAG retrieval and HOPE enhancement)
+            String answer;
+            if (llmClient instanceof HOPEEnhancedLLMClient hopeClient) {
+                // 如果是 HOPE 增强客户端，获取底层客户端直接调用，跳过 HOPE
+                answer = hopeClient.getDelegate().generate(question);
+            } else {
+                // 普通客户端直接调用
+                answer = llmClient.generate(question);
+            }
 
             long totalTime = System.currentTimeMillis() - startTime;
 

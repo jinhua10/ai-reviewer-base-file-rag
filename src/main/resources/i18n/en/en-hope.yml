@@ -59,6 +59,11 @@ hope:
     completed: "✅ HOPE query complete: {0}, source={1}, time={2}ms"
     error: "❌ HOPE query error"
     needs_llm: "🔄 Requires LLM processing"
+    debug_info: "🔍 HOPE query result: needs LLM={0}, source={1}, confidence={2}"
+
+  # Direct answer related
+  direct_answer:
+    success: "✅ Direct answer success (source: {0}, confidence: {1})"
 
   # Strategy related
   strategy:

@@ -54,7 +54,7 @@ public class KnowledgeQAController {
 
     /**
      * 智能问答接口（统一入口）/ Intelligent Q&A endpoint (unified entry)
-     * 
+     * <p>
      * 根据参数自动路由到对应的处理逻辑：
      * - knowledgeMode="none": 直接调用 LLM 回答（不检索）
      * - knowledgeMode="rag": 使用传统 RAG 检索知识库回答
@@ -68,7 +68,7 @@ public class KnowledgeQAController {
         // 解析知识库模式 (Parse knowledge mode)
         String knowledgeMode = request.getKnowledgeMode();
         boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
-        
+
         // 如果指定了 knowledgeMode，优先使用 (If knowledgeMode is specified, use it with priority)
         if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
             useKnowledgeBase = !"none".equals(knowledgeMode);
@@ -78,10 +78,10 @@ public class KnowledgeQAController {
         boolean useRoleKnowledge = "role".equals(knowledgeMode);
 
         log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) +
-                 " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + "]");
+                " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + "]");
 
         AIAnswer answer;
-        
+
         if (!useKnowledgeBase) {
             // 直接 LLM 模式（不使用 RAG）/ Direct LLM mode (without RAG)
             answer = qaService.askDirectLLM(request.getQuestion());
@@ -93,7 +93,7 @@ public class KnowledgeQAController {
             // 使用知识库 RAG 模式 / Use knowledge base RAG mode
             answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
         }
-        
+
         // 支持 HOPE 会话ID / Support HOPE session ID
         // AIAnswer answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
 
@@ -151,7 +151,7 @@ public class KnowledgeQAController {
         boolean useRoleKnowledge = "role".equals(knowledgeMode);
 
         log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) +
-                 " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + ", dual-track: true]");
+                " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + ", dual-track: true]");
 
         try {
             // 启动双轨响应 (Start dual-track response)
@@ -250,10 +250,10 @@ public class KnowledgeQAController {
      * 适用于简单场景，不需要先初始化会话
      * (For simple scenarios without session initialization)
      *
-     * @param question  用户问题
-     * @param sessionId HOPE 会话ID（可选）
+     * @param question      用户问题
+     * @param sessionId     HOPE 会话ID（可选）
      * @param knowledgeMode 知识库模式: none/rag/role（可选，默认 rag）
-     * @param roleName 角色名称（可选）
+     * @param roleName      角色名称（可选）
      * @return SSE 流
      */
     @GetMapping(value = "/stream/dual-track", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -371,13 +371,13 @@ public class KnowledgeQAController {
 
                     // 右轨：先发送 HOPE 快速答案
                     java.util.concurrent.CompletableFuture<top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer> hopeFuture =
-                        response.getHopeFuture();
+                            response.getHopeFuture();
 
                     StringBuilder rightContent = new StringBuilder();
 
                     try {
                         top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer hopeAnswer =
-                            hopeFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
+                                hopeFuture.get(300, java.util.concurrent.TimeUnit.MILLISECONDS);
 
                         if (hopeAnswer != null && hopeAnswer.getAnswer() != null && !hopeAnswer.getAnswer().isEmpty()) {
                             String hopeText = I18N.get("role.knowledge.api.hope-fast-answer-header") + "\n" + hopeAnswer.getAnswer() + "\n\n";
@@ -484,7 +484,7 @@ public class KnowledgeQAController {
 
     /**
      * 使用会话文档进行问答（用于分页引用）/ QA with session documents (for pagination)
-     * 
+     * <p>
      * 支持知识库模式：
      * - knowledgeMode="none": 直接 LLM 回答
      * - knowledgeMode="rag": 使用会话文档 RAG 检索
@@ -495,7 +495,7 @@ public class KnowledgeQAController {
         // 解析知识库模式 (Parse knowledge mode)
         String knowledgeMode = request.getKnowledgeMode();
         boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
-        
+
         // 如果指定了 knowledgeMode，优先使用 (If knowledgeMode is specified, use it with priority)
         if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
             useKnowledgeBase = !"none".equals(knowledgeMode);
@@ -505,11 +505,11 @@ public class KnowledgeQAController {
         boolean useRoleKnowledge = "role".equals(knowledgeMode);
 
         log.info(I18N.get("knowledge_qa.log.session_question",
-            request.getQuestion(), request.getSessionId()) +
-            " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + "]");
+                request.getQuestion(), request.getSessionId()) +
+                " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + "]");
 
         AIAnswer answer;
-        
+
         if (!useKnowledgeBase) {
             // 直接 LLM 模式（不使用会话文档）/ Direct LLM mode (without session documents)
             answer = qaService.askDirectLLM(request.getQuestion());
@@ -550,8 +550,8 @@ public class KnowledgeQAController {
         response.setQuery(query);
         response.setTotal(documents.size());
         response.setDocuments(documents.stream()
-            .map(this::toDocumentInfo)
-            .collect(Collectors.toList()));
+                .map(this::toDocumentInfo)
+                .collect(Collectors.toList()));
 
         return response;
     }
@@ -575,17 +575,17 @@ public class KnowledgeQAController {
         // 添加提示信息 / Add hint message
         if (stats.getUnindexedCount() > 0) {
             response.setMessage(I18N.getLang(
-                "knowledge_qa.api.message.needs_indexing", lang, stats.getUnindexedCount()));
+                    "knowledge_qa.api.message.needs_indexing", lang, stats.getUnindexedCount()));
             response.setNeedsIndexing(true);
         } else {
             response.setMessage(I18N.getLang(
-                "knowledge_qa.api.message.all_indexed", lang));
+                    "knowledge_qa.api.message.all_indexed", lang));
             response.setNeedsIndexing(false);
         }
 
         log.info(I18N.get("knowledge_qa.log.statistics_result",
-            stats.getDocumentCount(), stats.getIndexedDocumentCount(),
-            stats.getUnindexedCount(), stats.getIndexProgress()));
+                stats.getDocumentCount(), stats.getIndexedDocumentCount(),
+                stats.getUnindexedCount(), stats.getIndexProgress()));
 
         return response;
     }
@@ -649,10 +649,10 @@ public class KnowledgeQAController {
 
             if (result.getSuccessCount() > 0) {
                 response.setMessage(I18N.getLang(
-                    "knowledge_qa.api.message.incremental_complete", lang, result.getSuccessCount()));
+                        "knowledge_qa.api.message.incremental_complete", lang, result.getSuccessCount()));
             } else {
                 response.setMessage(I18N.getLang(
-                    "knowledge_qa.api.message.all_up_to_date", lang));
+                        "knowledge_qa.api.message.all_up_to_date", lang));
             }
 
             response.setProcessedFiles(result.getSuccessCount());
@@ -702,12 +702,12 @@ public class KnowledgeQAController {
         log.info(I18N.get("knowledge_qa.log.search_similar", question, minScore, limit));
 
         List<SimilarQAService.SimilarQA> similar =
-            similarQAService.findSimilar(question, minScore, limit);
+                similarQAService.findSimilar(question, minScore, limit);
 
         return ResponseEntity.ok(Map.of(
-            "success", true,
-            "count", similar.size(),
-            "similarQuestions", similar
+                "success", true,
+                "count", similar.size(),
+                "similarQuestions", similar
         ));
     }
 
@@ -731,11 +731,11 @@ public class KnowledgeQAController {
         log.info(I18N.get("role.knowledge.api.get-leaderboard"));
 
         List<RoleKnowledgeQAService.RoleCredit> leaderboard =
-            roleKnowledgeQAService.getLeaderboard();
+                roleKnowledgeQAService.getLeaderboard();
 
         return ResponseEntity.ok(Map.of(
-            "success", true,
-            "leaderboard", leaderboard
+                "success", true,
+                "leaderboard", leaderboard
         ));
     }
 
@@ -747,12 +747,12 @@ public class KnowledgeQAController {
         log.info(I18N.get("role.knowledge.api.get-bounties"));
 
         List<RoleKnowledgeQAService.BountyRequest> bounties =
-            roleKnowledgeQAService.getActiveBounties();
+                roleKnowledgeQAService.getActiveBounties();
 
         return ResponseEntity.ok(Map.of(
-            "success", true,
-            "count", bounties.size(),
-            "bounties", bounties
+                "success", true,
+                "count", bounties.size(),
+                "bounties", bounties
         ));
     }
 
@@ -768,23 +768,23 @@ public class KnowledgeQAController {
 
         try {
             RoleKnowledgeQAService.BountySubmission submission =
-                roleKnowledgeQAService.submitBountyAnswer(
-                    bountyId,
-                    request.getRoleName(),
-                    request.getAnswer(),
-                    request.getSources()
-                );
+                    roleKnowledgeQAService.submitBountyAnswer(
+                            bountyId,
+                            request.getRoleName(),
+                            request.getAnswer(),
+                            request.getSources()
+                    );
 
             return ResponseEntity.ok(Map.of(
-                "success", true,
-                "message", I18N.getLang("role.knowledge.api.submit-success", lang),
-                "submission", submission
+                    "success", true,
+                    "message", I18N.getLang("role.knowledge.api.submit-success", lang),
+                    "submission", submission
             ));
         } catch (Exception e) {
             log.error(I18N.get("role.knowledge.api.submit-bounty-failed"), e);
             return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "message", e.getMessage()
+                    "success", false,
+                    "message", e.getMessage()
             ));
         }
     }
@@ -918,8 +918,8 @@ public class KnowledgeQAController {
         // 生成摘要（前200字符）
         String content = doc.getContent();
         String excerpt = content.length() > 200
-            ? content.substring(0, 200) + "..."
-            : content;
+                ? content.substring(0, 200) + "..."
+                : content;
         info.setExcerpt(excerpt);
 
         return info;
