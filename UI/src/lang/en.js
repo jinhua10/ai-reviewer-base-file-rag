@@ -348,6 +348,18 @@ export default {
       switchToNonStreaming: 'Switch to Standard Mode (Thinking animation)',
     },
     
+    // Dual-track Architecture
+    dualTrack: {
+      hopeAnswerLabel: '💡 HOPE Fast Answer',
+      llmAnswerLabel: '🤖 LLM Detailed Answer',
+      hopeBadge: 'HOPE',
+      llmBadge: 'LLM',
+      confidence: 'Confidence',
+      source: 'Source',
+      responseTime: 'Response Time',
+      generatingDetail: 'Generating detailed answer...',
+    },
+
     // Knowledge Mode
     knowledgeMode: {
       label: 'Knowledge Mode',

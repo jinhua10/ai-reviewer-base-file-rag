@@ -42,10 +42,10 @@ const qaApi = {
   },
 
   /**
-   * 流式问答 (Streaming Q&A)
+   * 流式问答 - 双轨架构 (Streaming Q&A - Dual-track Architecture)
    *
-   * 使用新的统一流式接口 /qa/ask-stream
-   * (Uses new unified streaming interface /qa/ask-stream)
+   * 第一轨：立即返回 HOPE 快速答案（<300ms）
+   * 第二轨：通过 SSE 订阅 LLM 详细答案（流式）
    *
    * @param {Object} params - 问题参数
    * @param {string} params.question - 问题内容
@@ -54,15 +54,15 @@ const qaApi = {
    * @param {boolean} params.useKnowledgeBase - 是否使用知识库（兼容参数）
    * @param {string} params.hopeSessionId - HOPE 会话 ID（可选）
    * @param {Function} onChunk - 数据块回调
-   * @returns {Promise<{reader, stop}>}
+   * @returns {Promise<{sessionId, eventSource, stop}>}
    */
   async askStreaming(params, onChunk) {
     try {
-      console.log('🚀 Starting streaming Q&A:', params.question)
+      console.log('🚀 Starting dual-track streaming Q&A:', params.question)
       console.log('📝 Knowledge Mode:', params.knowledgeMode)
       console.log('👤 Role Name:', params.roleName)
 
-      // 使用 fetch 发起流式请求
+      // Step 1: 发起双轨流式请求，获取 sessionId 和 HOPE 快速答案
       const response = await fetch('/api/qa/ask-stream', {
         method: 'POST',
         headers: {
@@ -81,71 +81,115 @@ const qaApi = {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      console.log('📥 Response received, starting to read stream...')
+      const result = await response.json()
+      const { sessionId, hopeAnswer, sseUrl, question } = result
 
-      // 读取流式响应
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
+      console.log('📥 Received session info:', {
+        sessionId,
+        hasHopeAnswer: !!hopeAnswer,
+        sseUrl
+      })
 
-      // 异步读取流
-      const readStream = async () => {
+      // Step 2: 如果有 HOPE 快速答案，立即发送
+      if (hopeAnswer && hopeAnswer.answer && onChunk) {
+        console.log('💡 HOPE fast answer received:', {
+          source: hopeAnswer.source,
+          confidence: hopeAnswer.confidence,
+          responseTime: hopeAnswer.responseTime
+        })
+
+        onChunk({
+          content: hopeAnswer.answer,
+          done: false,
+          type: 'hope',
+          source: hopeAnswer.source,
+          confidence: hopeAnswer.confidence,
+          canDirectAnswer: hopeAnswer.canDirectAnswer,
+          responseTime: hopeAnswer.responseTime
+        })
+      }
+
+      // Step 3: 订阅 LLM 流式输出（SSE）
+      const eventSourceUrl = `${window.location.origin}${sseUrl}`
+      console.log('📡 Subscribing to LLM stream:', eventSourceUrl)
+
+      const eventSource = new EventSource(eventSourceUrl)
+
+      // 监听 LLM 流式输出
+      eventSource.addEventListener('llm', (event) => {
         try {
-          while (true) {
-            const { done, value } = await reader.read()
+          const data = event.data
+          console.log('📦 LLM chunk received:', data.substring(0, 50))
 
-            if (done) {
-              console.log('✅ Stream completed')
-              if (onChunk) {
-                onChunk({
-                  content: '',
-                  done: true,
-                  type: 'complete'
-                })
-              }
-              break
-            }
-
-            // 解码数据块
-            const chunk = decoder.decode(value, { stream: true })
-            buffer += chunk
-
-            // 处理 SSE 格式的数据：data: xxx\n\n
-            const lines = buffer.split('\n')
-            buffer = lines.pop() || '' // 保留不完整的行
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.substring(6).trim()
-                if (data && onChunk) {
-                  console.log(`📦 Received chunk:`, data.substring(0, 50))
-                  onChunk({
-                    content: data,
-                    done: false,
-                    type: 'llm'
-                  })
-                }
-              }
-            }
-          }
-        } catch (error) {
-          console.error('❌ Error reading stream:', error)
           if (onChunk) {
             onChunk({
-              type: 'error',
-              error: error.message
+              content: data,
+              done: false,
+              type: 'llm'
+            })
+          }
+        } catch (error) {
+          console.error('❌ Failed to parse LLM chunk:', error)
+        }
+      })
+
+      // 监听完成事件
+      eventSource.addEventListener('complete', (event) => {
+        console.log('✅ LLM streaming completed')
+
+        try {
+          const stats = JSON.parse(event.data)
+          console.log('📊 Streaming stats:', stats)
+
+          if (onChunk) {
+            onChunk({
+              content: '',
+              done: true,
+              type: 'complete',
+              sessionId,
+              totalChunks: stats.totalChunks,
+              totalTime: stats.totalTime
+            })
+          }
+        } catch (e) {
+          // 如果解析失败，仍然发送完成信号
+          if (onChunk) {
+            onChunk({
+              content: '',
+              done: true,
+              type: 'complete',
+              sessionId
             })
           }
         }
-      }
 
-      // 开始读取流
-      readStream()
+        eventSource.close()
+      })
 
+      // 监听错误事件
+      eventSource.addEventListener('error', (event) => {
+        console.error('❌ SSE connection error:', event)
+
+        if (eventSource.readyState === EventSource.CLOSED) {
+          console.log('🔌 EventSource closed')
+        } else {
+          eventSource.close()
+
+          if (onChunk) {
+            onChunk({
+              type: 'error',
+              error: 'SSE connection failed'
+            })
+          }
+        }
+      })
+
+      // 返回控制对象
       return {
-        reader,
+        sessionId,
+        eventSource,
         stop: () => {
-          reader.cancel()
+          eventSource.close()
           console.log('🛑 Stream stopped')
         }
       }

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
@@ -14,6 +14,8 @@ import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
 import top.yumbo.ai.rag.spring.boot.service.RoleKnowledgeQAService;
 import top.yumbo.ai.rag.spring.boot.service.SimilarQAService;
 import top.yumbo.ai.rag.spring.boot.service.QAArchiveService;
+import top.yumbo.ai.rag.spring.boot.streaming.HybridStreamingService;
+import top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer;
 import top.yumbo.ai.rag.model.Document;
 
 import java.util.List;
@@ -35,16 +37,19 @@ public class KnowledgeQAController {
     private final SimilarQAService similarQAService;
     private final QAArchiveService qaArchiveService;
     private final RoleKnowledgeQAService roleKnowledgeQAService;
+    private final HybridStreamingService hybridStreamingService;
 
     @Autowired
     public KnowledgeQAController(KnowledgeQAService qaService,
                                  SimilarQAService similarQAService,
                                  QAArchiveService qaArchiveService,
-                                 RoleKnowledgeQAService roleKnowledgeQAService) {
+                                 RoleKnowledgeQAService roleKnowledgeQAService,
+                                 HybridStreamingService hybridStreamingService) {
         this.qaService = qaService;
         this.similarQAService = similarQAService;
         this.qaArchiveService = qaArchiveService;
         this.roleKnowledgeQAService = roleKnowledgeQAService;
+        this.hybridStreamingService = hybridStreamingService;
     }
 
     /**
@@ -114,26 +119,30 @@ public class KnowledgeQAController {
     }
 
     /**
-     * 智能问答接口 - 流式版本 / Intelligent Q&A endpoint - Streaming version
+     * 智能问答接口 - 双轨流式版本 / Intelligent Q&A endpoint - Dual-track Streaming version
      * <p>
-     * 支持实时流式输出，用户可以看到生成过程
-     * (Supports real-time streaming output, users can see the generation process)
+     * 双轨架构：
+     * 1. 立即返回 HOPE 快速答案（<300ms）
+     * 2. 返回 SSE URL 用于订阅 LLM 详细答案（流式）
      * <p>
-     * 根据参数自动路由：
-     * - knowledgeMode="none": 直接调用 LLM 流式回答
-     * - knowledgeMode="rag": 使用传统 RAG 流式回答
-     * - knowledgeMode="role": 使用角色知识库流式回答
+     * Dual-track architecture:
+     * 1. Immediately return HOPE fast answer (<300ms)
+     * 2. Return SSE URL for subscribing to LLM detailed answer (streaming)
+     * <p>
+     * 支持三种知识库模式：
+     * - knowledgeMode="none": 直接 LLM
+     * - knowledgeMode="rag": 传统 RAG
+     * - knowledgeMode="role": 角色知识库
      *
-     * @param request 问题请求（包含 knowledgeMode 和 roleName 参数）
-     * @return 流式响应（Server-Sent Events）
+     * @param request 问题请求
+     * @return 会话信息 + HOPE 快速答案 + SSE URL
      */
-    @PostMapping(value = "/ask-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public Flux<String> askStream(@RequestBody QuestionRequest request) {
+    @PostMapping("/ask-stream")
+    public ResponseEntity<Map<String, Object>> askStream(@RequestBody QuestionRequest request) {
         // 解析知识库模式 (Parse knowledge mode)
         String knowledgeMode = request.getKnowledgeMode();
         boolean useKnowledgeBase = request.getUseKnowledgeBase() != null ? request.getUseKnowledgeBase() : true;
 
-        // 如果指定了 knowledgeMode，优先使用 (If knowledgeMode is specified, use it with priority)
         if (knowledgeMode != null && !knowledgeMode.isEmpty()) {
             useKnowledgeBase = !"none".equals(knowledgeMode);
         }
@@ -142,24 +151,67 @@ public class KnowledgeQAController {
         boolean useRoleKnowledge = "role".equals(knowledgeMode);
 
         log.info(I18N.get("knowledge_qa.log.received_question", request.getQuestion()) +
-                 " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + ", streaming: true]");
+                 " [mode: " + knowledgeMode + ", role: " + roleName + ", RAG: " + useKnowledgeBase + ", dual-track: true]");
 
         try {
-            if (!useKnowledgeBase) {
-                // 直接 LLM 模式 - 流式 / Direct LLM mode - Streaming
-                return qaService.askDirectLLMStream(request.getQuestion());
-            } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
-                // 使用角色知识库模式 - 流式 / Use role-based knowledge base mode - Streaming
-                log.info(I18N.get("role.knowledge.api.role-mode"), roleName);
-                return roleKnowledgeQAService.askWithRoleStream(request.getQuestion(), roleName);
-            } else {
-                // 使用知识库 RAG 模式 - 流式 / Use knowledge base RAG mode - Streaming
-                return qaService.askStream(request.getQuestion(), request.getHopeSessionId());
+            // 启动双轨响应 (Start dual-track response)
+            var response = hybridStreamingService.ask(request.getQuestion(), "user", useKnowledgeBase);
+
+            // 等待 HOPE 快速答案 (Wait for HOPE fast answer)
+            HOPEAnswer hopeAnswer = null;
+            try {
+                hopeAnswer = response.getHopeFuture().get();
+            } catch (Exception e) {
+                log.warn("获取 HOPE 答案失败 (Failed to get HOPE answer): {}", e.getMessage());
             }
+
+            // 返回会话信息 (Return session info)
+            Map<String, Object> result = new java.util.HashMap<>();
+            result.put("sessionId", response.getSessionId());
+            result.put("question", response.getQuestion());
+            result.put("hopeAnswer", hopeAnswer);
+            result.put("sseUrl", "/api/qa/stream/" + response.getSessionId());
+            result.put("knowledgeMode", knowledgeMode);
+            result.put("roleName", roleName);
+
+            return ResponseEntity.ok(result);
+
         } catch (Exception e) {
             log.error(I18N.get("role.knowledge.api.streaming-failed"), e);
-            return Flux.just(I18N.get("role.knowledge.api.service-unavailable", e.getMessage()));
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", e.getMessage()));
         }
+    }
+
+    /**
+     * 订阅 LLM 流式输出 / Subscribe to LLM streaming output
+     * <p>
+     * 用于接收双轨架构中的 LLM 详细答案（流式）
+     * (Used to receive LLM detailed answer in dual-track architecture)
+     *
+     * @param sessionId 会话ID
+     * @return SSE 流
+     */
+    @GetMapping(value = "/stream/{sessionId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribeStream(@PathVariable String sessionId) {
+        log.info("📡 客户端订阅流式输出 (Client subscribed to streaming): sessionId={}", sessionId);
+
+        SseEmitter emitter = hybridStreamingService.createSSEStream(sessionId);
+
+        if (emitter == null) {
+            log.warn("会话不存在 (Session not found): sessionId={}", sessionId);
+            emitter = new SseEmitter();
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("Session not found"));
+                emitter.complete();
+            } catch (Exception e) {
+                log.error("发送错误失败 (Failed to send error): {}", e.getMessage());
+            }
+        }
+
+        return emitter;
     }
 
     /**

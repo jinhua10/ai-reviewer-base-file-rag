@@ -20,11 +20,22 @@ import java.util.concurrent.CompletableFuture;
  * 流式响应控制器
  * (Streaming Response Controller)
  * <p>
- * 提供双轨流式响应 API
+ * ⚠️ 已废弃 (DEPRECATED)
+ * <p>
+ * 此 Controller 已被合并到 KnowledgeQAController，请使用新接口：
+ * (This Controller has been merged into KnowledgeQAController, please use new endpoints:)
+ * <p>
+ * 迁移路径 (Migration path):
+ * <ul>
+ *   <li>POST /api/qa/stream → POST /api/qa/ask-stream (双轨初始化)</li>
+ *   <li>GET /api/qa/stream/{sessionId} → GET /api/qa/stream/{sessionId} (SSE 订阅)</li>
+ * </ul>
  *
  * @author AI Reviewer Team
  * @since 2025-12-08
+ * @deprecated 自 2025-12-13 起废弃，将在未来版本中移除。请使用 KnowledgeQAController
  */
+@Deprecated(since = "2025-12-13", forRemoval = true)
 @Slf4j
 @RestController
 @RequestMapping("/api/qa/stream")

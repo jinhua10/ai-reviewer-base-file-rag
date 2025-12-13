@@ -343,6 +343,18 @@ export default {
       switchToNonStreaming: '切换到普通模式（Thinking 动画）',
     },
     
+    // 双轨架构 (Dual-track Architecture)
+    dualTrack: {
+      hopeAnswerLabel: '💡 HOPE 快速答案',
+      llmAnswerLabel: '🤖 LLM 详细回答',
+      hopeBadge: 'HOPE',
+      llmBadge: 'LLM',
+      confidence: '置信度',
+      source: '来源',
+      responseTime: '响应时间',
+      generatingDetail: '正在生成详细回答...',
+    },
+
     // 知识库模式 (Knowledge Mode)
     knowledgeMode: {
       label: '知识库模式',
