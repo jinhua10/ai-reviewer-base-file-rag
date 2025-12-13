@@ -62,3 +62,16 @@ role:
       security_engineer: "Security Engineer"
       tester: "Test Engineer"
 
+    api:
+      # API Logs (API 日志)
+      role-mode: "📝 Role knowledge mode: using role [{0}]"
+      role-mode-session: "📝 Role knowledge mode (session): using role [{0}]"
+      get-leaderboard: "📊 Getting role contribution leaderboard"
+      get-bounties: "🎯 Getting active bounties"
+      submit-bounty: "📝 Submitting bounty answer: bountyId={0}, role={1}"
+      submit-bounty-failed: "Failed to submit bounty answer"
+
+      # API Response Messages (API 响应消息)
+      submit-success: "Submitted successfully, pending review"
+      submit-failed: "Submission failed"
+

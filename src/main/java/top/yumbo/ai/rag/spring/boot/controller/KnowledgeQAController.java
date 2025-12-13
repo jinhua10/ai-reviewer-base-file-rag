@@ -80,7 +80,7 @@ public class KnowledgeQAController {
             answer = qaService.askDirectLLM(request.getQuestion());
         } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
             // 使用角色知识库模式 / Use role-based knowledge base mode
-            log.info("📝 角色知识库模式：使用角色 [{}]", roleName);
+            log.info(I18N.get("role.knowledge.api.role-mode"), roleName);
             answer = roleKnowledgeQAService.askWithRole(request.getQuestion(), roleName);
         } else {
             // 使用知识库 RAG 模式 / Use knowledge base RAG mode
@@ -144,7 +144,7 @@ public class KnowledgeQAController {
             answer = qaService.askDirectLLM(request.getQuestion());
         } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
             // 使用角色知识库模式 / Use role-based knowledge base mode
-            log.info("📝 角色知识库模式（会话）：使用角色 [{}]", roleName);
+            log.info(I18N.get("role.knowledge.api.role-mode-session"), roleName);
             answer = roleKnowledgeQAService.askWithRole(request.getQuestion(), roleName);
         } else {
             // 使用会话文档 RAG 模式 / Use session documents RAG mode
@@ -357,7 +357,7 @@ public class KnowledgeQAController {
      */
     @GetMapping("/role/leaderboard")
     public ResponseEntity<?> getRoleLeaderboard() {
-        log.info("📊 获取角色贡献排行榜");
+        log.info(I18N.get("role.knowledge.api.get-leaderboard"));
 
         List<RoleKnowledgeQAService.RoleCredit> leaderboard =
             roleKnowledgeQAService.getLeaderboard();
@@ -373,7 +373,7 @@ public class KnowledgeQAController {
      */
     @GetMapping("/bounty/active")
     public ResponseEntity<?> getActiveBounties() {
-        log.info("🎯 获取活跃悬赏列表");
+        log.info(I18N.get("role.knowledge.api.get-bounties"));
 
         List<RoleKnowledgeQAService.BountyRequest> bounties =
             roleKnowledgeQAService.getActiveBounties();
@@ -391,8 +391,9 @@ public class KnowledgeQAController {
     @PostMapping("/bounty/{bountyId}/submit")
     public ResponseEntity<?> submitBountyAnswer(
             @PathVariable String bountyId,
-            @RequestBody BountySubmitRequest request) {
-        log.info("📝 提交悬赏答案: bountyId={}, role={}", bountyId, request.getRoleName());
+            @RequestBody BountySubmitRequest request,
+            @RequestParam(value = "lang", defaultValue = "zh") String lang) {
+        log.info(I18N.get("role.knowledge.api.submit-bounty"), bountyId, request.getRoleName());
 
         try {
             RoleKnowledgeQAService.BountySubmission submission =
@@ -405,11 +406,11 @@ public class KnowledgeQAController {
 
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "message", "提交成功，等待审核",
+                "message", I18N.getLang("role.knowledge.api.submit-success", lang),
                 "submission", submission
             ));
         } catch (Exception e) {
-            log.error("提交悬赏答案失败", e);
+            log.error(I18N.get("role.knowledge.api.submit-bounty-failed"), e);
             return ResponseEntity.badRequest().body(Map.of(
                 "success", false,
                 "message", e.getMessage()

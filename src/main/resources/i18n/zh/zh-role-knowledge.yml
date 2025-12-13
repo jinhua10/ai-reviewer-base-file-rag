@@ -62,3 +62,16 @@ role:
       security_engineer: "安全工程师"
       tester: "测试工程师"
 
+    api:
+      # API 日志 (API Logs)
+      role-mode: "📝 角色知识库模式：使用角色 [{0}]"
+      role-mode-session: "📝 角色知识库模式（会话）：使用角色 [{0}]"
+      get-leaderboard: "📊 获取角色贡献排行榜"
+      get-bounties: "🎯 获取活跃悬赏列表"
+      submit-bounty: "📝 提交悬赏答案: bountyId={0}, role={1}"
+      submit-bounty-failed: "提交悬赏答案失败"
+
+      # API 响应消息 (API Response Messages)
+      submit-success: "提交成功，等待审核"
+      submit-failed: "提交失败"
+
