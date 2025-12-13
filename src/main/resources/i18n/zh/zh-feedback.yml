@@ -172,6 +172,20 @@ log:
     role_concepts_update_failed: "角色概念更新失败"
     role_history_failed: "获取角色演化历史失败: {0}"
     role_stats_failed: "获取角色统计失败: {0}"
+
+    # 角色协作
+    general_index_built: "通用角色索引已建立，索引了 {0} 个概念"
+    general_index_failed: "通用角色索引建立失败"
+    collecting_bids: "正在收集角色竞标：{0}"
+    bids_collected: "收集到 {0} 个角色竞标"
+    bids_collect_failed: "角色竞标收集失败"
+    bid_create_failed: "创建角色竞标失败: {0}"
+    expert_selected: "选中专业角色: {0}，置信度: {1}"
+    general_forward: "通用角色转发给专业角色: {0}"
+    fallback_selected: "兜底选择角色: {0}"
+    concept_assigned_expert: "概念已分配给专业角色: {0} -> {1}, 权重: {2}"
+    concept_indexed_general: "概念已索引到通用角色: {0}, 专业角色: {1}"
+    concept_assign_failed: "概念分配失败"
   feedback:
     overall_received: "收到整体反馈：记录ID={0}，评分={1}"
     overall_failed: "提交整体反馈失败"

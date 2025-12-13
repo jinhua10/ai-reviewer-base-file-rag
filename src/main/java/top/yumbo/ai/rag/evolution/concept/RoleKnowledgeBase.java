@@ -1,9 +1,6 @@
 package top.yumbo.ai.rag.evolution.concept;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -11,7 +8,7 @@ import java.util.Map;
 
 /**
  * 角色知识库 (Role-based Knowledge Repository)
- *
+ * <p>
  * 针对不同角色维护的专属知识视图
  * (Dedicated knowledge view maintained for different roles)
  *
@@ -111,36 +108,30 @@ public class RoleKnowledgeBase {
     /**
      * 预定义角色类型 (Predefined role types)
      */
+    @Getter
     public enum RoleType {
-        DEVELOPER("developer", "开发者", "Developer"),
-        DEVOPS("devops", "运维工程师", "DevOps Engineer"),
-        ARCHITECT("architect", "架构师", "Architect"),
-        RESEARCHER("researcher", "研究员", "Researcher"),
-        PRODUCT_MANAGER("product_manager", "产品经理", "Product Manager"),
-        DATA_SCIENTIST("data_scientist", "数据科学家", "Data Scientist"),
-        SECURITY_ENGINEER("security_engineer", "安全工程师", "Security Engineer"),
-        TESTER("tester", "测试工程师", "Test Engineer");
+        GENERAL("general", "通用角色", "General Role", 0.3, true),  // 广度优先，理解浅，负责转发
+        DEVELOPER("developer", "开发者", "Developer", 0.9, false),
+        DEVOPS("devops", "运维工程师", "DevOps Engineer", 0.9, false),
+        ARCHITECT("architect", "架构师", "Architect", 0.9, false),
+        RESEARCHER("researcher", "研究员", "Researcher", 0.9, false),
+        PRODUCT_MANAGER("product_manager", "产品经理", "Product Manager", 0.9, false),
+        DATA_SCIENTIST("data_scientist", "数据科学家", "Data Scientist", 0.9, false),
+        SECURITY_ENGINEER("security_engineer", "安全工程师", "Security Engineer", 0.9, false),
+        TESTER("tester", "测试工程师", "Test Engineer", 0.9, false);
 
         private final String code;
         private final String zhName;
         private final String enName;
+        private final double expertiseLevel;  // 专业度：0.3=通用浅层理解，0.9=专业深度理解
+        private final boolean isGeneralRole;  // 是否为通用角色（负责转发）
 
-        RoleType(String code, String zhName, String enName) {
+        RoleType(String code, String zhName, String enName, double expertiseLevel, boolean isGeneralRole) {
             this.code = code;
             this.zhName = zhName;
             this.enName = enName;
-        }
-
-        public String getCode() {
-            return code;
-        }
-
-        public String getZhName() {
-            return zhName;
-        }
-
-        public String getEnName() {
-            return enName;
+            this.expertiseLevel = expertiseLevel;
+            this.isGeneralRole = isGeneralRole;
         }
 
         /**

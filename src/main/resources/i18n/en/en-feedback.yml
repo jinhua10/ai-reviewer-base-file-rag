@@ -172,6 +172,20 @@ log:
     role_concepts_update_failed: "Failed to update role concepts"
     role_history_failed: "Failed to get role evolution history: {0}"
     role_stats_failed: "Failed to get role statistics: {0}"
+
+    # Role Collaboration
+    general_index_built: "General role index built, indexed {0} concepts"
+    general_index_failed: "Failed to build general role index"
+    collecting_bids: "Collecting role bids for: {0}"
+    bids_collected: "Collected {0} role bids"
+    bids_collect_failed: "Failed to collect role bids"
+    bid_create_failed: "Failed to create role bid: {0}"
+    expert_selected: "Expert role selected: {0}, confidence: {1}"
+    general_forward: "General role forwarding to expert: {0}"
+    fallback_selected: "Fallback role selected: {0}"
+    concept_assigned_expert: "Concept assigned to expert role: {0} -> {1}, weight: {2}"
+    concept_indexed_general: "Concept indexed by general role: {0}, expert roles: {1}"
+    concept_assign_failed: "Failed to assign concept"
   feedback:
     overall_received: "Received overall feedback: recordId={0}, rating={1}"
     overall_failed: "Failed to submit overall feedback"
