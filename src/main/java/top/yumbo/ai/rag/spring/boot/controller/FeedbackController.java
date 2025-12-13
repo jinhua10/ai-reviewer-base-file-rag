@@ -470,7 +470,12 @@ public class FeedbackController {
         try {
             String conflictId = (String) request.get("conflictId");
             String choice = (String) request.get("choice"); // "A" or "B"
-            String userId = (String) request.getOrDefault("userId", "anonymous");
+            // 生成默认 userId（如果前端没有提供）
+            // Generate default userId (if not provided by frontend)
+            String userId = (String) request.get("userId");
+            if (userId == null || userId.trim().isEmpty()) {
+                userId = "user-" + java.util.UUID.randomUUID().toString().substring(0, 8);
+            }
             String reason = (String) request.get("reason");
 
             if (conflictId == null || choice == null) {
@@ -497,6 +502,7 @@ public class FeedbackController {
                 "message", I18N.getLang("feedback.vote.success", lang),
                 "conflictId", conflictId,
                 "choice", choice,
+                "userId", userId,  // 返回 userId 供前端存储 (Return userId for frontend storage)
                 "impact", I18N.getLang("feedback.vote.impact", lang, choice)
             ));
 

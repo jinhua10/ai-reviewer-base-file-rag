@@ -61,7 +61,7 @@ function SyncMonitor() {
               title={t('collaboration.totalSyncs')}
               value={data.totalSyncs}
               prefix={<SyncOutlined />}
-              valueStyle={{ color: '#667eea' }}
+              styles={{ content: { color: '#667eea' } }}
             />
           </Card>
         </Col>
@@ -71,7 +71,7 @@ function SyncMonitor() {
               title={t('collaboration.successSyncs')}
               value={data.successSyncs}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -81,7 +81,7 @@ function SyncMonitor() {
               title={t('collaboration.failedSyncs')}
               value={data.failedSyncs}
               prefix={<CloseCircleOutlined />}
-              valueStyle={{ color: '#ff4d4f' }}
+              styles={{ content: { color: '#ff4d4f' } }}
             />
           </Card>
         </Col>
@@ -91,7 +91,7 @@ function SyncMonitor() {
               title={t('collaboration.syncRate')}
               value={Math.round((data.successSyncs / (data.totalSyncs || 1)) * 100)}
               suffix="%"
-              valueStyle={{ color: '#667eea' }}
+              styles={{ content: { color: '#667eea' } }}
             />
           </Card>
         </Col>

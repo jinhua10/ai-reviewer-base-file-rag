@@ -11,6 +11,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Spin } from 'antd';
 import { useUIThemeEngine } from '../../contexts/UIThemeEngineContext';
+import { ThemeRenderProvider } from '../../engine/ThemeRenderEngine';
 
 // 懒加载不同主题的布局组件 / Lazy load layout components for different themes
 const ModernLayout = lazy(() => import('../layout/ModernLayout'));
@@ -65,13 +66,15 @@ function ThemeRenderingEngine({ children, activeKey, onMenuChange }) {
   // 渲染对应主题的布局 / Render layout for corresponding theme
   return (
     <Suspense fallback={<ThemeLoadingFallback />}>
-      <div className={`theme-container theme-container--${currentUITheme}`} data-ui-theme={currentUITheme}>
-        <LayoutComponent activeKey={activeKey} onMenuChange={onMenuChange} themeConfig={currentThemeConfig}>
-          {/* 如果主题有Shell，则使用Shell渲染；否则使用原有的children */}
-          {/* If theme has Shell, use Shell rendering; otherwise use original children */}
-          {hasShellForPage ? <ThemeShellRenderer activeKey={activeKey} /> : children}
-        </LayoutComponent>
-      </div>
+      <ThemeRenderProvider>
+        <div className={`theme-container theme-container--${currentUITheme}`} data-ui-theme={currentUITheme}>
+          <LayoutComponent activeKey={activeKey} onMenuChange={onMenuChange} themeConfig={currentThemeConfig}>
+            {/* 如果主题有Shell，则使用Shell渲染；否则使用原有的children */}
+            {/* If theme has Shell, use Shell rendering; otherwise use original children */}
+            {hasShellForPage ? <ThemeShellRenderer activeKey={activeKey} /> : children}
+          </LayoutComponent>
+        </div>
+      </ThemeRenderProvider>
     </Suspense>
   );
 }
