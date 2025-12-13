@@ -64,7 +64,9 @@ const qaApi = {
 
       // 构建查询参数
       const queryParams = new URLSearchParams({
-        question: params.question
+        question: params.question,
+        knowledgeMode: params.knowledgeMode || 'rag',
+        roleName: params.roleName || 'general'
       })
 
       if (params.hopeSessionId) {

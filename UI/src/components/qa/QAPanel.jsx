@@ -142,11 +142,16 @@ function QAPanel() {
           useKnowledgeBase: knowledgeMode !== 'none'  // 兼容旧API
         },
         (data) => {
+          // 调试日志
+          console.log('📨 Received data:', data.type, data)
+
           // 先累加到ref（不触发渲染，避免React批量更新导致的重复累加）
           // Accumulate to ref first (avoid re-render and duplicate accumulation from React batching)
           if (data.type === 'hope') {
+            console.log('💡 HOPE answer:', data.content)
             streamingContentRef.current = data.content
           } else if (data.type === 'llm') {
+            console.log('📦 LLM chunk:', data.content)
             streamingLLMAnswerRef.current += data.content
           }
           

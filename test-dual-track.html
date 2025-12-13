@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双轨流式测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .output {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            background: #f9f9f9;
+        }
+        .hope {
+            background: #e6f7ff;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #1890ff;
+        }
+        .llm {
+            background: #f6ffed;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #52c41a;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        input {
+            width: 400px;
+            padding: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 双轨流式接口测试</h1>
+
+    <div>
+        <input type="text" id="question" value="你好" placeholder="输入问题">
+        <button onclick="startStreaming()">开始双轨流式</button>
+        <button onclick="stopStreaming()">停止</button>
+    </div>
+
+    <div class="output" id="output">
+        <p>等待输入...</p>
+    </div>
+
+    <script>
+        let eventSource = null;
+
+        function startStreaming() {
+            const question = document.getElementById('question').value;
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>🔄 连接中...</p>';
+
+            // 关闭之前的连接
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            // 构建 URL
+            const url = `http://localhost:8080/api/qa/stream/dual-track?question=${encodeURIComponent(question)}`;
+            console.log('📡 Connecting to:', url);
+
+            eventSource = new EventSource(url);
+
+            // 监听 HOPE 答案
+            eventSource.addEventListener('hope', (event) => {
+                console.log('💡 HOPE event:', event.data);
+                try {
+                    const data = JSON.parse(event.data);
+                    output.innerHTML += `<div class="hope">
+                        <strong>💡 HOPE 快速答案 (${data.responseTime}ms)</strong><br>
+                        ${data.content}<br>
+                        <small>来源: ${data.hopeSource}, 置信度: ${data.confidence}</small>
+                    </div>`;
+                } catch (e) {
+                    console.error('解析 HOPE 失败:', e);
+                    output.innerHTML += `<div class="hope">HOPE: ${event.data}</div>`;
+                }
+            });
+
+            // 监听 LLM 流式块
+            eventSource.addEventListener('llm', (event) => {
+                console.log('📦 LLM event:', event.data);
+                try {
+                    const data = JSON.parse(event.data);
+
+                    // 查找或创建 LLM 输出容器
+                    let llmDiv = document.getElementById('llm-output');
+                    if (!llmDiv) {
+                        llmDiv = document.createElement('div');
+                        llmDiv.id = 'llm-output';
+                        llmDiv.className = 'llm';
+                        llmDiv.innerHTML = '<strong>🤖 LLM 详细答案</strong><br><div id="llm-content"></div>';
+                        output.appendChild(llmDiv);
+                    }
+
+                    // 追加内容
+                    document.getElementById('llm-content').innerHTML += data.content;
+                } catch (e) {
+                    console.error('解析 LLM 失败:', e);
+                    output.innerHTML += `<div class="llm">LLM: ${event.data}</div>`;
+                }
+            });
+
+            // 监听完成事件
+            eventSource.addEventListener('complete', (event) => {
+                console.log('✅ Complete event:', event.data);
+                try {
+                    const data = JSON.parse(event.data);
+                    output.innerHTML += `<p>✅ 完成！总计 ${data.totalChunks} 块，耗时 ${data.totalTime}ms</p>`;
+                } catch (e) {
+                    output.innerHTML += '<p>✅ 完成！</p>';
+                }
+                eventSource.close();
+            });
+
+            // 监听错误
+            eventSource.onerror = (event) => {
+                console.error('❌ SSE Error:', event);
+                output.innerHTML += '<p>❌ 连接错误</p>';
+                eventSource.close();
+            };
+
+            // 监听打开
+            eventSource.onopen = () => {
+                console.log('✅ SSE Connected');
+                output.innerHTML = '<p>✅ 已连接，等待响应...</p>';
+            };
+        }
+
+        function stopStreaming() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                document.getElementById('output').innerHTML += '<p>🛑 已停止</p>';
+            }
+        }
+    </script>
+</body>
+</html>
+

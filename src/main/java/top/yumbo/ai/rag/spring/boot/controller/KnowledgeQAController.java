@@ -252,14 +252,19 @@ public class KnowledgeQAController {
      *
      * @param question  用户问题
      * @param sessionId HOPE 会话ID（可选）
+     * @param knowledgeMode 知识库模式: none/rag/role（可选，默认 rag）
+     * @param roleName 角色名称（可选）
      * @return SSE 流
      */
     @GetMapping(value = "/stream/dual-track", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter dualTrackStreaming(
             @RequestParam String question,
-            @RequestParam(required = false) String sessionId) {
+            @RequestParam(required = false) String sessionId,
+            @RequestParam(required = false, defaultValue = "rag") String knowledgeMode,
+            @RequestParam(required = false, defaultValue = "general") String roleName) {
 
-        log.info(I18N.get("role.knowledge.api.dual-track-start") + ": question={}", question);
+        log.info(I18N.get("role.knowledge.api.dual-track-start") + ": question={}, mode={}, role={}",
+                question, knowledgeMode, roleName);
 
         SseEmitter emitter = new SseEmitter(60000L); // 60 秒超时
 
@@ -267,11 +272,71 @@ public class KnowledgeQAController {
         String hopeSessionId = sessionId != null ? sessionId :
                 "hope_" + System.currentTimeMillis() + "_" + java.util.UUID.randomUUID().toString().substring(0, 8);
 
+        // 解析知识库模式
+        boolean useKnowledgeBase = !"none".equals(knowledgeMode);
+        boolean useRoleKnowledge = "role".equals(knowledgeMode);
+
         // 异步处理双轨响应
         java.util.concurrent.CompletableFuture.runAsync(() -> {
             try {
-                // 1. 启动双轨服务
-                var response = hybridStreamingService.ask(question, hopeSessionId, true);
+                // 1. 根据知识库模式启动相应的服务
+                String llmAnswer;
+
+                if (!useKnowledgeBase) {
+                    // 直接 LLM 模式（不使用 RAG）
+                    log.info("📝 Direct LLM mode (no RAG)");
+                    llmAnswer = qaService.askDirectLLM(question).getAnswer();
+
+                    // 直接 LLM 模式没有 HOPE 答案，直接发送 LLM 内容
+                    // 分块发送
+                    int chunkSize = 5;
+                    int chunkIndex = 0;
+                    for (int i = 0; i < llmAnswer.length(); i += chunkSize) {
+                        int end = Math.min(i + chunkSize, llmAnswer.length());
+                        String chunk = llmAnswer.substring(i, end);
+
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+
+                        emitter.send(SseEmitter.event().name("llm").data(llmMsg));
+
+                        // 模拟流式延迟
+                        Thread.sleep(50);
+                    }
+
+                    // 发送完成消息
+                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * 50);
+                    emitter.send(SseEmitter.event().name("complete").data(completeMsg));
+
+                } else if (useRoleKnowledge) {
+                    // 角色知识库模式
+                    log.info("👤 Role knowledge mode: {}", roleName);
+                    llmAnswer = roleKnowledgeQAService.askWithRole(question, roleName).getAnswer();
+
+                    // 分块发送
+                    int chunkSize = 5;
+                    int chunkIndex = 0;
+                    for (int i = 0; i < llmAnswer.length(); i += chunkSize) {
+                        int end = Math.min(i + chunkSize, llmAnswer.length());
+                        String chunk = llmAnswer.substring(i, end);
+
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+
+                        emitter.send(SseEmitter.event().name("llm").data(llmMsg));
+                        Thread.sleep(50);
+                    }
+
+                    // 发送完成消息
+                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * 50);
+                    emitter.send(SseEmitter.event().name("complete").data(completeMsg));
+
+                } else {
+                    // 传统 RAG 模式（使用 HOPE + LLM 双轨）
+                    log.info("🔍 RAG mode with HOPE");
+                    var response = hybridStreamingService.ask(question, hopeSessionId, true);
 
                 // 2. 等待 HOPE 快速答案
                 java.util.concurrent.CompletableFuture<top.yumbo.ai.rag.spring.boot.streaming.model.HOPEAnswer> hopeFuture =
@@ -358,6 +423,7 @@ public class KnowledgeQAController {
 
                     log.info(I18N.get("role.knowledge.api.llm-complete") + ": {} chunks, {}ms", chunkIndex, llmTime);
                 }
+                } // 结束 RAG 模式的 else 块
 
                 emitter.complete();
                 log.info(I18N.get("role.knowledge.api.dual-track-complete"));
