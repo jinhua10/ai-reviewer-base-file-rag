@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import top.yumbo.ai.rag.i18n.I18N;
 
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -128,6 +129,56 @@ public class RoleManager {
         log.info(I18N.get("role.manager.reloading"));
         roleConfig.init();
         log.info(I18N.get("role.manager.reloaded", roleConfig.getRoles().size()));
+    }
+
+    /**
+     * 获取所有角色 (Get all roles)
+     *
+     * @return 所有角色列表 (List of all roles)
+     */
+    public List<Role> getAllRoles() {
+        if (roleConfig == null || roleConfig.getRoles() == null) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(roleConfig.getRoles().values());
+    }
+
+    /**
+     * 添加角色 (Add role)
+     *
+     * @param role 角色对象 (Role object)
+     */
+    public void addRole(Role role) {
+        if (roleConfig != null && roleConfig.getRoles() != null) {
+            roleConfig.getRoles().put(role.getId(), role);
+            log.info(I18N.get("role.manager.role.added", role.getId(), role.getName()));
+        }
+    }
+
+    /**
+     * 更新角色 (Update role)
+     *
+     * @param role 角色对象 (Role object)
+     */
+    public void updateRole(Role role) {
+        if (roleConfig != null && roleConfig.getRoles() != null) {
+            roleConfig.getRoles().put(role.getId(), role);
+            log.info(I18N.get("role.manager.role.updated", role.getId(), role.getName()));
+        }
+    }
+
+    /**
+     * 删除角色 (Remove role)
+     *
+     * @param roleId 角色ID (Role ID)
+     */
+    public void removeRole(String roleId) {
+        if (roleConfig != null && roleConfig.getRoles() != null) {
+            Role removed = roleConfig.getRoles().remove(roleId);
+            if (removed != null) {
+                log.info(I18N.get("role.manager.role.removed", roleId, removed.getName()));
+            }
+        }
     }
 }
 
