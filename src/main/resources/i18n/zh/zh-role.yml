@@ -48,6 +48,65 @@ role:
       loaded: "✅ 角色加载成功: id={0}, name={1}"
       parse:
         error: "❌ 解析角色配置失败: id={0}, error={1}"
+  
+  # 角色查询（RoleController）
+  query:
+    # 参数: {0}=keyword, {1}=page, {2}=pageSize
+    start: "🔍 查询角色: keyword={0}, page={1}, pageSize={2}"
+    # 参数: {0}=total, {1}=returned
+    success: "✅ 查询角色成功: total={0}, returned={1}"
+    failed: "❌ 查询角色失败"
+  
+  # 角色列表加载
+  list:
+    # 参数: {0}=total, {1}=returned
+    loaded: "✅ 角色列表加载成功: total={0}, returned={1}"
+    empty: "📋 角色列表为空"
+  
+  # 角色创建
+  create:
+    # 参数: {0}=roleName, {1}=roleId
+    success: "✅ 创建角色成功: {0} ({1})"
+    failed: "❌ 创建角色失败"
+    # Mock模式
+    mock: "🔧 Mock模式: 创建角色 {0}"
+  
+  # 角色更新
+  update:
+    # 参数: {0}=roleName, {1}=roleId
+    success: "✅ 更新角色成功: {0} ({1})"
+    failed: "❌ 更新角色失败"
+    notfound: "⚠️ 角色不存在: {0}"
+    # Mock模式
+    mock: "🔧 Mock模式: 更新角色 {0}"
+  
+  # 角色删除
+  delete:
+    # 参数: {0}=roleId
+    success: "✅ 删除角色成功: {0}"
+    failed: "❌ 删除角色失败"
+    # Mock模式
+    mock: "🔧 Mock模式: 删除角色 {0}"
+  
+  # 角色检测
+  detect:
+    # 参数: {0}=question
+    start: "🚀 开始角色检测: question={0}"
+    # 参数: {0}=roleName, {1}=confidence
+    success: "✅ 角色检测成功: role={0}, confidence={1}"
+    failed: "❌ 角色检测失败"
+    mock: "🔧 Mock模式: 角色检测器不可用"
+    empty-question: "⚠️ 问题不能为空"
+  
+  # 过滤操作
+  filter:
+    # 参数: {0}=keyword
+    applying: "🔍 应用关键词过滤: {0}"
+  
+  # 排序操作
+  sort:
+    # 参数: {0}=sortBy, {1}=sortOrder
+    applying: "📊 应用排序: sortBy={0}, order={1}"
 
   manager:
     initialized: "✅ 角色管理器初始化完成"

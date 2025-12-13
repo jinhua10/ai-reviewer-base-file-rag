@@ -48,6 +48,65 @@ role:
       loaded: "✅ Role loaded successfully: id={0}, name={1}"
       parse:
         error: "❌ Failed to parse role config: id={0}, error={1}"
+  
+  # Role Query (RoleController)
+  query:
+    # Parameters: {0}=keyword, {1}=page, {2}=pageSize
+    start: "🔍 Querying roles: keyword={0}, page={1}, pageSize={2}"
+    # Parameters: {0}=total, {1}=returned
+    success: "✅ Query roles successful: total={0}, returned={1}"
+    failed: "❌ Query roles failed"
+  
+  # Role List Loading
+  list:
+    # Parameters: {0}=total, {1}=returned
+    loaded: "✅ Role list loaded successfully: total={0}, returned={1}"
+    empty: "📋 Role list is empty"
+  
+  # Role Creation
+  create:
+    # Parameters: {0}=roleName, {1}=roleId
+    success: "✅ Role created successfully: {0} ({1})"
+    failed: "❌ Failed to create role"
+    # Mock mode
+    mock: "🔧 Mock mode: Creating role {0}"
+  
+  # Role Update
+  update:
+    # Parameters: {0}=roleName, {1}=roleId
+    success: "✅ Role updated successfully: {0} ({1})"
+    failed: "❌ Failed to update role"
+    notfound: "⚠️ Role not found: {0}"
+    # Mock mode
+    mock: "🔧 Mock mode: Updating role {0}"
+  
+  # Role Deletion
+  delete:
+    # Parameters: {0}=roleId
+    success: "✅ Role deleted successfully: {0}"
+    failed: "❌ Failed to delete role"
+    # Mock mode
+    mock: "🔧 Mock mode: Deleting role {0}"
+  
+  # Role Detection
+  detect:
+    # Parameters: {0}=question
+    start: "🚀 Starting role detection: question={0}"
+    # Parameters: {0}=roleName, {1}=confidence
+    success: "✅ Role detection successful: role={0}, confidence={1}"
+    failed: "❌ Role detection failed"
+    mock: "🔧 Mock mode: Role detector unavailable"
+    empty-question: "⚠️ Question cannot be empty"
+  
+  # Filter Operations
+  filter:
+    # Parameters: {0}=keyword
+    applying: "🔍 Applying keyword filter: {0}"
+  
+  # Sort Operations
+  sort:
+    # Parameters: {0}=sortBy, {1}=sortOrder
+    applying: "📊 Applying sort: sortBy={0}, order={1}"
 
   manager:
     initialized: "✅ Role manager initialized"
