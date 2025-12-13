@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, Switch, Button, message } from 'antd';
+import { Form, Input, Select, Switch, Button, Space, App } from 'antd';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { adminApi } from '../../api/modules/admin';
 
@@ -7,6 +7,7 @@ const { Option } = Select;
 
 const SystemConfig = () => {
   const { t } = useLanguage();
+  const { message } = App.useApp();
   const [form] = Form.useForm();
 
   const handleSave = async () => {
@@ -27,7 +28,10 @@ const SystemConfig = () => {
           <Input />
         </Form.Item>
         <Form.Item name="maxFileSize" label={t('admin.config.maxFileSize')}>
-          <Input type="number" addonAfter="MB" />
+          <Space.Compact style={{ width: '100%' }}>
+            <Input type="number" style={{ width: 'calc(100% - 50px)' }} />
+            <Input value="MB" disabled style={{ width: '50px' }} />
+          </Space.Compact>
         </Form.Item>
         <Form.Item name="cache" label={t('admin.config.enableCache')} valuePropName="checked">
           <Switch />

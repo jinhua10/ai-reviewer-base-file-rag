@@ -875,10 +875,11 @@ export default {
       warn: '警告',
       info: '信息',
       download: '下载日志',
+      noLogs: '暂无日志',
     },
 
     // 监控
-    monitor: {
+    monitorMetrics: {
       cpu: 'CPU使用率',
       memory: '内存使用率',
       requests: '请求数',

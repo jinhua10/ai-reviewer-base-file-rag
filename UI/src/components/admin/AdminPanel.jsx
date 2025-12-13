@@ -8,8 +8,6 @@ import LogViewer from './LogViewer';
 import MonitorDashboard from './MonitorDashboard';
 import '../../assets/css/admin/admin-panel.css';
 
-const { TabPane } = Tabs;
-
 const AdminPanel = () => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('system');
@@ -19,55 +17,53 @@ const AdminPanel = () => {
       <Card className="admin-panel__card">
         <h2 className="admin-panel__title">{t('admin.title')}</h2>
 
-        <Tabs activeKey={activeTab} onChange={setActiveTab} className="admin-panel__tabs">
-          <TabPane
-            tab={
-              <span>
-                <SettingOutlined />
-                {t('admin.systemConfig')}
-              </span>
+        <Tabs 
+          activeKey={activeTab} 
+          onChange={setActiveTab} 
+          className="admin-panel__tabs"
+          items={[
+            {
+              key: 'system',
+              label: (
+                <span>
+                  <SettingOutlined />
+                  {t('admin.systemConfig')}
+                </span>
+              ),
+              children: <SystemConfig />
+            },
+            {
+              key: 'model',
+              label: (
+                <span>
+                  <DatabaseOutlined />
+                  {t('admin.modelConfig')}
+                </span>
+              ),
+              children: <ModelConfig />
+            },
+            {
+              key: 'logs',
+              label: (
+                <span>
+                  <FileTextOutlined />
+                  {t('admin.logViewer')}
+                </span>
+              ),
+              children: <LogViewer />
+            },
+            {
+              key: 'monitor',
+              label: (
+                <span>
+                  <DashboardOutlined />
+                  {t('admin.monitor')}
+                </span>
+              ),
+              children: <MonitorDashboard />
             }
-            key="system"
-          >
-            <SystemConfig />
-          </TabPane>
-
-          <TabPane
-            tab={
-              <span>
-                <DatabaseOutlined />
-                {t('admin.modelConfig')}
-              </span>
-            }
-            key="model"
-          >
-            <ModelConfig />
-          </TabPane>
-
-          <TabPane
-            tab={
-              <span>
-                <FileTextOutlined />
-                {t('admin.logViewer')}
-              </span>
-            }
-            key="logs"
-          >
-            <LogViewer />
-          </TabPane>
-
-          <TabPane
-            tab={
-              <span>
-                <DashboardOutlined />
-                {t('admin.monitor')}
-              </span>
-            }
-            key="monitor"
-          >
-            <MonitorDashboard />
-          </TabPane>
-        </Tabs>
+          ]}
+        />
       </Card>
     </div>
   );

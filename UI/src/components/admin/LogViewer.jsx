@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Select, Button, List, Tag } from 'antd';
+import { Input, Select, Button, Space, Divider, Tag } from 'antd';
 import { SearchOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { adminApi } from '../../api/modules/admin';
@@ -21,9 +21,12 @@ const LogViewer = () => {
   const loadLogs = async () => {
     try {
       const response = await adminApi.getLogs({ level: level === 'all' ? undefined : level, keyword });
-      setLogs(response.data || []);
+      // Backend returns { content: [...], totalElements, totalPages, currentPage }
+      const logData = response?.data?.content || response?.content || response?.data || [];
+      setLogs(Array.isArray(logData) ? logData : []);
     } catch (error) {
       console.error('Failed to load logs:', error);
+      setLogs([]);
     }
   };
 
@@ -48,17 +51,30 @@ const LogViewer = () => {
         </Select>
         <Button icon={<DownloadOutlined />}>{t('admin.log.download')}</Button>
       </div>
-      <List
-        className="log-viewer__list"
-        dataSource={logs}
-        renderItem={(log) => (
-          <List.Item className="log-viewer__item">
-            <Tag color={getLevelColor(log.level)}>{log.level}</Tag>
-            <span className="log-viewer__time">{log.timestamp}</span>
-            <span className="log-viewer__message">{log.message}</span>
-          </List.Item>
-        )}
-      />
+      <div className="log-viewer__list">
+        <Space orientation="vertical" style={{ width: '100%' }} size="small">
+          {logs.length === 0 ? (
+            <div style={{ padding: '20px', textAlign: 'center', color: '#999' }}>
+              {t('admin.log.noLogs') || 'No logs found'}
+            </div>
+          ) : (
+            logs.map((log, index) => (
+              <div key={index}>
+                <div className="log-viewer__item" style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Tag color={getLevelColor(log.level)}>{log.level}</Tag>
+                  <span className="log-viewer__time" style={{ color: '#666', fontSize: '12px' }}>
+                    {log.timestamp?.toString() || log.timestamp}
+                  </span>
+                  <span className="log-viewer__message" style={{ flex: 1 }}>
+                    {log.message}
+                  </span>
+                </div>
+                {index < logs.length - 1 && <Divider style={{ margin: 0 }} />}
+              </div>
+            ))
+          )}
+        </Space>
+      </div>
     </div>
   );
 };

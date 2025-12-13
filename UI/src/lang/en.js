@@ -854,9 +854,10 @@ export default {
       warn: 'Warning',
       info: 'Info',
       download: 'Download Logs',
+      noLogs: 'No logs found',
     },
 
-    monitor: {
+    monitorMetrics: {
       cpu: 'CPU Usage',
       memory: 'Memory Usage',
       requests: 'Requests',

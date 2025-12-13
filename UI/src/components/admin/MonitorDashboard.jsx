@@ -16,9 +16,18 @@ const MonitorDashboard = () => {
   const loadMetrics = async () => {
     try {
       const response = await adminApi.getMetrics();
-      // 确保正确提取数据
-      const metricsData = response?.data || response;
-      console.log('Loaded metrics:', metricsData);
+      // Backend returns SystemMetrics with detailed fields
+      const rawData = response?.data || response;
+      console.log('Loaded metrics:', rawData);
+      
+      // Map backend response to frontend expected format
+      const metricsData = {
+        cpu: rawData.cpuUsage || rawData.cpu || 0,
+        memory: rawData.memoryUsagePercent || rawData.memory || 0,
+        requests: rawData.requestsPerMinute || rawData.requests || 0,
+        errors: rawData.errors || 0
+      };
+      
       setMetrics(metricsData);
     } catch (error) {
       console.error('Failed to load metrics:', error);
@@ -29,9 +38,9 @@ const MonitorDashboard = () => {
 
   if (!metrics) return null;
 
-  // 确保metrics是一个有效的对象
-  const cpu = typeof metrics.cpu === 'number' ? metrics.cpu : 0;
-  const memory = typeof metrics.memory === 'number' ? metrics.memory : 0;
+  // 确保metrics是一个有效的对象并提取值
+  const cpu = typeof metrics.cpu === 'number' ? Math.round(metrics.cpu) : 0;
+  const memory = typeof metrics.memory === 'number' ? Math.round(metrics.memory) : 0;
   const requests = typeof metrics.requests === 'number' ? metrics.requests : 0;
   const errors = typeof metrics.errors === 'number' ? metrics.errors : 0;
 
@@ -40,24 +49,28 @@ const MonitorDashboard = () => {
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title={t('admin.monitor.cpu')} value={cpu} suffix="%" />
+            <Statistic title={t('admin.monitorMetrics.cpu')} value={cpu} suffix="%" />
             <Progress percent={cpu} status={cpu > 80 ? 'exception' : 'normal'} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title={t('admin.monitor.memory')} value={memory} suffix="%" />
+            <Statistic title={t('admin.monitorMetrics.memory')} value={memory} suffix="%" />
             <Progress percent={memory} status={memory > 80 ? 'exception' : 'normal'} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title={t('admin.monitor.requests')} value={requests} />
+            <Statistic title={t('admin.monitorMetrics.requests')} value={requests} />
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
           <Card>
-            <Statistic title={t('admin.monitor.errors')} value={errors} valueStyle={{ color: '#cf1322' }} />
+            <Statistic 
+              title={t('admin.monitorMetrics.errors')} 
+              value={errors} 
+              styles={{ value: { color: '#cf1322' } }} 
+            />
           </Card>
         </Col>
       </Row>
