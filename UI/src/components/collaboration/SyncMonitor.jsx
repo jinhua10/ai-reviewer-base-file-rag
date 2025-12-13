@@ -6,7 +6,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import { Card, Row, Col, Statistic, Progress, List, Tag, Spin } from 'antd'
+import { Card, Row, Col, Statistic, Progress, Space, Tag, Spin, Divider } from 'antd'
 import { SyncOutlined, CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons'
 import { useLanguage } from '../../contexts/LanguageContext'
 import collaborationApi from '../../api/modules/collaboration'
@@ -29,10 +29,16 @@ function SyncMonitor() {
       const response = await collaborationApi.getSyncStatus()
       if (response) {
         // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
-        setData(response)
+        // 确保 recentSyncs 是数组 (Ensure recentSyncs is an array)
+        const syncData = {
+          ...response,
+          recentSyncs: Array.isArray(response.recentSyncs) ? response.recentSyncs : []
+        }
+        setData(syncData)
       }
     } catch (error) {
       console.error('Failed to load sync data:', error)
+      setData(null) // 设置为null防止崩溃 (Set to null to prevent crash)
     } finally {
       setLoading(false)
     }
@@ -101,40 +107,38 @@ function SyncMonitor() {
         className="sync-monitor__activity"
         title={t('collaboration.recentActivity')}
       >
-        <List
-          dataSource={data.recentSyncs || []}
-          renderItem={(item) => (
-            <List.Item>
-              <List.Item.Meta
-                title={
+        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+          {(data.recentSyncs || []).map((item, index) => (
+            <div key={item.id || index}>
+              <div className="sync-monitor__activity-item">
+                <div className="sync-monitor__activity-header">
                   <div className="sync-monitor__activity-title">
                     <span>{item.peerName}</span>
-                    <Tag color={item.status === 'success' ? 'green' : 'red'}>
-                      {t(`collaboration.syncStatus.${item.status}`)}
+                    <Tag color={(item.status || 'success') === 'success' ? 'green' : 'red'}>
+                      {t(`collaboration.syncStatus.${item.status || 'success'}`)}
                     </Tag>
                   </div>
-                }
-                description={
-                  <div className="sync-monitor__activity-desc">
-                    <span>{item.description}</span>
-                    <span className="sync-monitor__activity-time">
-                      {new Date(item.timestamp).toLocaleString()}
-                    </span>
-                  </div>
-                }
-              />
-              {item.progress !== undefined && (
-                <div className="sync-monitor__progress">
-                  <Progress
-                    percent={item.progress}
-                    size="small"
-                    status={item.status === 'success' ? 'success' : 'active'}
-                  />
                 </div>
-              )}
-            </List.Item>
-          )}
-        />
+                <div className="sync-monitor__activity-desc">
+                  <span>{item.description}</span>
+                  <span className="sync-monitor__activity-time">
+                    {new Date(item.timestamp).toLocaleString()}
+                  </span>
+                </div>
+                {item.progress !== undefined && (
+                  <div className="sync-monitor__progress">
+                    <Progress
+                      percent={item.progress}
+                      size="small"
+                      status={(item.status || 'success') === 'success' ? 'success' : 'active'}
+                    />
+                  </div>
+                )}
+              </div>
+              {index < (data.recentSyncs || []).length - 1 && <Divider style={{ margin: '12px 0' }} />}
+            </div>
+          ))}
+        </Space>
       </Card>
     </div>
   )

@@ -12,7 +12,7 @@ export const wishApi = {
    * @returns {Promise}
    */
   getWishes: (params) => {
-    return api.get('/api/wishes', { params });
+    return api.get('/wishes', { params });
   },
 
   /**
@@ -21,7 +21,7 @@ export const wishApi = {
    * @returns {Promise}
    */
   getWishDetail: (id) => {
-    return api.get(`/api/wishes/${id}`);
+    return api.get(`/wishes/${id}`);
   },
 
   /**
@@ -33,17 +33,18 @@ export const wishApi = {
    * @returns {Promise}
    */
   submitWish: (data) => {
-    return api.post('/api/wishes', data);
+    return api.post('/wishes', data);
   },
 
   /**
    * 投票
    * @param {number|string} id - 愿望ID
    * @param {string} voteType - 投票类型 (up/down)
+   * @param {string} userId - 用户ID (可选，默认使用匿名用户)
    * @returns {Promise}
    */
-  voteWish: (id, voteType) => {
-    return api.post(`/api/wishes/${id}/vote`, { voteType });
+  voteWish: (id, voteType, userId = 'anonymous') => {
+    return api.post(`/wishes/${id}/vote`, { voteType, userId });
   },
 
   /**
@@ -53,7 +54,7 @@ export const wishApi = {
    * @returns {Promise}
    */
   getComments: (wishId, params = {}) => {
-    return api.get(`/api/wishes/${wishId}/comments`, { params });
+    return api.get(`/wishes/${wishId}/comments`, { params });
   },
 
   /**
@@ -65,16 +66,17 @@ export const wishApi = {
    * @returns {Promise}
    */
   addComment: (wishId, data) => {
-    return api.post(`/api/wishes/${wishId}/comments`, data);
+    return api.post(`/wishes/${wishId}/comments`, data);
   },
 
   /**
    * 点赞评论
    * @param {number|string} commentId - 评论ID
+   * @param {string} userId - 用户ID (可选，默认使用匿名用户)
    * @returns {Promise}
    */
-  likeComment: (commentId) => {
-    return api.post(`/api/comments/${commentId}/like`);
+  likeComment: (commentId, userId = 'anonymous') => {
+    return api.post(`/wishes/comments/${commentId}/like`, { userId });
   },
 
   /**
@@ -83,7 +85,7 @@ export const wishApi = {
    * @returns {Promise}
    */
   getRanking: (limit = 10) => {
-    return api.get('/api/wishes/ranking', { params: { limit } });
+    return api.get('/wishes/ranking', { params: { limit } });
   },
 };
 

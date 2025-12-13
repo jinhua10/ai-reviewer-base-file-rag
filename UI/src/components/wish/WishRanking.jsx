@@ -18,9 +18,12 @@ const WishRanking = ({ onWishClick }) => {
     setLoading(true);
     try {
       const response = await wishApi.getRanking();
-      setRankings(response.data || []);
+      // 后端直接返回 List<WishDTO>，不是包装在data中 (Backend returns List directly, not wrapped in data)
+      const rankingData = Array.isArray(response) ? response : response.data || [];
+      setRankings(rankingData);
     } catch (error) {
       console.error('Failed to load ranking:', error);
+      setRankings([]); // 设置为空数组防止崩溃 (Set to empty array to prevent crash)
     } finally {
       setLoading(false);
     }
@@ -48,7 +51,7 @@ const WishRanking = ({ onWishClick }) => {
         </div>
       }
       className="wish-ranking"
-      bordered={false}
+      variant="borderless"
     >
       {loading ? (
         <div className="wish-ranking__loading">

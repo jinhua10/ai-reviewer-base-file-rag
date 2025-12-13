@@ -37,10 +37,13 @@ const WishList = () => {
         keyword: searchKeyword || undefined,
       };
       const response = await wishApi.getWishes(params);
-      setWishes(response.data || []);
+      // 后端返回分页结构：{ content: [], totalElements: 0, ... } (Backend returns paginated structure)
+      const wishData = response.content || response.data || [];
+      setWishes(Array.isArray(wishData) ? wishData : []);
     } catch (error) {
       console.error('Failed to load wishes:', error);
       message.error(t('wish.loadFailed'));
+      setWishes([]); // 设置为空数组防止崩溃 (Set to empty array to prevent crash)
     } finally {
       setLoading(false);
     }

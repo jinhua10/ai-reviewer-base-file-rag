@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Select, Tabs, Empty, Spin, message } from 'antd';
+import { Input, Select, Tabs, Empty, Spin, App } from 'antd';
 import { SearchOutlined, AppstoreOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { serviceApi } from '../../api/modules/service';
@@ -9,10 +9,10 @@ import '../../assets/css/service/service-market.css';
 
 const { Search } = Input;
 const { Option } = Select;
-const { TabPane } = Tabs;
 
 const ServiceMarket = () => {
   const { t } = useLanguage();
+  const { message } = App.useApp();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all'); // all | installed | available
@@ -32,10 +32,13 @@ const ServiceMarket = () => {
         keyword: searchKeyword || undefined,
       };
       const response = await serviceApi.getServices(params);
-      setServices(response.data || []);
+      // Backend returns List<ServiceDTO> directly
+      const serviceData = Array.isArray(response) ? response : (response.data || []);
+      setServices(Array.isArray(serviceData) ? serviceData : []);
     } catch (error) {
       console.error('Failed to load services:', error);
       message.error(t('aiService.loadFailed'));
+      setServices([]);
     } finally {
       setLoading(false);
     }
@@ -105,11 +108,12 @@ const ServiceMarket = () => {
         activeKey={activeTab}
         onChange={setActiveTab}
         className="service-market__tabs"
-      >
-        <TabPane tab={t('aiService.all')} key="all" />
-        <TabPane tab={t('aiService.installed')} key="installed" />
-        <TabPane tab={t('aiService.available')} key="available" />
-      </Tabs>
+        items={[
+          { key: 'all', label: t('aiService.all') },
+          { key: 'installed', label: t('aiService.installed') },
+          { key: 'available', label: t('aiService.available') }
+        ]}
+      />
 
       {/* 工具栏 */}
       <div className="service-market__toolbar">

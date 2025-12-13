@@ -30,11 +30,15 @@ function PeerList() {
         // 后端 PeersResponse 返回 peers 字段 (Backend PeersResponse returns peers field)
         // PeersResponse: { success: boolean, peers: PeerInfo[], total: number }
         const peersList = response.peers || response.data?.peers || response.data || []
-        setPeers(peersList)
+        // 确保是数组 (Ensure it's an array)
+        setPeers(Array.isArray(peersList) ? peersList : [])
+      } else {
+        setPeers([])
       }
     } catch (error) {
       console.error('Failed to load peers:', error)
       message.error(t('collaboration.loadFailed'))
+      setPeers([]) // 设置为空数组防止崩溃 (Set to empty array to prevent crash)
     } finally {
       setLoading(false)
     }

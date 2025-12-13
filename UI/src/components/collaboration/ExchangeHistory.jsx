@@ -26,10 +26,15 @@ function ExchangeHistory() {
       const response = await collaborationApi.getExchangeHistory()
       if (response) {
         // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
-        setHistory(response || [])
+        // 确保总是返回数组 (Ensure always return array)
+        const historyData = Array.isArray(response) ? response : 
+                           Array.isArray(response.history) ? response.history :
+                           Array.isArray(response.data) ? response.data : []
+        setHistory(historyData)
       }
     } catch (error) {
       console.error('Failed to load history:', error)
+      setHistory([]) // 设置为空数组防止崩溃 (Set to empty array to prevent crash)
     } finally {
       setLoading(false)
     }
@@ -56,11 +61,15 @@ function ExchangeHistory() {
       title: t('collaboration.type'),
       dataIndex: 'type',
       key: 'type',
-      render: (type) => (
-        <Tag color={getTypeColor(type)}>
-          {t(`collaboration.exchangeType.${type}`)}
-        </Tag>
-      ),
+      render: (type) => {
+        // 防止 type 为 undefined 导致翻译键错误 (Prevent translation key error when type is undefined)
+        const typeValue = type || 'sync'
+        return (
+          <Tag color={getTypeColor(typeValue)}>
+            {t(`collaboration.exchangeType.${typeValue}`)}
+          </Tag>
+        )
+      },
       width: 100,
     },
     {
@@ -79,11 +88,15 @@ function ExchangeHistory() {
       title: t('collaboration.status'),
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={status === 'success' ? 'green' : 'red'}>
-          {t(`collaboration.exchangeStatus.${status}`)}
-        </Tag>
-      ),
+      render: (status) => {
+        // 防止 status 为 undefined 导致翻译键错误 (Prevent translation key error when status is undefined)
+        const statusValue = status || 'success'
+        return (
+          <Tag color={statusValue === 'success' ? 'green' : 'red'}>
+            {t(`collaboration.exchangeStatus.${statusValue}`)}
+          </Tag>
+        )
+      },
       width: 100,
     },
   ]
@@ -110,7 +123,7 @@ function ExchangeHistory() {
   return (
     <div className="exchange-history">
       <Table
-        dataSource={history}
+        dataSource={Array.isArray(history) ? history : []}
         columns={columns}
         rowKey="id"
         pagination={{ pageSize: 10 }}

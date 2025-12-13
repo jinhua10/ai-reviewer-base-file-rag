@@ -72,7 +72,9 @@ export function useCollaborationActions(updateState) {
     updateState({ loading: true });
     try {
       const response = await collaborationApi.getPeers();
-      updateState({ peers: response.peers || MOCK_DATA.peers, loading: false });
+      const peersList = response?.peers || response?.data?.peers || response?.data || MOCK_DATA.peers;
+      // 确保是数组 (Ensure it's an array)
+      updateState({ peers: Array.isArray(peersList) ? peersList : MOCK_DATA.peers, loading: false });
     } catch (error) {
       console.warn('Failed to load peers, using mock data:', error);
       // API失败时使用模拟数据 / Use mock data when API fails
@@ -87,7 +89,10 @@ export function useCollaborationActions(updateState) {
     updateState({ loading: true });
     try {
       const response = await collaborationApi.getExchangeHistory();
-      updateState({ exchanges: response.history || MOCK_DATA.exchanges, loading: false });
+      const exchangesList = Array.isArray(response) ? response : 
+                           response?.history || response?.data || MOCK_DATA.exchanges;
+      // 确保是数组 (Ensure it's an array)
+      updateState({ exchanges: Array.isArray(exchangesList) ? exchangesList : MOCK_DATA.exchanges, loading: false });
     } catch (error) {
       console.warn('Failed to load exchanges, using mock data:', error);
       updateState({ exchanges: MOCK_DATA.exchanges, loading: false });

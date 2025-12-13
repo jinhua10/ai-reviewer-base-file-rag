@@ -7,7 +7,7 @@ export const serviceApi = {
    * @param {Object} params - 查询参数
    */
   getServices: (params) => {
-    return api.get('/api/services', { params });
+    return api.get('/services', { params });
   },
 
   /**
@@ -15,7 +15,7 @@ export const serviceApi = {
    * @param {string} id - 服务ID
    */
   getServiceDetail: (id) => {
-    return api.get(`/api/services/${id}`);
+    return api.get(`/services/${id}`);
   },
 
   /**
@@ -23,7 +23,7 @@ export const serviceApi = {
    * @param {string} id - 服务ID
    */
   installService: (id) => {
-    return api.post(`/api/services/${id}/install`);
+    return api.post(`/services/${id}/install`);
   },
 
   /**
@@ -31,7 +31,7 @@ export const serviceApi = {
    * @param {string} id - 服务ID
    */
   uninstallService: (id) => {
-    return api.post(`/api/services/${id}/uninstall`);
+    return api.post(`/services/${id}/uninstall`);
   },
 
   /**
@@ -40,7 +40,7 @@ export const serviceApi = {
    * @param {Object} config - 配置数据
    */
   updateServiceConfig: (id, config) => {
-    return api.put(`/api/services/${id}/config`, config);
+    return api.put(`/services/${id}/config`, config);
   },
 
   /**
@@ -48,7 +48,7 @@ export const serviceApi = {
    * @param {Object} data - PPT数据
    */
   generatePPT: (data) => {
-    return api.post('/api/services/ppt/generate', data);
+    return api.post('/services/ppt/generate', data);
   },
 
   /**
@@ -56,7 +56,7 @@ export const serviceApi = {
    * @param {string} modelType - 模型类型 (local/online)
    */
   switchModel: (modelType) => {
-    return api.post('/api/services/model/switch', { modelType });
+    return api.post('/services/model/switch', { modelType });
   },
 };
 

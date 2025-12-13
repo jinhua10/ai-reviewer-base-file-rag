@@ -26,10 +26,17 @@ function NetworkTopology() {
       const response = await collaborationApi.getTopology()
       if (response) {
         // axios 拦截器已返回 response.data (Axios interceptor returns response.data)
-        setTopology(response)
+        // 确保 nodes 是数组 (Ensure nodes is an array)
+        const topologyData = {
+          ...response,
+          nodes: Array.isArray(response.nodes) ? response.nodes : 
+                 Array.isArray(response.data?.nodes) ? response.data.nodes : []
+        }
+        setTopology(topologyData)
       }
     } catch (error) {
       console.error('Failed to load topology:', error)
+      setTopology(null) // 设置为null防止崩溃 (Set to null to prevent crash)
     } finally {
       setLoading(false)
     }
