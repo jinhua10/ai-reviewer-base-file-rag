@@ -74,57 +74,56 @@ function EvolutionTimeline() {
     )
   }
 
+  const timelineItems = timeline.map((item) => {
+    const itemType = item.type || 'created'
+    return {
+      key: item.id,
+      dot: getTimelineIcon(itemType),
+      color: getTimelineColor(itemType),
+      children: (
+        <Card className="evolution-timeline__card">
+          <div className="evolution-timeline__header">
+            <Tag color={getTimelineColor(itemType)}>
+              {t(`feedback.timeline.${itemType}`)}
+            </Tag>
+            <span className="evolution-timeline__time">
+              {new Date(item.timestamp).toLocaleString()}
+            </span>
+          </div>
+
+          <div className="evolution-timeline__content">
+            <h4 className="evolution-timeline__title">{item.title}</h4>
+            <p className="evolution-timeline__description">{item.description}</p>
+
+            {item.changes && (
+              <div className="evolution-timeline__changes">
+                <div className="evolution-timeline__change evolution-timeline__change--old">
+                  <div className="evolution-timeline__change-label">
+                    {t('feedback.before')}
+                  </div>
+                  <div className="evolution-timeline__change-text">
+                    {item.changes.before}
+                  </div>
+                </div>
+                <div className="evolution-timeline__change evolution-timeline__change--new">
+                  <div className="evolution-timeline__change-label">
+                    {t('feedback.after')}
+                  </div>
+                  <div className="evolution-timeline__change-text">
+                    {item.changes.after}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )
+    }
+  })
+
   return (
     <div className="evolution-timeline">
-      <Timeline>
-        {timeline.map((item) => {
-          const itemType = item.type || 'created' // Default to 'created' if type is missing
-          return (
-            <Timeline.Item
-              key={item.id}
-              dot={getTimelineIcon(itemType)}
-              color={getTimelineColor(itemType)}
-            >
-              <Card className="evolution-timeline__card">
-                <div className="evolution-timeline__header">
-                  <Tag color={getTimelineColor(itemType)}>
-                    {t(`feedback.timeline.${itemType}`)}
-                  </Tag>
-                  <span className="evolution-timeline__time">
-                    {new Date(item.timestamp).toLocaleString()}
-                  </span>
-                </div>
-
-              <div className="evolution-timeline__content">
-                <h4 className="evolution-timeline__title">{item.title}</h4>
-                <p className="evolution-timeline__description">{item.description}</p>
-
-                {item.changes && (
-                  <div className="evolution-timeline__changes">
-                    <div className="evolution-timeline__change evolution-timeline__change--old">
-                      <div className="evolution-timeline__change-label">
-                        {t('feedback.before')}
-                      </div>
-                      <div className="evolution-timeline__change-text">
-                        {item.changes.before}
-                      </div>
-                    </div>
-                    <div className="evolution-timeline__change evolution-timeline__change--new">
-                      <div className="evolution-timeline__change-label">
-                        {t('feedback.after')}
-                      </div>
-                      <div className="evolution-timeline__change-text">
-                        {item.changes.after}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Card>
-            </Timeline.Item>
-          )
-        })}
-      </Timeline>
+      <Timeline items={timelineItems} />
     </div>
   )
 }

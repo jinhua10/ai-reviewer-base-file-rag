@@ -399,7 +399,7 @@ public class OpenAILLMClient implements LLMClient {
     public Flux<String> generateStream(String prompt, String systemPrompt) {
         return Flux.create(sink -> {
             try {
-                log.debug("开始 OpenAI 流式生成 (Starting OpenAI streaming): prompt length={}", prompt.length());
+                log.debug(I18N.get("llm.log.openai_streaming_start") + ": prompt length={}", prompt.length());
 
                 // 构建请求消息
                 List<Map<String, String>> messages = buildMessages(systemPrompt, prompt);
@@ -428,7 +428,7 @@ public class OpenAILLMClient implements LLMClient {
 
                 // 处理取消订阅
                 sink.onCancel(() -> {
-                    log.debug("流式订阅被取消 (Stream subscription cancelled)");
+                    log.debug(I18N.get("llm.log.openai_streaming_cancelled"));
                     call.cancel();
                     completed.set(true);
                 });
@@ -437,8 +437,8 @@ public class OpenAILLMClient implements LLMClient {
 
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "No response body";
-                    log.error("OpenAI API 错误 (OpenAI API error): code={}, body={}", response.code(), errorBody);
-                    sink.error(new IOException("OpenAI API error: " + response.code() + " - " + errorBody));
+                    log.error(I18N.get("llm.log.openai_error", response.code(), errorBody));
+                    sink.error(new IOException(I18N.get("llm.error.openai_http_error", response.code(), errorBody)));
                     response.close();
                     return;
                 }
@@ -465,7 +465,7 @@ public class OpenAILLMClient implements LLMClient {
 
                             // OpenAI 使用 [DONE] 标记结束
                             if ("[DONE]".equals(data)) {
-                                log.debug("OpenAI 流式完成 (OpenAI streaming completed)");
+                                log.debug(I18N.get("llm.log.openai_streaming_completed"));
                                 break;
                             }
 
@@ -495,14 +495,14 @@ public class OpenAILLMClient implements LLMClient {
                                     if (finishReason != null && !finishReason.isNull()) {
                                         String reason = finishReason.asText();
                                         if ("stop".equals(reason) || "length".equals(reason)) {
-                                            log.debug("流式完成 (Streaming finished): reason={}, totalLength={}",
-                                                reason, currentChunk.length());
+                                            log.debug(I18N.get("llm.log.openai_streaming_finished") +
+                                                ": reason={}, totalLength={}", reason, currentChunk.length());
                                             break;
                                         }
                                     }
                                 }
                             } catch (Exception e) {
-                                log.warn("解析流式数据失败 (Failed to parse streaming data): {}", e.getMessage());
+                                log.warn(I18N.get("llm.log.openai_streaming_parse_failed") + ": {}", e.getMessage());
                                 // 继续处理下一行
                             }
                         }
@@ -510,13 +510,13 @@ public class OpenAILLMClient implements LLMClient {
 
                     if (!completed.get()) {
                         sink.complete();
-                        log.info("✅ OpenAI 流式生成完成 (OpenAI streaming completed): totalLength={}",
+                        log.info(I18N.get("llm.log.openai_streaming_done") + ": totalLength={}",
                             currentChunk.length());
                     }
 
                 } catch (IOException e) {
                     if (!completed.get()) {
-                        log.error("读取流式响应失败 (Failed to read streaming response): {}", e.getMessage());
+                        log.error(I18N.get("llm.log.openai_streaming_read_failed") + ": {}", e.getMessage());
                         sink.error(e);
                     }
                 } finally {
@@ -524,8 +524,8 @@ public class OpenAILLMClient implements LLMClient {
                 }
 
             } catch (Exception e) {
-                log.error("OpenAI 流式生成失败 (OpenAI streaming failed): {}", e.getMessage(), e);
-                sink.error(new RuntimeException("OpenAI streaming failed: " + e.getMessage(), e));
+                log.error(I18N.get("llm.log.openai_streaming_failed") + ": {}", e.getMessage(), e);
+                sink.error(new RuntimeException(I18N.get("llm.log.openai_streaming_failed") + ": " + e.getMessage(), e));
             }
         });
     }

@@ -97,7 +97,7 @@ function QualityMonitor() {
               title={t('feedback.totalConflicts')}
               value={data.totalConflicts}
               prefix={<SyncOutlined />}
-              valueStyle={{ color: '#667eea' }}
+              styles={{ value: { color: '#667eea' } }}
             />
           </Card>
         </Col>
@@ -107,7 +107,7 @@ function QualityMonitor() {
               title={t('feedback.resolvedConflicts')}
               value={data.resolvedConflicts}
               prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ value: { color: '#52c41a' } }}
             />
           </Card>
         </Col>
@@ -117,7 +117,7 @@ function QualityMonitor() {
               title={t('feedback.pendingConflicts')}
               value={data.pendingConflicts}
               prefix={<CloseCircleOutlined />}
-              valueStyle={{ color: '#faad14' }}
+              styles={{ value: { color: '#faad14' } }}
             />
           </Card>
         </Col>
@@ -128,7 +128,7 @@ function QualityMonitor() {
               value={Math.round((data.averageQuality || 0) * 100)}
               suffix="%"
               prefix={<TrophyOutlined />}
-              valueStyle={{ color: '#667eea' }}
+              styles={{ value: { color: '#667eea' } }}
             />
           </Card>
         </Col>
