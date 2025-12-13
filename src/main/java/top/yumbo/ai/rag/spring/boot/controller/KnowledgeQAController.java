@@ -9,6 +9,7 @@ import top.yumbo.ai.rag.i18n.I18N;
 import top.yumbo.ai.rag.spring.boot.model.AIAnswer;
 import top.yumbo.ai.rag.spring.boot.model.BuildResult;
 import top.yumbo.ai.rag.spring.boot.service.KnowledgeQAService;
+import top.yumbo.ai.rag.spring.boot.service.RoleKnowledgeQAService;
 import top.yumbo.ai.rag.spring.boot.service.SimilarQAService;
 import top.yumbo.ai.rag.spring.boot.service.QAArchiveService;
 import top.yumbo.ai.rag.model.Document;
@@ -31,14 +32,17 @@ public class KnowledgeQAController {
     private final KnowledgeQAService qaService;
     private final SimilarQAService similarQAService;
     private final QAArchiveService qaArchiveService;
+    private final RoleKnowledgeQAService roleKnowledgeQAService;
 
     @Autowired
     public KnowledgeQAController(KnowledgeQAService qaService,
                                  SimilarQAService similarQAService,
-                                 QAArchiveService qaArchiveService) {
+                                 QAArchiveService qaArchiveService,
+                                 RoleKnowledgeQAService roleKnowledgeQAService) {
         this.qaService = qaService;
         this.similarQAService = similarQAService;
         this.qaArchiveService = qaArchiveService;
+        this.roleKnowledgeQAService = roleKnowledgeQAService;
     }
 
     /**
@@ -76,13 +80,8 @@ public class KnowledgeQAController {
             answer = qaService.askDirectLLM(request.getQuestion());
         } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
             // 使用角色知识库模式 / Use role-based knowledge base mode
-            // TODO: 实现角色知识库查询逻辑
-            // answer = qaService.askWithRole(request.getQuestion(), roleName);
-            // 当前暂时使用传统 RAG（待后续集成 RoleCollaborationService）
-            log.info("📝 角色知识库模式：使用角色 [{}]（待完整实现）", roleName);
-            answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
-            // 标记为角色回答
-            answer.setStrategyUsed("role:" + roleName);
+            log.info("📝 角色知识库模式：使用角色 [{}]", roleName);
+            answer = roleKnowledgeQAService.askWithRole(request.getQuestion(), roleName);
         } else {
             // 使用知识库 RAG 模式 / Use knowledge base RAG mode
             answer = qaService.ask(request.getQuestion(), request.getHopeSessionId());
@@ -145,11 +144,8 @@ public class KnowledgeQAController {
             answer = qaService.askDirectLLM(request.getQuestion());
         } else if (useRoleKnowledge && roleName != null && !roleName.isEmpty()) {
             // 使用角色知识库模式 / Use role-based knowledge base mode
-            // TODO: 实现角色知识库查询逻辑
-            log.info("📝 角色知识库模式（会话）：使用角色 [{}]（待完整实现）", roleName);
-            answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
-            // 标记为角色回答
-            answer.setStrategyUsed("role:" + roleName);
+            log.info("📝 角色知识库模式（会话）：使用角色 [{}]", roleName);
+            answer = roleKnowledgeQAService.askWithRole(request.getQuestion(), roleName);
         } else {
             // 使用会话文档 RAG 模式 / Use session documents RAG mode
             answer = qaService.askWithSessionDocuments(request.getQuestion(), request.getSessionId());
@@ -356,6 +352,71 @@ public class KnowledgeQAController {
         return ResponseEntity.ok(stats);
     }
 
+    /**
+     * 获取角色贡献排行榜 / Get role contribution leaderboard
+     */
+    @GetMapping("/role/leaderboard")
+    public ResponseEntity<?> getRoleLeaderboard() {
+        log.info("📊 获取角色贡献排行榜");
+
+        List<RoleKnowledgeQAService.RoleCredit> leaderboard =
+            roleKnowledgeQAService.getLeaderboard();
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "leaderboard", leaderboard
+        ));
+    }
+
+    /**
+     * 获取活跃悬赏列表 / Get active bounties
+     */
+    @GetMapping("/bounty/active")
+    public ResponseEntity<?> getActiveBounties() {
+        log.info("🎯 获取活跃悬赏列表");
+
+        List<RoleKnowledgeQAService.BountyRequest> bounties =
+            roleKnowledgeQAService.getActiveBounties();
+
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "count", bounties.size(),
+            "bounties", bounties
+        ));
+    }
+
+    /**
+     * 提交悬赏答案 / Submit bounty answer
+     */
+    @PostMapping("/bounty/{bountyId}/submit")
+    public ResponseEntity<?> submitBountyAnswer(
+            @PathVariable String bountyId,
+            @RequestBody BountySubmitRequest request) {
+        log.info("📝 提交悬赏答案: bountyId={}, role={}", bountyId, request.getRoleName());
+
+        try {
+            RoleKnowledgeQAService.BountySubmission submission =
+                roleKnowledgeQAService.submitBountyAnswer(
+                    bountyId,
+                    request.getRoleName(),
+                    request.getAnswer(),
+                    request.getSources()
+                );
+
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "提交成功，等待审核",
+                "submission", submission
+            ));
+        } catch (Exception e) {
+            log.error("提交悬赏答案失败", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
+    }
+
     // ========== DTO 类 ==========
 
     @Data
@@ -465,6 +526,13 @@ public class KnowledgeQAController {
     public static class IndexingStatusResponse {
         private boolean indexing;
         private String message;
+    }
+
+    @Data
+    public static class BountySubmitRequest {
+        private String roleName;
+        private String answer;
+        private List<String> sources;
     }
 
     // ========== 辅助方法 ==========
