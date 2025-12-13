@@ -414,7 +414,7 @@ public class FeedbackController {
             @RequestHeader(value = "Accept-Language", defaultValue = "zh") String lang) {
         
         try {
-            log.debug(I18N.get("feedback.conflicts.query.start"), status, page, pageSize);
+            log.debug(I18N.get("feedback.conflicts.query.start", status, page, pageSize));
 
             // TODO: 实际实现需要接入概念冲突检测服务
             // For now, return mock data for frontend development
@@ -435,7 +435,7 @@ public class FeedbackController {
             List<Map<String, Object>> pagedConflicts = 
                 start < total ? filteredConflicts.subList(start, end) : List.of();
 
-            log.info(I18N.get("feedback.conflicts.query.success"), total, pagedConflicts.size());
+            log.info(I18N.get("feedback.conflicts.query.success", total, pagedConflicts.size()));
 
             return ResponseEntity.ok(Map.of(
                 "success", true,

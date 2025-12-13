@@ -96,9 +96,9 @@ public class RoleController {
             RoleQueryRequest request,
             @RequestHeader(value = "Accept-Language", defaultValue = "zh") String lang) {
         try {
-            log.debug(I18N.get("role.query.start"), 
-                    request.getKeyword(), request.getPage(), request.getPageSize());
-            
+            log.debug(I18N.get("role.query.start",
+                    request.getKeyword(), request.getPage(), request.getPageSize()));
+
             // 获取所有角色 (Get all roles)
             List<Role> allRoles = roleManager != null ? roleManager.getAllRoles() : new ArrayList<>();
             
@@ -126,9 +126,9 @@ public class RoleController {
             response.setPageSize(pageSize);
             response.setTotalPages((int) Math.ceil((double) filteredRoles.size() / pageSize));
             
-            log.debug(I18N.get("role.query.success"), 
-                    filteredRoles.size(), pagedRoles.size());
-            
+            log.debug(I18N.get("role.query.success",
+                    filteredRoles.size(), pagedRoles.size()));
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error(I18N.get("role.query.failed"), e);
