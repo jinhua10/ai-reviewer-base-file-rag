@@ -118,7 +118,303 @@ roles:
     indexPath: "data/vector-index/role_devops.index"
     priority: 7
 
-  # 5. 通用角色 (General Role)
+  # 5. 软件质量保证工程师角色 (SQA - Software Quality Assurance Role)
+  - id: sqa
+    name: "软件质量保证工程师 (SQA Engineer)"
+    description: "专注于软件测试、质量保证、测试自动化等问题 (Focus on software testing, QA, test automation)"
+    keywords:
+      - "测试"
+      - "质量"
+      - "QA"
+      - "SQA"
+      - "自动化测试"
+      - "test"
+      - "testing"
+      - "quality assurance"
+      - "automation"
+      - "selenium"
+      - "junit"
+      - "test case"
+      - "bug tracking"
+      - "regression"
+      - "integration test"
+      - "unit test"
+    weight: 1.1
+    enabled: true
+    prompt: "你是一个专业的软件质量保证工程师，擅长软件测试、质量管理和测试自动化。"
+    tags:
+      - "technical"
+      - "quality"
+      - "testing"
+    indexPath: "data/vector-index/role_sqa.index"
+    priority: 8
+
+  # 6. 业务分析师角色 (BA - Business Analyst Role)
+  - id: business_analyst
+    name: "业务分析师 (Business Analyst)"
+    description: "专注于业务需求分析、流程优化、数据分析等问题 (Focus on business requirements, process optimization, data analysis)"
+    keywords:
+      - "业务分析"
+      - "需求分析"
+      - "流程"
+      - "业务流程"
+      - "BA"
+      - "business analyst"
+      - "requirements"
+      - "process"
+      - "workflow"
+      - "business process"
+      - "stakeholder"
+      - "use case"
+      - "business logic"
+      - "gap analysis"
+      - "feasibility"
+    weight: 1.2
+    enabled: true
+    prompt: "你是一个资深的业务分析师，擅长业务需求分析、流程优化和业务逻辑设计。"
+    tags:
+      - "business"
+      - "analysis"
+    indexPath: "data/vector-index/role_business_analyst.index"
+    priority: 9
+
+  # 7. 财务分析师角色 (FA - Financial Analyst Role)
+  - id: financial_analyst
+    name: "财务分析师 (Financial Analyst)"
+    description: "专注于财务数据分析、投资分析、风险评估等问题 (Focus on financial data analysis, investment analysis, risk assessment)"
+    keywords:
+      - "财务"
+      - "金融"
+      - "投资"
+      - "风险"
+      - "资产"
+      - "FA"
+      - "financial"
+      - "finance"
+      - "investment"
+      - "risk"
+      - "asset"
+      - "portfolio"
+      - "valuation"
+      - "ROI"
+      - "cash flow"
+      - "budget"
+      - "forecast"
+      - "financial report"
+    weight: 1.3
+    enabled: true
+    prompt: "你是一个专业的财务分析师，擅长财务数据分析、投资评估和风险管理。"
+    tags:
+      - "finance"
+      - "analysis"
+    indexPath: "data/vector-index/role_financial_analyst.index"
+    priority: 10
+
+  # 8. 托管业务专员角色 (Custody Business Specialist Role)
+  - id: custody_specialist
+    name: "托管业务专员 (Custody Business Specialist)"
+    description: "专注于银行托管业务、资产托管、清算结算等问题 (Focus on custody business, asset custody, settlement)"
+    keywords:
+      - "托管"
+      - "资产托管"
+      - "清算"
+      - "结算"
+      - "资金"
+      - "custody"
+      - "asset custody"
+      - "settlement"
+      - "clearing"
+      - "fund"
+      - "account management"
+      - "transaction"
+      - "custodian bank"
+      - "safekeeping"
+      - "reconciliation"
+    weight: 1.4
+    enabled: true
+    prompt: "你是一个资深的托管业务专员，擅长银行托管业务、资产管理和清算结算流程。"
+    tags:
+      - "business"
+      - "custody"
+      - "banking"
+    indexPath: "data/vector-index/role_custody_specialist.index"
+    priority: 11
+
+  # 9. 风险管理专员角色 (Risk Manager Role)
+  - id: risk_manager
+    name: "风险管理专员 (Risk Manager)"
+    description: "专注于风险评估、合规管理、内控制度等问题 (Focus on risk assessment, compliance, internal control)"
+    keywords:
+      - "风险管理"
+      - "合规"
+      - "内控"
+      - "监管"
+      - "审计"
+      - "risk management"
+      - "compliance"
+      - "internal control"
+      - "regulation"
+      - "audit"
+      - "risk assessment"
+      - "AML"
+      - "KYC"
+      - "fraud detection"
+      - "control"
+    weight: 1.3
+    enabled: true
+    prompt: "你是一个专业的风险管理专员，擅长风险评估、合规管理和内部控制。"
+    tags:
+      - "business"
+      - "risk"
+      - "compliance"
+    indexPath: "data/vector-index/role_risk_manager.index"
+    priority: 10
+
+  # 10. 数据库管理员角色 (DBA - Database Administrator Role)
+  - id: dba
+    name: "数据库管理员 (Database Administrator)"
+    description: "专注于数据库设计、性能优化、数据安全等问题 (Focus on database design, performance tuning, data security)"
+    keywords:
+      - "数据库"
+      - "SQL"
+      - "性能优化"
+      - "备份"
+      - "恢复"
+      - "database"
+      - "DBA"
+      - "performance tuning"
+      - "backup"
+      - "recovery"
+      - "Oracle"
+      - "MySQL"
+      - "PostgreSQL"
+      - "index"
+      - "query optimization"
+      - "replication"
+    weight: 1.2
+    enabled: true
+    prompt: "你是一个资深的数据库管理员，擅长数据库设计、性能优化和数据安全管理。"
+    tags:
+      - "technical"
+      - "database"
+    indexPath: "data/vector-index/role_dba.index"
+    priority: 9
+
+  # 11. 信息安全专员角色 (Security Specialist Role)
+  - id: security_specialist
+    name: "信息安全专员 (Security Specialist)"
+    description: "专注于网络安全、数据加密、安全审计等问题 (Focus on cybersecurity, data encryption, security audit)"
+    keywords:
+      - "安全"
+      - "加密"
+      - "防火墙"
+      - "渗透测试"
+      - "漏洞"
+      - "security"
+      - "encryption"
+      - "firewall"
+      - "penetration test"
+      - "vulnerability"
+      - "cybersecurity"
+      - "SSL"
+      - "authentication"
+      - "authorization"
+      - "threat"
+    weight: 1.3
+    enabled: true
+    prompt: "你是一个专业的信息安全专员，擅长网络安全、数据加密和安全防护。"
+    tags:
+      - "technical"
+      - "security"
+    indexPath: "data/vector-index/role_security_specialist.index"
+    priority: 10
+
+  # 12. 数据治理专员角色 (Data Governance Specialist Role)
+  - id: data_governance
+    name: "数据治理专员 (Data Governance Specialist)"
+    description: "专注于数据质量、数据标准、元数据管理等问题 (Focus on data quality, data standards, metadata management)"
+    keywords:
+      - "数据治理"
+      - "数据质量"
+      - "元数据"
+      - "数据标准"
+      - "主数据"
+      - "data governance"
+      - "data quality"
+      - "metadata"
+      - "data standards"
+      - "master data"
+      - "data lineage"
+      - "data catalog"
+      - "data dictionary"
+      - "MDM"
+    weight: 1.2
+    enabled: true
+    prompt: "你是一个资深的数据治理专员，擅长数据质量管理、数据标准制定和元数据管理。"
+    tags:
+      - "data"
+      - "governance"
+    indexPath: "data/vector-index/role_data_governance.index"
+    priority: 9
+
+  # 13. 系统架构师角色 (System Architect Role)
+  - id: system_architect
+    name: "系统架构师 (System Architect)"
+    description: "专注于系统设计、架构选型、技术方案等问题 (Focus on system design, architecture selection, technical solutions)"
+    keywords:
+      - "架构"
+      - "系统设计"
+      - "微服务"
+      - "分布式"
+      - "高可用"
+      - "architecture"
+      - "system design"
+      - "microservices"
+      - "distributed"
+      - "high availability"
+      - "scalability"
+      - "load balancing"
+      - "design pattern"
+      - "SOA"
+    weight: 1.3
+    enabled: true
+    prompt: "你是一个资深的系统架构师，擅长系统设计、架构选型和技术方案制定。"
+    tags:
+      - "technical"
+      - "architecture"
+    indexPath: "data/vector-index/role_system_architect.index"
+    priority: 10
+
+  # 14. 报表开发工程师角色 (Report Developer Role)
+  - id: report_developer
+    name: "报表开发工程师 (Report Developer)"
+    description: "专注于报表设计、数据可视化、BI工具使用等问题 (Focus on report design, data visualization, BI tools)"
+    keywords:
+      - "报表"
+      - "可视化"
+      - "BI"
+      - "图表"
+      - "仪表板"
+      - "report"
+      - "visualization"
+      - "dashboard"
+      - "chart"
+      - "tableau"
+      - "power bi"
+      - "crystal reports"
+      - "jasper"
+      - "data visualization"
+    weight: 1.1
+    enabled: true
+    prompt: "你是一个专业的报表开发工程师，擅长报表设计、数据可视化和BI工具使用。"
+    tags:
+      - "technical"
+      - "reporting"
+      - "visualization"
+    indexPath: "data/vector-index/role_report_developer.index"
+    priority: 8
+
+  # 15. 通用角色 (General Role)
   - id: general
     name: "通用助手 (General Assistant)"
     description: "处理通用问题和无法明确分类的问题 (Handle general and unclassified questions)"
