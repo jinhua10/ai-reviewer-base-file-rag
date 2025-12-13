@@ -32,6 +32,12 @@ admin:
     modelconfig_error: "❌ 模型配置更新出错"
     modelconfig_get_request: "🔍 收到获取模型配置请求"
     modelconfig_get_error: "❌ 获取模型配置出错"
+    logs_request: "📋 收到日志查询请求: level={0}, keyword={1}"
+    logs_error: "❌ 日志查询出错"
+    metrics_request: "📊 收到监控指标请求"
+    metrics_error: "❌ 监控指标请求出错"
+    health_request: "💚 收到健康检查请求"
+    health_error: "❌ 健康检查出错"
 
   config:
     updating: "🔄 正在更新配置: {0}"
@@ -42,12 +48,6 @@ admin:
     validated: "✅ 配置验证通过: {0}"
     applied: "✅ 配置已应用: {0}"
     saved: "✅ 配置已保存: {0}"
-    logs_request: "📋 收到日志查询请求: level={0}, keyword={1}"
-    logs_error: "❌ 日志查询出错"
-    metrics_request: "📊 收到监控指标请求"
-    metrics_error: "❌ 监控指标请求出错"
-    health_request: "💚 收到健康检查请求"
-    health_error: "❌ 健康检查出错"
 
   sysconfig:
     updated: "✅ 系统配置已更新"

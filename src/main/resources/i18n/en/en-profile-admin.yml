@@ -32,6 +32,12 @@ admin:
     modelconfig_error: "❌ Model config update error"
     modelconfig_get_request: "🔍 Received get model config request"
     modelconfig_get_error: "❌ Get model config error"
+    logs_request: "📋 Received logs query request: level={0}, keyword={1}"
+    logs_error: "❌ Logs query error"
+    metrics_request: "📊 Received metrics request"
+    metrics_error: "❌ Metrics request error"
+    health_request: "💚 Received health check request"
+    health_error: "❌ Health check error"
 
   config:
     updating: "🔄 Updating configuration: {0}"
@@ -42,12 +48,6 @@ admin:
     validated: "✅ Configuration validated: {0}"
     applied: "✅ Configuration applied: {0}"
     saved: "✅ Configuration saved: {0}"
-    logs_request: "📋 Received logs query request: level={0}, keyword={1}"
-    logs_error: "❌ Logs query error"
-    metrics_request: "📊 Received metrics request"
-    metrics_error: "❌ Metrics request error"
-    health_request: "💚 Received health check request"
-    health_error: "❌ Health check error"
 
   sysconfig:
     updated: "✅ System config updated"
