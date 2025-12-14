@@ -1,0 +1,461 @@
+# 问题分类器配置 (Question Classifier Configuration)
+# 文件: src/main/resources/question-classifier-config.yml
+#
+# 说明: 此文件定义了问题分类的规则和关键词
+# 可以在运行时重新加载，无需重启应用
+#
+# 配置结构:
+# - question_types: 问题类型定义
+# - keywords: 关键词库
+# - patterns: 正则表达式模式
+# - rules: 分类规则
+
+version: "1.0.0"
+enabled: true
+
+# ============================================================
+# 问题类型定义 (Question Type Definitions)
+# ============================================================
+question_types:
+  - id: "social"
+    name: "社交型"
+    name_en: "Social"
+    priority: 1  # 优先级（数字越小越优先）
+    complexity: "simple"
+    suggested_layer: "direct_llm"
+    enabled: true
+
+  - id: "factual"
+    name: "事实型"
+    name_en: "Factual"
+    priority: 2
+    complexity: "simple"
+    suggested_layer: "permanent"
+    enabled: true
+
+  - id: "conceptual"
+    name: "概念型"
+    name_en: "Conceptual"
+    priority: 3
+    complexity: "simple"
+    suggested_layer: "ordinary"
+    enabled: true
+
+  - id: "procedural"
+    name: "过程型"
+    name_en: "Procedural"
+    priority: 4
+    complexity: "moderate"
+    suggested_layer: "ordinary"
+    enabled: true
+
+  - id: "configuration"
+    name: "配置型"
+    name_en: "Configuration"
+    priority: 5
+    complexity: "moderate"
+    suggested_layer: "ordinary"
+    enabled: true
+
+  - id: "troubleshooting"
+    name: "故障排查型"
+    name_en: "Troubleshooting"
+    priority: 6
+    complexity: "moderate"
+    suggested_layer: "full_rag"
+    enabled: true
+
+  - id: "comparison"
+    name: "比较型"
+    name_en: "Comparison"
+    priority: 7
+    complexity: "moderate"
+    suggested_layer: "full_rag"
+    enabled: true
+
+  - id: "analytical"
+    name: "分析型"
+    name_en: "Analytical"
+    priority: 8
+    complexity: "complex"
+    suggested_layer: "full_rag"
+    enabled: true
+
+  - id: "recommendation"
+    name: "推荐型"
+    name_en: "Recommendation"
+    priority: 9
+    complexity: "moderate"
+    suggested_layer: "full_rag"
+    enabled: true
+
+  - id: "creative"
+    name: "创作型"
+    name_en: "Creative"
+    priority: 10
+    complexity: "complex"
+    suggested_layer: "full_rag"
+    enabled: true
+
+  - id: "unknown"
+    name: "未知型"
+    name_en: "Unknown"
+    priority: 999
+    complexity: "moderate"
+    suggested_layer: "full_rag"
+    enabled: true
+
+# ============================================================
+# 关键词库 (Keyword Library)
+# ============================================================
+keywords:
+  # 社交型关键词 (Social Keywords)
+  social:
+    greetings:
+      - "你好"
+      - "您好"
+      - "嗨"
+      - "哈喽"
+      - "早上好"
+      - "下午好"
+      - "晚上好"
+      - "早安"
+      - "午安"
+      - "晚安"
+      - "你好啊"
+      - "您好啊"
+      - "你好呀"
+      - "您好呀"
+      - "在吗"
+      - "在不在"
+      - "有人吗"
+      - "hello"
+      - "hi"
+      - "hey"
+      - "good morning"
+      - "good afternoon"
+      - "good evening"
+
+    farewells:
+      - "再见"
+      - "拜拜"
+      - "回见"
+      - "下次见"
+      - "886"
+      - "88"
+      - "走了"
+      - "拜"
+      - "bye"
+      - "goodbye"
+      - "see you"
+      - "good night"
+
+    thanks:
+      - "谢谢"
+      - "感谢"
+      - "多谢"
+      - "谢了"
+      - "谢谢你"
+      - "非常感谢"
+      - "十分感谢"
+      - "thanks"
+      - "thank you"
+      - "thx"
+      - "3q"
+
+    confirmations:
+      - "好的"
+      - "好"
+      - "嗯"
+      - "嗯嗯"
+      - "是的"
+      - "对"
+      - "对的"
+      - "没错"
+      - "不"
+      - "不是"
+      - "不对"
+      - "否"
+      - "ok"
+      - "okay"
+      - "yes"
+      - "no"
+      - "nope"
+
+  # 概念型关键词 (Conceptual Keywords)
+  conceptual:
+    - "是什么"
+    - "什么是"
+    - "定义"
+    - "概念"
+    - "含义"
+    - "意思"
+    - "解释"
+    - "介绍"
+    - "what is"
+    - "define"
+    - "meaning"
+    - "definition"
+    - "explain"
+
+  # 过程型关键词 (Procedural Keywords)
+  procedural:
+    - "如何"
+    - "怎么"
+    - "怎样"
+    - "怎么做"
+    - "步骤"
+    - "方法"
+    - "流程"
+    - "操作"
+    - "使用"
+    - "教程"
+    - "指南"
+    - "how to"
+    - "how do"
+    - "how can"
+    - "steps"
+    - "guide"
+    - "tutorial"
+    - "procedure"
+
+  # 配置型关键词 (Configuration Keywords)
+  configuration:
+    - "配置"
+    - "设置"
+    - "参数"
+    - "选项"
+    - "调整"
+    - "修改"
+    - "更改"
+    - "环境变量"
+    - "config"
+    - "configure"
+    - "setting"
+    - "settings"
+    - "parameter"
+    - "option"
+    - "adjust"
+
+  # 故障排查型关键词 (Troubleshooting Keywords)
+  troubleshooting:
+    - "错误"
+    - "异常"
+    - "问题"
+    - "报错"
+    - "故障"
+    - "失败"
+    - "不工作"
+    - "无法"
+    - "不能"
+    - "崩溃"
+    - "卡死"
+    - "bug"
+    - "error"
+    - "exception"
+    - "problem"
+    - "issue"
+    - "fail"
+    - "failed"
+    - "crash"
+    - "not working"
+    - "doesn't work"
+
+  # 比较型关键词 (Comparison Keywords)
+  comparison:
+    - "比较"
+    - "对比"
+    - "区别"
+    - "差异"
+    - "优缺点"
+    - "优势"
+    - "劣势"
+    - "更好"
+    - "哪个"
+    - "选择"
+    - "compare"
+    - "comparison"
+    - "difference"
+    - "versus"
+    - "vs"
+    - "better"
+    - "which"
+    - "pros and cons"
+
+  # 分析型关键词 (Analytical Keywords)
+  analytical:
+    - "为什么"
+    - "原因"
+    - "分析"
+    - "解释"
+    - "机制"
+    - "原理"
+    - "影响"
+    - "why"
+    - "reason"
+    - "analyze"
+    - "analysis"
+    - "mechanism"
+    - "principle"
+    - "impact"
+
+  # 推荐型关键词 (Recommendation Keywords)
+  recommendation:
+    - "推荐"
+    - "建议"
+    - "选用"
+    - "采用"
+    - "最佳"
+    - "最好"
+    - "应该"
+    - "suggest"
+    - "recommend"
+    - "should"
+    - "best"
+    - "better"
+    - "prefer"
+
+  # 创作型关键词 (Creative Keywords)
+  creative:
+    - "写"
+    - "生成"
+    - "创建"
+    - "设计"
+    - "编写"
+    - "帮我"
+    - "帮忙"
+    - "制作"
+    - "write"
+    - "generate"
+    - "create"
+    - "design"
+    - "help me"
+    - "make"
+
+# ============================================================
+# 正则表达式模式 (Regex Patterns)
+# ============================================================
+patterns:
+  # 事实型问题模式 (Factual Patterns)
+  factual:
+    - ".*是什么.*框架.*"
+    - ".*用什么.*技术.*"
+    - ".*版本.*是.*"
+    - ".*作者.*是.*"
+    - ".*支持.*格式.*"
+    - ".*有.*功能.*"
+    - ".*包含.*"
+    - ".*由.*组成.*"
+    - ".*采用.*技术.*"
+
+  # 配置型问题模式 (Configuration Patterns)
+  configuration:
+    - ".*如何配置.*"
+    - ".*配置文件.*在哪.*"
+    - ".*参数.*怎么设置.*"
+    - ".*环境变量.*"
+
+  # 故障排查型问题模式 (Troubleshooting Patterns)
+  troubleshooting:
+    - ".*报错.*怎么.*"
+    - ".*错误.*如何.*"
+    - ".*异常.*解决.*"
+    - ".*为什么.*失败.*"
+    - ".*无法.*怎么办.*"
+
+# ============================================================
+# 分类规则 (Classification Rules)
+# ============================================================
+rules:
+  # 短问题规则 (Short Question Rules)
+  short_question:
+    max_length: 5
+    boost_types:
+      - "social"
+    boost_confidence: 0.3
+
+  # 长问题规则 (Long Question Rules)
+  long_question:
+    min_length: 50
+    complexity: "complex"
+    default_type: "analytical"
+
+  # 疑问标记规则 (Question Mark Rules)
+  question_marks:
+    patterns:
+      - "吗？"
+      - "呢？"
+      - "吧？"
+      - "啊？"
+      - "？"
+      - "\\?"
+    boost_confidence: 0.1
+
+  # 最小置信度阈值 (Minimum Confidence Threshold)
+  min_confidence:
+    social: 0.7
+    factual: 0.8
+    conceptual: 0.7
+    procedural: 0.7
+    configuration: 0.7
+    troubleshooting: 0.6
+    comparison: 0.6
+    analytical: 0.5
+    recommendation: 0.6
+    creative: 0.6
+    unknown: 0.0
+
+# ============================================================
+# 角色知识库特定配置 (Role-specific Configuration)
+# ============================================================
+role_specific:
+  # 开发者角色 (Developer Role)
+  developer:
+    priority_types:
+      - "configuration"
+      - "troubleshooting"
+      - "procedural"
+    keywords:
+      - "代码"
+      - "函数"
+      - "API"
+      - "接口"
+      - "类"
+      - "方法"
+
+  # 运维角色 (DevOps Role)
+  devops:
+    priority_types:
+      - "configuration"
+      - "troubleshooting"
+      - "procedural"
+    keywords:
+      - "部署"
+      - "监控"
+      - "日志"
+      - "性能"
+      - "容器"
+      - "服务器"
+
+  # 产品经理角色 (Product Manager Role)
+  product_manager:
+    priority_types:
+      - "conceptual"
+      - "comparison"
+      - "recommendation"
+    keywords:
+      - "功能"
+      - "需求"
+      - "用户"
+      - "体验"
+      - "设计"
+      - "规划"
+
+  # 通用角色 (General Role)
+  general:
+    priority_types:
+      - "social"
+      - "conceptual"
+      - "factual"
+    keywords: []
+

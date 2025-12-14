@@ -1,0 +1,60 @@
+# Question Classifier I18n Configuration
+# File: src/main/resources/i18n/en/en-question-classifier.yml
+
+question:
+  classifier:
+    # Question Type Names
+    type:
+      social: "Social"
+      factual: "Factual"
+      procedural: "Procedural"
+      conceptual: "Conceptual"
+      analytical: "Analytical"
+      creative: "Creative"
+      comparison: "Comparison"
+      recommendation: "Recommendation"
+      troubleshooting: "Troubleshooting"
+      configuration: "Configuration"
+      unknown: "Unknown"
+
+    # Question Type Descriptions
+    description:
+      social: "Social questions: greetings, thanks, small talk"
+      factual: "Factual questions: questions with definite answers"
+      procedural: "Procedural questions: how-to steps"
+      conceptual: "Conceptual questions: what is, definition, meaning"
+      analytical: "Analytical questions: why, reason, analysis"
+      creative: "Creative questions: require generating new content"
+      comparison: "Comparison questions: compare, difference, pros/cons"
+      recommendation: "Recommendation questions: suggest, choose, recommend"
+      troubleshooting: "Troubleshooting: errors, exceptions, problems"
+      configuration: "Configuration questions: config, settings, parameters"
+      unknown: "Unknown type: cannot be clearly classified"
+
+    # Complexity Levels
+    complexity:
+      simple: "Simple"
+      moderate: "Moderate"
+      complex: "Complex"
+
+    # Suggested Layers
+    layer:
+      direct_llm: "Direct LLM"
+      permanent: "Permanent Layer"
+      ordinary: "Ordinary Layer"
+      full_rag: "Full RAG"
+
+    # Log Messages
+    log:
+      classification_start: "Start question classification"
+      classification_result: "Classification result: type={0}, complexity={1}, confidence={2}, layer={3}"
+      keyword_loaded: "Loaded {0} keywords"
+      pattern_loaded: "Loaded {0} patterns"
+      config_loaded: "Question classification config loaded"
+      config_reload: "Reload question classification config"
+      social_detected: "Social question detected"
+      technical_detected: "Technical question detected"
+      unknown_type: "Unknown question type"
+      pattern_matched: "Pattern matched"
+      keyword_matched: "Keyword matched"
+

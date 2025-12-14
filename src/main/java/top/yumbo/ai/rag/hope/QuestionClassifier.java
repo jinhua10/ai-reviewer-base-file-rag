@@ -4,58 +4,361 @@ import lombok.Data;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
+import top.yumbo.ai.rag.i18n.I18N;
+
+import jakarta.annotation.PostConstruct;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * 问题分类器 - 决定使用哪一层知识回答
  * (Question Classifier - Decides which layer to use for answering)
  *
+ * <p>
+ * 设计特点 (Design Features):
+ * <ul>
+ *   <li>✅ 动态配置加载 - 支持从 YAML 文件加载分类规则</li>
+ *   <li>✅ 完整国际化 - 所有文本支持中英文</li>
+ *   <li>✅ 可扩展类型 - 支持动态添加问题类型</li>
+ *   <li>✅ 角色知识库适配 - 不同角色可以有不同的分类策略</li>
+ *   <li>✅ 热重载 - 可以在运行时重新加载配置</li>
+ *   <li>✅ 高性能 - 使用缓存和优化的匹配算法</li>
+ * </ul>
+ * </p>
+ *
  * @author AI Reviewer Team
  * @since 2.0.0
+ * @version 2.1.0 - 重构支持动态配置和国际化
  */
+@Slf4j
 @Component
 public class QuestionClassifier {
 
     /**
-     * 问题类型枚举
-     * (Question Type Enum)
+     * 配置文件路径 (Configuration file path)
+     */
+    private static final String CONFIG_FILE = "question-classifier-config.yml";
+
+    /**
+     * 分类配置缓存 (Classification configuration cache)
+     */
+    private Map<String, Object> configCache = new ConcurrentHashMap<>();
+
+    /**
+     * 问题类型定义缓存 (Question type definition cache)
+     */
+    private List<QuestionTypeConfig> questionTypeConfigs = new ArrayList<>();
+
+    /**
+     * 关键词库缓存 (Keyword library cache)
+     */
+    private Map<String, List<String>> keywordCache = new ConcurrentHashMap<>();
+
+    /**
+     * 模式库缓存 (Pattern library cache)
+     */
+    private Map<String, List<String>> patternCache = new ConcurrentHashMap<>();
+
+    /**
+     * 配置版本号 (Configuration version)
+     */
+    private String configVersion = "unknown";
+
+    /**
+     * 是否启用 (Whether enabled)
+     */
+    private boolean enabled = true;
+
+    /**
+     * 问题类型配置 (Question Type Configuration)
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class QuestionTypeConfig {
+        private String id;
+        private String name;
+        private String nameEn;
+        private int priority;
+        private String complexity;
+        private String suggestedLayer;
+        private boolean enabled;
+    }
+
+    /**
+     * 初始化配置 (Initialize configuration)
+     */
+    @PostConstruct
+    public void init() {
+        try {
+            loadConfiguration();
+            log.info(I18N.get("question.classifier.log.config_loaded") + " (version: {})", configVersion);
+        } catch (Exception e) {
+            log.error("Failed to load question classifier configuration", e);
+            // 使用默认配置 (Use default configuration)
+            initDefaultConfiguration();
+        }
+    }
+
+    /**
+     * 加载配置 (Load configuration)
+     */
+    @SuppressWarnings("unchecked")
+    private void loadConfiguration() {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE)) {
+            if (input == null) {
+                log.warn("Configuration file not found: {}, using default configuration", CONFIG_FILE);
+                initDefaultConfiguration();
+                return;
+            }
+
+            Yaml yaml = new Yaml();
+            configCache = yaml.load(input);
+
+            // 加载版本号 (Load version)
+            configVersion = (String) configCache.getOrDefault("version", "unknown");
+            enabled = (boolean) configCache.getOrDefault("enabled", true);
+
+            // 加载问题类型 (Load question types)
+            List<Map<String, Object>> types = (List<Map<String, Object>>) configCache.get("question_types");
+            if (types != null) {
+                questionTypeConfigs = types.stream()
+                    .map(this::mapToQuestionTypeConfig)
+                    .filter(config -> config != null && config.isEnabled())
+                    .sorted(Comparator.comparingInt(QuestionTypeConfig::getPriority))
+                    .collect(Collectors.toList());
+
+                log.debug("Loaded {} question types", questionTypeConfigs.size());
+            }
+
+            // 加载关键词库 (Load keywords)
+            Map<String, Object> keywords = (Map<String, Object>) configCache.get("keywords");
+            if (keywords != null) {
+                loadKeywords(keywords);
+            }
+
+            // 加载模式库 (Load patterns)
+            Map<String, Object> patterns = (Map<String, Object>) configCache.get("patterns");
+            if (patterns != null) {
+                loadPatterns(patterns);
+            }
+
+        } catch (Exception e) {
+            log.error("Error loading configuration", e);
+            throw new RuntimeException("Failed to load question classifier configuration", e);
+        }
+    }
+
+    /**
+     * 映射配置到类型对象 (Map configuration to type object)
+     */
+    private QuestionTypeConfig mapToQuestionTypeConfig(Map<String, Object> map) {
+        try {
+            QuestionTypeConfig config = new QuestionTypeConfig();
+            config.setId((String) map.get("id"));
+            config.setName((String) map.get("name"));
+            config.setNameEn((String) map.get("name_en"));
+            config.setPriority(((Number) map.get("priority")).intValue());
+            config.setComplexity((String) map.get("complexity"));
+            config.setSuggestedLayer((String) map.get("suggested_layer"));
+            config.setEnabled((boolean) map.getOrDefault("enabled", true));
+            return config;
+        } catch (Exception e) {
+            log.error("Error mapping question type config", e);
+            return null;
+        }
+    }
+
+    /**
+     * 加载关键词库 (Load keywords)
+     */
+    @SuppressWarnings("unchecked")
+    private void loadKeywords(Map<String, Object> keywords) {
+        for (Map.Entry<String, Object> entry : keywords.entrySet()) {
+            String typeId = entry.getKey();
+            Object value = entry.getValue();
+
+            List<String> allKeywords = new ArrayList<>();
+
+            if (value instanceof Map) {
+                // 嵌套结构 (Nested structure)
+                Map<String, List<String>> nested = (Map<String, List<String>>) value;
+                nested.values().forEach(allKeywords::addAll);
+            } else if (value instanceof List) {
+                // 扁平列表 (Flat list)
+                allKeywords.addAll((List<String>) value);
+            }
+
+            keywordCache.put(typeId, allKeywords);
+            log.debug(I18N.get("question.classifier.log.keyword_loaded"), allKeywords.size());
+        }
+    }
+
+    /**
+     * 加载模式库 (Load patterns)
+     */
+    @SuppressWarnings("unchecked")
+    private void loadPatterns(Map<String, Object> patterns) {
+        for (Map.Entry<String, Object> entry : patterns.entrySet()) {
+            String typeId = entry.getKey();
+            List<String> patternList = (List<String>) entry.getValue();
+            patternCache.put(typeId, patternList);
+            log.debug(I18N.get("question.classifier.log.pattern_loaded"), patternList.size());
+        }
+    }
+
+    /**
+     * 初始化默认配置 (Initialize default configuration)
+     */
+    private void initDefaultConfiguration() {
+        // 添加默认类型 (Add default types)
+        questionTypeConfigs.clear();
+        questionTypeConfigs.add(new QuestionTypeConfig("social", "社交型", "Social", 1, "simple", "direct_llm", true));
+        questionTypeConfigs.add(new QuestionTypeConfig("factual", "事实型", "Factual", 2, "simple", "permanent", true));
+        questionTypeConfigs.add(new QuestionTypeConfig("conceptual", "概念型", "Conceptual", 3, "simple", "ordinary", true));
+        questionTypeConfigs.add(new QuestionTypeConfig("procedural", "过程型", "Procedural", 4, "moderate", "ordinary", true));
+        questionTypeConfigs.add(new QuestionTypeConfig("analytical", "分析型", "Analytical", 5, "complex", "full_rag", true));
+        questionTypeConfigs.add(new QuestionTypeConfig("creative", "创作型", "Creative", 6, "complex", "full_rag", true));
+        questionTypeConfigs.add(new QuestionTypeConfig("unknown", "未知型", "Unknown", 999, "moderate", "full_rag", true));
+
+        // 添加默认关键词 (Add default keywords)
+        keywordCache.put("social", Arrays.asList("你好", "谢谢", "再见", "hello", "thanks", "bye"));
+        keywordCache.put("conceptual", Arrays.asList("是什么", "什么是", "what is", "define"));
+        keywordCache.put("procedural", Arrays.asList("如何", "怎么", "how to", "steps"));
+        keywordCache.put("analytical", Arrays.asList("为什么", "原因", "why", "reason"));
+        keywordCache.put("creative", Arrays.asList("写", "生成", "write", "generate"));
+
+        configVersion = "default";
+        enabled = true;
+    }
+
+    /**
+     * 重新加载配置 (Reload configuration)
+     *
+     * @return 是否成功 (Whether successful)
+     */
+    public boolean reloadConfiguration() {
+        try {
+            log.info(I18N.get("question.classifier.log.config_reload"));
+            loadConfiguration();
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to reload configuration", e);
+            return false;
+        }
+    }
+
+    /**
+     * 问题类型枚举（扩展版）
+     * (Question Type Enum - Extended Version)
      */
     public enum QuestionType {
         /**
-         * 事实型：有确定答案，如"项目使用什么框架？"
-         * (Factual: Has definite answer, e.g., "What framework does the project use?")
+         * 社交型：问候、感谢、闲聊，如"你好"、"谢谢"
+         * (Social: Greetings, thanks, small talk)
          */
-        FACTUAL,
+        SOCIAL("social"),
+
+        /**
+         * 事实型：有确定答案，如"项目使用什么框架？"
+         * (Factual: Has definite answer)
+         */
+        FACTUAL("factual"),
 
         /**
          * 过程型：怎么做，如"如何配置数据库？"
-         * (Procedural: How-to, e.g., "How to configure database?")
+         * (Procedural: How-to)
          */
-        PROCEDURAL,
+        PROCEDURAL("procedural"),
 
         /**
          * 概念型：是什么，如"什么是 RAG？"
-         * (Conceptual: What is, e.g., "What is RAG?")
+         * (Conceptual: What is)
          */
-        CONCEPTUAL,
+        CONCEPTUAL("conceptual"),
 
         /**
          * 分析型：为什么，如"为什么要使用混合检索？"
-         * (Analytical: Why, e.g., "Why use hybrid search?")
+         * (Analytical: Why)
          */
-        ANALYTICAL,
+        ANALYTICAL("analytical"),
 
         /**
          * 创作型：需要生成新内容
          * (Creative: Requires generating new content)
          */
-        CREATIVE,
+        CREATIVE("creative"),
+
+        /**
+         * 比较型：对比、区别、优劣，如"A和B有什么区别？"
+         * (Comparison: Compare, difference, pros/cons)
+         */
+        COMPARISON("comparison"),
+
+        /**
+         * 推荐型：建议、选择、推荐，如"应该用哪个？"
+         * (Recommendation: Suggest, choose, recommend)
+         */
+        RECOMMENDATION("recommendation"),
+
+        /**
+         * 故障排查型：错误、异常、问题，如"为什么报错？"
+         * (Troubleshooting: Errors, exceptions, problems)
+         */
+        TROUBLESHOOTING("troubleshooting"),
+
+        /**
+         * 配置型：配置、设置、参数，如"如何配置环境变量？"
+         * (Configuration: Config, settings, parameters)
+         */
+        CONFIGURATION("configuration"),
 
         /**
          * 未知类型
          * (Unknown type)
          */
-        UNKNOWN
+        UNKNOWN("unknown");
+
+        private final String id;
+
+        QuestionType(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        /**
+         * 从 ID 获取类型 (Get type from ID)
+         */
+        public static QuestionType fromId(String id) {
+            for (QuestionType type : values()) {
+                if (type.getId().equals(id)) {
+                    return type;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        /**
+         * 获取国际化名称 (Get i18n name)
+         */
+        public String getI18nName() {
+            return I18N.get("question.classifier.type." + id);
+        }
+
+        /**
+         * 获取国际化描述 (Get i18n description)
+         */
+        public String getI18nDescription() {
+            return I18N.get("question.classifier.description." + id);
+        }
     }
 
     /**
@@ -129,6 +432,38 @@ public class QuestionClassifier {
             return complexity == ComplexityLevel.SIMPLE && confidence > 0.8;
         }
     }
+
+    // 社交型问题关键词 (Social question keywords)
+    private static final String[] SOCIAL_GREETINGS = {
+        // 中文问候 (Chinese greetings)
+        "你好", "您好", "嗨", "哈喽", "早上好", "下午好", "晚上好",
+        "早安", "午安", "晚安", "你好啊", "您好啊", "你好呀", "您好呀",
+        "在吗", "在不在", "有人吗",
+        // 英文问候 (English greetings)
+        "hello", "hi", "hey", "good morning", "good afternoon", "good evening"
+    };
+
+    private static final String[] SOCIAL_FAREWELLS = {
+        // 中文告别 (Chinese farewells)
+        "再见", "拜拜", "回见", "下次见", "886", "88", "走了", "拜",
+        // 英文告别 (English farewells)
+        "bye", "goodbye", "see you", "good night"
+    };
+
+    private static final String[] SOCIAL_THANKS = {
+        // 中文感谢 (Chinese thanks)
+        "谢谢", "感谢", "多谢", "谢了", "谢谢你", "非常感谢", "十分感谢",
+        // 英文感谢 (English thanks)
+        "thanks", "thank you", "thx", "3q"
+    };
+
+    private static final String[] SOCIAL_CONFIRMATIONS = {
+        // 简单确认/否定 (Simple confirmations/negations)
+        "好的", "好", "嗯", "嗯嗯", "是的", "对", "对的", "没错",
+        "不", "不是", "不对", "否",
+        // 英文 (English)
+        "ok", "okay", "yes", "no", "nope"
+    };
 
     // 事实型问题模式 (Factual question patterns)
     private static final String[] FACTUAL_PATTERNS = {
@@ -209,19 +544,75 @@ public class QuestionClassifier {
     }
 
     /**
-     * 检测问题类型
-     * (Detect question type)
-     * 
+     * 检测问题类型（使用动态配置）
+     * (Detect question type using dynamic configuration)
+     *
      * @param question 问题文本 (Question text)
      * @return 问题类型 (Question type)
      */
     private QuestionType detectQuestionType(String question) {
-        // 优先检查创作型（通常需要完整 RAG）
+        log.debug(I18N.get("question.classifier.log.classification_start") + ": {}", question);
+
+        // 按优先级检查每种类型 (Check each type by priority)
+        for (QuestionTypeConfig config : questionTypeConfigs) {
+            if (!config.isEnabled()) {
+                continue;
+            }
+
+            String typeId = config.getId();
+
+            // 1. 检查正则模式 (Check regex patterns)
+            List<String> patterns = patternCache.get(typeId);
+            if (patterns != null) {
+                for (String pattern : patterns) {
+                    try {
+                        if (question.matches(pattern)) {
+                            log.debug(I18N.get("question.classifier.log.pattern_matched") + ": {} -> {}",
+                                    pattern, typeId);
+                            return QuestionType.fromId(typeId);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Invalid pattern: {}", pattern);
+                    }
+                }
+            }
+
+            // 2. 检查关键词匹配 (Check keyword matching)
+            List<String> keywords = keywordCache.get(typeId);
+            if (keywords != null && containsAny(question, keywords)) {
+                log.debug(I18N.get("question.classifier.log.keyword_matched") + ": {}", typeId);
+                return QuestionType.fromId(typeId);
+            }
+        }
+
+        // 3. 兜底逻辑：使用遗留的硬编码检测（保证兼容性）
+        // (Fallback: Use legacy hardcoded detection for compatibility)
+        QuestionType fallbackType = detectQuestionTypeFallback(question);
+        if (fallbackType != QuestionType.UNKNOWN) {
+            log.debug("Using fallback detection: {}", fallbackType);
+            return fallbackType;
+        }
+
+        log.debug(I18N.get("question.classifier.log.unknown_type"));
+        return QuestionType.UNKNOWN;
+    }
+
+    /**
+     * 兜底检测方法（使用硬编码规则）
+     * (Fallback detection method using hardcoded rules)
+     */
+    private QuestionType detectQuestionTypeFallback(String question) {
+        // 最优先检查社交型
+        if (isSocialQuestion(question)) {
+            return QuestionType.SOCIAL;
+        }
+
+        // 检查创作型
         if (containsAny(question, CREATIVE_KEYWORDS)) {
             return QuestionType.CREATIVE;
         }
 
-        // 检查事实型（可能可以直接回答）
+        // 检查事实型
         for (String pattern : FACTUAL_PATTERNS) {
             if (question.matches(pattern)) {
                 return QuestionType.FACTUAL;
@@ -247,6 +638,35 @@ public class QuestionClassifier {
     }
 
     /**
+     * 判断是否为社交性问题
+     * (Check if it's a social question)
+     *
+     * @param question 问题文本 (Question text)
+     * @return 是否为社交问题 (Whether it's a social question)
+     */
+    private boolean isSocialQuestion(String question) {
+        String normalized = question.trim();
+
+        // 完全匹配社交词汇 (Exact match social words)
+        if (containsAny(normalized, SOCIAL_GREETINGS) ||
+            containsAny(normalized, SOCIAL_FAREWELLS) ||
+            containsAny(normalized, SOCIAL_THANKS) ||
+            containsAny(normalized, SOCIAL_CONFIRMATIONS)) {
+            return true;
+        }
+
+        // 短问题（长度 <= 5）且包含社交词汇
+        // (Short questions containing social words)
+        if (normalized.length() <= 5) {
+            return containsAny(normalized, SOCIAL_GREETINGS) ||
+                   containsAny(normalized, SOCIAL_FAREWELLS) ||
+                   containsAny(normalized, SOCIAL_THANKS);
+        }
+
+        return false;
+    }
+
+    /**
      * 评估问题复杂度
      * (Assess question complexity)
      * 
@@ -255,6 +675,11 @@ public class QuestionClassifier {
      * @return 复杂度等级 (Complexity level)
      */
     private ComplexityLevel assessComplexity(String question, QuestionType type) {
+        // 社交型问题最简单，直接回复即可
+        if (type == QuestionType.SOCIAL) {
+            return ComplexityLevel.SIMPLE;
+        }
+
         // 事实型问题通常简单
         if (type == QuestionType.FACTUAL) {
             return ComplexityLevel.SIMPLE;
@@ -317,6 +742,11 @@ public class QuestionClassifier {
      * @return 建议的查询层 (Suggested query layer)
      */
     private String suggestLayer(QuestionType type, ComplexityLevel complexity, double confidence) {
+        // 社交型问题 -> 直接 LLM，不需要检索
+        if (type == QuestionType.SOCIAL) {
+            return "direct_llm";
+        }
+
         // 简单的事实型问题 -> 优先查低频层
         if (type == QuestionType.FACTUAL && complexity == ComplexityLevel.SIMPLE) {
             return "permanent";
@@ -361,6 +791,26 @@ public class QuestionClassifier {
      * @return 是否包含关键词 (Whether contains keywords)
      */
     private boolean containsAny(String text, String[] keywords) {
+        for (String keyword : keywords) {
+            if (text.contains(keyword.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 检查字符串是否包含列表中的任意关键词
+     * (Check if string contains any keyword from list)
+     *
+     * @param text 文本内容 (Text content)
+     * @param keywords 关键词列表 (Keyword list)
+     * @return 是否包含关键词 (Whether contains keywords)
+     */
+    private boolean containsAny(String text, List<String> keywords) {
+        if (keywords == null || keywords.isEmpty()) {
+            return false;
+        }
         for (String keyword : keywords) {
             if (text.contains(keyword.toLowerCase())) {
                 return true;

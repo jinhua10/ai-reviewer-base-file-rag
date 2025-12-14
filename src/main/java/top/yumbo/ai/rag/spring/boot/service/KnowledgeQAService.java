@@ -12,6 +12,7 @@ import top.yumbo.ai.rag.chunking.storage.ChunkStorageInfo;
 import top.yumbo.ai.rag.chunking.storage.ChunkStorageService;
 import top.yumbo.ai.rag.feedback.QARecord;
 import top.yumbo.ai.rag.feedback.QARecordService;
+import top.yumbo.ai.rag.hope.QuestionClassifier;
 import top.yumbo.ai.rag.image.ImageInfo;
 import top.yumbo.ai.rag.image.ImageStorageService;
 import top.yumbo.ai.rag.model.Query;
@@ -465,6 +466,25 @@ public class KnowledgeQAService {
             log.info(I18N.get("knowledge_qa_service.question_separator"));
             log.info(I18N.get("knowledge_qa_service.question_prompt", question));
             log.info(I18N.get("knowledge_qa_service.separator"));
+
+            // 前置分类：使用 HOPE QuestionClassifier 判断问题类型，避免无意义的文档检索
+            // (Pre-classification: Use HOPE QuestionClassifier to determine question type)
+            QuestionClassifier hopeClassifier = new QuestionClassifier();
+            QuestionClassifier.Classification classification =
+                    hopeClassifier.classify(question);
+
+            log.info("🔍 问题分类 (Question Classification): type={}, complexity={}, confidence={}, suggestedLayer={}",
+                    classification.getType(),
+                    classification.getComplexity(),
+                    classification.getConfidence(),
+                    classification.getSuggestedLayer());
+
+            // 如果是社交性问题（如"你好"、"谢谢"），直接用 LLM 回答，不检索文档
+            // (If social question like "hello" or "thanks", use LLM directly without document retrieval)
+            if (classification.getType() == QuestionClassifier.QuestionType.SOCIAL) {
+                log.info("💬 检测到社交性问题，跳过文档检索直接回复 (Social question detected, skip document retrieval)");
+                return askDirectLLM(question);
+            }
 
             // 设置 HOPE 会话ID（供 HOPEEnhancedLLMClient 使用）
             // (Set HOPE session ID for HOPEEnhancedLLMClient to use)

@@ -1,0 +1,60 @@
+# 问题分类器国际化配置 (Question Classifier I18n)
+# 文件: src/main/resources/i18n/zh/zh-question-classifier.yml
+
+question:
+  classifier:
+    # 问题类型名称 (Question Type Names)
+    type:
+      social: "社交型"
+      factual: "事实型"
+      procedural: "过程型"
+      conceptual: "概念型"
+      analytical: "分析型"
+      creative: "创作型"
+      comparison: "比较型"
+      recommendation: "推荐型"
+      troubleshooting: "故障排查型"
+      configuration: "配置型"
+      unknown: "未知型"
+
+    # 问题类型描述 (Question Type Descriptions)
+    description:
+      social: "社交性问题：问候、感谢、闲聊等"
+      factual: "事实型问题：有确定答案的问题"
+      procedural: "过程型问题：如何做某事的步骤"
+      conceptual: "概念型问题：是什么、定义、含义"
+      analytical: "分析型问题：为什么、原因、分析"
+      creative: "创作型问题：需要生成新内容"
+      comparison: "比较型问题：对比、区别、优劣"
+      recommendation: "推荐型问题：建议、选择、推荐"
+      troubleshooting: "故障排查型：错误、异常、问题"
+      configuration: "配置型问题：配置、设置、参数"
+      unknown: "未知类型：无法明确分类"
+
+    # 复杂度等级 (Complexity Levels)
+    complexity:
+      simple: "简单"
+      moderate: "中等"
+      complex: "复杂"
+
+    # 建议层级 (Suggested Layers)
+    layer:
+      direct_llm: "直接LLM"
+      permanent: "低频层"
+      ordinary: "中频层"
+      full_rag: "完整RAG"
+
+    # 日志消息 (Log Messages)
+    log:
+      classification_start: "开始问题分类"
+      classification_result: "分类结果: type={0}, complexity={1}, confidence={2}, layer={3}"
+      keyword_loaded: "已加载 {0} 个关键词"
+      pattern_loaded: "已加载 {0} 个模式"
+      config_loaded: "问题分类配置已加载"
+      config_reload: "重新加载问题分类配置"
+      social_detected: "检测到社交性问题"
+      technical_detected: "检测到技术性问题"
+      unknown_type: "未知问题类型"
+      pattern_matched: "模式匹配"
+      keyword_matched: "关键词匹配"
+
