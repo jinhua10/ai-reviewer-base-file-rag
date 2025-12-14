@@ -110,6 +110,11 @@ public class PersistenceConfig {
     private MongoDBConfig mongodb = new MongoDBConfig();
 
     /**
+     * ElasticSearch配置 (ElasticSearch configuration)
+     */
+    private ElasticsearchConfig elasticsearch = new ElasticsearchConfig();
+
+    /**
      * 混合存储配置 (Hybrid configuration)
      */
     private HybridConfig hybrid = new HybridConfig();
@@ -168,6 +173,22 @@ public class PersistenceConfig {
     }
 
     /**
+     * ElasticSearch配置
+     */
+    @Data
+    public static class ElasticsearchConfig {
+        private String hosts = "localhost:9200";  // 多个主机用逗号分隔
+        private String scheme = "http";           // http 或 https
+        private String username = "";             // 用户名（如果启用了安全）
+        private String password = "";             // 密码
+        private String indexPrefix = "qc-";       // 索引前缀
+        private int connectionTimeout = 5000;     // 连接超时（毫秒）
+        private int socketTimeout = 60000;        // Socket超时（毫秒）
+        private int maxRetryTimeout = 60000;      // 最大重试超时
+        private boolean sniffOnFailure = true;    // 失败时嗅探
+    }
+
+    /**
      * 混合存储配置
      */
     @Data
@@ -215,6 +236,18 @@ public class PersistenceConfig {
                 config.put("uri", mongodb.getUri());
                 config.put("database", mongodb.getDatabase());
                 config.put("collection", mongodb.getCollection());
+                break;
+
+            case "elasticsearch":
+                config.put("hosts", elasticsearch.getHosts());
+                config.put("scheme", elasticsearch.getScheme());
+                config.put("username", elasticsearch.getUsername());
+                config.put("password", elasticsearch.getPassword());
+                config.put("indexPrefix", elasticsearch.getIndexPrefix());
+                config.put("connectionTimeout", elasticsearch.getConnectionTimeout());
+                config.put("socketTimeout", elasticsearch.getSocketTimeout());
+                config.put("maxRetryTimeout", elasticsearch.getMaxRetryTimeout());
+                config.put("sniffOnFailure", elasticsearch.isSniffOnFailure());
                 break;
 
             case "hybrid":

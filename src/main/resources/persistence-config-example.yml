@@ -12,6 +12,7 @@ question-classifier:
     #   - sqlite: SQLite数据库（适合中等规模）
     #   - redis: Redis缓存（适合大规模，需要外部Redis）
     #   - mongodb: MongoDB文档数据库（适合海量数据，需要外部MongoDB）
+    #   - elasticsearch: ElasticSearch搜索引擎（适合海量数据+全文搜索，需要外部ES）
     #   - hybrid: 混合存储（Redis + 文件，推荐生产环境）
     #   - memory: 内存存储（仅用于测试）
     strategy: json-file
@@ -67,6 +68,20 @@ question-classifier:
       uri: mongodb://localhost:27017/question-classifier  # MongoDB URI
       database: question-classifier                        # 数据库名
       collection: question_types                           # 集合名
+
+    # ============================================================
+    # ElasticSearch配置 (ElasticSearch Configuration)
+    # ============================================================
+    elasticsearch:
+      hosts: localhost:9200                # ES主机（多个用逗号分隔）
+      scheme: http                         # 协议（http 或 https）
+      username: ""                         # 用户名（如果启用了安全）
+      password: ""                         # 密码
+      index-prefix: "qc-"                  # 索引前缀
+      connection-timeout: 5000             # 连接超时（毫秒）
+      socket-timeout: 60000                # Socket超时（毫秒）
+      max-retry-timeout: 60000             # 最大重试超时
+      sniff-on-failure: true               # 失败时嗅探
 
     # ============================================================
     # 混合存储配置 (Hybrid Configuration)

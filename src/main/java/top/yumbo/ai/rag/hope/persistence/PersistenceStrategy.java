@@ -1,5 +1,7 @@
 package top.yumbo.ai.rag.hope.persistence;
 
+import lombok.Getter;
+
 /**
  * 持久化策略枚举
  * (Persistence Strategy Enum)
@@ -12,12 +14,13 @@ package top.yumbo.ai.rag.hope.persistence;
  * @author AI Reviewer Team
  * @since 2.1.0
  */
+@Getter
 public enum PersistenceStrategy {
 
     /**
      * JSON 文件存储（默认）
      * (JSON File Storage - Default)
-     *
+     * <p>
      * 特点 (Features):
      * - 轻量级，无需外部依赖
      * - 适合小规模数据（<10000类型）
@@ -29,7 +32,7 @@ public enum PersistenceStrategy {
     /**
      * H2 嵌入式数据库
      * (H2 Embedded Database)
-     *
+     * <p>
      * 特点 (Features):
      * - 嵌入式，无需外部服务
      * - 支持SQL查询
@@ -41,7 +44,7 @@ public enum PersistenceStrategy {
     /**
      * SQLite 数据库
      * (SQLite Database)
-     *
+     * <p>
      * 特点 (Features):
      * - 单文件数据库
      * - 跨平台
@@ -53,7 +56,7 @@ public enum PersistenceStrategy {
     /**
      * Redis 缓存
      * (Redis Cache)
-     *
+     * <p>
      * 特点 (Features):
      * - 高性能内存存储
      * - 分布式支持
@@ -65,7 +68,7 @@ public enum PersistenceStrategy {
     /**
      * MongoDB 文档数据库
      * (MongoDB Document Database)
-     *
+     * <p>
      * 特点 (Features):
      * - 文档型存储
      * - 分布式支持
@@ -75,9 +78,23 @@ public enum PersistenceStrategy {
     MONGODB("mongodb", "MongoDB数据库", "top.yumbo.ai.rag.hope.persistence.impl.MongoDBPersistence"),
 
     /**
+     * ElasticSearch 搜索引擎
+     * (ElasticSearch Search Engine)
+     * <p>
+     * 特点 (Features):
+     * - 全文搜索能力强大
+     * - 分布式高可用
+     * - 适合海量数据（1000000+类型）
+     * - 支持复杂查询和聚合
+     * - 实时搜索和分析
+     * - 需要外部ElasticSearch服务
+     */
+    ELASTICSEARCH("elasticsearch", "ElasticSearch搜索引擎", "top.yumbo.ai.rag.hope.persistence.impl.ElasticsearchPersistence"),
+
+    /**
      * 混合存储（Redis + 文件）
      * (Hybrid Storage - Redis + File)
-     *
+     * <p>
      * 特点 (Features):
      * - Redis作为一级缓存
      * - 文件作为持久化存储
@@ -89,7 +106,7 @@ public enum PersistenceStrategy {
     /**
      * 内存存储（仅用于测试）
      * (Memory Storage - For testing only)
-     *
+     * <p>
      * 特点 (Features):
      * - 纯内存存储
      * - 最快性能
@@ -106,18 +123,6 @@ public enum PersistenceStrategy {
         this.code = code;
         this.description = description;
         this.implementationClass = implementationClass;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getImplementationClass() {
-        return implementationClass;
     }
 
     /**

@@ -58,8 +58,6 @@ public class PersistenceFactory {
      * 当前激活的策略 (Current active strategy)
      * -- GETTER --
      * 获取当前策略 (Get current strategy)
-     *
-     * @return 当前策略
      */
     @Getter
     private volatile PersistenceStrategy currentStrategy;
