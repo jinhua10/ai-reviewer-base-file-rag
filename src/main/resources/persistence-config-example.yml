@@ -1,0 +1,135 @@
+# 问题分类器持久化配置示例
+# (Question Classifier Persistence Configuration Example)
+
+question-classifier:
+  persistence:
+    # ============================================================
+    # 策略选择 (Strategy Selection)
+    # ============================================================
+    # 可选值 (Options):
+    #   - json-file: JSON文件存储（默认，适合小规模）
+    #   - h2: H2嵌入式数据库（适合中等规模）
+    #   - sqlite: SQLite数据库（适合中等规模）
+    #   - redis: Redis缓存（适合大规模，需要外部Redis）
+    #   - mongodb: MongoDB文档数据库（适合海量数据，需要外部MongoDB）
+    #   - hybrid: 混合存储（Redis + 文件，推荐生产环境）
+    #   - memory: 内存存储（仅用于测试）
+    strategy: json-file
+
+    # ============================================================
+    # 通用配置 (Common Configuration)
+    # ============================================================
+    cache-size: 100              # LRU缓存大小
+    flush-interval: 10           # 刷新间隔（秒）
+    backup-interval: 3600        # 备份间隔（秒）
+    auto-backup: true            # 是否启用自动备份
+    compression: false           # 是否启用压缩
+
+    # ============================================================
+    # JSON文件配置 (JSON File Configuration)
+    # ============================================================
+    json-file:
+      data-dir: data/question-classifier  # 数据目录
+      compression: false                   # 是否压缩
+      max-backups: 30                      # 最大备份数
+
+    # ============================================================
+    # H2数据库配置 (H2 Database Configuration)
+    # ============================================================
+    h2:
+      url: jdbc:h2:./data/question-classifier  # 数据库URL
+      username: sa                              # 用户名
+      password: ""                              # 密码
+      max-pool-size: 10                         # 连接池大小
+
+    # ============================================================
+    # SQLite配置 (SQLite Configuration)
+    # ============================================================
+    sqlite:
+      db-path: data/question-classifier.db  # 数据库文件路径
+      max-pool-size: 5                      # 连接池大小
+
+    # ============================================================
+    # Redis配置 (Redis Configuration)
+    # ============================================================
+    redis:
+      host: localhost      # Redis主机
+      port: 6379          # Redis端口
+      password: ""        # Redis密码（如果有）
+      database: 0         # 数据库编号
+      timeout: 3000       # 超时时间（毫秒）
+      key-prefix: "qc:"   # 键前缀
+
+    # ============================================================
+    # MongoDB配置 (MongoDB Configuration)
+    # ============================================================
+    mongodb:
+      uri: mongodb://localhost:27017/question-classifier  # MongoDB URI
+      database: question-classifier                        # 数据库名
+      collection: question_types                           # 集合名
+
+    # ============================================================
+    # 混合存储配置 (Hybrid Configuration)
+    # ============================================================
+    hybrid:
+      cache-strategy: redis        # 缓存策略（redis或memory）
+      storage-strategy: json-file  # 持久化策略
+      cache-ttl: 3600             # 缓存过期时间（秒）
+
+# ============================================================
+# 不同环境的配置示例 (Environment-specific Examples)
+# ============================================================
+
+---
+# 开发环境（使用JSON文件）
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+question-classifier:
+  persistence:
+    strategy: json-file
+    cache-size: 50
+    auto-backup: false
+
+---
+# 测试环境（使用内存存储）
+spring:
+  config:
+    activate:
+      on-profile: test
+
+question-classifier:
+  persistence:
+    strategy: memory
+    cache-size: 100
+    auto-backup: false
+
+---
+# 生产环境（使用混合存储）
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+question-classifier:
+  persistence:
+    strategy: hybrid
+    cache-size: 500
+    flush-interval: 5
+    backup-interval: 1800
+    auto-backup: true
+
+    hybrid:
+      cache-strategy: redis
+      storage-strategy: json-file
+      cache-ttl: 1800
+
+    redis:
+      host: redis.production.com
+      port: 6379
+      password: ${REDIS_PASSWORD}
+      database: 1
+      timeout: 5000
+

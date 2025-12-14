@@ -1,12 +1,11 @@
 package top.yumbo.ai.rag.hope;
 
-import lombok.Data;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
+import top.yumbo.ai.rag.hope.learning.QuestionClassifierLearningService;
 import top.yumbo.ai.rag.i18n.I18N;
 
 import jakarta.annotation.PostConstruct;
@@ -43,6 +42,18 @@ public class QuestionClassifier {
      * 配置文件路径 (Configuration file path)
      */
     private static final String CONFIG_FILE = "question-classifier-config.yml";
+
+    /**
+     * 持久化管理器 (Persistence manager) - 支持可插拔策略
+     */
+    @Autowired(required = false)
+    private top.yumbo.ai.rag.hope.persistence.PersistenceManager persistenceManager;
+
+    /**
+     * 学习服务 (Learning service)
+     */
+    @Autowired(required = false)
+    private QuestionClassifierLearningService learningService;
 
     /**
      * 分类配置缓存 (Classification configuration cache)
@@ -107,13 +118,31 @@ public class QuestionClassifier {
 
     /**
      * 加载配置 (Load configuration)
+     *
+     * 优先级 (Priority):
+     * 1. 持久化存储 (Persistence storage) - 最高优先级
+     * 2. YAML 配置文件 (YAML config file)
+     * 3. 默认配置 (Default configuration)
      */
     @SuppressWarnings("unchecked")
     private void loadConfiguration() {
+        // 1. 尝试从持久化加载 (Try to load from persistence)
+        if (persistenceManager != null && loadFromPersistence()) {
+            log.info("✅ Loaded configuration from persistence (strategy: {})",
+                    persistenceManager.getCurrentStrategy().getDescription());
+            return;
+        }
+
+        // 2. 从 YAML 文件加载 (Load from YAML file)
         try (InputStream input = getClass().getClassLoader().getResourceAsStream(CONFIG_FILE)) {
             if (input == null) {
                 log.warn("Configuration file not found: {}, using default configuration", CONFIG_FILE);
                 initDefaultConfiguration();
+
+                // 保存默认配置到持久化 (Save default config to persistence)
+                if (persistenceManager != null) {
+                    saveToPersonsistence();
+                }
                 return;
             }
 
@@ -148,9 +177,83 @@ public class QuestionClassifier {
                 loadPatterns(patterns);
             }
 
+            // 保存到持久化 (Save to persistence)
+            if (persistenceManager != null) {
+                saveToPersonsistence();
+            }
+
         } catch (Exception e) {
             log.error("Error loading configuration", e);
             throw new RuntimeException("Failed to load question classifier configuration", e);
+        }
+    }
+
+    /**
+     * 从持久化加载 (Load from persistence)
+     *
+     * @return 是否成功
+     */
+    private boolean loadFromPersistence() {
+        try {
+            // 加载问题类型 (Load question types)
+            List<QuestionTypeConfig> types = persistenceManager.getAllQuestionTypes();
+            if (types.isEmpty()) {
+                return false;
+            }
+
+            questionTypeConfigs = types.stream()
+                .filter(QuestionTypeConfig::isEnabled)
+                .sorted(Comparator.comparingInt(QuestionTypeConfig::getPriority))
+                .collect(Collectors.toList());
+
+            // 加载关键词 (Load keywords)
+            Map<String, List<String>> keywords = persistenceManager.getAllKeywords();
+            keywordCache.clear();
+            keywordCache.putAll(keywords);
+
+            // 加载模式 (Load patterns)
+            Map<String, List<String>> patterns = persistenceManager.getAllPatterns();
+            patternCache.clear();
+            patternCache.putAll(patterns);
+
+            // 加载版本 (Load version)
+            configVersion = persistenceManager.getVersion();
+
+            log.info("Loaded {} types, {} keyword groups, {} pattern groups from persistence",
+                    questionTypeConfigs.size(), keywordCache.size(), patternCache.size());
+
+            return true;
+        } catch (Exception e) {
+            log.error("Failed to load from persistence", e);
+            return false;
+        }
+    }
+
+    /**
+     * 保存到持久化 (Save to persistence)
+     */
+    private void saveToPersonsistence() {
+        try {
+            // 保存问题类型 (Save question types)
+            persistenceManager.saveQuestionTypes(questionTypeConfigs);
+
+            // 保存关键词 (Save keywords)
+            for (Map.Entry<String, List<String>> entry : keywordCache.entrySet()) {
+                persistenceManager.saveKeywords(entry.getKey(), entry.getValue());
+            }
+
+            // 保存模式 (Save patterns)
+            for (Map.Entry<String, List<String>> entry : patternCache.entrySet()) {
+                persistenceManager.savePatterns(entry.getKey(), entry.getValue());
+            }
+
+            // 保存版本 (Save version)
+            persistenceManager.saveVersion(configVersion);
+
+            log.info("Saved configuration to persistence (strategy: {})",
+                    persistenceManager.getCurrentStrategy().getDescription());
+        } catch (Exception e) {
+            log.error("Failed to save to persistence", e);
         }
     }
 
@@ -257,6 +360,7 @@ public class QuestionClassifier {
      * 问题类型枚举（扩展版）
      * (Question Type Enum - Extended Version)
      */
+    @Getter
     public enum QuestionType {
         /**
          * 社交型：问候、感谢、闲聊，如"你好"、"谢谢"
@@ -328,10 +432,6 @@ public class QuestionClassifier {
 
         QuestionType(String id) {
             this.id = id;
-        }
-
-        public String getId() {
-            return id;
         }
 
         /**
@@ -540,7 +640,14 @@ public class QuestionClassifier {
         // 5. 提取关键词
         builder.keywords(extractKeywords(normalizedQuestion));
 
-        return builder.build();
+        Classification result = builder.build();
+
+        // 6. 记录分类结果到学习服务 (Record classification to learning service)
+        if (learningService != null) {
+            learningService.recordClassification(question, type, confidence);
+        }
+
+        return result;
     }
 
     /**
