@@ -350,6 +350,18 @@ export default {
     
     // Dual-track Architecture
     dualTrack: {
+      hopeAnswerLabel: '💡 HOPE Quick Answer',
+      llmAnswerLabel: '🤖 LLM Detailed Answer',
+      hopeBadge: 'HOPE',
+      leftPanelTitle: 'AI Direct Answer',
+      rightPanelTitle: 'Knowledge Enhanced Answer',
+      dualTrackOutput: 'Dual Track Output',
+      leftPanel: 'Left Panel',
+      rightPanel: 'Right Panel',
+    },
+    
+    // Dual-track Architecture
+    dualTrack: {
       hopeAnswerLabel: '💡 HOPE Fast Answer',
       llmAnswerLabel: '🤖 LLM Detailed Answer',
       hopeBadge: 'HOPE',
@@ -379,6 +391,15 @@ export default {
       dataScientist: 'Data Scientist',
       securityEngineer: 'Security Engineer',
       tester: 'Test Engineer',
+    },
+
+    // Document References
+    references: {
+      title: 'Referenced Documents',
+      addToAnalysis: 'Add to AI Analysis',
+      alreadyInAnalysis: 'Already in Analysis',
+      download: 'Download Document',
+      addAllToAnalysis: 'Add All to Analysis',
     },
 
     // Knowledge Base (keep for compatibility)

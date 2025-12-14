@@ -38,18 +38,21 @@ public class KnowledgeQAController {
     private final QAArchiveService qaArchiveService;
     private final RoleKnowledgeQAService roleKnowledgeQAService;
     private final HybridStreamingService hybridStreamingService;
+    private final top.yumbo.ai.rag.spring.boot.config.StreamingQAProperties streamingConfig;
 
     @Autowired
     public KnowledgeQAController(KnowledgeQAService qaService,
                                  SimilarQAService similarQAService,
                                  QAArchiveService qaArchiveService,
                                  RoleKnowledgeQAService roleKnowledgeQAService,
-                                 HybridStreamingService hybridStreamingService) {
+                                 HybridStreamingService hybridStreamingService,
+                                 top.yumbo.ai.rag.spring.boot.config.StreamingQAProperties streamingConfig) {
         this.qaService = qaService;
         this.similarQAService = similarQAService;
         this.qaArchiveService = qaArchiveService;
         this.roleKnowledgeQAService = roleKnowledgeQAService;
         this.hybridStreamingService = hybridStreamingService;
+        this.streamingConfig = streamingConfig;
     }
 
     /**
@@ -266,7 +269,9 @@ public class KnowledgeQAController {
         log.info(I18N.get("role.knowledge.api.dual-track-start") + ": question={}, mode={}, role={}",
                 question, knowledgeMode, roleName);
 
-        SseEmitter emitter = new SseEmitter(60000L); // 60 秒超时
+        // 使用配置的超时时间（可通过 application.yml 或 UI 配置）
+        // Use configured timeout (configurable via application.yml or UI)
+        SseEmitter emitter = new SseEmitter(streamingConfig.getTimeoutMs());
 
         // 生成 HOPE 会话 ID
         String hopeSessionId = sessionId != null ? sessionId :
@@ -276,8 +281,27 @@ public class KnowledgeQAController {
         boolean useKnowledgeBase = !"none".equals(knowledgeMode);
         boolean useRoleKnowledge = "role".equals(knowledgeMode);
 
+        // 标记 emitter 是否已完成（用于防止重复发送）
+        final java.util.concurrent.atomic.AtomicBoolean emitterCompleted =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+
         // 异步处理双轨响应
         java.util.concurrent.CompletableFuture.runAsync(() -> {
+            // 辅助方法：安全发送 SSE 消息
+            java.util.function.BiConsumer<String, Object> safeSend = (eventName, data) -> {
+                if (!emitterCompleted.get()) {
+                    try {
+                        emitter.send(SseEmitter.event().name(eventName).data(data));
+                    } catch (IllegalStateException e) {
+                        log.warn("SSE emitter already completed, skip sending: {}", eventName);
+                        emitterCompleted.set(true);
+                    } catch (Exception e) {
+                        log.error("Failed to send SSE event: {}", eventName, e);
+                        emitterCompleted.set(true);
+                    }
+                }
+            };
+
             try {
                 // 1. 根据知识库模式启动相应的服务
 
@@ -288,8 +312,9 @@ public class KnowledgeQAController {
                     // 直接调用 LLM，流式输出
                     String llmAnswer = qaService.askDirectLLM(question).getAnswer();
 
-                    // 分块发送（模拟流式效果）
-                    int chunkSize = 5;
+                    // 分块发送（模拟流式效果），使用配置的分块大小
+                    // Send in chunks (simulate streaming), use configured chunk size
+                    int chunkSize = streamingConfig.getChunkSize();
                     int chunkIndex = 0;
                     for (int i = 0; i < llmAnswer.length(); i += chunkSize) {
                         int end = Math.min(i + chunkSize, llmAnswer.length());
@@ -298,14 +323,17 @@ public class KnowledgeQAController {
                         top.yumbo.ai.rag.spring.boot.model.StreamMessage llmMsg =
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                        emitter.send(SseEmitter.event().name("llm").data(llmMsg));
-                        Thread.sleep(50);
+                        safeSend.accept("llm", llmMsg);
+                        if (emitterCompleted.get()) break; // 如果已完成，停止发送
+                        Thread.sleep(streamingConfig.getChunkDelayMs());
                     }
 
                     // 发送完成消息
-                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * 50);
-                    emitter.send(SseEmitter.event().name("complete").data(completeMsg));
+                    if (!emitterCompleted.get()) {
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * streamingConfig.getChunkDelayMs());
+                        safeSend.accept("complete", completeMsg);
+                    }
 
                 } else if (useRoleKnowledge) {
                     // ========== 角色知识库：双轨输出 ==========
@@ -316,35 +344,42 @@ public class KnowledgeQAController {
                     // 左轨：纯 LLM 答案
                     String pureLLMAnswer = qaService.askDirectLLM(question).getAnswer();
                     int chunkIndex = 0;
-                    for (int i = 0; i < pureLLMAnswer.length(); i += 5) {
-                        int end = Math.min(i + 5, pureLLMAnswer.length());
+                    int chunkSize = streamingConfig.getChunkSize();
+                    for (int i = 0; i < pureLLMAnswer.length(); i += chunkSize) {
+                        int end = Math.min(i + chunkSize, pureLLMAnswer.length());
                         String chunk = pureLLMAnswer.substring(i, end);
 
                         top.yumbo.ai.rag.spring.boot.model.StreamMessage leftMsg =
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                        emitter.send(SseEmitter.event().name("left").data(leftMsg));
-                        Thread.sleep(50);
+                        safeSend.accept("left", leftMsg);
+                        if (emitterCompleted.get()) break;
+                        Thread.sleep(streamingConfig.getChunkDelayMs());
                     }
 
                     // 右轨：角色知识库增强答案
-                    String roleAnswer = roleKnowledgeQAService.askWithRole(question, roleName).getAnswer();
-                    chunkIndex = 0;
-                    for (int i = 0; i < roleAnswer.length(); i += 5) {
-                        int end = Math.min(i + 5, roleAnswer.length());
-                        String chunk = roleAnswer.substring(i, end);
+                    if (!emitterCompleted.get()) {
+                        String roleAnswer = roleKnowledgeQAService.askWithRole(question, roleName).getAnswer();
+                        chunkIndex = 0;
+                        for (int i = 0; i < roleAnswer.length(); i += chunkSize) {
+                            int end = Math.min(i + chunkSize, roleAnswer.length());
+                            String chunk = roleAnswer.substring(i, end);
 
-                        top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
-                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                    top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                        emitter.send(SseEmitter.event().name("right").data(rightMsg));
-                        Thread.sleep(50);
+                            safeSend.accept("right", rightMsg);
+                            if (emitterCompleted.get()) break;
+                            Thread.sleep(streamingConfig.getChunkDelayMs());
+                        }
                     }
 
                     // 发送完成消息
-                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * 50);
-                    emitter.send(SseEmitter.event().name("complete").data(completeMsg));
+                    if (!emitterCompleted.get()) {
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * streamingConfig.getChunkDelayMs());
+                        safeSend.accept("complete", completeMsg);
+                    }
 
                 } else {
                     // ========== 传统 RAG：双轨输出 ==========
@@ -355,15 +390,17 @@ public class KnowledgeQAController {
                     // 左轨：纯 LLM 答案（不使用检索）
                     String pureLLMAnswer = qaService.askDirectLLM(question).getAnswer();
                     int chunkIndex = 0;
-                    for (int i = 0; i < pureLLMAnswer.length(); i += 5) {
-                        int end = Math.min(i + 5, pureLLMAnswer.length());
+                    int chunkSize = streamingConfig.getChunkSize();
+                    for (int i = 0; i < pureLLMAnswer.length(); i += chunkSize) {
+                        int end = Math.min(i + chunkSize, pureLLMAnswer.length());
                         String chunk = pureLLMAnswer.substring(i, end);
 
                         top.yumbo.ai.rag.spring.boot.model.StreamMessage leftMsg =
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                        emitter.send(SseEmitter.event().name("left").data(leftMsg));
-                        Thread.sleep(50);
+                        safeSend.accept("left", leftMsg);
+                        if (emitterCompleted.get()) break;
+                        Thread.sleep(streamingConfig.getChunkDelayMs());
                     }
 
                     // 右轨：RAG 增强答案（使用 HOPE + 检索）
@@ -385,15 +422,16 @@ public class KnowledgeQAController {
 
                             // 发送 HOPE 到右面板
                             chunkIndex = 0;
-                            for (int i = 0; i < hopeText.length(); i += 5) {
-                                int end = Math.min(i + 5, hopeText.length());
+                            for (int i = 0; i < hopeText.length(); i += chunkSize) {
+                                int end = Math.min(i + chunkSize, hopeText.length());
                                 String chunk = hopeText.substring(i, end);
 
                                 top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
                                         top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                                emitter.send(SseEmitter.event().name("right").data(rightMsg));
-                                Thread.sleep(50);
+                                safeSend.accept("right", rightMsg);
+                                if (emitterCompleted.get()) break;
+                                Thread.sleep(streamingConfig.getChunkDelayMs());
                             }
 
                             log.info(I18N.get("role.knowledge.api.hope-answer-sent"));
@@ -405,68 +443,81 @@ public class KnowledgeQAController {
                     }
 
                     // 右轨：继续发送 LLM RAG 增强答案
-                    String ragHeader = I18N.get("role.knowledge.api.rag-enhanced-answer-header") + "\n";
-                    for (int i = 0; i < ragHeader.length(); i += 5) {
-                        int end = Math.min(i + 5, ragHeader.length());
-                        String chunk = ragHeader.substring(i, end);
+                    if (!emitterCompleted.get()) {
+                        String ragHeader = I18N.get("role.knowledge.api.rag-enhanced-answer-header") + "\n";
+                        for (int i = 0; i < ragHeader.length(); i += chunkSize) {
+                            int end = Math.min(i + chunkSize, ragHeader.length());
+                            String chunk = ragHeader.substring(i, end);
 
-                        top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
-                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
+                            top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                    top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(chunk, chunkIndex++);
 
-                        emitter.send(SseEmitter.event().name("right").data(rightMsg));
-                        Thread.sleep(50);
+                            safeSend.accept("right", rightMsg);
+                            if (emitterCompleted.get()) break;
+                            Thread.sleep(streamingConfig.getChunkDelayMs());
+                        }
                     }
 
                     // 获取 RAG LLM 流式输出
-                    var session = hybridStreamingService.getSession(response.getSessionId());
-                    if (session != null) {
-                        int lastLength = 0;
+                    if (!emitterCompleted.get()) {
+                        var session = hybridStreamingService.getSession(response.getSessionId());
+                        if (session != null) {
+                            int lastLength = 0;
 
-                        while (session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
-                            String currentAnswer = session.getFullAnswer().toString();
+                            while (!emitterCompleted.get() &&
+                                   session.getStatus() == top.yumbo.ai.rag.spring.boot.streaming.model.SessionStatus.STREAMING) {
+                                String currentAnswer = session.getFullAnswer().toString();
 
-                            if (currentAnswer.length() > lastLength) {
-                                String newChunk = currentAnswer.substring(lastLength);
+                                if (currentAnswer.length() > lastLength) {
+                                    String newChunk = currentAnswer.substring(lastLength);
 
-                                top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
-                                        top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(newChunk, chunkIndex++);
+                                    top.yumbo.ai.rag.spring.boot.model.StreamMessage rightMsg =
+                                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmChunk(newChunk, chunkIndex++);
 
-                                emitter.send(SseEmitter.event().name("right").data(rightMsg));
+                                    safeSend.accept("right", rightMsg);
 
-                                lastLength = currentAnswer.length();
+                                    lastLength = currentAnswer.length();
+                                }
+
+                                Thread.sleep(100);
                             }
-
-                            Thread.sleep(100);
                         }
                     }
 
                     // 发送完成消息
-                    top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * 50);
-                    emitter.send(SseEmitter.event().name("complete").data(completeMsg));
+                    if (!emitterCompleted.get()) {
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage completeMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.llmComplete(chunkIndex, chunkIndex * streamingConfig.getChunkDelayMs());
+                        safeSend.accept("complete", completeMsg);
 
-                    log.info(I18N.get("role.knowledge.api.dual-track-complete"));
+                        log.info(I18N.get("role.knowledge.api.dual-track-complete"));
+                    }
                 } // 结束 RAG 模式的 else 块
 
-                emitter.complete();
-                log.info(I18N.get("role.knowledge.api.dual-track-complete"));
+                // 完成 emitter
+                if (!emitterCompleted.get()) {
+                    emitter.complete();
+                    emitterCompleted.set(true);
+                    log.info(I18N.get("role.knowledge.api.dual-track-complete"));
+                }
 
             } catch (Exception e) {
                 log.error(I18N.get("role.knowledge.api.dual-track-failed"), e);
 
-                try {
-                    top.yumbo.ai.rag.spring.boot.model.StreamMessage errorMsg =
-                            top.yumbo.ai.rag.spring.boot.model.StreamMessage.error(
-                                    I18N.get("role.knowledge.api.streaming-failed") + ": " + e.getMessage()
-                            );
+                if (!emitterCompleted.get()) {
+                    try {
+                        top.yumbo.ai.rag.spring.boot.model.StreamMessage errorMsg =
+                                top.yumbo.ai.rag.spring.boot.model.StreamMessage.error(
+                                        I18N.get("role.knowledge.api.streaming-failed") + ": " + e.getMessage()
+                                );
 
-                    emitter.send(SseEmitter.event()
-                            .name("error")
-                            .data(errorMsg));
+                        safeSend.accept("error", errorMsg);
 
-                    emitter.completeWithError(e);
-                } catch (Exception sendError) {
-                    log.error(I18N.get("role.knowledge.api.send-error-msg-failed"), sendError);
+                        emitter.completeWithError(e);
+                        emitterCompleted.set(true);
+                    } catch (Exception sendError) {
+                        log.error(I18N.get("role.knowledge.api.send-error-msg-failed"), sendError);
+                    }
                 }
             }
         });
@@ -474,10 +525,14 @@ public class KnowledgeQAController {
         // 设置超时和错误回调
         emitter.onTimeout(() -> {
             log.warn(I18N.get("role.knowledge.api.sse-timeout"));
+            emitterCompleted.set(true);
             emitter.complete();
         });
 
-        emitter.onError(e -> log.error(I18N.get("role.knowledge.api.sse-error"), e));
+        emitter.onError(e -> {
+            log.error(I18N.get("role.knowledge.api.sse-error"), e);
+            emitterCompleted.set(true);
+        });
 
         return emitter;
     }

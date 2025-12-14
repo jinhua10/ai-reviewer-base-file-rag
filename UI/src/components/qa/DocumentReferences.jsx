@@ -103,7 +103,7 @@ function DocumentReferences({ sources, chunks }) {
                     disabled={isInAnalysis}
                     className={`document-references__add-btn ${isInAnalysis ? 'document-references__add-btn--added' : ''}`}
                   >
-                    {isInAnalysis ? '已加入' : '加入分析'}
+                    {isInAnalysis ? t('qa.references.alreadyInAnalysis') : t('qa.references.addToAnalysis')}
                   </Button>
                 </Tooltip>
 
@@ -133,7 +133,7 @@ function DocumentReferences({ sources, chunks }) {
             })
           }}
         >
-          📚 全部加入分析
+          📚 {t('qa.references.addAllToAnalysis')}
         </Button>
       </div>
     </div>

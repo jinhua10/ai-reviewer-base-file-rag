@@ -76,7 +76,7 @@ function AnswerCard(props) {
               <div className="answer-card__panel answer-card__panel--left">
                 <div className="answer-card__panel-header">
                   <span className="answer-card__panel-icon">🤖</span>
-                  <span className="answer-card__panel-title">AI 直接回答</span>
+                  <span className="answer-card__panel-title">{t('qa.dualTrack.leftPanelTitle')}</span>
                 </div>
                 <div className="answer-card__panel-content">
                   {answer.streaming ? (
@@ -90,7 +90,7 @@ function AnswerCard(props) {
               <div className="answer-card__panel answer-card__panel--right">
                 <div className="answer-card__panel-header">
                   <span className="answer-card__panel-icon">📚</span>
-                  <span className="answer-card__panel-title">知识库增强回答</span>
+                  <span className="answer-card__panel-title">{t('qa.dualTrack.rightPanelTitle')}</span>
                 </div>
                 <div className="answer-card__panel-content">
                   {answer.streaming ? (

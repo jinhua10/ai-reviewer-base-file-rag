@@ -1049,7 +1049,35 @@ knowledge:
             # 建议值：1920x1080（1080p）或 1280x720（720p）
             max-width: 1920
             max-height: 1080
+  # ============================================================
+  # 流式问答配置 (Streaming QA Configuration)
+  # ============================================================
+  streaming:
+    qa:
+      # SSE 连接超时时间（毫秒）/ SSE connection timeout (milliseconds)
+      # 说明：超过此时间未完成的流式响应将被超时
+      # Note: Streaming responses exceeding this time will timeout
+      # 默认：180000 (3分钟，应对复杂查询和多图片场景)
+      # Default: 180000 (3 minutes, for complex queries and multi-image scenarios)
+      # 建议范围 / Recommended range:
+      # - 简单查询 (Simple queries): 60000 - 120000 (1-2分钟)
+      # - 复杂查询 (Complex queries): 180000 - 300000 (3-5分钟)
+      # - 超大文档/多图片 (Large docs/many images): 300000 - 600000 (5-10分钟)
+      timeout-ms: 180000
 
+      # 模拟流式输出时的分块大小（字符数）/ Chunk size for simulated streaming (characters)
+      # 说明：在非真实流式场景下，将完整答案分块发送时每块的大小
+      # Note: When simulating streaming, size of each chunk when sending complete answer
+      # 默认：5（逐字显示效果）
+      # Default: 5 (character-by-character effect)
+      chunk-size: 5
+
+      # 模拟流式输出时的延迟（毫秒）/ Delay for simulated streaming (milliseconds)
+      # 说明：每个分块之间的延迟，用于模拟打字效果
+      # Note: Delay between chunks to simulate typing effect
+      # 默认：50（较快的打字速度）
+      # Default: 50 (fast typing speed)
+      chunk-delay-ms: 50
     # 问答归档配置
     qa-archive:
       # 是否启用归档

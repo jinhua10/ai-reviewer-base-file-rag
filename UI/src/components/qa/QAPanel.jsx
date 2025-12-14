@@ -130,7 +130,7 @@ function QAPanel() {
       setMessages(prev => [...prev, answerMessage])
       
       // 重置ref内容
-      streamingContentRef.current = ''
+      streamingContentRef.current = { leftPanel: '', rightPanel: '' }
       streamingLLMAnswerRef.current = ''
 
       // 调用流式 API（双轨输出）/ Call streaming API (Dual Track)
@@ -149,16 +149,10 @@ function QAPanel() {
           if (data.type === 'left') {
             // 左面板：纯 LLM
             console.log('⬅️ Left panel:', data.content)
-            if (!streamingContentRef.current.leftPanel) {
-              streamingContentRef.current = { leftPanel: '', rightPanel: '' }
-            }
             streamingContentRef.current.leftPanel += data.content
           } else if (data.type === 'right') {
             // 右面板：RAG 增强 / 角色知识库
             console.log('➡️ Right panel:', data.content)
-            if (!streamingContentRef.current.rightPanel) {
-              streamingContentRef.current = { leftPanel: '', rightPanel: '' }
-            }
             streamingContentRef.current.rightPanel += data.content
           } else if (data.type === 'llm') {
             // 单轨 LLM（不使用 RAG）
@@ -179,7 +173,7 @@ function QAPanel() {
                   lastMessage.dualTrack = true
                   lastMessage.leftPanel = streamingContentRef.current.leftPanel || ''
                   lastMessage.rightPanel = streamingContentRef.current.rightPanel || ''
-                  lastMessage.content = `[双轨输出]\n左面板: ${lastMessage.leftPanel.substring(0, 50)}...\n右面板: ${lastMessage.rightPanel.substring(0, 50)}...`
+                  lastMessage.content = `[${t('qa.dualTrack.dualTrackOutput')}]\n${t('qa.dualTrack.leftPanel')}: ${lastMessage.leftPanel.substring(0, 50)}...\n${t('qa.dualTrack.rightPanel')}: ${lastMessage.rightPanel.substring(0, 50)}...`
                   break
 
                 case 'llm':

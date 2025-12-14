@@ -63,6 +63,7 @@ knowledge_qa_service:
   model_doc_hint: "提示：请将模型文件放置在 {0} 目录"
   model_download_hint: "提示：请从 {0} 下载模型"
   more_images: "  ... 还有 {0} 张图片"
+  more_images_notice: "（还有 {0} 张图片未显示）"
   question_prompt: "❓ 问题：{0}"
   question_separator: "\n================================================================================\n"
   referenced_docs: "\n\n**引用文档**："

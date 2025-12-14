@@ -63,6 +63,7 @@ knowledge_qa_service:
   model_doc_hint: "Hint: Please place model files in {0} directory"
   model_download_hint: "Hint: Please download model from {0}"
   more_images: "  ... {0} more images"
+  more_images_notice: "({0} more images not shown)"
   question_prompt: "❓ Question: {0}"
   question_separator: "\n================================================================================\n"
   referenced_docs: "\n\n**Referenced Documents**:"
