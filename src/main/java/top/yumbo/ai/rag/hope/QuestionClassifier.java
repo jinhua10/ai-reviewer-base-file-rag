@@ -1,8 +1,10 @@
 package top.yumbo.ai.rag.hope;
 
 import lombok.*;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.yaml.snakeyaml.Yaml;
 import top.yumbo.ai.rag.hope.learning.QuestionClassifierLearningService;
@@ -51,8 +53,10 @@ public class QuestionClassifier {
 
     /**
      * 学习服务 (Learning service)
+     * 使用 @Lazy 避免循环依赖 (Use @Lazy to avoid circular dependency)
      */
     @Autowired(required = false)
+    @Lazy
     private QuestionClassifierLearningService learningService;
 
     /**

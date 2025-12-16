@@ -1,6 +1,11 @@
 # 批量处理相关消息 (Batch processing related messages)
 batch:
   failed: "批量处理失败"
+# 应用相关消息 (Application related messages)
+app:
+  log:
+    start_failed: "❌ 应用启动失败"
+
 # API 相关消息 (API related messages)
 api:
   started: "API 服务器已在端口 {0} 启动"

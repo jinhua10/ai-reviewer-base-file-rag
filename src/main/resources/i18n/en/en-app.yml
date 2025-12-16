@@ -1,6 +1,11 @@
 # Batch processing related messages
 batch:
   failed: "Batch processing failed"
+# Application related messages
+app:
+  log:
+    start_failed: "❌ Application startup failed"
+
 # API related messages
 api:
   started: "API server started on port {0}"
