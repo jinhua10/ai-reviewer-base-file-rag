@@ -1,6 +1,6 @@
 我进行了彻底重构，请参考全新版本 [omni-agent](https://github.com/jinhua10/omni-agent)
 
-[omni-agent-example-basic](https://github.com/jinhua10/omni-agent/tree/master/omni-agent-example-basic)
+示例：[omni-agent-example-basic](https://github.com/jinhua10/omni-agent/tree/master/omni-agent-example-basic)
 
 
 <div align="center">
